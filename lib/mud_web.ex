@@ -23,6 +23,7 @@ defmodule MudWeb do
 
       import Plug.Conn
       import MudWeb.Gettext
+      import Phoenix.LiveView.Controller
       alias MudWeb.Router.Helpers, as: Routes
     end
   end
@@ -41,6 +42,7 @@ defmodule MudWeb do
 
       import MudWeb.ErrorHelpers
       import MudWeb.Gettext
+      import Phoenix.LiveView.Helpers
       alias MudWeb.Router.Helpers, as: Routes
     end
   end
@@ -50,6 +52,7 @@ defmodule MudWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 

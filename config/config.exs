@@ -25,6 +25,11 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+config :mud, MyAppWeb.Endpoint,
+  live_view: [
+    signing_salt: "Hz6eFBuUhASk+hEzu8RGk11Qie/qca+s"
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
