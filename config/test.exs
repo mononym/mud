@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :mud, Mud.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "mud",
+  password: "mud",
   database: "mud_test",
   hostname: "localhost",
   pool: Ecto.Adapters.SQL.Sandbox

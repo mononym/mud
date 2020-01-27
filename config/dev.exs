@@ -2,8 +2,8 @@ use Mix.Config
 
 # Configure your database
 config :mud, Mud.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "mud",
+  password: "mud",
   database: "mud_dev",
   hostname: "localhost",
   show_sensitive_data_on_connection_error: true,
