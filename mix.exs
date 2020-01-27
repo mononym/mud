@@ -41,10 +41,11 @@ defmodule Mud.MixProject do
       {:phoenix_ecto, "~> 4.0"},
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:phoenix_live_view, "~> 0.6.0"},
+      {:phoenix_live_view, "~> 0.6.0", override: true},
       {:phoenix_pubsub, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:postgrex, ">= 0.0.0"},
+      {:surface, git: "https://github.com/msaraiva/surface.git"}
     ]
   end
 

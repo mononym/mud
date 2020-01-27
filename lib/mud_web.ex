@@ -43,6 +43,7 @@ defmodule MudWeb do
       import MudWeb.ErrorHelpers
       import MudWeb.Gettext
       import Phoenix.LiveView.Helpers
+      import Surface
       alias MudWeb.Router.Helpers, as: Routes
     end
   end
