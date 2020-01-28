@@ -25,7 +25,7 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
-config :mud, MyAppWeb.Endpoint,
+config :mud, MudWeb.Endpoint,
   live_view: [
     signing_salt: "Hz6eFBuUhASk+hEzu8RGk11Qie/qca+s"
   ]
