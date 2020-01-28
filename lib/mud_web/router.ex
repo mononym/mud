@@ -10,8 +10,8 @@ defmodule MudWeb.Router do
     plug(:put_secure_browser_headers)
   end
 
-  pipeline :mud_client do
-    plug(:put_layout, {MudWeb.LayoutView, :mud_client})
+  pipeline :bare_page do
+    plug(:put_layout, {MudWeb.LayoutView, :bare_page})
   end
 
   pipeline :api do
@@ -19,15 +19,11 @@ defmodule MudWeb.Router do
   end
 
   scope "/", MudWeb do
-    pipe_through(:browser)
+    pipe_through([:browser, :bare_page])
 
-    get("/", PageController, :index)
-  end
-
-  scope "/play", MudWeb do
-    pipe_through([:browser, :mud_client])
-
-    live("/", MudClientLive)
+    live("/", LandingPageLive)
+    live("/play", MudClientLive)
+    live("/token", AuthTokenLive)
   end
 
   scope "/api", MudWeb do

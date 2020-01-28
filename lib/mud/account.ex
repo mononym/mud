@@ -50,6 +50,7 @@ defmodule Mud.Account do
   def authenticate_via_email(email_address) do
     auth_token = UUID.uuid4() |> String.replace("-", "")
 
+    # TODO: Sort out what happens when email is submitted second time before account creation finished
     case lookup_player_by_auth_email(email_address) do
       {:ok, player_id} ->
         redis_set_player_auth_token(auth_token, "login", player_id, @login_token_ttl)
@@ -99,9 +100,8 @@ defmodule Mud.Account do
   defp perform_email_hash_precheck(multi, email_address, email_hash) do
     Ecto.Multi.run(multi, :precheck, fn _repo, _ ->
       Repo.all(
-        from(player in Player,
-          join: auth_email in Mud.Account.AuthEmail,
-          where: player.id == auth_email.player_id and auth_email.hash == ^email_hash,
+        from(auth_email in Mud.Account.AuthEmail,
+          where: auth_email.hash == ^email_hash,
           select: auth_email.email
         )
       )
@@ -162,7 +162,7 @@ defmodule Mud.Account do
   end
 
   @doc """
-  Verify a login token and, if valid, return the Player it points to.
+  Verify an auth token and, if valid, return the Player it points to.
 
   ## Examples
 

@@ -5,18 +5,11 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Basic Phoenix CSS */
-@import "../../deps/phoenix_live_view/assets/css/live_view.css";
-
-/* Project specific SCSS */
-@import "./mud_client.scss";
-
-html,
-body {
-  min-height: 100% !important;
-  height: 100% !important;
-  min-width: 100% !important;
-  width: 100% !important;
-  display: flex;
-  margin: 0px;
+main {
+  div[data-phx-main="true"] {
+    min-width: 100%;
+    min-height: 100%;
+    height: 100%;
+    width: 100%;
+  }
 }

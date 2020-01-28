@@ -1,0 +1,55 @@
+<div class="flex flex-col bg-gray-900">
+  <div name="hero" class="py-20 flex-grow">
+    <div class="container mx-auto px-6 flex flex-col">
+      <h2 class="text-4xl font-bold mb-2 mx-auto">
+        You must enter your email before venturing forth!
+      </h2>
+
+      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :authenticate, class: "w-full max-w-sm mx-auto"] %>
+        <div class="flex items-center border-b border-b-2 border-green-500 py-2">
+          <%= email_input f, :email, class: "appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none", type: "text", placeholder: "Email Address"%>
+          <%= submit "Start your Aventure!", phx_disable_with: "Checking Scrolls...", class: "flex-shrink-0 bg-green-900 hover:bg-green-700 border-green-900 hover:border-green-700 text-sm border-4 text-white py-1 px-2 rounded" %>
+        </div>
+
+        <%= error_tag f, :email %>
+      </form>
+
+    </div>
+  </div>
+  <section name="features" class="container mx-auto px-6 p-10">
+    <h2 class="text-4xl font-bold text-center text-gray-800 mb-8">
+      Features
+    </h2>
+    <div class="flex items-center flex-wrap mb-20">
+      <div class="w-full md:w-1/2">
+        <h4 class="text-3xl text-gray-800 font-bold mb-3">Free to Play</h4>
+        <p class="text-gray-600 mb-8">Play for free, without being locked out of premium content.</p>
+        <p class="text-gray-600 mb-8">Quests, alterations, extra character slots, access to premium areas, and more are all paid for using a tradable ingame currency.</p>
+      </div>
+      <div class="w-full md:w-1/2">
+        <img src="images/health.svg" alt="Monitoring" />
+      </div>
+    </div>
+
+    <div class="flex items-center flex-wrap mb-20">
+      <div class="w-full md:w-1/2">
+        <img src="images/report.svg" alt="Reporting" />
+      </div>
+      <div class="w-full md:w-1/2 pl-10">
+        <h4 class="text-3xl text-gray-800 font-bold mb-3">10 Playable Fantasy Races</h4>
+        <p class="text-gray-600 mb-8">Choose from any of the following: Human, Elf, Dwarf, Half-Elf, Half-Dwarf, Half-Giant, Halfling, Gnome, Giant, or Lizardman.</p>
+      </div>
+    </div>
+
+    <div class="flex items-center flex-wrap mb-20">
+      <div class="w-full md:w-1/2">
+        <h4 class="text-3xl text-gray-800 font-bold mb-3">Lightly Enforced Roleplay</h4>
+        <p class="text-gray-600 mb-8">We don't ask that you create an elaborate backstory or "speak" with a character-driven lisp, but we do ask that you not break the immersion for other players. That means, for example, no 733T 5P34K or real world discussions.</p>
+        <p class="text-gray-600 mb-8">Please see these rules for a more thorough explanation.</p>
+      </div>
+      <div class="w-full md:w-1/2">
+        <img src="images/sync.svg" alt="Syncing" />
+      </div>
+    </div>
+  </section>
+</div>
