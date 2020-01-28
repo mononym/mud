@@ -1,4 +1,31 @@
 /* This file is for your main application css. */
 
+/* Tailwind stuff */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* Basic Phoenix CSS */
 @import "../../deps/phoenix_live_view/assets/css/live_view.css";
+
+/* Project specific CSS */
 @import "./phoenix.css";
+@import "./mud_client.css";
+
+html,
+body {
+  min-height: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  width: 100% !important;
+  display: flex;
+  margin: 0px;
+}
+
+span {
+  border: solid 1px black;
+}
+
+div[data-phx-view="MudClientLive"] {
+  display: flex;
+}

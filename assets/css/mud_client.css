@@ -1,0 +1,13 @@
+/* Styling for the mud client
+ */
+
+main#mudClientMain,
+div[data-phx-view="MudClientLive"],
+div#mudClientWrapper {
+  width: 100%;
+  display: flex;
+  margin: 0px;
+  padding: 0px;
+  min-width: 100% !important;
+  width: 100% !important;
+}
