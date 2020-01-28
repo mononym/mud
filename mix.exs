@@ -33,9 +33,16 @@ defmodule Mud.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bamboo, "~> 1.3"},
+      {:cloak, "1.0.0"},
+      {:ecto, "~> 3.3", override: true},
       {:ecto_sql, "~> 3.1"},
+      {:ecto_autoslug_field, "~> 2.0"},
+      {:ecto_enum, "~> 1.4.0"},
       {:floki, ">= 0.0.0", only: :test},
       {:gettext, "~> 0.11"},
+      {:hammer, "~> 6.0"},
+      {:hammer_plug, "~> 2.1"},
       {:jason, "~> 1.0"},
       {:phoenix, "~> 1.4.12"},
       {:phoenix_ecto, "~> 4.0"},
@@ -45,7 +52,12 @@ defmodule Mud.MixProject do
       {:phoenix_pubsub, "~> 1.1"},
       {:plug_cowboy, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
-      {:surface, git: "https://github.com/msaraiva/surface.git"}
+      {:redbird, "~> 0.4.0"},
+      {:redix, "~> 0.10.2"},
+      {:surface, git: "https://github.com/msaraiva/surface.git"},
+      {:telemetry, "~> 0.4.0"},
+      {:uber_multi, github: "mononym/uber_multi"},
+      {:uuid, "~> 1.1.8"}
     ]
   end
 

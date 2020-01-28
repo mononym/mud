@@ -10,6 +10,10 @@ defmodule MudWeb.Router do
     plug(:put_secure_browser_headers)
   end
 
+  pipeline :mud_client do
+    plug(:put_layout, {MudWeb.LayoutView, :mud_client})
+  end
+
   pipeline :api do
     plug(:accepts, ["json"])
   end
@@ -20,8 +24,17 @@ defmodule MudWeb.Router do
     get("/", PageController, :index)
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", MudWeb do
-  #   pipe_through :api
-  # end
+  scope "/play", MudWeb do
+    pipe_through([:browser, :mud_client])
+
+    live("/", MudClientLive)
+  end
+
+  scope "/api", MudWeb do
+    pipe_through(:api)
+
+    resources("/areas", AreaController, except: [:new, :edit])
+    resources("/characters", CharacterController, except: [:new, :edit])
+    resources("/links", LinkController, except: [:new, :edit])
+  end
 end

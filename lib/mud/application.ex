@@ -11,9 +11,10 @@ defmodule Mud.Application do
       # Start the Ecto repository
       Mud.Repo,
       # Start the endpoint when the application starts
-      MudWeb.Endpoint
-      # Starts a worker by calling: Mud.Worker.start_link(arg)
-      # {Mud.Worker, arg},
+      MudWeb.Endpoint,
+      # Session Cache
+      {Redix, name: :redix},
+      Mud.Vault
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

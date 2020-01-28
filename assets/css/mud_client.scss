@@ -11,3 +11,26 @@ div#mudClientWrapper {
   min-width: 100% !important;
   width: 100% !important;
 }
+
+div#mudClientWrapper {
+  flex-direction: column;
+
+  section {
+    min-width: 100%;
+  }
+}
+
+#mudClientMainSection {
+  background-color: #121212;
+  flex-grow: 1;
+}
+
+#mudClientStoryWindow {
+  min-height: 100%;
+  min-width: 100%;
+}
+
+#mudClientCommandSection {
+  flex-shrink: 1;
+  background-color: #068968;
+}
