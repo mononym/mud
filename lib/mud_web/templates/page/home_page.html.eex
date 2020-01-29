@@ -2,18 +2,10 @@
   <div name="hero" class="py-20 flex-grow">
     <div class="container mx-auto px-6 flex flex-col">
       <h2 class="text-4xl font-bold mb-2 mx-auto">
-        You must enter your email before venturing forth!
+        Please click the button below to create your first character!
       </h2>
 
-      <%= form_for @changeset, "/authenticate/email", [class: "w-full max-w-sm mx-auto"], fn f -> %>
-        <div class="flex items-center border-b border-b-2 border-green-500 py-2">
-          <%= email_input f, :email, class: "appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none", type: "text", placeholder: "Email Address"%>
-          <%= submit "Start your Aventure!", class: "flex-shrink-0 bg-green-900 hover:bg-green-700 border-green-900 hover:border-green-700 text-sm border-4 text-white py-1 px-2 rounded" %>
-        </div>
-
-        <%= error_tag f, :email %>
-      <% end %>
-
+      <a href="/characters/new" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Create a Character</a>
     </div>
   </div>
 </div>

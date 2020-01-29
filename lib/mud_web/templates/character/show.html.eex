@@ -1,0 +1,17 @@
+<div class="min-w-full min-h-full h-full flex items-center justify-center">
+  <div class="max-w-sm rounded overflow-hidden shadow-lg bg-green-900" >
+  <div class="px-6 py-4">
+    <div class="font-bold text-xl mb-2">Show Character</div>
+    <ul>
+      <li>
+        <strong>Name:</strong>
+        <%= @character.name %>
+      </li>
+    </ul>
+  </div>
+  <div class="px-6 py-4">
+    <span><%= link "play", to: "/play/#{@character.id}" %></span>
+    <span><%= link "Edit", to: Routes.character_path(@conn, :edit, @character) %></span>
+  </div>
+  </div>
+</div>

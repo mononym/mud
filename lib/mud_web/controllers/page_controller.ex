@@ -19,7 +19,7 @@ defmodule MudWeb.PageController do
   def show_home_page(conn, _params) do
     conn
     |> assign(:changeset, Email.new() |> Email.changeset())
-    |> put_layout("app_page.html")
+    |> put_layout("app.html")
     |> render("home_page.html")
   end
 end

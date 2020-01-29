@@ -12,8 +12,7 @@ config :mud,
   ecto_repos: [Mud.Repo],
   generators: [binary_id: true]
 
-config :mud, Mud.Repo,
-  migration_timestamps: [type: :utc_datetime_usec]
+config :mud, Mud.Repo, migration_timestamps: [type: :utc_datetime_usec]
 
 # Configures the endpoint
 config :mud, MudWeb.Endpoint,

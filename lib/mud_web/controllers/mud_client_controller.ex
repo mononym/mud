@@ -5,7 +5,7 @@ defmodule MudWeb.MudClientController do
 
   plug(MudWeb.Plug.RedirectAnonymousPlayer, "/" when action in [:play])
 
-  def play(conn, %{"character" => _character}) do
+  def play(conn, %{"character" => _character_id}) do
     # see if character exists
     # check if character belongs to authenticated player
     # start game session process for character

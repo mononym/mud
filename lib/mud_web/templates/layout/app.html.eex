@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="min-w-full min-h-full h-full" lang="en">
+<html class="min-w-full min-h-full h-full bg-gray-900" lang="en">
   <head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -39,9 +39,13 @@
       </nav>
     </header>
     <main class="min-w-full min-h-full h-full" role="main">
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-      <%= render @view_module, @view_template, assigns %>
+      <section class="flex flex-col min-w-full min-h-full h-full">
+        <p class="w-auto bg-green-200 justify-start" role="alert"><%= get_flash(@conn, :success) %></p>
+        <p class="w-auto bg-blue-200 justify-start" role="alert"><%= get_flash(@conn, :info) %></p>
+        <p class="w-auto bg-orange-200 justify-start" role="alert"><%= get_flash(@conn, :warning) %></p>
+        <p class="w-auto bg-red-200 justify-start" role="alert"><%= get_flash(@conn, :error) %></p>
+        <%= render @view_module, @view_template, assigns %>
+      </section>
     </main>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
   </body>

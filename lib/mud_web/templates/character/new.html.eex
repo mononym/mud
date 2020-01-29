@@ -1,0 +1,12 @@
+<div class="min-w-full min-h-full h-full flex items-center justify-center">
+  <div class="max-w-sm rounded overflow-hidden shadow-lg bg-green-900" >
+  <div class="px-6 py-4">
+    <div class="font-bold text-xl mb-2">New Character</div>
+    <p>Character names must start with an upper case letter, A-Z, and can be comprised of up to 20 lower case letters, a-z.</p>
+    <%= render "form.html", Map.put(assigns, :action, Routes.character_path(@conn, :create)) %>
+  </div>
+  <div class="px-6 py-4">
+    <span><%= link "Back", to: Routes.character_path(@conn, :index) %></span>
+  </div>
+  </div>
+</div>
