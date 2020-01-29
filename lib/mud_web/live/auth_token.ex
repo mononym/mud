@@ -6,8 +6,7 @@ defmodule MudWeb.AuthTokenLive do
   def mount(_params, _session, socket) do
     {:ok,
      assign(socket, %{
-       changeset: MudWeb.Schema.Token.new() |> MudWeb.Schema.Token.changeset(),
-       has_email_error?: false
+       changeset: MudWeb.Schema.Token.new() |> MudWeb.Schema.Token.changeset()
      })}
   end
 
@@ -15,10 +14,17 @@ defmodule MudWeb.AuthTokenLive do
     MudWeb.PageView.render("auth_token.html", assigns)
   end
 
-  def handle_event("validate", form, socket) do
-    IO.inspect(form)
+  def handle_event("validate", _form = %{"token" => token}, socket) do
+    changeset = MudWeb.Schema.Token.new(token) |> Map.put(:action, :insert)
 
-    case Mud.Account.validate_auth_token(form["token"]) do
+    {:noreply,
+     assign(socket,
+       changeset: changeset
+     )}
+  end
+
+  def handle_event("submit", _form = %{"token" => token}, socket) do
+    case Mud.Account.validate_auth_token(token["token"]) do
       {:ok, %Player{} = player} ->
         {:stop,
          socket
@@ -27,22 +33,19 @@ defmodule MudWeb.AuthTokenLive do
            "Token validated!"
          )
          |> assign(
-            player: player,
-            player_authenticated?: true
-          )
+           player: player,
+           player_authenticated?: true
+         )
          |> redirect(to: "/home")}
 
-      {:error, :player_not_created} ->
+      {:error, :invalid} ->
         socket =
           socket
           |> put_flash(
             :error,
-            "Something went wrong while creating account. Please try again. If error persists, please contact support."
+            "The Auth token submitted has either expired or has already been used."
           )
-          |> assign(
-            changeset: MudWeb.Schema.Email.new() |> MudWeb.Schema.Email.changeset(),
-            has_email_error?: false
-          )
+          |> assign(changeset: MudWeb.Schema.Token.new() |> MudWeb.Schema.Token.changeset())
 
         {:noreply, socket}
     end

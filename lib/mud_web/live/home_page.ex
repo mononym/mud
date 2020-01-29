@@ -1,4 +1,4 @@
-defmodule MudWeb.LandingPageLive do
+defmodule MudWeb.HomePageLive do
   use Phoenix.LiveView
 
   def mount(_params, _session, socket) do
@@ -10,7 +10,7 @@ defmodule MudWeb.LandingPageLive do
   end
 
   def render(assigns) do
-    MudWeb.PageView.render("landing_page.html", assigns)
+    MudWeb.PageView.render("home_page.html", assigns)
   end
 
   def handle_event("validate", _form = %{"email" => params}, socket) do

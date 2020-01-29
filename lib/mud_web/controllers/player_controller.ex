@@ -7,8 +7,8 @@ defmodule MudWeb.PlayerController do
   action_fallback(MudWeb.FallbackController)
 
   plug(
-    MudWeb.Plug.EnforceAuthentication
-    when action in [:create, :delete, :get_authenticated_player, :index, :show, :update]
+    MudWeb.Plug.RedirectAnonymousPlayer,
+    "/" when action in [:create, :delete, :get_authenticated_player, :index, :show, :update]
   )
 
   def index(conn, params) do

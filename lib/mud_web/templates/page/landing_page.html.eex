@@ -5,14 +5,14 @@
         You must enter your email before venturing forth!
       </h2>
 
-      <%= f = form_for @changeset, "#", [phx_change: :validate, phx_submit: :authenticate, class: "w-full max-w-sm mx-auto"] %>
+      <%= form_for @changeset, "/authenticate/email", [class: "w-full max-w-sm mx-auto"], fn f -> %>
         <div class="flex items-center border-b border-b-2 border-green-500 py-2">
           <%= email_input f, :email, class: "appearance-none bg-transparent border-none w-full text-gray-700 mr-3 py-1 px-2 leading-tight focus:outline-none", type: "text", placeholder: "Email Address"%>
-          <%= submit "Start your Aventure!", phx_disable_with: "Checking Scrolls...", class: "flex-shrink-0 bg-green-900 hover:bg-green-700 border-green-900 hover:border-green-700 text-sm border-4 text-white py-1 px-2 rounded" %>
+          <%= submit "Start your Aventure!", class: "flex-shrink-0 bg-green-900 hover:bg-green-700 border-green-900 hover:border-green-700 text-sm border-4 text-white py-1 px-2 rounded" %>
         </div>
 
         <%= error_tag f, :email %>
-      </form>
+      <% end %>
 
     </div>
   </div>
