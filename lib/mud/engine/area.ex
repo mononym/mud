@@ -1,5 +1,5 @@
 defmodule Mud.Engine.Area do
-  use Ecto.Schema
+  use Mud.Schema
   import Ecto.Changeset
 
   schema "areas" do

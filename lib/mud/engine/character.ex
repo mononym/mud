@@ -1,10 +1,14 @@
 defmodule Mud.Engine.Character do
-  use Ecto.Schema
+  use Mud.Schema
   import Ecto.Changeset
 
   schema "characters" do
     field(:name, :string)
-    field(:location, :id)
+
+    belongs_to(:location, Mud.Engine.Area,
+      type: :binary_id,
+      foreign_key: :location_id
+    )
 
     belongs_to(:player, Mud.Account.Player,
       type: :binary_id,
@@ -17,8 +21,10 @@ defmodule Mud.Engine.Character do
   @doc false
   def changeset(character, attrs) do
     character
-    |> cast(attrs, [:name, :player_id])
-    |> validate_required([:name, :player_id])
+    |> cast(attrs, [:location_id, :name, :player_id])
+    |> validate_required([:location_id, :name, :player_id])
+    |> foreign_key_constraint(:location_id)
     |> foreign_key_constraint(:player_id)
+    |> unique_constraint(:name)
   end
 end
