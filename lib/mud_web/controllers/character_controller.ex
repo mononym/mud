@@ -16,13 +16,16 @@ defmodule MudWeb.CharacterController do
   end
 
   def create(conn, %{"character_creation_form" => character_params}) do
-    case Engine.create_character(character_params) do
+    params = Map.put(character_params, "player_id", conn.assigns.player.id)
+
+    case Engine.create_character(params) do
       {:ok, character} ->
         conn
         |> put_flash(:info, "Character created successfully.")
         |> redirect(to: Routes.character_path(conn, :show, character))
 
       {:error, %Ecto.Changeset{} = changeset} ->
+        IO.inspect(changeset)
         render(conn, "new.html", changeset: changeset)
     end
   end

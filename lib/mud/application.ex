@@ -14,7 +14,9 @@ defmodule Mud.Application do
       MudWeb.Endpoint,
       # Session Cache
       {Redix, name: :redix},
-      Mud.Vault
+      Mud.Vault,
+      {Registry, keys: :unique, name: Mud.Engine.CharacterSessionRegistry},
+      {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.CharacterSessionSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

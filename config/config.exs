@@ -12,6 +12,9 @@ config :mud,
   ecto_repos: [Mud.Repo],
   generators: [binary_id: true]
 
+config :mud,
+  pubsub: [adapter: Phoenix.PubSub.Redis, host: "localhost", name: Mud.PubSub]
+
 config :mud, Mud.Repo, migration_timestamps: [type: :utc_datetime_usec]
 
 # Configures the endpoint

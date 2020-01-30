@@ -1,0 +1,18 @@
+<div name="window" class="min-w-full min-h-full h-full flex">
+  <section name="center" class="min-w-full min-h-full h-full flex flex-col">
+    <div id="story" class="min-w-full flex flex-col flex-grow justify-end p-2" phx-update="append">
+      <%= for message <- @messages do %>
+        <p id="msg-<%= message.id %>">
+          <%= message.text %>
+        </p>
+      <% end %>
+    </div>
+    <div id="prompt" class="min-w-full flex-shrink">
+      <%= if @even do %>
+        <input id="even" phx-hook="Input" type="textarea" phx-keydown="input" class="min-w-full rounded-lg" style="resize:vertical;" placeholder="Enter Commands Here...">
+      <% else %>
+        <input id="odd" phx-hook="Input" type="textarea" phx-keydown="input" class="min-w-full rounded-lg" style="resize:vertical;" placeholder="Enter Commands Here..."/>
+      <% end %>
+    </div>
+  </section>
+</div>

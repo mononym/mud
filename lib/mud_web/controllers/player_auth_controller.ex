@@ -55,6 +55,8 @@ defmodule MudWeb.PlayerAuthController do
   end
 
   def validate_auth_token(conn, %{"token" => %{"token" => token}}) do
+    IO.inspect(token)
+
     case Account.validate_auth_token(token) do
       {:ok, player} ->
         conn

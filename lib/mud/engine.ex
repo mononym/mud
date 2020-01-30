@@ -242,6 +242,9 @@ defmodule Mud.Engine do
 
   """
   def create_character(attrs \\ %{}) do
+    # For POC set character's initial room as room #1
+    attrs = Map.put(attrs, "location", 1)
+
     %Character{}
     |> Character.changeset(attrs)
     |> Repo.insert()
@@ -292,5 +295,11 @@ defmodule Mud.Engine do
   """
   def change_character(%Character{} = character) do
     Character.changeset(character, %{})
+  end
+
+  def start_character_session(character_id) do
+    spec = {Mud.Engine.Session, character_id: character_id}
+    DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec)
+    :ok
   end
 end

@@ -6,10 +6,12 @@
 @import "tailwindcss/utilities";
 
 main {
-  div[data-phx-main="true"] {
-    min-width: 100%;
-    min-height: 100%;
-    height: 100%;
-    width: 100%;
+  section {
+    div[data-phx-view="MudClientLive"] {
+      min-width: 100%;
+      min-height: 100%;
+      height: 100%;
+      width: 100%;
+    }
   }
 }
