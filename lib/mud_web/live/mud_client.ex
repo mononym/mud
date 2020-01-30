@@ -11,7 +11,6 @@ defmodule MudWeb.MudClientLive do
        character_id: session["character_id"],
        command: "",
        even: true,
-       submitting: false,
        messages: [],
        message_counter: 0
      }), temporary_assigns: [messages: []]}
@@ -22,30 +21,22 @@ defmodule MudWeb.MudClientLive do
     MudWeb.MudClientView.render("v1.html", assigns)
   end
 
-  def handle_event("input", %{"code" => "Enter", "value" => command}, socket) do
+  def handle_event("input", %{"code" => "Enter", "value" => input}, socket) do
     Phoenix.PubSub.broadcast_from!(
       Mud.PubSub,
       self(),
       "session:#{socket.assigns.character_id}",
-      {:ping, command}
+      {:input, input}
     )
 
     {:noreply,
      assign(socket, %{
-       even: !socket.assigns.even,
-       submitting: true
+       even: !socket.assigns.even
      })}
   end
 
   def handle_event("input", _, socket) do
     {:noreply, socket}
-  end
-
-  def handle_info(:pong, socket) do
-    {:noreply,
-     assign(socket, %{
-       submitting: false
-     })}
   end
 
   def handle_info({:echo, echo, counter}, socket) do

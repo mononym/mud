@@ -13,19 +13,12 @@ defmodule Mud.Engine.Session do
     {:ok, :idle, %{character_id: character_id, message_counter: 1}}
   end
 
-  def handle_event(_type, {:ping, command}, :idle, state) do
+  def handle_event(_type, {:input, input}, :idle, state) do
     Phoenix.PubSub.broadcast_from!(
       Mud.PubSub,
       self(),
       "session:#{state.character_id}",
-      :pong
-    )
-
-    Phoenix.PubSub.broadcast_from!(
-      Mud.PubSub,
-      self(),
-      "session:#{state.character_id}",
-      {:echo, command, state.message_counter}
+      {:echo, input, state.message_counter}
     )
 
     # process command
