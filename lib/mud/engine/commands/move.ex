@@ -20,7 +20,7 @@ defmodule Mud.Engine.Command.Move do
           Mud.Engine.Message.new(
             context.player_id,
             context.character_id,
-            "You cannot travel in that direction.",
+            "{{error}}You cannot travel in that direction.{{/error}}",
             :output
           )
         )
@@ -33,7 +33,7 @@ defmodule Mud.Engine.Command.Move do
           |> Mud.Engine.update_character(%{location_id: link.to_id})
 
         characters_by_location =
-          Mud.Engine.list_characters_in_areas([link.to_id, link.from_id])
+          Mud.Engine.list_active_characters_in_areas([link.to_id, link.from_id])
           # Filter out "self"
           |> Enum.filter(fn char ->
             char.id != character.id
@@ -51,7 +51,7 @@ defmodule Mud.Engine.Command.Move do
               character.player_id,
               character.id,
               "look",
-              :input
+              :silent_input
             )
           )
 

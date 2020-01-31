@@ -16,6 +16,7 @@ defmodule Mud.Engine.Verbs do
     "hide" => Command.Placeholder,
     "jump" => Command.Placeholder,
     "laugh" => Command.Placeholder,
+    "l" => Command.Look,
     "look" => Command.Look,
     "meow" => Command.Placeholder,
     "move" => Command.Move,

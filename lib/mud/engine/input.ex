@@ -37,16 +37,12 @@ defmodule Mud.Engine.Input do
   end
 
   defp find_all_matching_verbs(input) do
-    verbs =
-      Mud.Engine.Verbs.match_verbs(input)
-      |> IO.inspect()
+    verbs = Mud.Engine.Verbs.match_verbs(input)
 
     Enum.find(verbs, verbs, fn {verb, _callback} ->
-      IO.inspect({verb, input})
       verb === input
     end)
     |> List.wrap()
-    |> IO.inspect()
   end
 
   defp filter_by_parsing_arg_string(verbs, arg_string) do

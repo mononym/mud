@@ -82,6 +82,10 @@ defmodule MudWeb.MudClientLive do
     "text-gray-700"
   end
 
+  defp tag_to_text_color("error") do
+    "text-red-800"
+  end
+
   defp tag_to_text_color(_tag) do
     "text-black"
   end

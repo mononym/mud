@@ -286,19 +286,22 @@ defmodule Mud.Engine do
   end
 
   @doc """
-  Returns the list of characters.
+  Returns the list of characters that are both active and in the given location(s).
 
   ## Examples
 
-      iex> list_characters()
+      iex> list_active_characters_in_areas(42)
+      [%Character{}, ...]
+
+      iex> list_active_characters_in_areas([42, 24])
       [%Character{}, ...]
 
   """
-  def list_characters_in_areas(area_ids) do
+  def list_active_characters_in_areas(area_ids) do
     Repo.all(
       from(
         character in Character,
-        where: character.location_id in ^List.wrap(area_ids)
+        where: character.location_id in ^List.wrap(area_ids) and character.active == true
       )
     )
   end
@@ -404,8 +407,21 @@ defmodule Mud.Engine do
   def send_message_for(%Mud.Engine.Message{} = message) do
     Phoenix.PubSub.broadcast(
       Mud.PubSub,
-      "character:#{message.type}:#{message.character_id}",
+      "character:#{map_message_type_to_channel_type(message.type)}:#{message.character_id}",
       {message.type, message}
     )
+  end
+
+  defp map_message_type_to_channel_type(type) do
+    case type do
+      :output ->
+        :output
+
+      :input ->
+        :input
+
+      :silent_input ->
+        :input
+    end
   end
 end

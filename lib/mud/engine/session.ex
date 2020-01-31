@@ -8,6 +8,10 @@ defmodule Mud.Engine.Session do
   end
 
   def init(character_id: character_id) do
+    character_id
+    |> Mud.Engine.get_character!()
+    |> Mud.Engine.update_character(%{active: true})
+
     :ok = Mud.Engine.subscribe_to_character_input_messages(character_id)
 
     {:ok, :idle, %{character_id: character_id}}
@@ -27,11 +31,15 @@ defmodule Mud.Engine.Session do
     {:keep_state, state}
   end
 
-  # def handle_event(_type, {:output, _}, :idle, state) do
-  #   {:keep_state, state}
-  # end
+  def handle_event(_type, {:silent_input, message}, :idle, state) do
+    Mud.Engine.Input.process(message.player_id, message.character_id, message.text)
 
-  # def handle_event({:call, from}, :get_count, state, data) do
-  #   {:next_state, state, data, [{:reply, from, data}]}
-  # end
+    {:keep_state, state}
+  end
+
+  def terminate(_reason, _state, %{character_id: character_id}) do
+    character_id
+    |> Mud.Engine.get_character!()
+    |> Mud.Engine.update_character(%{active: false})
+  end
 end

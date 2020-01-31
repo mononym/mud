@@ -4,6 +4,7 @@ defmodule Mud.Engine.Character do
 
   schema "characters" do
     field(:name, :string)
+    field(:active, :boolean, default: false)
 
     belongs_to(:location, Mud.Engine.Area,
       type: :binary_id,
@@ -21,10 +22,11 @@ defmodule Mud.Engine.Character do
   @doc false
   def changeset(character, attrs) do
     character
-    |> cast(attrs, [:location_id, :name, :player_id])
-    |> validate_required([:location_id, :name, :player_id])
+    |> cast(attrs, [:active, :location_id, :name, :player_id])
+    |> validate_required([:active, :location_id, :name, :player_id])
     |> foreign_key_constraint(:location_id)
     |> foreign_key_constraint(:player_id)
+    |> validate_inclusion(:active, [true, false])
     |> unique_constraint(:name)
   end
 end

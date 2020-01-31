@@ -1,8 +1,8 @@
 <div name="window" class="min-w-full min-h-full h-full flex">
   <section name="center" class="min-w-full min-h-full h-full flex flex-col">
-    <div id="story" class="min-w-full flex flex-col flex-grow justify-end p-2" phx-update="append">
+    <div id="story" class="min-w-full flex flex-col flex-grow justify-end p-2 font-extrabold font-story" phx-update="append">
       <%= for message <- @messages do %>
-        <div id="msg-<%= message.id %>" class="flex-shrink">
+        <div id="msg-<%= message.id %>" class="flex-shrink my-1">
           <span class="whitespace-pre-line"><%= raw(message.text) %></span>
         </div>
       <% end %>
