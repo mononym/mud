@@ -11412,6 +11412,10 @@ main section div[data-phx-view="MudClientLive"] {
   width: 100%;
 }
 
+div[name="message"] {
+  white-space: pre-line;
+}
+
 @media (min-width: 640px) {
   .sm\:sr-only {
     position: absolute;

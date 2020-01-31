@@ -8,25 +8,28 @@ defmodule Mud.Engine.Session do
   end
 
   def init(character_id: character_id) do
-    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "session:#{character_id}")
+    :ok = Mud.Engine.subscribe_to_character_input_messages(character_id)
 
-    {:ok, :idle, %{character_id: character_id, message_counter: 1}}
+    {:ok, :idle, %{character_id: character_id}}
   end
 
-  def handle_event(_type, {:input, input}, :idle, state) do
-    Phoenix.PubSub.broadcast_from!(
-      Mud.PubSub,
-      self(),
-      "session:#{state.character_id}",
-      {:echo, input, state.message_counter}
-    )
+  def handle_event(_type, {:input, message}, :idle, state) do
+    IO.inspect({"INPUT", message})
 
-    # process command
-    {:next_state, :idle, %{state | message_counter: state.message_counter + 1}}
+    Mud.Engine.send_message_as_character_output(%Mud.Engine.OutputMessage{
+      character_id: message.character_id,
+      text: "> #{message.text}"
+    })
+
+    Mud.Engine.Input.process(message.player_id, message.character_id, message.text)
+
+    IO.inspect({"PROCESSED", message})
+
+    {:keep_state, state}
   end
 
-  # def handle_event(:output, :idle, :on, data) do
-  #   {:next_state, :off, data}
+  # def handle_event(_type, {:output, _}, :idle, state) do
+  #   {:keep_state, state}
   # end
 
   # def handle_event({:call, from}, :get_count, state, data) do

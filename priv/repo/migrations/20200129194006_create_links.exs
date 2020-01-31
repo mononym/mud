@@ -5,9 +5,10 @@ defmodule Mud.Repo.Migrations.CreateLinks do
     create table(:links, primary_key: false) do
       add(:id, :binary_id, primary_key: true)
       add(:type, :string)
-      add(:text, :string)
-      add(:from_id, references(:areas, on_delete: :delete_all))
-      add(:to_id, references(:areas, on_delete: :delete_all))
+      add(:departure_direction, :string)
+      add(:arrival_direction, :string)
+      add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
+      add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
 
       timestamps()
     end

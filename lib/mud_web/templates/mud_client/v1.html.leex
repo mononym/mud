@@ -2,9 +2,9 @@
   <section name="center" class="min-w-full min-h-full h-full flex flex-col">
     <div id="story" class="min-w-full flex flex-col flex-grow justify-end p-2" phx-update="append">
       <%= for message <- @messages do %>
-        <p id="msg-<%= message.id %>">
+        <div id="msg-<%= message.id %>" class="whitespace-pre-line flex-shrink">
           <%= message.text %>
-        </p>
+        </div>
       <% end %>
     </div>
     <div id="prompt" class="min-w-full flex-shrink">

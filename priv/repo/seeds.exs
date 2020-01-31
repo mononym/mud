@@ -79,180 +79,272 @@ southwest_room =
 
 # center room east room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: center_room.id,
-  to: east_room.id,
-  text: "east",
+  from_id: center_room.id,
+  to_id: east_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: east_room.id,
-  to: center_room.id,
-  text: "west",
+  from_id: east_room.id,
+  to_id: center_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 # center room west room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: center_room.id,
-  to: west_room.id,
-  text: "west",
+  from_id: center_room.id,
+  to_id: west_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: west_room.id,
-  to: center_room.id,
-  text: "east",
+  from_id: west_room.id,
+  to_id: center_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 # center room north room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: center_room.id,
-  to: north_room.id,
-  text: "north",
+  from_id: center_room.id,
+  to_id: north_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: north_room.id,
-  to: center_room.id,
-  text: "south",
+  from_id: north_room.id,
+  to_id: center_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 # center room south room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: center_room.id,
-  to: south_room.id,
-  text: "south",
+  from_id: center_room.id,
+  to_id: south_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: south_room.id,
-  to: center_room.id,
-  text: "north",
+  from_id: south_room.id,
+  to_id: center_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
+  type: "obvious"
+})
+
+# center room southeast room links
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: center_room.id,
+  to_id: southeast_room.id,
+  departure_direction: "southeast",
+  arrival_direction: "northwest",
+  type: "obvious"
+})
+
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: southeast_room.id,
+  to_id: center_room.id,
+  departure_direction: "northwest",
+  arrival_direction: "southeast",
+  type: "obvious"
+})
+
+# center room southwest room links
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: center_room.id,
+  to_id: southwest_room.id,
+  departure_direction: "southwest",
+  arrival_direction: "northeast",
+  type: "obvious"
+})
+
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: southwest_room.id,
+  to_id: center_room.id,
+  departure_direction: "northeast",
+  arrival_direction: "southwest",
+  type: "obvious"
+})
+
+# center room northwest room links
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: center_room.id,
+  to_id: northwest_room.id,
+  departure_direction: "northwest",
+  arrival_direction: "southeast",
+  type: "obvious"
+})
+
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: northwest_room.id,
+  to_id: center_room.id,
+  departure_direction: "southeast",
+  arrival_direction: "northwest",
+  type: "obvious"
+})
+
+# center room northeast room links
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: center_room.id,
+  to_id: northeast_room.id,
+  departure_direction: "northeast",
+  arrival_direction: "southwest",
+  type: "obvious"
+})
+
+Mud.Repo.insert!(%Mud.Engine.Link{
+  from_id: northeast_room.id,
+  to_id: center_room.id,
+  departure_direction: "southwest",
+  arrival_direction: "northeast",
   type: "obvious"
 })
 
 # north room northeast room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: north_room.id,
-  to: northeast_room.id,
-  text: "east",
+  from_id: north_room.id,
+  to_id: northeast_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: northeast_room.id,
-  to: north_room.id,
-  text: "west",
+  from_id: northeast_room.id,
+  to_id: north_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 # north room northwest room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: north_room.id,
-  to: northwest_room.id,
-  text: "west",
+  from_id: north_room.id,
+  to_id: northwest_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: northwest_room.id,
-  to: north_room.id,
-  text: "east",
+  from_id: northwest_room.id,
+  to_id: north_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 # south room southeast room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: south_room.id,
-  to: southeast_room.id,
-  text: "east",
+  from_id: south_room.id,
+  to_id: southeast_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: southeast_room.id,
-  to: south_room.id,
-  text: "west",
+  from_id: southeast_room.id,
+  to_id: south_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 # south room southwest room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: south_room.id,
-  to: southwest_room.id,
-  text: "west",
+  from_id: south_room.id,
+  to_id: southwest_room.id,
+  departure_direction: "west",
+  arrival_direction: "east",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: southwest_room.id,
-  to: south_room.id,
-  text: "east",
+  from_id: southwest_room.id,
+  to_id: south_room.id,
+  departure_direction: "east",
+  arrival_direction: "west",
   type: "obvious"
 })
 
 # east room northeast room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: east_room.id,
-  to: northeast_room.id,
-  text: "north",
+  from_id: east_room.id,
+  to_id: northeast_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: northeast_room.id,
-  to: east_room.id,
-  text: "south",
+  from_id: northeast_room.id,
+  to_id: east_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 # east room southeast room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: east_room.id,
-  to: southeast_room.id,
-  text: "south",
+  from_id: east_room.id,
+  to_id: southeast_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: southeast_room.id,
-  to: east_room.id,
-  text: "north",
+  from_id: southeast_room.id,
+  to_id: east_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
   type: "obvious"
 })
 
 # west room northwest room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: west_room.id,
-  to: northwest_room.id,
-  text: "north",
+  from_id: west_room.id,
+  to_id: northwest_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: northwest_room.id,
-  to: west_room.id,
-  text: "south",
+  from_id: northwest_room.id,
+  to_id: west_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 # west room southwest room links
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: west_room.id,
-  to: southwest_room.id,
-  text: "south",
+  from_id: west_room.id,
+  to_id: southwest_room.id,
+  departure_direction: "south",
+  arrival_direction: "north",
   type: "obvious"
 })
 
 Mud.Repo.insert!(%Mud.Engine.Link{
-  from: southwest_room.id,
-  to: west_room.id,
-  text: "north",
+  from_id: southwest_room.id,
+  to_id: west_room.id,
+  departure_direction: "north",
+  arrival_direction: "south",
   type: "obvious"
 })

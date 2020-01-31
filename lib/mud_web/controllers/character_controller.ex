@@ -2,8 +2,7 @@ defmodule MudWeb.CharacterController do
   use MudWeb, :controller
 
   alias Mud.Engine
-  # alias Mud.Engine.Character
-  alias MudWeb.Schema.CharacterCreationForm
+  alias Mud.Engine.Character
 
   def index(conn, _params) do
     characters = Engine.list_characters()
@@ -11,12 +10,19 @@ defmodule MudWeb.CharacterController do
   end
 
   def new(conn, _params) do
-    changeset = CharacterCreationForm.changeset(%CharacterCreationForm{})
+    changeset = Character.changeset(%Character{}, %{})
     render(conn, "new.html", changeset: changeset)
   end
 
-  def create(conn, %{"character_creation_form" => character_params}) do
-    params = Map.put(character_params, "player_id", conn.assigns.player.id)
+  def create(conn, %{"character" => character_params}) do
+    starting_location =
+      Mud.Engine.list_areas()
+      |> Enum.random()
+
+    params =
+      character_params
+      |> Map.put("player_id", conn.assigns.player.id)
+      |> Map.put("location_id", starting_location.id)
 
     case Engine.create_character(params) do
       {:ok, character} ->
@@ -25,7 +31,6 @@ defmodule MudWeb.CharacterController do
         |> redirect(to: Routes.character_path(conn, :show, character))
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
         render(conn, "new.html", changeset: changeset)
     end
   end

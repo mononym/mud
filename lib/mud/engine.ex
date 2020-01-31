@@ -7,6 +7,7 @@ defmodule Mud.Engine do
   alias Mud.Repo
 
   alias Mud.Engine.Area
+  alias Mud.Engine.Character
 
   @doc """
   Returns the list of areas.
@@ -36,6 +37,31 @@ defmodule Mud.Engine do
 
   """
   def get_area!(id), do: Repo.get!(Area, id)
+
+  @doc """
+  Gets a single area from the location value of a Character.
+
+  Raises `Ecto.NoResultsError` if the Area does not exist.
+
+  ## Examples
+
+      iex> get_area!(123)
+      %Area{}
+
+      iex> get_area!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_area_from_character!(id) do
+    Repo.one!(
+      from(area in Area,
+        join: character in Character,
+        on: character.location_id == area.id,
+        where: character.id == ^id,
+        select: area
+      )
+    )
+  end
 
   @doc """
   Creates a area.
@@ -115,6 +141,52 @@ defmodule Mud.Engine do
   """
   def list_links do
     Repo.all(Link)
+  end
+
+  @doc """
+  Returns the list of links "from" a room where the type of the link is "obvious".
+
+  ## Examples
+
+      iex> list_obvious_exits("valid room id")
+      [%Link{}, ...]
+
+  """
+  def list_obvious_exits(area_id) do
+    Repo.all(
+      from(link in Link,
+        where: link.from_id == ^area_id and link.type == ^"obvious"
+      )
+    )
+  end
+
+  @doc """
+  Returns a single.
+
+  ## Examples
+
+      iex> find_obvious_exit_in_character_location("valid character id", "valid direction")
+      %Area{}
+
+      iex> find_obvious_exit_in_character_location("valid character id", "invalid direction")
+      nil
+
+  """
+  def find_obvious_exit_in_character_location(character_id, direction) do
+    IO.inspect({"find_obvious_exit_in_character_location", character_id, direction})
+
+    Repo.one(
+      from(link in Link,
+        join: area in Area,
+        on: area.id == link.from_id,
+        join: character in Character,
+        on: area.id == character.location_id,
+        where:
+          character.id == ^character_id and link.type == ^"obvious" and
+            link.departure_direction == ^direction,
+        select: link
+      )
+    )
   end
 
   @doc """
@@ -214,6 +286,24 @@ defmodule Mud.Engine do
   end
 
   @doc """
+  Returns the list of characters.
+
+  ## Examples
+
+      iex> list_characters()
+      [%Character{}, ...]
+
+  """
+  def list_characters_in_areas(area_ids) do
+    Repo.all(
+      from(
+        character in Character,
+        where: character.location_id in ^List.wrap(area_ids)
+      )
+    )
+  end
+
+  @doc """
   Gets a single character.
 
   Raises `Ecto.NoResultsError` if the Character does not exist.
@@ -301,5 +391,29 @@ defmodule Mud.Engine do
     spec = {Mud.Engine.Session, character_id: character_id}
     DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec)
     :ok
+  end
+
+  def subscribe_to_character_input_messages(character_id) do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "character:input:#{character_id}")
+  end
+
+  def subscribe_to_character_output_messages(character_id) do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "character:output:#{character_id}")
+  end
+
+  def send_message_as_character_input(%Mud.Engine.InputMessage{} = message) do
+    Phoenix.PubSub.broadcast(
+      Mud.PubSub,
+      "character:input:#{message.character_id}",
+      {:input, message}
+    )
+  end
+
+  def send_message_as_character_output(%Mud.Engine.OutputMessage{} = message) do
+    Phoenix.PubSub.broadcast(
+      Mud.PubSub,
+      "character:output:#{message.character_id}",
+      {:output, message}
+    )
   end
 end

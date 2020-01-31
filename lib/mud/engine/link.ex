@@ -3,7 +3,8 @@ defmodule Mud.Engine.Link do
   import Ecto.Changeset
 
   schema "links" do
-    field(:text, :string)
+    field(:departure_direction, :string)
+    field(:arrival_direction, :string)
     field(:type, :string)
 
     belongs_to(:from, Mud.Engine.Area,
@@ -22,7 +23,7 @@ defmodule Mud.Engine.Link do
   @doc false
   def changeset(link, attrs) do
     link
-    |> cast(attrs, [:type, :text])
-    |> validate_required([:type, :text])
+    |> cast(attrs, [:type, :arrival_direction, :departure_direction, :from_id, :to_id])
+    |> validate_required([:type, :arrival_direction, :departure_direction, :from_id, :to_id])
   end
 end

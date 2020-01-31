@@ -3,7 +3,7 @@ defmodule MudWeb.MudClientLive do
 
   def mount(_params, session, socket) do
     :ok = Mud.Engine.start_character_session(session["character_id"])
-    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "session:#{session["character_id"]}")
+    :ok = Mud.Engine.subscribe_to_character_output_messages(session["character_id"])
 
     {:ok,
      assign(socket, %{
@@ -11,8 +11,7 @@ defmodule MudWeb.MudClientLive do
        character_id: session["character_id"],
        command: "",
        even: true,
-       messages: [],
-       message_counter: 0
+       messages: []
      }), temporary_assigns: [messages: []]}
   end
 
@@ -22,12 +21,11 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_event("input", %{"code" => "Enter", "value" => input}, socket) do
-    Phoenix.PubSub.broadcast_from!(
-      Mud.PubSub,
-      self(),
-      "session:#{socket.assigns.character_id}",
-      {:input, input}
-    )
+    Mud.Engine.send_message_as_character_input(%Mud.Engine.InputMessage{
+      character_id: socket.assigns.character_id,
+      player_id: socket.assigns.player_id,
+      text: input
+    })
 
     {:noreply,
      assign(socket, %{
@@ -39,11 +37,10 @@ defmodule MudWeb.MudClientLive do
     {:noreply, socket}
   end
 
-  def handle_info({:echo, echo, counter}, socket) do
+  def handle_info({:output, message}, socket) do
     {:noreply,
      assign(socket, %{
-       messages: socket.assigns.messages ++ [%{id: counter, text: echo}],
-       message_counter: counter
+       messages: socket.assigns.messages ++ [%{id: UUID.uuid4(), text: message.text}]
      })}
   end
 end
