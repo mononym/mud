@@ -40,6 +40,12 @@ defmodule MudWeb.MudClientLive do
     {:noreply, socket}
   end
 
+  def handle_event("hotkey", event, socket) do
+    process_hotkey(socket.assigns.player_id, socket.assigns.character_id, event)
+
+    {:noreply, socket}
+  end
+
   def handle_info({:output, message}, socket) do
     text = transform_output_for_web(message.text)
 
@@ -88,5 +94,99 @@ defmodule MudWeb.MudClientLive do
 
   defp tag_to_text_color(_tag) do
     "text-black"
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad9", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "northeast",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad8", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "north",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad7", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "northwest",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad6", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "east",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad5", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "out",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad4", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "west",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad3", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "southeast",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad2", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "south",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(player_id, character_id, %{"code" => "Numpad1", "ctrlKey" => true}) do
+    Mud.Engine.Message.new(
+      player_id,
+      character_id,
+      "southwest",
+      :input
+    )
+    |> Mud.Engine.send_message_for()
+  end
+
+  defp process_hotkey(_, _, _) do
+    :ok
   end
 end
