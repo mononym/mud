@@ -401,19 +401,11 @@ defmodule Mud.Engine do
     :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "character:output:#{character_id}")
   end
 
-  def send_message_as_character_input(%Mud.Engine.InputMessage{} = message) do
+  def send_message_for(%Mud.Engine.Message{} = message) do
     Phoenix.PubSub.broadcast(
       Mud.PubSub,
-      "character:input:#{message.character_id}",
-      {:input, message}
-    )
-  end
-
-  def send_message_as_character_output(%Mud.Engine.OutputMessage{} = message) do
-    Phoenix.PubSub.broadcast(
-      Mud.PubSub,
-      "character:output:#{message.character_id}",
-      {:output, message}
+      "character:#{message.type}:#{message.character_id}",
+      {message.type, message}
     )
   end
 end

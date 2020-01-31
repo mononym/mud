@@ -114,13 +114,7 @@ defmodule Mud.Engine.Input do
 
   defp send_messages(context) do
     Enum.each(context.messages, fn message ->
-      case message do
-        %Mud.Engine.InputMessage{} = m ->
-          Mud.Engine.send_message_as_character_input(m)
-
-        %Mud.Engine.OutputMessage{} = m ->
-          Mud.Engine.send_message_as_character_output(m)
-      end
+      Mud.Engine.send_message_for(message)
     end)
   end
 end

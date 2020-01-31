@@ -14,16 +14,15 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_event(_type, {:input, message}, :idle, state) do
-    IO.inspect({"INPUT", message})
-
-    Mud.Engine.send_message_as_character_output(%Mud.Engine.OutputMessage{
-      character_id: message.character_id,
-      text: "> #{message.text}"
-    })
+    Mud.Engine.send_message_for(
+      Mud.Engine.Message.new(
+        message.character_id,
+        "{{echo}}> #{message.text}{{/echo}}",
+        :output
+      )
+    )
 
     Mud.Engine.Input.process(message.player_id, message.character_id, message.text)
-
-    IO.inspect({"PROCESSED", message})
 
     {:keep_state, state}
   end

@@ -15,10 +15,15 @@ defmodule Mud.Engine.Command.Move do
            context.matched_verb
          ) do
       nil ->
-        append_message(context, %Mud.Engine.OutputMessage{
-          character_id: context.character_id,
-          text: "You cannot travel in that direction."
-        })
+        append_message(
+          context,
+          Mud.Engine.Message.new(
+            context.player_id,
+            context.character_id,
+            "You cannot travel in that direction.",
+            :output
+          )
+        )
 
       link ->
         # Move the character in the database
@@ -40,11 +45,15 @@ defmodule Mud.Engine.Command.Move do
 
         # Perform look logic for character
         context_with_look_command =
-          append_message(context, %Mud.Engine.InputMessage{
-            character_id: character.id,
-            player_id: character.player_id,
-            text: "look"
-          })
+          append_message(
+            context,
+            Mud.Engine.Message.new(
+              character.player_id,
+              character.id,
+              "look",
+              :input
+            )
+          )
 
         # Send messages to everyone in room that the character just left
         context_with_some_messages =
@@ -52,10 +61,14 @@ defmodule Mud.Engine.Command.Move do
             characters_by_location[link.from_id] || [],
             context_with_look_command,
             fn char, ctx ->
-              append_message(ctx, %Mud.Engine.OutputMessage{
-                character_id: char.id,
-                text: "#{character.name} left the area heading #{link.departure_direction}."
-              })
+              append_message(
+                ctx,
+                Mud.Engine.Message.new(
+                  char.id,
+                  "#{character.name} left the area heading #{link.departure_direction}.",
+                  :output
+                )
+              )
             end
           )
 
@@ -65,10 +78,14 @@ defmodule Mud.Engine.Command.Move do
             characters_by_location[link.to_id] || [],
             context_with_some_messages,
             fn char, ctx ->
-              append_message(ctx, %Mud.Engine.OutputMessage{
-                character_id: char.id,
-                text: "#{character.name} has entered the area from the #{link.arrival_direction}."
-              })
+              append_message(
+                ctx,
+                Mud.Engine.Message.new(
+                  char.id,
+                  "#{character.name} has entered the area from the #{link.arrival_direction}.",
+                  :output
+                )
+              )
             end
           )
 

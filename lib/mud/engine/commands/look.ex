@@ -8,16 +8,24 @@ defmodule Mud.Engine.Command.Look do
 
     player_characters = build_player_characters_string(area.id)
 
+    output = build_output(area, player_characters, obvious_exits)
+
     context
-    |> append_message(%Mud.Engine.OutputMessage{
-      character_id: context.character_id,
-      text:
-        "{{area-name}}[#{area.name}]{{/area-name}}\n" <>
-          "{{area-description}}#{area.description}{{/area-description}}\n" <>
-          "{{also-present}}Also Present: #{player_characters}{{/also-present}}\n" <>
-          "{{obvious-exits}}Obvious Exits: #{obvious_exits}{{/obvious-exits}}"
-    })
+    |> append_message(
+      Mud.Engine.Message.new(
+        context.character_id,
+        output,
+        :output
+      )
+    )
     |> set_success(true)
+  end
+
+  defp build_output(area, player_characters, obvious_exits) do
+    "{{area-name}}[#{area.name}]{{/area-name}}\n" <>
+      "{{area-description}}#{area.description}{{/area-description}}\n" <>
+      "{{also-present}}Also Present: #{player_characters}{{/also-present}}\n" <>
+      "{{obvious-exits}}Obvious Exits: #{obvious_exits}{{/obvious-exits}}"
   end
 
   defp build_obvious_exits_string(area_id) do
