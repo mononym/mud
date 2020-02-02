@@ -10,10 +10,98 @@ import { Socket } from "phoenix"
 
 import LiveSocket from "phoenix_live_view"
 
+function htmlToElement(html) {
+  var template = document.createElement('template');
+  html = html.trim(); // Never return a text node of whitespace as the result
+  template.innerHTML = html;
+  return template.content.firstChild;
+}
+
+function htmlToElements(html) {
+  var template = document.createElement('template');
+  template.innerHTML = html;
+  return template.content.childNodes;
+}
+
+function createElementsFromHTML(htmlString) {
+  console.log("htmlString")
+  console.log(htmlString)
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  let frag = document.createRange().createContextualFragment(htmlString.trim())
+  console.log(frag)
+
+  console.log("div")
+  console.log(div)
+  console.log(div.childNodes)
+
+  // Change this to div.childNodes to support multiple top-level nodes
+  return frag;
+}
+
 let Hooks = {}
+
 Hooks.Input = {
   mounted() {
     this.el.focus()
+  }
+}
+
+Hooks.Story = {
+  mounted() {
+    let element = this.el
+    let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
+    let channel = socket.channel("character:" + character_id, {})
+
+    channel.on("output:story", text => {
+      console.log("text")
+      console.log(text)
+      let textLines = createElementsFromHTML(text.text)
+
+      console.log("textLines")
+      console.log(textLines)
+
+      // for (let i = 0; i < textLines.length; i++) {
+      //   console.log("line")
+      //   console.log(textLines[i])
+      element.appendChild(textLines)
+      // }
+
+      // textLines.forEach(function (line) {
+
+      //   console.log("line")
+      //   console.log(line)
+      //   element.appendChild(line)
+      //   console.log("line")
+      //   console.log(line)
+      //   element.appendChild(line)
+      //   console.log("line")
+      //   console.log(line)
+      //   element.appendChild(line)
+      //   console.log("line")
+      //   console.log(line)
+      //   element.appendChild(line)
+      // })
+    })
+
+    channel.join()
+      .receive("ok", ({ messages }) => console.log("successfully joined", messages))
+      .receive("error", ({ reason }) => console.log("failed join", reason))
+      .receive("timeout", () => console.log("Networking issue. Still waiting..."))
+
+    let prompt = document.querySelector("#prompt")
+
+    // "listen" for the [Enter] keypress event to send a message:
+    prompt.addEventListener('keypress', function (event) {
+      if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
+        channel.push("input", prompt.value);
+
+        prompt.value = '';         // reset the message input field for next message.
+
+        prompt.focus()
+      }
+    });
   }
 }
 

@@ -9,8 +9,9 @@ defmodule Mud.DataType.Data do
     {:ok, :erlang.binary_to_term(data)}
   end
 
-  # Everything else is a failure
-  def cast(_), do: :error
+  def cast(term) do
+    {:ok, :erlang.term_to_binary(term)}
+  end
 
   # When loading data from the database we are guaranteed to receive a binary and we will just need to turn it into a
   # term safely.

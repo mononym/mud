@@ -5,13 +5,11 @@ defmodule Mud.Engine.Command.Look do
     output = build_output(context)
 
     context
-    |> append_message(
-      Mud.Engine.Message.new(
-        context.character_id,
-        output,
-        :output
-      )
-    )
+    |> append_message(%Mud.Engine.Output{
+      id: UUID.uuid4(),
+      character_id: context.character_id,
+      text: output
+    })
     |> set_success(true)
   end
 

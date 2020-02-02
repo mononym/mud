@@ -9,6 +9,8 @@ defmodule Mud.Engine do
   alias Mud.Engine.Area
   alias Mud.Engine.Character
 
+  require Logger
+
   @doc """
   Returns the list of areas.
 
@@ -391,37 +393,31 @@ defmodule Mud.Engine do
   end
 
   def start_character_session(character_id) do
-    spec = {Mud.Engine.Session, character_id: character_id}
-    DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec)
+    spec = {Mud.Engine.Session, %{character_id: character_id}}
+
+    result = DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec)
+
+    Logger.debug("start_character_session result: #{inspect(result)}")
+
     :ok
   end
 
-  def subscribe_to_character_input_messages(character_id) do
-    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "character:input:#{character_id}")
+  def subscribe_to_character_session(character_id) do
+    Mud.Engine.Session.subscribe(character_id)
   end
 
-  def subscribe_to_character_output_messages(character_id) do
-    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, "character:output:#{character_id}")
+  def get_character_history(character_id) do
+    Mud.Engine.Session.get_history(character_id)
   end
 
-  def send_message_for(%Mud.Engine.Message{} = message) do
-    Phoenix.PubSub.broadcast(
-      Mud.PubSub,
-      "character:#{map_message_type_to_channel_type(message.type)}:#{message.character_id}",
-      {message.type, message}
-    )
+  @doc """
+  Cast a `%Mud.Engine.Message{}` to a character session process.
+  """
+  def cast_message_to_character_session(message) do
+    Mud.Engine.Session.cast_message(message.character_id, message)
   end
 
-  defp map_message_type_to_channel_type(type) do
-    case type do
-      :output ->
-        :output
-
-      :input ->
-        :input
-
-      :silent_input ->
-        :input
-    end
+  def get_character_session_history(character_id) do
+    Mud.Engine.Session.get_history(character_id)
   end
 end

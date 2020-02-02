@@ -1,18 +1,9 @@
+<%= tag :meta, name: "character_id", content: @character_id %>
+
 <div name="window" class="min-w-full min-h-full h-full flex">
   <section name="center" class="min-w-full min-h-full h-full flex flex-col">
-    <div id="story" class="min-w-full flex flex-col flex-grow justify-end p-2 font-extrabold font-story" phx-update="append" phx-window-keyup="hotkey">
-      <%= for message <- @messages do %>
-        <div id="msg-<%= message.id %>" class="flex-shrink my-1">
-          <span class="whitespace-pre-line"><%= raw(message.text) %></span>
-        </div>
-      <% end %>
+    <div id="story" phx-hook="Story" class="min-w-full flex flex-col flex-grow justify-end p-2 font-extrabold font-story" phx-window-keyup="hotkey">
     </div>
-    <div id="prompt" class="min-w-full flex-shrink">
-      <%= if @even do %>
-        <input id="even" phx-hook="Input" type="textarea" phx-keydown="input" class="min-w-full rounded-lg" style="resize:vertical;" placeholder="Enter Commands Here...">
-      <% else %>
-        <input id="odd" phx-hook="Input" type="textarea" phx-keydown="input" class="min-w-full rounded-lg" style="resize:vertical;" placeholder="Enter Commands Here..."/>
-      <% end %>
-    </div>
+    <input id="prompt" phx-hook="Input" type="textarea" class="min-w-full rounded-lg resize-y flex-shrink" placeholder="Enter Commands Here..."/>
   </section>
 </div>

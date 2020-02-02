@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Command.NoVerbMatchError do
+defmodule Mud.Engine.Command.History do
   use Mud.Engine.CommandCallback
 
   def execute(context) do
@@ -6,8 +6,8 @@ defmodule Mud.Engine.Command.NoVerbMatchError do
     |> append_message(%Mud.Engine.Output{
       id: UUID.uuid4(),
       character_id: context.character_id,
-      text:
-        "{{error}}Could not determine which action you wished to take. Please be more specific.{{/error}}"
+      text: "{{error}}The logic for this verb has not been implemented yet.{{/error}}"
     })
+    |> set_success(true)
   end
 end

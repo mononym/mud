@@ -3,14 +3,11 @@ defmodule Mud.Engine.Command.Placeholder do
 
   def execute(context) do
     context
-    |> append_message(
-      Mud.Engine.Message.new(
-        context.player_id,
-        context.character_id,
-        "The logic for this verb has not been implemented yet.",
-        :output
-      )
-    )
+    |> append_message(%Mud.Engine.Output{
+      id: UUID.uuid4(),
+      character_id: context.character_id,
+      text: "{{error}}The logic for this verb has not been implemented yet.{{/error}}"
+    })
     |> set_success(true)
   end
 end

@@ -14,6 +14,7 @@ defmodule Mud.Engine.Verbs do
     "east" => Command.Move,
     "go" => Command.Move,
     "hide" => Command.Placeholder,
+    {:exact, "history"} => Command.History,
     "jump" => Command.Placeholder,
     "laugh" => Command.Placeholder,
     "l" => Command.Look,
@@ -29,6 +30,7 @@ defmodule Mud.Engine.Verbs do
     "out" => Command.Move,
     "park" => Command.Placeholder,
     "peek" => Command.Placeholder,
+    {:exact, "quit"} => Command.Quit,
     "run" => Command.Placeholder,
     "search" => Command.Placeholder,
     "shove" => Command.Placeholder,
@@ -68,8 +70,16 @@ defmodule Mud.Engine.Verbs do
   """
   @spec match_verbs(String.t()) :: [{String.t(), module}]
   def match_verbs(input) do
-    Enum.filter(@verbs, fn {verb, _callback} ->
-      String.starts_with?(verb, input)
+    Enum.filter(@verbs, fn
+      {{:exact, verb}, _callback} ->
+        input == verb
+
+      {verb, _callback} ->
+        String.starts_with?(verb, input)
+    end)
+    |> Enum.map(fn
+      {{_, verb}, callback} -> {verb, callback}
+      good_tuple -> good_tuple
     end)
   end
 end

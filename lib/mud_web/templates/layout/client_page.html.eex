@@ -7,6 +7,8 @@
     <title>Mud</title>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
     <%= csrf_meta_tag() %>
+    <%= tag :meta, name: "channel_token",
+               content: Phoenix.Token.sign(@conn, "player salt", @player.id) %>
   </head>
   <body class="min-w-full min-h-full h-full flex flex-col">
     <main class="min-w-full flex-grow" role="main">
@@ -19,5 +21,6 @@
       </section>
     </main>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
+    <%= render_existing @view_module, "scripts.html", assigns %>
   </body>
 </html>

@@ -2,12 +2,12 @@ defmodule Mud.Engine.Command.Move do
   use Mud.Engine.CommandCallback
 
   @impl true
-  def execute(context) do
+  def execute(%Mud.Engine.Command.ExecutionContext{} = context) do
     context =
-      if context.args == "" do
+      if context.raw_argument_string == "" do
         %{context | matched_verb: normalize_direction(String.trim(context.matched_verb))}
       else
-        %{context | matched_verb: normalize_direction(String.trim(context.args))}
+        %{context | matched_verb: normalize_direction(String.trim(context.parsed_args))}
       end
 
     case Mud.Engine.find_obvious_exit_in_character_location(
@@ -17,12 +17,11 @@ defmodule Mud.Engine.Command.Move do
       nil ->
         append_message(
           context,
-          Mud.Engine.Message.new(
-            context.player_id,
-            context.character_id,
-            "{{error}}You cannot travel in that direction.{{/error}}",
-            :output
-          )
+          %Mud.Engine.Output{
+            id: context.id,
+            character_id: context.character_id,
+            text: "{{error}}You cannot travel in that direction.{{/error}}"
+          }
         )
 
       link ->
@@ -47,12 +46,12 @@ defmodule Mud.Engine.Command.Move do
         context_with_look_command =
           append_message(
             context,
-            Mud.Engine.Message.new(
-              character.player_id,
-              character.id,
-              "look",
-              :silent_input
-            )
+            %Mud.Engine.Input{
+              id: UUID.uuid4(),
+              character_id: context.character_id,
+              text: "look",
+              type: :silent
+            }
           )
 
         # Send messages to everyone in room that the character just left
@@ -63,11 +62,12 @@ defmodule Mud.Engine.Command.Move do
             fn char, ctx ->
               append_message(
                 ctx,
-                Mud.Engine.Message.new(
-                  char.id,
-                  "#{character.name} left the area heading #{link.departure_direction}.",
-                  :output
-                )
+                %Mud.Engine.Output{
+                  id: UUID.uuid4(),
+                  character_id: char.id,
+                  text:
+                    "{{info}}#{character.name} left the area heading #{link.departure_direction}.{{/info}}"
+                }
               )
             end
           )
@@ -80,11 +80,14 @@ defmodule Mud.Engine.Command.Move do
             fn char, ctx ->
               append_message(
                 ctx,
-                Mud.Engine.Message.new(
-                  char.id,
-                  "#{character.name} has entered the area from the #{link.arrival_direction}.",
-                  :output
-                )
+                %Mud.Engine.Output{
+                  id: UUID.uuid4(),
+                  character_id: char.id,
+                  text:
+                    "{{info}}#{character.name} has entered the area from the #{
+                      link.arrival_direction
+                    }.{{info}}"
+                }
               )
             end
           )
