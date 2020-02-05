@@ -14,6 +14,8 @@ defmodule Mud.Engine.Command.ExecutionContext do
   defstruct [
     # The ID of the input which triggered this execution of the verb logic
     :id,
+    # The populated Command struct
+    :command,
     # Parsed arguments for the command.
     :parsed_args,
     # The callback module that will execute the actual logic.
@@ -124,10 +126,3 @@ defmodule Mud.Engine.Command.ExecutionContext do
     %{context | data: Map.put(context.data, key, value)}
   end
 end
-
-# defimpl String.Chars, for: Mud.Engine.Command.ExecutionContext do
-#   def to_string(%Mud.Engine.Command.ExecutionContext{} = execution) do
-#     "%{character: '#{execution.character}', matched_verb:'#{execution.matched_verb}'," <>
-#       " player: '#{execution.player}', raw_input: '#{execution.raw_input}'}"
-#   end
-# end

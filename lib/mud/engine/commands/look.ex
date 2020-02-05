@@ -1,6 +1,70 @@
 defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
+  @prepositions [
+    "about",
+    "above",
+    "across",
+    "acrossfrom",
+    "across from",
+    "after",
+    "against",
+    "along",
+    "alongside",
+    "among",
+    "at",
+    "before",
+    "behind",
+    "beside",
+    "between",
+    "beyond",
+    "but",
+    "by",
+    "concerning",
+    "despite",
+    "except",
+    "exceptfor",
+    "except for",
+    "for",
+    "following",
+    "from",
+    "in",
+    "including",
+    "inside",
+    "into",
+    "like",
+    "of",
+    "nextto",
+    "next to",
+    "on",
+    "ontop",
+    "ontopof",
+    "ontop of",
+    "out",
+    "over",
+    "plus",
+    "since",
+    "through",
+    "throughout",
+    "to",
+    "towards",
+    "under",
+    "underneath",
+    "until",
+    "up",
+    "upon",
+    "with",
+    "within",
+    "without",
+  ]
+
+  def parse_arg_string(raw_args) do
+    raw_args
+    |> Mud.Util.replace_switches_with_prepositions(%{"@" => "at"})
+    |> Mud.Engine.Command.parse_input()
+  end
+
+  @impl true
   def execute(context) do
     output = build_output(context)
 
