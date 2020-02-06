@@ -35,6 +35,7 @@ defmodule MudWeb.MudClientController do
 
       conn
       |> put_session(:character_id, character_id)
+      |> put_layout("client_page.html")
       |> live_render(MudWeb.MudClientLive)
     else
       conn

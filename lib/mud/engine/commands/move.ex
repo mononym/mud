@@ -2,17 +2,22 @@ defmodule Mud.Engine.Command.Move do
   use Mud.Engine.CommandCallback
 
   @impl true
-  def execute(%Mud.Engine.Command.ExecutionContext{} = context) do
+  def execute(%Mud.Engine.CommandContext{} = context) do
+    IO.inspect(context)
+
     context =
-      if context.raw_argument_string == "" do
-        %{context | matched_verb: normalize_direction(String.trim(context.matched_verb))}
+      if context.parsed_args == "" do
+        %{
+          context
+          | command: %{context.command | command: normalize_direction(context.command.command)}
+        }
       else
-        %{context | matched_verb: normalize_direction(String.trim(context.parsed_args))}
+        %{context | command: normalize_direction(context.parsed_args)}
       end
 
     case Mud.Engine.find_obvious_exit_in_character_location(
            context.character_id,
-           context.matched_verb
+           context.command.command
          ) do
       nil ->
         append_message(
@@ -31,17 +36,6 @@ defmodule Mud.Engine.Command.Move do
           |> Mud.Engine.get_character!()
           |> Mud.Engine.update_character(%{location_id: link.to_id})
 
-        characters_by_location =
-          Mud.Engine.list_active_characters_in_areas([link.to_id, link.from_id])
-          # Filter out "self"
-          |> Enum.filter(fn char ->
-            char.id != character.id
-          end)
-          # Group by location
-          |> Enum.group_by(fn char ->
-            char.location_id
-          end)
-
         # Perform look logic for character
         context_with_look_command =
           append_message(
@@ -53,6 +47,18 @@ defmodule Mud.Engine.Command.Move do
               type: :silent
             }
           )
+
+        # List all the characters that need to be informed of a move
+        characters_by_location =
+          Mud.Engine.list_active_characters_in_areas([link.to_id, link.from_id])
+          # Filter out "self"
+          |> Enum.filter(fn char ->
+            char.id != character.id
+          end)
+          # Group by location
+          |> Enum.group_by(fn char ->
+            char.location_id
+          end)
 
         # Send messages to everyone in room that the character just left
         context_with_some_messages =

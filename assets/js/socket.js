@@ -24,17 +24,10 @@ function htmlToElements(html) {
 }
 
 function createElementsFromHTML(htmlString) {
-  console.log("htmlString")
-  console.log(htmlString)
   var div = document.createElement('div');
   div.innerHTML = htmlString.trim();
 
   let frag = document.createRange().createContextualFragment(htmlString.trim())
-  console.log(frag)
-
-  console.log("div")
-  console.log(div)
-  console.log(div.childNodes)
 
   // Change this to div.childNodes to support multiple top-level nodes
   return frag;
@@ -59,30 +52,7 @@ Hooks.Story = {
       console.log(text)
       let textLines = createElementsFromHTML(text.text)
 
-      console.log("textLines")
-      console.log(textLines)
-
-      // for (let i = 0; i < textLines.length; i++) {
-      //   console.log("line")
-      //   console.log(textLines[i])
       element.appendChild(textLines)
-      // }
-
-      // textLines.forEach(function (line) {
-
-      //   console.log("line")
-      //   console.log(line)
-      //   element.appendChild(line)
-      //   console.log("line")
-      //   console.log(line)
-      //   element.appendChild(line)
-      //   console.log("line")
-      //   console.log(line)
-      //   element.appendChild(line)
-      //   console.log("line")
-      //   console.log(line)
-      //   element.appendChild(line)
-      // })
     })
 
     channel.join()

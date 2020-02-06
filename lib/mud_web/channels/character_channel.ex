@@ -4,18 +4,22 @@ defmodule MudWeb.CharacterChannel do
   require Logger
 
   def join("character:" <> character_id, _message, socket) do
+    Logger.debug("#{inspect(character_id)}")
     send(self(), :after_join)
 
     {:ok, assign(socket, :character_id, character_id)}
   end
 
   def handle_info(:after_join, socket) do
+    Logger.debug("#{inspect(:after_join)}")
     Mud.Engine.Session.subscribe(socket.assigns.character_id)
 
     {:noreply, socket}
   end
 
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, socket) do
+  def handle_info({:DOWN, _ref, :process, _pid, _reason} = message, socket) do
+    Logger.debug("#{inspect(message)}")
+
     error_message =
       "{{error}}Something went wrong with the session and the connection has been terminated.{{/error}}"
       |> Mud.Engine.Session.maybe_transform_text_for_web()
@@ -26,6 +30,7 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_in("input", input, socket) do
+    Logger.debug("#{inspect(input)}")
     Logger.debug("handle_in: #{input}")
     Logger.debug("socket.assigns.character_id: #{socket.assigns.character_id}")
 
@@ -39,8 +44,7 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_cast(%Mud.Engine.Output{} = output, socket) do
-    Logger.debug("channel handle_cast: #{inspect(output)}")
-    Logger.debug("socket.assigns.character_id: #{socket.assigns.character_id}")
+    Logger.debug("#{inspect(output)}")
 
     Phoenix.Channel.push(socket, "output:story", %{text: output.text})
 

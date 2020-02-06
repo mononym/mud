@@ -48,7 +48,7 @@ defmodule Mud.Engine.Session do
   #
 
   def cast_message(character_id, message) do
-    Logger.debug("Session.cast_message(#{inspect(character_id)}, #{inspect(message)}")
+    Logger.debug("#{inspect(character_id)}, #{inspect(message)}")
     GenServer.cast(via(character_id), message)
   end
 
@@ -185,6 +185,8 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:input_processing_finished, execution_context}, state) do
+    Logger.debug("#{inspect({:input_processing_finished, execution_context})}")
+
     if execution_context.terminate_session do
       persist_state(state)
 
@@ -201,6 +203,7 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:subscribe, process}, state) do
+    Logger.debug("#{inspect({:subscribe, process})}")
     ref = Process.link(process)
 
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
@@ -221,6 +224,8 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:unsubscribe, process}, state) do
+    Logger.debug("#{inspect({:unsubscribe, process})}")
+
     subscriber =
       Enum.find(state.subscribers, nil, fn {_ref, %{pid: pid}} ->
         pid == process
@@ -238,7 +243,7 @@ defmodule Mud.Engine.Session do
   def handle_cast(msg, state) do
     Logger.error("Received unexpected cast: #{inspect(msg)}")
 
-    {:no_reply, state}
+    {:noreply, state}
   end
 
   def handle_call(:get_history, state) do
@@ -248,7 +253,11 @@ defmodule Mud.Engine.Session do
   def handle_call(msg, state) do
     Logger.error("Received unexpected call: #{inspect(msg)}")
 
-    {:no_reply, state}
+    {:noreply, state}
+  end
+
+  def handle_info({ref, :ok}, state) when is_reference(ref) do
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, ref, :process, _pid, _reason}, state) do
@@ -360,7 +369,7 @@ defmodule Mud.Engine.Session do
         end
 
         execution_context =
-          Mud.Engine.Command.ExecutionContext.process(%Mud.Engine.Command.ExecutionContext{
+          Mud.Engine.Command.execute(%Mud.Engine.CommandContext{
             id: input.id,
             character_id: input.character_id,
             raw_input: input.text

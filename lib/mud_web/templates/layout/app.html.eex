@@ -39,7 +39,7 @@
       </nav>
     </header>
     <main class="min-w-full flex-grow" role="main">
-      <section class="flex flex-col min-w-full min-h-full h-full">
+      <section class="flex flex-col min-w-full">
         <p class="w-auto bg-green-200 justify-start" role="alert"><%= get_flash(@conn, :success) %></p>
         <p class="w-auto bg-blue-200 justify-start" role="alert"><%= get_flash(@conn, :info) %></p>
         <p class="w-auto bg-orange-200 justify-start" role="alert"><%= get_flash(@conn, :warning) %></p>

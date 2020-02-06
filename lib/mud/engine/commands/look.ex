@@ -1,67 +1,60 @@
 defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
-  @prepositions [
-    "about",
-    "above",
-    "across",
-    "acrossfrom",
-    "across from",
-    "after",
-    "against",
-    "along",
-    "alongside",
-    "among",
-    "at",
-    "before",
-    "behind",
-    "beside",
-    "between",
-    "beyond",
-    "but",
-    "by",
-    "concerning",
-    "despite",
-    "except",
-    "exceptfor",
-    "except for",
-    "for",
-    "following",
-    "from",
-    "in",
-    "including",
-    "inside",
-    "into",
-    "like",
-    "of",
-    "nextto",
-    "next to",
-    "on",
-    "ontop",
-    "ontopof",
-    "ontop of",
-    "out",
-    "over",
-    "plus",
-    "since",
-    "through",
-    "throughout",
-    "to",
-    "towards",
-    "under",
-    "underneath",
-    "until",
-    "up",
-    "upon",
-    "with",
-    "within",
-    "without",
-  ]
+  alias Mud.Engine
 
+  # @prepositions [
+  #   "above",
+  #   "across",
+  #   "across from",
+  #   "after",
+  #   "against",
+  #   "along",
+  #   "alongside",
+  #   "among",
+  #   "at",
+  #   "behind",
+  #   "beside",
+  #   "between",
+  #   "beyond",
+  #   "by",
+  #   "except",
+  #   "except for",
+  #   "for",
+  #   "following",
+  #   "from",
+  #   "in",
+  #   "including",
+  #   "inside",
+  #   "into",
+  #   "next to",
+  #   "on",
+  #   "ontop",
+  #   "ontop of",
+  #   "out",
+  #   "over",
+  #   "through",
+  #   "towards",
+  #   "under",
+  #   "underneath",
+  #   "up",
+  #   "upon"
+  # ]
+
+  @impl true
   def parse_arg_string(raw_args) do
-    raw_args
-    |> Mud.Util.replace_switches_with_prepositions(%{"@" => "at"})
-    |> Mud.Engine.Command.parse_input()
+    # normalized_string =
+    if String.starts_with?(raw_args, "at ") do
+      {:ok, String.replace_leading(raw_args, "at ", "")}
+    else
+      {:ok, raw_args}
+    end
+
+    # normalized_string
+    # gather all possible things to match, characters, items in the room, denizens, hostiles, etc...
+    # order the
+
+    # Engine.list_characters_in_area()
   end
 
   @impl true
@@ -75,6 +68,34 @@ defmodule Mud.Engine.Command.Look do
       text: output
     })
     |> set_success(true)
+  end
+
+  def execute(name, context) do
+    character = Engine.get_character!(context.character_id)
+    characters = Engine.list_active_characters_in_areas(character.location_id)
+
+    found_character =
+      Enum.find(characters, fn character ->
+        String.downcase(character.name) == name
+      end)
+
+    if found_character != nil do
+      context
+      |> append_message(%Mud.Engine.Output{
+        id: UUID.uuid4(),
+        character_id: context.character_id,
+        text: "{{info}}You see #{found_character}.{{/info}}"
+      })
+      |> set_success(true)
+    else
+      context
+      |> append_message(%Mud.Engine.Output{
+        id: UUID.uuid4(),
+        character_id: context.character_id,
+        text: "{{error}}What did you want to look at?{{/error}}"
+      })
+      |> set_success(true)
+    end
   end
 
   defp build_output(context) do

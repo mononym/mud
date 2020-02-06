@@ -14,7 +14,7 @@ defmodule Mud.Engine.CommandCallback do
     quote location: :keep do
       @behaviour Mud.Engine.CommandCallback
 
-      import Mud.Engine.Command.ExecutionContext
+      import Mud.Engine.CommandContext
 
       @doc false
       def parse_arg_string(raw_args), do: {:ok, String.trim(raw_args)}
@@ -34,10 +34,10 @@ defmodule Mud.Engine.CommandCallback do
 
   @doc """
   Called when the Engine determines the Command should be executed. This means all the matching, parsing, and
-  permissions checks have passed. This is called after 'parse_args/1', assuming there was no error.
+  permissions checks have passed. This is called after 'parse_arg_string/1', assuming there was no error.
 
   An execution context is passed to the callback function, populated with several helpful bits of information to aid in
-  the execution of the command. See 'Exmud.Engine.Command.ExecutionContext'.
+  the execution of the command. See 'Exmud.Engine.CommandContext'.
   """
   @callback execute(context) :: context
 
@@ -52,5 +52,5 @@ defmodule Mud.Engine.CommandCallback do
   @type error :: term
 
   @typedoc "An execution context providing the required information to execute a command."
-  @type context :: %Mud.Engine.Command.ExecutionContext{}
+  @type context :: %Mud.Engine.CommandContext{}
 end

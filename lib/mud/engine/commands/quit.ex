@@ -3,7 +3,7 @@ defmodule Mud.Engine.Command.Quit do
 
   def execute(context) do
     do_ingame_stuff(context)
-    
+
     terminate_session(context)
   end
 

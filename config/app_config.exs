@@ -15,9 +15,9 @@ config :mud,
   character_context_buffer_max_size:
     String.to_integer(System.get_env("CHARACTER_CONTEXT_BUFFER_MAX_SIZE", "12288")),
   character_inactivity_timeout_warning:
-    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "60000")),
+    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "600000")),
   character_inactivity_timeout_final:
-    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "120000")),
+    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "1200000")),
   default_middleware_sequence: [
     Mud.Engine.Middleware.PreprocessInput,
     Mud.Engine.Middleware.PickLogic,
