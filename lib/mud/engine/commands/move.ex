@@ -3,8 +3,6 @@ defmodule Mud.Engine.Command.Move do
 
   @impl true
   def execute(%Mud.Engine.CommandContext{} = context) do
-    IO.inspect(context)
-
     context =
       if context.parsed_args == "" do
         %{

@@ -43,58 +43,56 @@ defmodule Mud.Engine.Command.Look do
 
   @impl true
   def parse_arg_string(raw_args) do
-    # normalized_string =
+    IO.inspect("***** parse_arg_string *****")
+    IO.inspect(raw_args)
+
     if String.starts_with?(raw_args, "at ") do
       {:ok, String.replace_leading(raw_args, "at ", "")}
     else
       {:ok, raw_args}
     end
-
-    # normalized_string
-    # gather all possible things to match, characters, items in the room, denizens, hostiles, etc...
-    # order the
-
-    # Engine.list_characters_in_area()
   end
 
   @impl true
   def execute(context) do
-    output = build_output(context)
+    case context.parsed_args do
+      "" ->
+        output = build_output(context)
 
-    context
-    |> append_message(%Mud.Engine.Output{
-      id: UUID.uuid4(),
-      character_id: context.character_id,
-      text: output
-    })
-    |> set_success(true)
-  end
+        context
+        |> append_message(%Mud.Engine.Output{
+          id: UUID.uuid4(),
+          character_id: context.character_id,
+          text: output
+        })
+        |> set_success(true)
 
-  def execute(name, context) do
-    character = Engine.get_character!(context.character_id)
-    characters = Engine.list_active_characters_in_areas(character.location_id)
+      name ->
+        character = Engine.get_character!(context.character_id)
+        characters = Engine.list_active_characters_in_areas(character.location_id)
 
-    found_character =
-      Enum.find(characters, fn character ->
-        String.downcase(character.name) == name
-      end)
+        found_character =
+          Enum.find(characters, fn character ->
+            String.downcase(character.name) == name
+          end)
 
-    if found_character != nil do
-      context
-      |> append_message(%Mud.Engine.Output{
-        id: UUID.uuid4(),
-        character_id: context.character_id,
-        text: "{{info}}You see #{found_character}.{{/info}}"
-      })
-      |> set_success(true)
-    else
-      context
-      |> append_message(%Mud.Engine.Output{
-        id: UUID.uuid4(),
-        character_id: context.character_id,
-        text: "{{error}}What did you want to look at?{{/error}}"
-      })
-      |> set_success(true)
+        if found_character != nil do
+          context
+          |> append_message(%Mud.Engine.Output{
+            id: UUID.uuid4(),
+            character_id: context.character_id,
+            text: "{{info}}You see #{found_character.name}.{{/info}}"
+          })
+          |> set_success(true)
+        else
+          context
+          |> append_message(%Mud.Engine.Output{
+            id: UUID.uuid4(),
+            character_id: context.character_id,
+            text: "{{error}}What did you want to look at?{{/error}}"
+          })
+          |> set_success(true)
+        end
     end
   end
 

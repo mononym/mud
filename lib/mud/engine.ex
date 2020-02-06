@@ -175,8 +175,6 @@ defmodule Mud.Engine do
 
   """
   def find_obvious_exit_in_character_location(character_id, direction) do
-    IO.inspect({"find_obvious_exit_in_character_location", character_id, direction})
-
     Repo.one(
       from(link in Link,
         join: area in Area,

@@ -2,12 +2,11 @@ defmodule Mud.Engine.Command.History do
   use Mud.Engine.CommandCallback
 
   def execute(context) do
-    context
-    |> append_message(%Mud.Engine.Output{
-      id: UUID.uuid4(),
-      character_id: context.character_id,
-      text: "{{error}}The logic for this verb has not been implemented yet.{{/error}}"
-    })
+    context.character_id
+    |> Mud.Engine.Session.get_history()
+    |> Enum.reduce(context, fn entry, cxt ->
+      append_message(cxt, entry)
+    end)
     |> set_success(true)
   end
 end
