@@ -48,7 +48,6 @@ defmodule Mud.Engine.Session do
   #
 
   def cast_message(character_id, message) do
-    Logger.info("#{inspect(character_id)}, #{inspect(message)}")
     GenServer.cast(via(character_id), message)
   end
 
@@ -56,7 +55,6 @@ defmodule Mud.Engine.Session do
   Subscribe to the output of a character session.
   """
   def subscribe(character_id) do
-    Logger.info("Session.subscribe(#{inspect(character_id)}}")
     GenServer.cast(via(character_id), {:subscribe, self()})
   end
 
@@ -64,7 +62,6 @@ defmodule Mud.Engine.Session do
   Unsubscribe from the output of a character session.
   """
   def unsubscribe(character_id) do
-    Logger.info("Session.unsubscribe(#{inspect(character_id)}}")
     GenServer.cast(via(character_id), {:unsubscribe, self()})
   end
 
@@ -72,8 +69,6 @@ defmodule Mud.Engine.Session do
   Get the text history of the character.
   """
   def get_history(character_id) do
-    Logger.info("Session.get_history(#{inspect(character_id)}}")
-
     try do
       GenServer.call(via(character_id), :get_history)
     catch
@@ -88,8 +83,6 @@ defmodule Mud.Engine.Session do
   Start a session or let an existing one remain for a character.
   """
   def start(player_id, character_id) do
-    Logger.info("Session.start(#{inspect(player_id)}, #{inspect(character_id)}}")
-
     spec = {__MODULE__, %{player_id: player_id, character_id: character_id}}
 
     case DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec) do
@@ -112,14 +105,12 @@ defmodule Mud.Engine.Session do
 
   @doc false
   def start_link(args) do
-    Logger.info("Session.start_link(#{inspect(args)})")
     GenServer.start_link(__MODULE__, args, name: via(args.character_id))
   end
 
   @doc false
   @impl true
   def init(args) do
-    Logger.info("Session.init(#{inspect(args.character_id)})")
     # Load or initialize character session state
     state = load_character_session_data(args.character_id)
 
@@ -135,8 +126,6 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast(%Mud.Engine.Output{} = output, state) do
-    Logger.info("Session handling cast: output: #{output.text}")
-
     output = %{output | text: maybe_transform_text_for_web(output.text)}
 
     state = update_buffer(state, output)
@@ -159,12 +148,6 @@ defmodule Mud.Engine.Session do
   @impl true
   def handle_cast(%Mud.Engine.Input{} = input, state) do
     state = update_timeout(state, @character_inactivity_timeout_warning)
-
-    Logger.info(
-      "Session handling cast: input: #{
-        inspect({length(state.input_buffer), state.input_processing_task})
-      }"
-    )
 
     cond do
       length(state.input_buffer) == 0 and state.input_processing_task == nil ->
@@ -189,8 +172,6 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:input_processing_finished, execution_context}, state) do
-    Logger.info("#{inspect({:input_processing_finished, execution_context, state})}")
-
     if execution_context.terminate_session do
       persist_state(state)
 
@@ -207,7 +188,6 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:subscribe, process}, state) do
-    Logger.info("#{inspect({:subscribe, process})}")
     ref = Process.link(process)
 
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
@@ -228,8 +208,6 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:unsubscribe, process}, state) do
-    Logger.info("#{inspect({:unsubscribe, process})}")
-
     subscriber =
       Enum.find(state.subscribers, nil, fn {_ref, %{pid: pid}} ->
         pid == process
@@ -310,8 +288,6 @@ defmodule Mud.Engine.Session do
   end
 
   def terminate(reason, _state, state) when reason != :normal do
-    Logger.info("############################# SESSION TERMINATING #############################")
-
     Mud.Engine.Command.Quit.do_ingame_stuff(state)
 
     persist_state(state)
@@ -324,8 +300,6 @@ defmodule Mud.Engine.Session do
   #
 
   defp persist_state(state) do
-    Logger.info("PERSISTING STATE")
-
     case Mud.Repo.get(CharacterSessionData, state.character_id) do
       nil ->
         changeset =
@@ -413,19 +387,15 @@ defmodule Mud.Engine.Session do
 
   defp maybe_deal_with_overflow(text_buffer) do
     if length(text_buffer) > @character_context_buffer_max_size do
-      Logger.info("TEXT BUFFER OVERFLOW")
       messages_to_trim = @character_context_buffer_max_size - @character_context_buffer_trim_size
 
       Enum.reverse_slice(text_buffer, 0, messages_to_trim)
     else
-      Logger.info("TEXT BUFFER SAFE")
       text_buffer
     end
   end
 
   defp update_timeout(state, timeout) do
-    Logger.info("updating timeout")
-
     if state.inactivity_timer_reference != nil do
       Process.cancel_timer(state.inactivity_timer_reference)
     end
@@ -440,8 +410,6 @@ defmodule Mud.Engine.Session do
   end
 
   defp load_character_session_data(character_id) do
-    Logger.info("LOADING CHARACTER DATA")
-
     result =
       Mud.Repo.one(
         from(
