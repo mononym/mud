@@ -2,6 +2,8 @@ defmodule Mud.Engine.Character do
   use Mud.Schema
   import Ecto.Changeset
 
+  alias Mud.Engine.Component.{Attributes}
+
   schema "characters" do
     field(:name, :string)
     field(:active, :boolean, default: false)
@@ -15,6 +17,8 @@ defmodule Mud.Engine.Character do
       type: :binary_id,
       foreign_key: :player_id
     )
+
+    has_one(:attributes, Attributes)
 
     timestamps()
   end

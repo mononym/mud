@@ -13,8 +13,11 @@ defmodule Mud.Engine.CommandContext do
     :command,
     # Parsed arguments for the command.
     :parsed_args,
-    # Character that the command is being processed for.
+    # ID for the Character that the command is being processed for.
     :character_id,
+    # The Character that the command is being processed for. Will be populated immediatly before execution, in the
+    # transaction.
+    :character,
     # Messages to be sent upon successful execution of logic.
     {:messages, []},
     # The raw text input before any processing.

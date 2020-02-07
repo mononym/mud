@@ -69,7 +69,7 @@ config :mud, MudWeb.Endpoint,
 config :logger, :console,
   format: "$metadata[$level] $message\n",
   metadata: [:module, :function, :line],
-  level: :info
+  level: :debug
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

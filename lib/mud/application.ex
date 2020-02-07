@@ -6,6 +6,8 @@ defmodule Mud.Application do
   use Application
 
   def start(_type, _args) do
+    :ets.new(:session, [:named_table, :public, read_concurrency: true])
+
     # List all child processes to be supervised
     children = [
       # Start the Ecto repository

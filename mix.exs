@@ -54,7 +54,6 @@ defmodule Mud.MixProject do
       {:phoenix_pubsub_redis, "~> 2.1"},
       {:plug_cowboy, "~> 2.0"},
       {:postgrex, ">= 0.0.0"},
-      {:redbird, "~> 0.4.0"},
       {:redix, "~> 0.10.2", override: true},
       {:surface, git: "https://github.com/msaraiva/surface.git"},
       {:telemetry, "~> 0.4.0"},

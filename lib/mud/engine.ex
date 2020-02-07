@@ -41,31 +41,6 @@ defmodule Mud.Engine do
   def get_area!(id), do: Repo.get!(Area, id)
 
   @doc """
-  Gets a single area from the location value of a Character.
-
-  Raises `Ecto.NoResultsError` if the Area does not exist.
-
-  ## Examples
-
-      iex> get_area!(123)
-      %Area{}
-
-      iex> get_area!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_area_from_character!(id) do
-    Repo.one!(
-      from(area in Area,
-        join: character in Character,
-        on: character.location_id == area.id,
-        where: character.id == ^id,
-        select: area
-      )
-    )
-  end
-
-  @doc """
   Creates a area.
 
   ## Examples
@@ -301,7 +276,9 @@ defmodule Mud.Engine do
     Repo.all(
       from(
         character in Character,
-        where: character.location_id in ^List.wrap(area_ids) and character.active == true
+        join: attributes in assoc(character, :attributes),
+        where: character.location_id in ^List.wrap(area_ids) and character.active == true,
+        preload: [attributes: attributes]
       )
     )
   end
@@ -320,7 +297,16 @@ defmodule Mud.Engine do
       ** (Ecto.NoResultsError)
 
   """
-  def get_character!(id), do: Repo.get!(Character, id)
+  def get_character!(id) do
+    Repo.one!(
+      from(
+        character in Character,
+        join: attributes in assoc(character, :attributes),
+        where: character.id == ^id,
+        preload: [attributes: attributes]
+      )
+    )
+  end
 
   @doc """
   Creates a character.
@@ -338,9 +324,21 @@ defmodule Mud.Engine do
     # For POC set character's initial room as room #1
     attrs = Map.put(attrs, "location", 1)
 
-    %Character{}
-    |> Character.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %Character{}
+      |> Character.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, character} ->
+        Ecto.build_assoc(character, :attributes, %{})
+        |> Repo.insert!()
+
+        {:ok, character}
+
+      error ->
+        error
+    end
   end
 
   @doc """

@@ -34,7 +34,14 @@ defmodule Mud.Engine.Command do
         case command.callback_module.parse_arg_string(arg_string) do
           {:ok, parsed_args} ->
             context = %{context | parsed_args: parsed_args}
-            context = command.callback_module.execute(context)
+
+            {:ok, context} =
+              Mud.Repo.transaction(fn ->
+                character = Mud.Engine.get_character!(context.character_id)
+                context = %{context | character: character}
+                command.callback_module.execute(context)
+
+            end)
 
             Enum.each(context.messages, fn message ->
               Mud.Engine.cast_message_to_character_session(message)

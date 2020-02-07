@@ -97,7 +97,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp build_output(context) do
-    area = Mud.Engine.get_area_from_character!(context.character_id)
+    area = Mud.Engine.get_area!(context.character.location_id)
 
     build_area_name(area)
     |> build_area_description(area)
