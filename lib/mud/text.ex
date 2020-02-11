@@ -5,7 +5,6 @@ defmodule Mud.Text do
   Most of the functions are tailored to the needs of the MUD rather than this being a generic library.
   """
 
-
   def from_tagged_to_html(text) do
     case Regex.named_captures(~r/.*?{{(?<tag>.+?)}}.*/, text) do
       nil ->
@@ -17,6 +16,10 @@ defmodule Mud.Text do
         |> String.replace("{{/#{tag}}}", "</span>")
         |> from_tagged_to_html()
     end
+  end
+
+  defp tag_to_text_color("things-of-interest") do
+    "text-blue-600"
   end
 
   defp tag_to_text_color("on-ground") do

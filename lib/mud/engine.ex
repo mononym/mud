@@ -8,8 +8,33 @@ defmodule Mud.Engine do
 
   alias Mud.Engine.Area
   alias Mud.Engine.Character
+  alias Mud.Engine.Object
+  alias Mud.Engine.Component.Scenery
 
   require Logger
+
+  defmodule CreateObjectRequest do
+    @enforce_keys [:key, :is_scenery]
+    defstruct key: nil, is_scenery: false, scenery: nil, location: nil, description: nil
+
+    defmodule Description do
+      @enforce_keys [:glance_description, :look_description]
+      defstruct glance_description: nil, look_description: nil, examine_description: nil
+    end
+
+    defmodule Location do
+      defstruct contained: false,
+                hand: nil,
+                held: false,
+                on_ground: false,
+                reference: nil,
+                worn: false
+    end
+
+    defmodule Scenery do
+      defstruct hidden: false
+    end
+  end
 
   @doc """
   Returns the list of areas.
@@ -501,10 +526,29 @@ defmodule Mud.Engine do
       {:error, %Ecto.Changeset{}}
 
   """
-  def create_object(attrs \\ %{}) do
-    %Object{}
-    |> Object.changeset(attrs)
-    |> Repo.insert()
+  def create_object(request = %CreateObjectRequest{}) do
+    object =
+      %Object{}
+      |> Object.changeset(Map.from_struct(request))
+      |> Repo.insert()
+
+    case object do
+      {:ok, object} ->
+        object
+        |> Ecto.build_assoc(:location, Map.from_struct(request.location))
+        |> Repo.insert!()
+
+        object
+        |> Ecto.build_assoc(:description, Map.from_struct(request.description))
+        |> Repo.insert!()
+
+        maybe_build_optional_object_assoc(object, request)
+
+        Object.get(object.id)
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -744,5 +788,18 @@ defmodule Mud.Engine do
   """
   def change_description(%Description{} = description) do
     Description.changeset(description, %{})
+  end
+
+  defp maybe_build_optional_object_assoc(object, %CreateObjectRequest{
+         is_scenery: true,
+         scenery: scenery
+       }) do
+    object
+    |> Ecto.build_assoc(:scenery, Map.from_struct(scenery))
+    |> Repo.insert!()
+  end
+
+  defp maybe_build_optional_object_assoc(object, _request) do
+    object
   end
 end

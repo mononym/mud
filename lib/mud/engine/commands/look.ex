@@ -92,7 +92,7 @@ defmodule Mud.Engine.Command.Look do
               |> append_message(
                 output(
                   context.character_id,
-                  "{{info}}You see #{object.description.glance_description}.{{/info}}"
+                  "{{info}}#{object.description.look_description}{{/info}}"
                 )
               )
               |> clear_continuation_from_context()
@@ -275,8 +275,7 @@ defmodule Mud.Engine.Command.Look do
               end
           end
         else
-          objects =
-            Object.list_by_description_in_area(split_input, context.character.location_id)
+          objects = Object.list_by_description_in_area(split_input, context.character.location_id)
 
           handle_object_response(context, objects)
         end
@@ -292,26 +291,26 @@ defmodule Mud.Engine.Command.Look do
         |> append_message(
           output(
             context.character_id,
-            "{info}}You see #{object.description.glance_description}.{{/info}}"
+            "{{info}}#{object.description.look_description}{{/info}}"
           )
         )
         |> set_success(true)
 
       # Multiple objects were found, but not too many to show them in a list with options
       count when count <= 10 ->
-        glances = Stream.map(objects, & &1.description.glance_description)
+        looks = Stream.map(objects, & &1.description.look_description)
 
         error =
           "{{warning}}Multiple matching items were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
 
-        multiple_object_error(context, objects, glances, error, :object)
+        multiple_object_error(context, objects, looks, error, :object)
 
       _too_many ->
         context
         |> append_message(
           output(
             context.character_id,
-            "{error}}Found too many items, please be more specific.{{/error}}"
+            "{{error}}Found too many items, please be more specific.{{/error}}"
           )
         )
         |> set_success()
@@ -368,6 +367,7 @@ defmodule Mud.Engine.Command.Look do
     output =
       build_area_name(area)
       |> build_area_description(area)
+      |> maybe_build_things_of_interest(area)
       |> maybe_build_on_ground(area)
       |> maybe_build_hostiles(area)
       |> maybe_build_denizens(area)
@@ -397,24 +397,42 @@ defmodule Mud.Engine.Command.Look do
     text
   end
 
+  defp maybe_build_things_of_interest(text, area) do
+    things_of_interest =
+      Object.list_in_area(area.id)
+      |> Stream.filter(& &1.is_scenery)
+      |> Stream.filter(fn obj ->
+        obj.scenery == nil or obj.scenery.hidden != true
+      end)
+      |> Stream.map(fn object ->
+        object.description.glance_description
+      end)
+      |> Enum.sort()
+      |> Enum.join(", ")
+
+    if things_of_interest == "" do
+      text
+    else
+      text <>
+        "{{things-of-interest}}Things of Interest: #{things_of_interest}{{/things-of-interest}}\n"
+    end
+  end
+
   defp maybe_build_on_ground(text, area) do
-    on_ground = build_objects_string(area.id)
+    on_ground =
+      Object.list_in_area(area.id)
+      |> Stream.filter(&(!&1.is_scenery))
+      |> Stream.map(fn object ->
+        object.description.glance_description
+      end)
+      |> Enum.sort()
+      |> Enum.join(", ")
 
     if on_ground == "" do
       text
     else
       text <> "{{on-ground}}On Ground: #{on_ground}{{/on-ground}}\n"
     end
-  end
-
-  # Character list should not contain the character the look is being performed for
-  defp build_objects_string(area_id) do
-    Object.list_in_area(area_id)
-    |> Enum.map(fn object ->
-      object.description.glance_description
-    end)
-    |> Enum.sort()
-    |> Enum.join(", ")
   end
 
   defp maybe_build_also_present(text, area, character_id) do

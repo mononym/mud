@@ -30,10 +30,6 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_in("input", input, socket) do
-    Logger.debug("#{inspect(input)}")
-    Logger.debug("handle_in: #{input}")
-    Logger.debug("socket.assigns.character_id: #{socket.assigns.character_id}")
-
     Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
       character_id: socket.assigns.character_id,
       text: input,
