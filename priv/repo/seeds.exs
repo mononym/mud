@@ -348,3 +348,61 @@ Mud.Repo.insert!(%Mud.Engine.Link{
   arrival_direction: "south",
   type: "obvious"
 })
+
+# Object insertions
+
+rock =
+  Mud.Repo.insert!(%Mud.Engine.Object{
+    key: "rock"
+  })
+
+rock_location =
+  Ecto.build_assoc(rock, :location, %{reference: north_room.id, on_ground: true})
+  |> Mud.Repo.insert!()
+
+rock_description =
+  Ecto.build_assoc(rock, :description, %{
+    glance_description: "a flat rounded rock",
+    look_description:
+      "This rock has been worn down over time by water into a smooth, flat round rock",
+    on_ground: true
+  })
+  |> Mud.Repo.insert!()
+
+rock_2 =
+  Mud.Repo.insert!(%Mud.Engine.Object{
+    key: "rock"
+  })
+
+rock_location =
+  Ecto.build_assoc(rock_2, :location, %{reference: north_room.id, on_ground: true})
+  |> Mud.Repo.insert!()
+
+rock_description =
+  Ecto.build_assoc(rock_2, :description, %{
+    glance_description: "a rough round rock",
+    look_description:
+      "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
+    on_ground: true
+  })
+  |> Mud.Repo.insert!()
+
+branch =
+  Mud.Repo.insert!(%Mud.Engine.Object{
+    key: "branch"
+  })
+
+branch_location =
+  Ecto.build_assoc(branch, :location, %{reference: south_room.id, on_ground: true})
+  |> Mud.Repo.insert!()
+
+branch_description =
+  Ecto.build_assoc(branch, :description, %{
+    glance_description: "a leafy branch",
+    look_description:
+      "The leafy branch has only recently been removed from its tree, the leaves not wilting yet.",
+    examine_description:
+      "The bark has been pealed back on the branch by an unclean cut by a dull blade where it was separated from its tree.",
+    on_ground: true
+  })
+  |> Mud.Repo.insert!()

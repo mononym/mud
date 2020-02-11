@@ -1,7 +1,7 @@
 defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
-  alias Mud.Engine
+  alias Mud.Engine.{Character, Object}
 
   # @prepositions [
   #   "above",
@@ -43,9 +43,6 @@ defmodule Mud.Engine.Command.Look do
 
   @impl true
   def parse_arg_string(raw_args) do
-    IO.inspect("***** parse_arg_string *****")
-    IO.inspect(raw_args)
-
     if String.starts_with?(raw_args, "at ") do
       {:ok, String.replace_leading(raw_args, "at ", "")}
     else
@@ -56,8 +53,9 @@ defmodule Mud.Engine.Command.Look do
   @impl true
   def execute(context) do
     case context.parsed_args do
+      # An empty argument string means the intention is to look at the area
       "" ->
-        output = build_output(context)
+        output = build_area_description(context)
 
         context
         |> append_message(%Mud.Engine.Output{
@@ -67,24 +65,63 @@ defmodule Mud.Engine.Command.Look do
         })
         |> set_success(true)
 
-      name ->
-        character = Engine.get_character!(context.character_id)
-        characters = Engine.list_active_characters_in_areas(character.location_id)
+      # Player wants to look at a character or an item
+      name_or_item ->
+        split_input = String.split(name_or_item)
 
-        found_character =
-          Enum.find(characters, fn character ->
-            String.downcase(character.name) == name
-          end)
+        if length(split_input) == 1 do
+          case Character.get_by_name(name_or_item) do
+            character = %Character{} ->
+              context
+              |> append_message(%Mud.Engine.Output{
+                id: UUID.uuid4(),
+                character_id: context.character_id,
+                text: "{{info}}You see #{character.name}.{{/info}}"
+              })
+              |> set_success(true)
 
-        if found_character != nil do
-          context
-          |> append_message(%Mud.Engine.Output{
-            id: UUID.uuid4(),
-            character_id: context.character_id,
-            text: "{{info}}You see #{found_character.name}.{{/info}}"
-          })
-          |> set_success(true)
+            nil ->
+              # look for key of object
+
+              objects = Object.list_in_area_by_key(context.character.location_id, name_or_item)
+
+              case length(objects) do
+                0 ->
+                  context
+                  |> set_success(true)
+
+                # Look for partial character name
+                1 ->
+                  [object] = objects
+
+                  context
+                  |> append_message(%Mud.Engine.Output{
+                    id: UUID.uuid4(),
+                    character_id: context.character_id,
+                    text: "{{info}}You see #{object.description.glance_description}.{{/info}}"
+                  })
+                  |> set_success(true)
+
+                count when count <= 10 ->
+                  glances = Enum.map(objects, & &1.description.glance_description)
+
+                  context
+                  |> append_message(%Mud.Engine.Output{
+                    id: UUID.uuid4(),
+                    character_id: context.character_id,
+                    table_data: glances
+                  })
+                  |> set_success(true)
+
+                _too_many ->
+                  context
+              end
+          end
         else
+          IO.inspect(
+            Object.list_in_area_by_description(context.character.location_id, ["red", "rock"])
+          )
+
           context
           |> append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
@@ -96,7 +133,7 @@ defmodule Mud.Engine.Command.Look do
     end
   end
 
-  defp build_output(context) do
+  defp build_area_description(context) do
     area = Mud.Engine.get_area!(context.character.location_id)
 
     build_area_name(area)

@@ -1,7 +1,9 @@
 defmodule Mud.Engine.Character do
   use Mud.Schema
   import Ecto.Changeset
+  import Ecto.Query
 
+  alias Mud.Repo
   alias Mud.Engine.Component.{Attributes}
 
   schema "characters" do
@@ -32,5 +34,18 @@ defmodule Mud.Engine.Character do
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
     |> unique_constraint(:name)
+  end
+
+  def list_by_case_insensitive_prefix(partial_name) do
+    Repo.all(
+      from(
+        character in __MODULE__,
+        where: ilike(character.name, ^"#{partial_name}%")
+      )
+    )
+  end
+
+  def get_by_name(name) do
+    Repo.get_by(__MODULE__, name: name)
   end
 end

@@ -416,4 +416,292 @@ defmodule Mud.Engine do
   def get_character_session_history(character_id) do
     Mud.Engine.Session.get_history(character_id)
   end
+
+  alias Mud.Engine.Object
+
+  @doc """
+  Returns the list of objects.
+
+  ## Examples
+
+      iex> list_objects()
+      [%Object{}, ...]
+
+  """
+  def list_objects do
+    Repo.all(Object)
+  end
+
+  @doc """
+  Gets a single object.
+
+  Raises `Ecto.NoResultsError` if the Object does not exist.
+
+  ## Examples
+
+      iex> get_object!(123)
+      %Object{}
+
+      iex> get_object!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_object!(id), do: Repo.get!(Object, id)
+
+  @doc """
+  Creates a object.
+
+  ## Examples
+
+      iex> create_object(%{field: value})
+      {:ok, %Object{}}
+
+      iex> create_object(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_object(attrs \\ %{}) do
+    %Object{}
+    |> Object.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a object.
+
+  ## Examples
+
+      iex> update_object(object, %{field: new_value})
+      {:ok, %Object{}}
+
+      iex> update_object(object, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_object(%Object{} = object, attrs) do
+    object
+    |> Object.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a object.
+
+  ## Examples
+
+      iex> delete_object(object)
+      {:ok, %Object{}}
+
+      iex> delete_object(object)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_object(%Object{} = object) do
+    Repo.delete(object)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking object changes.
+
+  ## Examples
+
+      iex> change_object(object)
+      %Ecto.Changeset{source: %Object{}}
+
+  """
+  def change_object(%Object{} = object) do
+    Object.changeset(object, %{})
+  end
+
+  alias Mud.Engine.Component.Location
+
+  @doc """
+  Returns the list of location_components.
+
+  ## Examples
+
+      iex> list_location_components()
+      [%Location{}, ...]
+
+  """
+  def list_location_components do
+    Repo.all(Location)
+  end
+
+  @doc """
+  Gets a single location.
+
+  Raises `Ecto.NoResultsError` if the Location does not exist.
+
+  ## Examples
+
+      iex> get_location!(123)
+      %Location{}
+
+      iex> get_location!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_location!(id), do: Repo.get!(Location, id)
+
+  @doc """
+  Creates a location.
+
+  ## Examples
+
+      iex> create_location(%{field: value})
+      {:ok, %Location{}}
+
+      iex> create_location(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_location(attrs \\ %{}) do
+    %Location{}
+    |> Location.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a location.
+
+  ## Examples
+
+      iex> update_location(location, %{field: new_value})
+      {:ok, %Location{}}
+
+      iex> update_location(location, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_location(%Location{} = location, attrs) do
+    location
+    |> Location.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a location.
+
+  ## Examples
+
+      iex> delete_location(location)
+      {:ok, %Location{}}
+
+      iex> delete_location(location)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_location(%Location{} = location) do
+    Repo.delete(location)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking location changes.
+
+  ## Examples
+
+      iex> change_location(location)
+      %Ecto.Changeset{source: %Location{}}
+
+  """
+  def change_location(%Location{} = location) do
+    Location.changeset(location, %{})
+  end
+
+  alias Mud.Engine.Component.Description
+
+  @doc """
+  Returns the list of description_components.
+
+  ## Examples
+
+      iex> list_description_components()
+      [%Description{}, ...]
+
+  """
+  def list_description_components do
+    Repo.all(Description)
+  end
+
+  @doc """
+  Gets a single description.
+
+  Raises `Ecto.NoResultsError` if the Description does not exist.
+
+  ## Examples
+
+      iex> get_description!(123)
+      %Description{}
+
+      iex> get_description!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_description!(id), do: Repo.get!(Description, id)
+
+  @doc """
+  Creates a description.
+
+  ## Examples
+
+      iex> create_description(%{field: value})
+      {:ok, %Description{}}
+
+      iex> create_description(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_description(attrs \\ %{}) do
+    %Description{}
+    |> Description.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a description.
+
+  ## Examples
+
+      iex> update_description(description, %{field: new_value})
+      {:ok, %Description{}}
+
+      iex> update_description(description, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_description(%Description{} = description, attrs) do
+    description
+    |> Description.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a description.
+
+  ## Examples
+
+      iex> delete_description(description)
+      {:ok, %Description{}}
+
+      iex> delete_description(description)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_description(%Description{} = description) do
+    Repo.delete(description)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking description changes.
+
+  ## Examples
+
+      iex> change_description(description)
+      %Ecto.Changeset{source: %Description{}}
+
+  """
+  def change_description(%Description{} = description) do
+    Description.changeset(description, %{})
+  end
 end

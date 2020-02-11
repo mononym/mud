@@ -4,6 +4,7 @@ defmodule Mud.Engine.Session do
   import Ecto.Query, warn: false
   require Logger
   alias Mud.Engine.CharacterSessionData
+  alias Mud.Engine.Output
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -126,7 +127,7 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast(%Mud.Engine.Output{} = output, state) do
-    output = %{output | text: maybe_transform_text_for_web(output.text)}
+    output = %{output | text: maybe_transform_for_web(output)}
 
     state = update_buffer(state, output)
 
@@ -435,12 +436,17 @@ defmodule Mud.Engine.Session do
     end
   end
 
-  def maybe_transform_text_for_web(text) do
-    if String.contains?(text, "<span") do
-      text
-    else
-      transform_text(text)
-    end
+  defp maybe_transform_for_web(output = %Output{table_data: table_data, text: nil}) do
+    # transform table
+    text =
+      "{{info}}<ol class=\"list-decimal list-inside\" start=\"0\"><li>" <>
+        Enum.join(table_data, "</li><li>") <> "</li></ol>{{/info}}"
+
+    maybe_transform_for_web(%{output | table_data: nil, text: text})
+  end
+
+  defp maybe_transform_for_web(%Output{table_data: nil, text: text}) do
+    transform_text(text)
   end
 
   defp transform_text(text) do

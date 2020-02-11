@@ -1,4 +1,6 @@
 defmodule MudWeb.Plug.RedirectAnonymousPlayer do
+  import Plug.Conn
+  
   def init(path \\ nil) do
     path
   end
@@ -11,12 +13,17 @@ defmodule MudWeb.Plug.RedirectAnonymousPlayer do
             uri = MudWeb.Util.referrer_to_uri(referer)
 
             Phoenix.Controller.redirect(conn, to: uri)
+            |> halt()
 
           nil ->
             Phoenix.Controller.redirect(conn, to: "/")
+            |> halt()
         end
       else
+        path = if path == [], do: "/"
+
         Phoenix.Controller.redirect(conn, to: path)
+        |> halt()
       end
     else
       conn
