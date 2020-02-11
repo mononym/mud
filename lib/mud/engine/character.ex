@@ -36,16 +36,29 @@ defmodule Mud.Engine.Character do
     |> unique_constraint(:name)
   end
 
-  def list_by_case_insensitive_prefix(partial_name) do
+  def list_by_case_insensitive_prefix_in_area(partial_name, area_id) do
     Repo.all(
       from(
         character in __MODULE__,
-        where: ilike(character.name, ^"#{partial_name}%")
+        join: attributes in assoc(character, :attributes),
+        where: character.location_id == ^area_id and like(character.name, ^"#{partial_name}%"),
+        preload: [attributes: attributes]
       )
     )
   end
 
   def get_by_name(name) do
     Repo.get_by(__MODULE__, name: name)
+  end
+
+  def get_by_name_in_area(name, area_id) do
+    Repo.all(
+      from(
+        character in __MODULE__,
+        join: attributes in assoc(character, :attributes),
+        where: character.location_id == ^area_id and character.name == ^name,
+        preload: [attributes: attributes]
+      )
+    )
   end
 end

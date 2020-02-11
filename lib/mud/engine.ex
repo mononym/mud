@@ -309,6 +309,31 @@ defmodule Mud.Engine do
   end
 
   @doc """
+  Gets a single character.
+
+  Raises `Ecto.NoResultsError` if the Character does not exist.
+
+  ## Examples
+
+      iex> get_character(123)
+      %Character{}
+
+      iex> get_character(456)
+      ** nil
+
+  """
+  def get_character(id) do
+    Repo.one(
+      from(
+        character in Character,
+        join: attributes in assoc(character, :attributes),
+        where: character.id == ^id,
+        preload: [attributes: attributes]
+      )
+    )
+  end
+
+  @doc """
   Creates a character.
 
   ## Examples
@@ -431,6 +456,22 @@ defmodule Mud.Engine do
   def list_objects do
     Repo.all(Object)
   end
+
+  @doc """
+  Gets a single object.
+
+  Raises `Ecto.NoResultsError` if the Object does not exist.
+
+  ## Examples
+
+      iex> get_object(123)
+      %Object{}
+
+      iex> get_object!(456)
+      nil
+
+  """
+  def get_object(id), do: Object.get(id)
 
   @doc """
   Gets a single object.

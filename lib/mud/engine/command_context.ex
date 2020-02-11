@@ -29,17 +29,17 @@ defmodule Mud.Engine.CommandContext do
     # If success is false, the message will be populated with the reason why.
     :error_message,
     # A special flag that can be returned by any command which signals the character session to close.
-    {:terminate_session, false}
+    {:terminate_session, false},
+    # Data which is preserved between the initial/continuing calls of a single command. Can be used to carry
+    # information over such as the objects that are being selected from. For example, if the 'look' command returns a
+    # list of 5 items, the exact item to be looked at should be preserved between commands so that if the player enters
+    # '1' the command can be applied correctly.
+    {:continuation_data, %{}},
+    # Flag whether or not this is a continuation of a previous command execution.
+    {:is_continuation, false},
+    # The callback module to call on continuation.
+    :continuation_module
   ]
-
-  @doc """
-  Process the execution context by running it through the middleware list it contains. Spooky.
-  """
-  def process(%__MODULE__{} = context) do
-    Enum.reduce(context.middleware, context, fn middleware_callback, cxt ->
-      middleware_callback.execute(cxt)
-    end)
-  end
 
   @doc """
   Append a message to the list of messages which will be sent after the command has been executed
@@ -53,7 +53,7 @@ defmodule Mud.Engine.CommandContext do
   Append a message to the list of messages which will be sent after the command has been executed
   """
   @spec set_success(%__MODULE__{}, boolean) :: %__MODULE__{}
-  def set_success(%__MODULE__{} = context, successful) when is_boolean(successful) do
+  def set_success(%__MODULE__{} = context, successful \\ true) when is_boolean(successful) do
     %{context | success: successful}
   end
 
@@ -68,28 +68,42 @@ defmodule Mud.Engine.CommandContext do
   @doc """
   Delete a value from the data embedded in the Context.
   """
-  def delete(%__MODULE__{} = context, key) do
-    %{context | data: Map.delete(context.data, key)}
+  def clear_continuation_data(%__MODULE__{} = context) do
+    %{context | continuation_data: nil}
   end
 
   @doc """
   Get a value from the data embedded in the Context.
   """
-  def get(%__MODULE__{} = context, key) do
+  def get_continuation_data(%__MODULE__{} = context, key) do
     Map.get(context.data, key)
-  end
-
-  @doc """
-  Check to see if a key exists in the data of the Context.
-  """
-  def has_key?(%__MODULE__{} = context, key) do
-    Map.has_key?(context.data, key)
   end
 
   @doc """
   Put a value into the data embedded in the Context, returning the updated Context.
   """
-  def put(%__MODULE__{} = context, key, value) do
-    %{context | data: Map.put(context.data, key, value)}
+  def set_continuation_data(%__MODULE__{} = context, data) do
+    %{context | continuation_data: data}
+  end
+
+  @doc """
+  Flag whether or not this context is for a continuiation
+  """
+  def set_is_continuation(context, value \\ false) do
+    %{context | is_continuation: value}
+  end
+
+  @doc """
+  Put a value into the data embedded in the Context, returning the updated Context.
+  """
+  def set_continuation_module(%__MODULE__{} = context, module) do
+    %{context | continuation_module: module}
+  end
+
+  @doc """
+  Put a value into the data embedded in the Context, returning the updated Context.
+  """
+  def clear_continuation_module(%__MODULE__{} = context) do
+    %{context | continuation_module: nil}
   end
 end

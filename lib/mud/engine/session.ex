@@ -34,7 +34,10 @@ defmodule Mud.Engine.Session do
               inactivity_timer_reference: nil,
               inactivity_timer_type: :warning,
               input_buffer: [],
-              input_processing_task: nil
+              input_processing_task: nil,
+              continuation_data: nil,
+              is_continuation: false,
+              continuation_module: nil
   end
 
   defmodule Subscriber do
@@ -126,8 +129,8 @@ defmodule Mud.Engine.Session do
     {:ok, state}
   end
 
-  def handle_cast(%Mud.Engine.Output{} = output, state) do
-    output = %{output | text: maybe_transform_for_web(output)}
+  def handle_cast(%Output{} = output, state) do
+    output = %{output | text: Output.transform_for_web(output)}
 
     state = update_buffer(state, output)
 
@@ -152,7 +155,7 @@ defmodule Mud.Engine.Session do
 
     cond do
       length(state.input_buffer) == 0 and state.input_processing_task == nil ->
-        input_processing_task = send_input_for_processing(input)
+        input_processing_task = send_input_for_processing(input, state)
 
         {:noreply,
          %{
@@ -173,6 +176,13 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast({:input_processing_finished, execution_context}, state) do
+    state = %{
+      state
+      | continuation_data: execution_context.continuation_data,
+        is_continuation: execution_context.is_continuation,
+        continuation_module: execution_context.continuation_module
+    }
+
     if execution_context.terminate_session do
       persist_state(state)
 
@@ -301,6 +311,12 @@ defmodule Mud.Engine.Session do
   #
 
   defp persist_state(state) do
+    state =
+      state
+      |> Map.put(:is_continuation, false)
+      |> Map.put(:continuation_data, nil)
+      |> Map.put(:continuation_module, nil)
+
     case Mud.Repo.get(CharacterSessionData, state.character_id) do
       nil ->
         changeset =
@@ -330,12 +346,12 @@ defmodule Mud.Engine.Session do
     input_processing_task =
       queued_input
       |> List.first()
-      |> send_input_for_processing()
+      |> send_input_for_processing(state)
 
     %{state | input_processing_task: input_processing_task}
   end
 
-  defp send_input_for_processing(input) do
+  defp send_input_for_processing(input, state) do
     session_pid = self()
 
     # send stuff off to task
@@ -353,7 +369,10 @@ defmodule Mud.Engine.Session do
           Mud.Engine.Command.execute(%Mud.Engine.CommandContext{
             id: input.id,
             character_id: input.character_id,
-            raw_input: input.text
+            raw_input: input.text,
+            continuation_data: state.continuation_data,
+            is_continuation: state.is_continuation,
+            continuation_module: state.continuation_module
           })
 
         GenServer.cast(session_pid, {:input_processing_finished, execution_context})
@@ -434,71 +453,5 @@ defmodule Mud.Engine.Session do
           undelivered_text: data.undelivered_text
         }
     end
-  end
-
-  defp maybe_transform_for_web(output = %Output{table_data: table_data, text: nil}) do
-    # transform table
-    text =
-      "{{info}}<ol class=\"list-decimal list-inside\" start=\"0\"><li>" <>
-        Enum.join(table_data, "</li><li>") <> "</li></ol>{{/info}}"
-
-    maybe_transform_for_web(%{output | table_data: nil, text: text})
-  end
-
-  defp maybe_transform_for_web(%Output{table_data: nil, text: text}) do
-    transform_text(text)
-  end
-
-  defp transform_text(text) do
-    case Regex.named_captures(~r/.*?{{(?<tag>.+?)}}.*/, text) do
-      nil ->
-        "<p class=\"whitespace-pre-wrap\">#{text}</p>"
-
-      %{"tag" => tag} ->
-        text
-        |> String.replace("{{#{tag}}}", "<span class=\"#{tag_to_text_color(tag)}\">")
-        |> String.replace("{{/#{tag}}}", "</span>")
-        |> transform_text()
-    end
-  end
-
-  defp tag_to_text_color("area-name") do
-    "text-yellow-700"
-  end
-
-  defp tag_to_text_color("area-description") do
-    "text-teal-700"
-  end
-
-  defp tag_to_text_color("also-present") do
-    "text-green-700"
-  end
-
-  defp tag_to_text_color("denizens") do
-    "text-green-700"
-  end
-
-  defp tag_to_text_color("hostiles") do
-    "text-green-700"
-  end
-
-  defp tag_to_text_color("obvious-exits") do
-    "text-blue-700"
-  end
-
-  defp tag_to_text_color("echo") do
-    "text-gray-700"
-  end
-
-  defp tag_to_text_color("error") do
-    "text-red-800"
-  end
-
-  defp tag_to_text_color("info") do
-    "text-gray-700"
-  end
-
-  defp tag_to_text_color(_tag) do
-    "text-gray-700"
   end
 end

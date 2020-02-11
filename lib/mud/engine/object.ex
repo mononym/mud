@@ -23,7 +23,25 @@ defmodule Mud.Engine.Object do
     |> validate_required([:key])
   end
 
-  def list_in_area_by_key(area_id, simple_input) do
+  def get(id) do
+    object_base_query()
+    |> where(
+      [object, _location, _description],
+      object.id == ^id
+    )
+    |> Repo.one()
+  end
+
+  def list_in_area(area_id) do
+    object_base_query()
+    |> where(
+      [object, location, _description],
+      location.reference == ^area_id and location.on_ground == true
+    )
+    |> Repo.all()
+  end
+
+  def list_by_key_in_area(simple_input, area_id) do
     simple_input = String.downcase(simple_input)
 
     list =
@@ -44,17 +62,15 @@ defmodule Mud.Engine.Object do
     end
   end
 
-  def list_in_area_by_description(area_id, complex_input) do
-    input_length = length(complex_input)
-
-    search_string = Enum.join(complex_input, " <#{input_length}> ")
+  def list_by_description_in_area(complex_input, area_id) do
+    joined_string = Enum.join(complex_input, "% %")
+    search_string = "%" <> joined_string <> "%"
 
     object_base_query()
     |> where(
-      [_object, location, _description],
-      fragment("d2.glance_description_tsv @@ to_tsquery(?)", ^search_string) and
-        location.reference == ^area_id and
-        location.on_ground == true
+      [_object, location, description],
+      location.reference == ^area_id and location.on_ground == true and
+        like(description.glance_description, ^search_string)
     )
     |> Repo.all()
   end

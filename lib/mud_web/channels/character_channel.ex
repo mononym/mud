@@ -22,7 +22,7 @@ defmodule MudWeb.CharacterChannel do
 
     error_message =
       "{{error}}Something went wrong with the session and the connection has been terminated.{{/error}}"
-      |> Mud.Engine.Session.maybe_transform_text_for_web()
+      |> Mud.Engine.Output.transform_for_web()
 
     Phoenix.Channel.push(socket, "output:story", %{text: error_message})
 
