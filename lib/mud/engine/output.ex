@@ -3,9 +3,11 @@ defmodule Mud.Engine.Output do
 
   def transform_for_web(output = %__MODULE__{table_data: table_data, text: message})
       when not is_nil(table_data) do
+    list_items = Enum.join(table_data, "</li>{{/info}}{{info}}<li>")
+
     text =
-      "{{info}}<ol class=\"list-decimal list-inside\" start=\"0\"><li>" <>
-        Enum.join(table_data, "</li><li>") <> "</li></ol>{{/info}}"
+      "<ol class=\"list-decimal list-inside\" start=\"0\">{{info}}<li>" <>
+        list_items <> "</li></ol>{{/info}}"
 
     case message do
       nil ->

@@ -2,6 +2,7 @@ defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
   alias Mud.Engine.{Character, Object}
+  import Mud.Engine.Util
 
   require Logger
 
@@ -90,7 +91,7 @@ defmodule Mud.Engine.Command.Look do
                  object.location.reference == context.character.location_id do
               context
               |> append_message(
-                output(
+                Mud.Engine.Util.output(
                   context.character_id,
                   "{{info}}#{object.description.look_description}{{/info}}"
                 )
@@ -298,7 +299,7 @@ defmodule Mud.Engine.Command.Look do
 
       # Multiple objects were found, but not too many to show them in a list with options
       count when count <= 10 ->
-        looks = Stream.map(objects, & &1.description.look_description)
+        looks = Stream.map(objects, & &1.description.glance_description)
 
         error =
           "{{warning}}Multiple matching items were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
@@ -318,7 +319,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp multiple_object_error(context, items, strings, error_message, type) do
-    items = list_to_index_map(items)
+    items = Mud.Util.list_to_index_map(items)
 
     context
     |> append_message(
@@ -335,30 +336,6 @@ defmodule Mud.Engine.Command.Look do
     })
     |> set_continuation_module(__MODULE__)
     |> set_success()
-  end
-
-  def output(who, text, table_data \\ nil) do
-    %Mud.Engine.Output{
-      id: UUID.uuid4(),
-      character_id: who,
-      text: text,
-      table_data: table_data
-    }
-  end
-
-  defp list_to_index_map(list) do
-    list
-    |> Stream.with_index()
-    |> Enum.reduce(%{}, fn {thing, index}, map ->
-      Map.put(map, index, thing)
-    end)
-  end
-
-  defp clear_continuation_from_context(context) do
-    context
-    |> clear_continuation_data()
-    |> clear_continuation_module()
-    |> set_is_continuation(false)
   end
 
   defp build_area_description(context) do

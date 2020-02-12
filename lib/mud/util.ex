@@ -48,4 +48,12 @@ defmodule Mud.Util do
       {field, {"#{path}: #{error}", []}}
     end)
   end
+
+  def list_to_index_map(list) do
+    list
+    |> Stream.with_index()
+    |> Enum.reduce(%{}, fn {thing, index}, map ->
+      Map.put(map, index, thing)
+    end)
+  end
 end

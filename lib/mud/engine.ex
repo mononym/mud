@@ -163,30 +163,19 @@ defmodule Mud.Engine do
   end
 
   @doc """
-  Returns a single.
+  Returns a list of Links in an area.
 
   ## Examples
 
       iex> find_obvious_exit_in_character_location("valid character id", "valid direction")
-      %Area{}
+      [%Link{}]
 
       iex> find_obvious_exit_in_character_location("valid character id", "invalid direction")
-      nil
+      []
 
   """
-  def find_obvious_exit_in_character_location(character_id, direction) do
-    Repo.one(
-      from(link in Link,
-        join: area in Area,
-        on: area.id == link.from_id,
-        join: character in Character,
-        on: area.id == character.location_id,
-        where:
-          character.id == ^character_id and link.type == ^"obvious" and
-            link.departure_direction == ^direction,
-        select: link
-      )
-    )
+  def find_obvious_exit_in_area(area_id, direction) do
+    Link.find_all_in_area(area_id, "obvious", direction)
   end
 
   @doc """
@@ -204,6 +193,20 @@ defmodule Mud.Engine do
 
   """
   def get_link!(id), do: Repo.get!(Link, id)
+
+  @doc """
+  Gets a single link.
+
+  ## Examples
+
+      iex> get_link(123)
+      %Link{}
+
+      iex> get_link(456)
+      nil
+
+  """
+  def get_link(id), do: Repo.get(Link, id)
 
   @doc """
   Creates a link.

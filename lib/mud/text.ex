@@ -62,6 +62,10 @@ defmodule Mud.Text do
     "text-gray-700"
   end
 
+  defp tag_to_text_color("warning") do
+    "text-orange-800"
+  end
+
   defp tag_to_text_color(_tag) do
     "text-gray-700"
   end
