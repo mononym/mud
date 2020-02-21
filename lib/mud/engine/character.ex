@@ -21,8 +21,6 @@ defmodule Mud.Engine.Character do
     )
 
     has_one(:attributes, Attributes)
-
-    timestamps()
   end
 
   @doc false
@@ -36,13 +34,11 @@ defmodule Mud.Engine.Character do
     |> unique_constraint(:name)
   end
 
-  def list_by_case_insensitive_prefix_in_area(partial_name, area_id) do
+  def list_names_by_case_insensitive_prefix_in_area(partial_name, character_id) do
     Repo.all(
       from(
-        character in __MODULE__,
-        join: attributes in assoc(character, :attributes),
-        where: character.location_id == ^area_id and like(character.name, ^"#{partial_name}%"),
-        preload: [attributes: attributes]
+        character in case_insensitive_query(partial_name, character_id),
+        select: character.name
       )
     )
   end
@@ -59,6 +55,21 @@ defmodule Mud.Engine.Character do
         where: character.location_id == ^area_id and character.name == ^name,
         preload: [attributes: attributes]
       )
+    )
+  end
+
+  defp case_insensitive_query(partial_name, character_id) do
+    subset_query =
+      from(
+        character in __MODULE__,
+        where: character.id == ^character_id
+      )
+
+    from(
+      character in __MODULE__,
+      join: char in subquery(subset_query),
+      on: char.location_id == character.location_id,
+      where: character.id != ^character_id and like(character.name, ^"#{partial_name}%")
     )
   end
 end

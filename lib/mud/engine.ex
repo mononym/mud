@@ -17,7 +17,7 @@ defmodule Mud.Engine do
     @enforce_keys [:key, :is_scenery]
     defstruct key: nil, is_scenery: false, scenery: nil, location: nil, description: nil
 
-    defmodule Description do
+    defmodule ObjectDescription do
       @enforce_keys [:glance_description, :look_description]
       defstruct glance_description: nil, look_description: nil, examine_description: nil
     end
@@ -697,7 +697,7 @@ defmodule Mud.Engine do
     Location.changeset(location, %{})
   end
 
-  alias Mud.Engine.Component.Description
+  alias Mud.Engine.Component.ObjectDescription
 
   @doc """
   Returns the list of description_components.
@@ -705,28 +705,28 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> list_description_components()
-      [%Description{}, ...]
+      [%ObjectDescription{}, ...]
 
   """
   def list_description_components do
-    Repo.all(Description)
+    Repo.all(ObjectDescription)
   end
 
   @doc """
   Gets a single description.
 
-  Raises `Ecto.NoResultsError` if the Description does not exist.
+  Raises `Ecto.NoResultsError` if the ObjectDescription does not exist.
 
   ## Examples
 
       iex> get_description!(123)
-      %Description{}
+      %ObjectDescription{}
 
       iex> get_description!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_description!(id), do: Repo.get!(Description, id)
+  def get_description!(id), do: Repo.get!(ObjectDescription, id)
 
   @doc """
   Creates a description.
@@ -734,15 +734,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> create_description(%{field: value})
-      {:ok, %Description{}}
+      {:ok, %ObjectDescription{}}
 
       iex> create_description(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
   def create_description(attrs \\ %{}) do
-    %Description{}
-    |> Description.changeset(attrs)
+    %ObjectDescription{}
+    |> ObjectDescription.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -752,15 +752,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> update_description(description, %{field: new_value})
-      {:ok, %Description{}}
+      {:ok, %ObjectDescription{}}
 
       iex> update_description(description, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_description(%Description{} = description, attrs) do
+  def update_description(%ObjectDescription{} = description, attrs) do
     description
-    |> Description.changeset(attrs)
+    |> ObjectDescription.changeset(attrs)
     |> Repo.update()
   end
 
@@ -770,13 +770,13 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> delete_description(description)
-      {:ok, %Description{}}
+      {:ok, %ObjectDescription{}}
 
       iex> delete_description(description)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_description(%Description{} = description) do
+  def delete_description(%ObjectDescription{} = description) do
     Repo.delete(description)
   end
 
@@ -786,11 +786,11 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> change_description(description)
-      %Ecto.Changeset{source: %Description{}}
+      %Ecto.Changeset{source: %ObjectDescription{}}
 
   """
-  def change_description(%Description{} = description) do
-    Description.changeset(description, %{})
+  def change_description(%ObjectDescription{} = description) do
+    ObjectDescription.changeset(description, %{})
   end
 
   defp maybe_build_optional_object_assoc(object, %CreateObjectRequest{

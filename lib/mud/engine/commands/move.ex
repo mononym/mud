@@ -63,60 +63,62 @@ defmodule Mud.Engine.Command.Move do
 
   @impl true
   def execute(%Mud.Engine.CommandContext{} = context) do
-    context =
-      if context.parsed_args == "" do
-        %{
-          context
-          | command: %{context.command | command: normalize_direction(context.command.command)}
-        }
-      else
-        %{
-          context
-          | command: %{context.command | command: normalize_direction(context.parsed_args)}
-        }
-      end
+    # context =
+    #   if context.parsed_args == "" do
+    #     %{
+    #       context
+    #       | command: %{context.command | command: normalize_direction(context.command.command)}
+    #     }
+    #   else
+    #     %{
+    #       context
+    #       | command: %{context.command | command: normalize_direction(context.parsed_args)}
+    #     }
+    #   end
 
-    case Mud.Engine.find_obvious_exit_in_area(
-           context.character.location_id,
-           context.command.command
-         ) do
-      [] ->
-        append_message(
-          context,
-          %Mud.Engine.Output{
-            id: context.id,
-            character_id: context.character_id,
-            text: "{{error}}You cannot travel in that direction.{{/error}}"
-          }
-        )
+    # case Mud.Engine.find_obvious_exit_in_area(
+    #        context.character.location_id,
+    #        context.command.command
+    #      ) do
+    #   [] ->
+    #     append_message(
+    #       context,
+    #       %Mud.Engine.Output{
+    #         id: context.id,
+    #         character_id: context.character_id,
+    #         text: "{{error}}You cannot travel in that direction.{{/error}}"
+    #       }
+    #     )
 
-      [link] ->
-        IO.inspect(link)
-        do_move(context, link)
+    #   [link] ->
+    #     IO.inspect(link)
+    #     do_move(context, link)
 
-      # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
-      # links here like object
-      list_of_links when length(list_of_links) < 10 ->
-        Logger.debug("Several Links found")
-        obvious_directions = Stream.map(list_of_links, & &1.text)
+    #   # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
+    #   # links here like object
+    #   list_of_links when length(list_of_links) < 10 ->
+    #     Logger.debug("Several Links found")
+    #     obvious_directions = Stream.map(list_of_links, & &1.text)
 
-        error =
-          "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
+    #     error =
+    #       "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
 
-        multiple_link_error(context, list_of_links, obvious_directions, error)
+    #     multiple_link_error(context, list_of_links, obvious_directions, error)
 
-      _many ->
-        Logger.debug("Many Links found")
+    #   _many ->
+    #     Logger.debug("Many Links found")
 
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{error}}Which Exit?{{/error}}"
-          )
-        )
-        |> set_success(true)
-    end
+    #     context
+    #     |> append_message(
+    #       output(
+    #         context.character_id,
+    #         "{{error}}Which Exit?{{/error}}"
+    #       )
+    #     )
+    #     |> set_success(true)
+    # IO.inspect("move")
+    context
+    # end
   end
 
   defp do_move(context, link) do

@@ -20,8 +20,6 @@ defmodule Mud.Engine.Link do
       type: :binary_id,
       foreign_key: :to_id
     )
-
-    timestamps()
   end
 
   @doc false
@@ -36,6 +34,28 @@ defmodule Mud.Engine.Link do
       :to_id,
       :text
     ])
+  end
+
+  def list_text_of_obvious_exits_around_character(text, character_id) do
+    search_string = Mud.Engine.Search.text_to_search_terms(text)
+
+    subset_query =
+      from(
+        character in __MODULE__,
+        where: character.id == ^character_id
+      )
+
+    Repo.all(
+      from(
+        link in __MODULE__,
+        join: char in subquery(subset_query),
+        on: char.location_id == link.from_id,
+        where:
+          link.type == "obvious" and char.id == ^character_id and
+            like(link.text, ^search_string),
+        select: link.text
+      )
+    )
   end
 
   @spec find_all_in_area(binary, binary, binary) :: [__MODULE__.t()]

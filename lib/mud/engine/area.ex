@@ -5,8 +5,6 @@ defmodule Mud.Engine.Area do
   schema "areas" do
     field(:description, :string)
     field(:name, :string)
-
-    timestamps()
   end
 
   @doc false

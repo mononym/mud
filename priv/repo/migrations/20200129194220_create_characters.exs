@@ -8,8 +8,6 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
       add(:slug, :string)
       add(:location_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
       add(:player_id, references(:players, on_delete: :nothing, type: :binary_id))
-
-      timestamps()
     end
 
     create(index(:characters, [:player_id]))

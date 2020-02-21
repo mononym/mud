@@ -10,8 +10,6 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:arrival_direction, :citext)
       add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
       add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
-
-      timestamps()
     end
 
     create(index(:links, [:departure_direction]))

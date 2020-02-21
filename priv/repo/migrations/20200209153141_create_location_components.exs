@@ -13,8 +13,6 @@ defmodule Mud.Repo.Migrations.CreateLocationComponents do
       add(:object_id, references(:objects, on_delete: :delete_all, type: :binary_id),
         primary_key: true
       )
-
-      timestamps()
     end
 
     create(index(:location_components, [:reference]))

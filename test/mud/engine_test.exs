@@ -246,9 +246,33 @@ defmodule Mud.EngineTest do
   describe "location_components" do
     alias Mud.Engine.Component.Location
 
-    @valid_attrs %{contained: true, hand: "some hand", held: true, object_id: "some object_id", on_ground: true, reference: "some reference", worn: true}
-    @update_attrs %{contained: false, hand: "some updated hand", held: false, object_id: "some updated object_id", on_ground: false, reference: "some updated reference", worn: false}
-    @invalid_attrs %{contained: nil, hand: nil, held: nil, object_id: nil, on_ground: nil, reference: nil, worn: nil}
+    @valid_attrs %{
+      contained: true,
+      hand: "some hand",
+      held: true,
+      object_id: "some object_id",
+      on_ground: true,
+      reference: "some reference",
+      worn: true
+    }
+    @update_attrs %{
+      contained: false,
+      hand: "some updated hand",
+      held: false,
+      object_id: "some updated object_id",
+      on_ground: false,
+      reference: "some updated reference",
+      worn: false
+    }
+    @invalid_attrs %{
+      contained: nil,
+      hand: nil,
+      held: nil,
+      object_id: nil,
+      on_ground: nil,
+      reference: nil,
+      worn: nil
+    }
 
     def location_fixture(attrs \\ %{}) do
       {:ok, location} =
@@ -315,11 +339,26 @@ defmodule Mud.EngineTest do
   end
 
   describe "description_components" do
-    alias Mud.Engine.Component.Description
+    alias Mud.Engine.Component.ObjectDescription
 
-    @valid_attrs %{examine_description: "some examine_description", glance_description: "some glance_description", look_description: "some look_description", object_id: "some object_id"}
-    @update_attrs %{examine_description: "some updated examine_description", glance_description: "some updated glance_description", look_description: "some updated look_description", object_id: "some updated object_id"}
-    @invalid_attrs %{examine_description: nil, glance_description: nil, look_description: nil, object_id: nil}
+    @valid_attrs %{
+      examine_description: "some examine_description",
+      glance_description: "some glance_description",
+      look_description: "some look_description",
+      object_id: "some object_id"
+    }
+    @update_attrs %{
+      examine_description: "some updated examine_description",
+      glance_description: "some updated glance_description",
+      look_description: "some updated look_description",
+      object_id: "some updated object_id"
+    }
+    @invalid_attrs %{
+      examine_description: nil,
+      glance_description: nil,
+      look_description: nil,
+      object_id: nil
+    }
 
     def description_fixture(attrs \\ %{}) do
       {:ok, description} =
@@ -341,7 +380,7 @@ defmodule Mud.EngineTest do
     end
 
     test "create_description/1 with valid data creates a description" do
-      assert {:ok, %Description{} = description} = Engine.create_description(@valid_attrs)
+      assert {:ok, %ObjectDescription{} = description} = Engine.create_description(@valid_attrs)
       assert description.examine_description == "some examine_description"
       assert description.glance_description == "some glance_description"
       assert description.look_description == "some look_description"
@@ -354,7 +393,10 @@ defmodule Mud.EngineTest do
 
     test "update_description/2 with valid data updates the description" do
       description = description_fixture()
-      assert {:ok, %Description{} = description} = Engine.update_description(description, @update_attrs)
+
+      assert {:ok, %ObjectDescription{} = description} =
+               Engine.update_description(description, @update_attrs)
+
       assert description.examine_description == "some updated examine_description"
       assert description.glance_description == "some updated glance_description"
       assert description.look_description == "some updated look_description"
@@ -369,7 +411,7 @@ defmodule Mud.EngineTest do
 
     test "delete_description/1 deletes the description" do
       description = description_fixture()
-      assert {:ok, %Description{}} = Engine.delete_description(description)
+      assert {:ok, %ObjectDescription{}} = Engine.delete_description(description)
       assert_raise Ecto.NoResultsError, fn -> Engine.get_description!(description.id) end
     end
 

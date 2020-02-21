@@ -6,7 +6,7 @@ defmodule Mud.Engine.Output do
     list_items = Enum.join(table_data, "</li>{{/info}}{{info}}<li>")
 
     text =
-      "<ol class=\"list-decimal list-inside\" start=\"0\">{{info}}<li>" <>
+      "<ol id=\"#{output.id}\" class=\"list-decimal list-inside\" start=\"0\">{{info}}<li>" <>
         list_items <> "</li></ol>{{/info}}"
 
     case message do
@@ -18,8 +18,10 @@ defmodule Mud.Engine.Output do
     end
   end
 
-  def transform_for_web(%__MODULE__{table_data: nil, text: text}) do
-    Mud.Text.from_tagged_to_html(text)
+  def transform_for_web(output = %__MODULE__{table_data: nil, text: text}) do
+    text = Mud.Text.from_tagged_to_html(text)
+
+    "<p id=\"#{output.id}\" class=\"whitespace-pre-wrap\">" <> text <> "</p>"
   end
 
   def transform_for_web(text) when is_binary(text) do

@@ -11,68 +11,89 @@ import { Socket } from "phoenix"
 import LiveSocket from "phoenix_live_view"
 
 function htmlToElement(html) {
-  var template = document.createElement('template');
-  html = html.trim(); // Never return a text node of whitespace as the result
-  template.innerHTML = html;
-  return template.content.firstChild;
+    var template = document.createElement('template');
+    html = html.trim(); // Never return a text node of whitespace as the result
+    template.innerHTML = html;
+    return template.content.firstChild;
 }
 
 function htmlToElements(html) {
-  var template = document.createElement('template');
-  template.innerHTML = html;
-  return template.content.childNodes;
+    var template = document.createElement('template');
+    template.innerHTML = html;
+    return template.content.childNodes;
 }
 
 function createElementsFromHTML(htmlString) {
-  var div = document.createElement('div');
-  div.innerHTML = htmlString.trim();
+    var div = document.createElement('div');
+    div.innerHTML = htmlString.trim();
 
-  let frag = document.createRange().createContextualFragment(htmlString.trim())
+    let frag = document.createRange().createContextualFragment(htmlString.trim())
 
-  // Change this to div.childNodes to support multiple top-level nodes
-  return frag;
+    // Change this to div.childNodes to support multiple top-level nodes
+    return frag;
 }
 
 let Hooks = {}
 
 Hooks.Input = {
-  mounted() {
-    this.el.focus()
-  }
+    mounted() {
+        this.el.focus()
+    }
 }
 
+let storyWindowScrolledToBottom = true;
+let storywindow;
+
 Hooks.Story = {
-  mounted() {
-    let element = this.el
-    let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
-    let channel = socket.channel("character:" + character_id, {})
+    mounted() {
+        this.el.focus()
 
-    channel.on("output:story", text => {
-      console.log("text")
-      console.log(text)
-      let textLines = createElementsFromHTML(text.text)
+        let element = this.el
+        let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
+        let channel = socket.channel("character:" + character_id, {})
 
-      element.appendChild(textLines)
-    })
+        storywindow = element
 
-    channel.join()
-      .receive("ok", ({ messages }) => console.log("successfully joined", messages))
-      .receive("error", ({ reason }) => console.log("failed join", reason))
-      .receive("timeout", () => console.log("Networking issue. Still waiting..."))
+        channel.join()
+            .receive("ok", ({ messages }) => console.log("successfully joined", messages))
+            .receive("error", ({ reason }) => console.log("failed join", reason))
+            .receive("timeout", () => console.log("Networking issue. Still waiting..."))
 
-    let prompt = document.querySelector("#prompt")
-
-    // "listen" for the [Enter] keypress event to send a message:
-    prompt.addEventListener('keypress', function (event) {
-      if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
-        channel.push("input", prompt.value);
-
-        prompt.value = '';         // reset the message input field for next message.
-
+        let prompt = document.querySelector("#prompt")
         prompt.focus()
-      }
-    });
-  }
+
+        // "listen" for the [Enter] keypress event to send a message:
+        prompt.addEventListener('keydown', function (event) {
+            if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
+                event.stopPropagation()
+                event.preventDefault()
+
+                channel.push("input", prompt.value)
+
+                prompt.value = '';         // reset the message input field for next message.
+
+                // "listen" for the [Tab] keypress event to send an autocomplete message:
+            } else if (event.keyCode == 9 && prompt.value.length > 0) { // don't sent empty msg.
+                event.stopPropagation()
+                event.preventDefault()
+                console.log(event)
+                channel.push("autocomplete", prompt.value)
+
+            } else if (event.keyCode == 9) {
+                event.stopPropagation()
+                event.preventDefault()
+            }
+        });
+    },
+
+    beforeUpdate() {
+        storyWindowScrolledToBottom = storywindow.scrollHeight - storywindow.clientHeight <= storywindow.scrollTop + 1;
+    },
+
+    updated() {
+        if (storyWindowScrolledToBottom)
+            storywindow.scrollTop = storywindow.scrollHeight - storywindow.clientHeight;
+    }
 }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
@@ -126,7 +147,7 @@ let socket = new Socket("/socket", { params: { token: window.userToken } })
 socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-let channel = socket.channel("topic:subtopic", {})
+// let channel = socket.channel("topic:subtopic", {})
 // channel.join()
 //   .receive("ok", resp => { console.log("Joined successfully", resp) })
 //   .receive("error", resp => { console.log("Unable to join", resp) })

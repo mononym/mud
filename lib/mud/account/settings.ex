@@ -15,8 +15,6 @@ defmodule Mud.Account.Settings do
       primary_key: true,
       define_field: false
     )
-
-    timestamps()
   end
 
   @spec changeset(__MODULE__.t() | Ecto.Changeset.t()) :: Ecto.Changeset.t()

@@ -12,8 +12,6 @@ defmodule Mud.Engine.Component.Scenery do
       primary_key: true,
       define_field: false
     )
-
-    timestamps()
   end
 
   @doc false

@@ -17,8 +17,6 @@ defmodule Mud.Engine.Component.Location do
       primary_key: true,
       define_field: false
     )
-
-    timestamps()
   end
 
   @doc false

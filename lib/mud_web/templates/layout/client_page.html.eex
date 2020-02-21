@@ -10,16 +10,16 @@
     <%= tag :meta, name: "channel_token",
                content: Phoenix.Token.sign(@conn, "player salt", @player.id) %>
   </head>
-  <body class="min-w-full  min-h-full h-screen flex flex-col">
-    <main class="min-w-full flex-grow" role="main">
-      <section class="flex flex-col min-w-full h-screen">
-        <p class="w-auto bg-green-200 justify-start" role="alert"><%= get_flash(@conn, :success) %></p>
-        <p class="w-auto bg-blue-200 justify-start" role="alert"><%= get_flash(@conn, :info) %></p>
-        <p class="w-auto bg-orange-200 justify-start" role="alert"><%= get_flash(@conn, :warning) %></p>
-        <p class="w-auto bg-red-200 justify-start" role="alert"><%= get_flash(@conn, :error) %></p>
-        <%= render @view_module, @view_template, assigns %>
-      </section>
-    </main>
+  <body class="min-w-full  min-h-full h-screen flex flex-col overflow-hidden">
+    <p class="w-auto bg-green-200 justify-start" role="alert"><%= get_flash(@conn, :success) %></p>
+    <p class="w-auto bg-blue-200 justify-start" role="alert"><%= get_flash(@conn, :info) %></p>
+    <p class="w-auto bg-orange-200 justify-start" role="alert"><%= get_flash(@conn, :warning) %></p>
+    <p class="w-auto bg-red-200 justify-start" role="alert"><%= get_flash(@conn, :error) %></p>
+    <div name="window" class="w-screen h-screen flex flex-col overflow-hidden max-h-screen">
+      <%= render @view_module, @view_template, assigns %>
+        <input id="prompt" phx-hook="Input" type="textarea" class="min-w-full rounded-lg resize-y flex-shrink" placeholder="Enter Commands Here..."/>
+
+    </div>
     <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
     <%= render_existing @view_module, "scripts.html", assigns %>
   </body>

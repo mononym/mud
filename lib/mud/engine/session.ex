@@ -59,7 +59,7 @@ defmodule Mud.Engine.Session do
   Subscribe to the output of a character session.
   """
   def subscribe(character_id) do
-    GenServer.cast(via(character_id), {:subscribe, self()})
+    GenServer.call(via(character_id), {:subscribe, self()})
   end
 
   @doc """
@@ -130,6 +130,9 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast(%Output{} = output, state) do
+    Logger.debug("#{inspect(output)}")
+    Logger.debug("#{inspect(state.subscribers)}")
+
     output = %{output | text: Output.transform_for_web(output)}
 
     state = update_buffer(state, output)
@@ -151,6 +154,8 @@ defmodule Mud.Engine.Session do
 
   @impl true
   def handle_cast(%Mud.Engine.Input{} = input, state) do
+    Logger.debug("#{inspect(input)}", label: "handle_cast")
+    Logger.debug("#{inspect(state)}", label: "handle_cast")
     state = update_timeout(state, @character_inactivity_timeout_warning)
 
     cond do
@@ -198,26 +203,6 @@ defmodule Mud.Engine.Session do
     end
   end
 
-  def handle_cast({:subscribe, process}, state) do
-    ref = Process.link(process)
-
-    updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
-
-    state =
-      if length(state.undelivered_text) != 0 do
-        Map.values(updated_subscribers)
-        |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, zip_output(state.undelivered_text))
-        end)
-
-        %{state | undelivered_text: []}
-      else
-        state
-      end
-
-    {:noreply, %{state | subscribers: updated_subscribers}}
-  end
-
   def handle_cast({:unsubscribe, process}, state) do
     subscriber =
       Enum.find(state.subscribers, nil, fn {_ref, %{pid: pid}} ->
@@ -237,6 +222,26 @@ defmodule Mud.Engine.Session do
     Logger.error("Received unexpected cast: #{inspect(msg)}")
 
     {:noreply, state}
+  end
+
+  def handle_call({:subscribe, process}, _from, state) do
+    ref = Process.link(process)
+
+    updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
+
+    state =
+      if length(state.undelivered_text) != 0 do
+        Map.values(updated_subscribers)
+        |> Enum.each(fn subscriber ->
+          GenServer.cast(subscriber.pid, zip_output(state.undelivered_text))
+        end)
+
+        %{state | undelivered_text: []}
+      else
+        state
+      end
+
+    {:reply, :ok, %{state | subscribers: updated_subscribers}}
   end
 
   @impl true
@@ -351,8 +356,40 @@ defmodule Mud.Engine.Session do
     %{state | input_processing_task: input_processing_task}
   end
 
+  # defp send_command_for_processing(command, state) do
+  #   session_pid = self()
+
+  #   # send stuff off to task
+  #   task =
+  #     Task.async(fn ->
+  #       if input.type == :normal do
+  #         GenServer.cast(session_pid, %Mud.Engine.Output{
+  #           id: input.id,
+  #           character_id: input.character_id,
+  #           text: "{{echo}}> #{command.raw_input}{{/echo}}"
+  #         })
+  #       end
+
+  #       execution_context =
+  #         Mud.Engine.Command.executev2(%Mud.Engine.CommandContext{
+  #           id: input.id,
+  #           character_id: input.character_id,
+  #           raw_input: input.text,
+  #           continuation_data: state.continuation_data,
+  #           is_continuation: state.is_continuation,
+  #           continuation_module: state.continuation_module
+  #         })
+
+  #       GenServer.cast(session_pid, {:input_processing_finished, execution_context})
+  #     end)
+
+  #   task.ref
+  # end
+
   defp send_input_for_processing(input, state) do
     session_pid = self()
+
+    IO.inspect(input, label: "send_input_for_processing")
 
     # send stuff off to task
     task =
@@ -361,12 +398,14 @@ defmodule Mud.Engine.Session do
           GenServer.cast(session_pid, %Mud.Engine.Output{
             id: input.id,
             character_id: input.character_id,
-            text: "{{echo}}> #{input.text}{{/echo}}"
+            text: "<span id=\"#{input.id}\">{{echo}}> #{input.text}{{/echo}}</span>"
           })
         end
 
+        IO.inspect(input)
+
         execution_context =
-          Mud.Engine.Command.execute(%Mud.Engine.CommandContext{
+          Mud.Engine.Command.executev2(%Mud.Engine.CommandContext{
             id: input.id,
             character_id: input.character_id,
             raw_input: input.text,
@@ -394,7 +433,7 @@ defmodule Mud.Engine.Session do
         if String.contains?(output.text, "<p") do
           output.text
         else
-          "<p class=\"whitespace-pre-wrap\">#{output.text}</p>"
+          "<p id=\"#{output.id}\" class=\"whitespace-pre-wrap\">#{output.text}</p>"
         end
       end)
       |> Enum.reverse()

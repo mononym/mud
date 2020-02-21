@@ -1,9 +1,9 @@
-defmodule Mud.Engine.Component.Description do
+defmodule Mud.Engine.Component.ObjectDescription do
   use Mud.Schema
   import Ecto.Changeset
 
   @primary_key {:object_id, :binary_id, autogenerate: false}
-  schema "description_components" do
+  schema "object_description_components" do
     field(:examine_description, :string)
     field(:glance_description, :string)
     field(:look_description, :string)
@@ -14,8 +14,6 @@ defmodule Mud.Engine.Component.Description do
       primary_key: true,
       define_field: false
     )
-
-    timestamps()
   end
 
   @doc false

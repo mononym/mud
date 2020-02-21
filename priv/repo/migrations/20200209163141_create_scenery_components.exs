@@ -8,8 +8,6 @@ defmodule Mud.Repo.Migrations.CreateSceneryComponents do
       add(:object_id, references(:objects, on_delete: :delete_all, type: :binary_id),
         primary_key: true
       )
-
-      timestamps()
     end
 
     create(index(:scenery_components, [:hidden]))

@@ -181,106 +181,117 @@ defmodule Mud.Engine.Command.Look do
 
   @impl true
   def execute(context) do
-    Logger.debug("Beginning execution with the following context: #{inspect(context)}")
+    IO.inspect("Beginning execution with the following context: #{inspect(context)}")
 
-    case context.parsed_args do
-      # An empty argument string means the intention is to look at the area
-      "" ->
-        build_area_description(context)
+    segments = context.command.segments
 
-      # Player wants to look at a character or an item
-      name_or_item ->
-        split_input = String.split(name_or_item)
+    cond do
+      segments.look != nil ->
+        description = build_area_description(context)
 
-        # Player only entered a single thing after the look. So: 'look box' or 'look jim'
-        if length(split_input) == 1 do
-          # Start out looking for exact character name
-          case Character.get_by_name(name_or_item) do
-            # Found a perfect match for a character name
-            character = %Character{} ->
-              Logger.debug("Character found by perfect match: #{inspect(character)}")
-
-              context
-              |> append_message(
-                output(
-                  context.character_id,
-                  "{{info}}You see #{character.name}.{{/info}}"
-                )
-              )
-              |> set_success()
-
-            # No perfect match for a character was found
-            nil ->
-              Logger.debug("Character not found")
-              # Look for any matches with objects
-              objects = Object.list_by_key_in_area(name_or_item, context.character.location_id)
-              Logger.debug("Listing objects")
-
-              case length(objects) do
-                # If there are no matches with objects, check for partial character name
-                0 ->
-                  Logger.debug("No objects found, listing characters by prefix")
-
-                  case Character.list_by_case_insensitive_prefix_in_area(
-                         name_or_item,
-                         context.character.location_id
-                       ) do
-                    [character] ->
-                      Logger.debug("Character found by prefix: #{inspect(character)}")
-
-                      context
-                      |> append_message(
-                        output(
-                          context.character_id,
-                          "{{info}}You see #{character.name}.{{/info}}"
-                        )
-                      )
-                      |> set_success()
-
-                    [] ->
-                      Logger.debug("No Character found")
-
-                      context
-                      |> append_message(
-                        output(
-                          context.character_id,
-                          "{{error}}What did you want to look at?{{/error}}"
-                        )
-                      )
-                      |> set_success(true)
-
-                    list_of_characters when length(list_of_characters) < 10 ->
-                      Logger.debug("Several Characters found")
-                      names = Stream.map(objects, & &1.name)
-
-                      error =
-                        "{{warning}}Multiple matching characters were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
-
-                      multiple_object_error(context, list_of_characters, names, error, :character)
-
-                    _many ->
-                      Logger.debug("Many Characters found")
-
-                      context
-                      |> append_message(
-                        output(
-                          context.character_id,
-                          "{{error}}Could not find what you were looking for. Please try again.{{/error}}"
-                        )
-                      )
-                      |> set_success(true)
-                  end
-
-                _count ->
-                  handle_object_response(context, objects)
-              end
-          end
-        else
-          objects = Object.list_by_description_in_area(split_input, context.character.location_id)
-
-          handle_object_response(context, objects)
-        end
+      context
+      |> append_message(output(context.character_id, description))
+      |> set_success()
     end
+
+    # case context.parsed_args do
+    #   # An empty argument string means the intention is to look at the area
+    #   "" ->
+    #     build_area_description(context)
+
+    #   # Player wants to look at a character or an item
+    #   name_or_item ->
+    #     split_input = String.split(name_or_item)
+
+    #     # Player only entered a single thing after the look. So: 'look box' or 'look jim'
+    #     if length(split_input) == 1 do
+    #       # Start out looking for exact character name
+    #       case Character.get_by_name(name_or_item) do
+    #         # Found a perfect match for a character name
+    #         character = %Character{} ->
+    #           Logger.debug("Character found by perfect match: #{inspect(character)}")
+
+    #           context
+    #           |> append_message(
+    #             output(
+    #               context.character_id,
+    #               "{{info}}You see #{character.name}.{{/info}}"
+    #             )
+    #           )
+    #           |> set_success()
+
+    #         # No perfect match for a character was found
+    #         nil ->
+    #           Logger.debug("Character not found")
+    #           # Look for any matches with objects
+    #           objects = Object.list_by_key_in_area(name_or_item, context.character.location_id)
+    #           Logger.debug("Listing objects")
+
+    #           case length(objects) do
+    #             # If there are no matches with objects, check for partial character name
+    #             0 ->
+    #               Logger.debug("No objects found, listing characters by prefix")
+
+    #               case Character.list_names_by_case_insensitive_prefix_in_area(
+    #                      name_or_item,
+    #                      context.character.location_id
+    #                    ) do
+    #                 [character] ->
+    #                   Logger.debug("Character found by prefix: #{inspect(character)}")
+
+    #                   context
+    #                   |> append_message(
+    #                     output(
+    #                       context.character_id,
+    #                       "{{info}}You see #{character.name}.{{/info}}"
+    #                     )
+    #                   )
+    #                   |> set_success()
+
+    #                 [] ->
+    #                   Logger.debug("No Character found")
+
+    #                   context
+    #                   |> append_message(
+    #                     output(
+    #                       context.character_id,
+    #                       "{{error}}What did you want to look at?{{/error}}"
+    #                     )
+    #                   )
+    #                   |> set_success(true)
+
+    #                 list_of_characters when length(list_of_characters) < 10 ->
+    #                   Logger.debug("Several Characters found")
+    #                   names = Stream.map(objects, & &1.name)
+
+    #                   error =
+    #                     "{{warning}}Multiple matching characters were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
+
+    #                   multiple_object_error(context, list_of_characters, names, error, :character)
+
+    #                 _many ->
+    #                   Logger.debug("Many Characters found")
+
+    #                   context
+    #                   |> append_message(
+    #                     output(
+    #                       context.character_id,
+    #                       "{{error}}Could not find what you were looking for. Please try again.{{/error}}"
+    #                     )
+    #                   )
+    #                   |> set_success(true)
+    #               end
+
+    #             _count ->
+    #               handle_object_response(context, objects)
+    #           end
+    #       end
+    #     else
+    #       objects = Object.list_by_description_in_area(split_input, context.character.location_id)
+
+    #       handle_object_response(context, objects)
+    #     end
+    # end
   end
 
   defp handle_object_response(context, objects) do
@@ -341,7 +352,6 @@ defmodule Mud.Engine.Command.Look do
   defp build_area_description(context) do
     area = Mud.Engine.get_area!(context.character.location_id)
 
-    output =
       build_area_name(area)
       |> build_area_description(area)
       |> maybe_build_things_of_interest(area)
@@ -350,10 +360,6 @@ defmodule Mud.Engine.Command.Look do
       |> maybe_build_denizens(area)
       |> maybe_build_also_present(area, context.character_id)
       |> maybe_build_obvious_exits(area)
-
-    context
-    |> append_message(output(context.character_id, output))
-    |> set_success()
   end
 
   defp build_area_name(area) do

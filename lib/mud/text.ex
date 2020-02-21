@@ -8,7 +8,7 @@ defmodule Mud.Text do
   def from_tagged_to_html(text) do
     case Regex.named_captures(~r/.*?{{(?<tag>.+?)}}.*/, text) do
       nil ->
-        "<p class=\"whitespace-pre-wrap\">#{text}</p>"
+        text
 
       %{"tag" => tag} ->
         text
