@@ -5,17 +5,17 @@ defmodule MudWeb.CharacterChannel do
 
   def join("character:" <> character_id, _message, socket) do
     Logger.debug("#{inspect(character_id)}")
-    # send(self(), :after_join)
+    send(self(), :after_join)
 
     {:ok, assign(socket, :character_id, character_id)}
   end
 
-  # def handle_info(:after_join, socket) do
-  #   Logger.debug("#{inspect(:after_join)}")
-  #   # Mud.Engine.Session.subscribe(socket.assigns.character_id)
+  def handle_info(:after_join, socket) do
+    Logger.debug("#{inspect(:after_join)}")
+    Mud.Engine.Session.subscribe(socket.assigns.character_id)
 
-  #   {:noreply, socket}
-  # end
+    {:noreply, socket}
+  end
 
   def handle_info({:DOWN, _ref, :process, _pid, _reason} = message, socket) do
     Logger.debug("#{inspect(message)}")
@@ -30,6 +30,8 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_in("autocomplete", input, socket) do
+    Logger.debug(input, label: "character_channel autocomplete")
+
     Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
       character_id: socket.assigns.character_id,
       text: input,
@@ -52,11 +54,11 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
-  # def handle_cast(%Mud.Engine.Output{} = output, socket) do
-  #   Logger.debug("#{inspect(output)}")
+  def handle_cast(%Mud.Engine.Output{} = output, socket) do
+    Logger.debug("#{inspect(output)}")
 
-  #   Phoenix.Channel.push(socket, "output:story", %{text: output.text})
+    Phoenix.Channel.push(socket, "output:story", %{text: output.text})
 
-  #   {:noreply, socket}
-  # end
+    {:noreply, socket}
+  end
 end

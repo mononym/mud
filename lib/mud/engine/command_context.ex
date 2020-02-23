@@ -38,7 +38,10 @@ defmodule Mud.Engine.CommandContext do
     # Flag whether or not this is a continuation of a previous command execution.
     {:is_continuation, false},
     # The callback module to call on continuation.
-    :continuation_module
+    :continuation_module,
+    # The type of continuiation it is, such as numeric. Meaning a number being entered continues while anything else is
+    # executed as is instead while the continuation data is dropped.
+    :continuation_type
   ]
 
   @doc """
@@ -98,6 +101,13 @@ defmodule Mud.Engine.CommandContext do
   """
   def set_continuation_module(%__MODULE__{} = context, module) do
     %{context | continuation_module: module}
+  end
+
+  @doc """
+  Put a value into the data embedded in the Context, returning the updated Context.
+  """
+  def set_continuation_type(%__MODULE__{} = context, type) do
+    %{context | continuation_type: type}
   end
 
   @doc """

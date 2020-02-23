@@ -113,7 +113,21 @@ defmodule Mud.Engine.Commands do
                     match_strings: [],
                     autocomplete: true,
                     search: [:exits],
-                    key: :exit
+                    key: :exit,
+                    max_allowed: :infinite
+                  }
+                ]
+              },
+              %Command{
+                callback_module: Command.Quit,
+                segments: [
+                  %Segment{
+                    match_strings: [
+                      "quit"
+                    ],
+                    autocomplete: true,
+                    search: [],
+                    key: :move
                   }
                 ]
               }
@@ -177,6 +191,7 @@ defmodule Mud.Engine.Commands do
         end)
       end
     end)
+
     # |> Enum.filter(fn result ->
     #   result != {:error, :no_match}
     # end)
@@ -195,7 +210,7 @@ defmodule Mud.Engine.Commands do
         {:ok, command}
 
       nil ->
-        {:error, :not_found}
+        {:error, :no_match}
     end
   end
 end

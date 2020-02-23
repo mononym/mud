@@ -1,124 +1,101 @@
 defmodule Mud.Engine.Command.Move do
+  @moduledoc """
+  The MOVE command moves a Character in a direction. This is usually an exit but can be other things.
+
+  Syntax:
+    - move < exit | direction >
+
+  Aliases:
+    - go
+    - cardinal/ordinal directions
+    - relative directions
+
+  Examples:
+    - move south
+    - out
+    - move bridge
+    - move red door
+    - move right
+    - south
+  """
   use Mud.Engine.CommandCallback
 
   require Logger
 
   import Mud.Engine.Util
 
-  alias Mud.Engine.Link
-
-  @impl true
-  def parse_continuation_arg_string(raw_args) do
-    case Integer.parse(raw_args) do
-      {integer, _} ->
-        {:ok, integer}
-
-      :error ->
-        {:error, :not_an_integer}
-    end
-  end
-
-  @impl true
-  def continue(context) do
-    Logger.debug("Continuing to execute 'move' command")
-
-    int = context.parsed_args
-    data = context.continuation_data
-
-    # Make sure exit selected an option from the list
-    if int <= 9 and int >= 0 and int < map_size(data) do
-      link = data[int]
-
-      # Get for links
-      case Mud.Engine.get_link(link.id) do
-        # The link was found
-        link = %Link{} ->
-          do_move(context, link)
-
-        # Object has been deleted
-        nil ->
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{error}}You are unable to use `#{link.text}` as an exit as it is no longer present.{{/error}}"
-            )
-          )
-          |> clear_continuation_from_context()
-          |> set_success(true)
-      end
-    else
-      # The number Player selected is out of bounds for the list of choices given
-      context
-      |> append_message(
-        output(
-          context.character_id,
-          "{{error}}The number `#{int}` is an invalid selection. Please try to exit the area again.{{/error}}"
-        )
-      )
-      |> clear_continuation_from_context()
-      |> set_success(true)
-    end
-  end
-
   @impl true
   def execute(%Mud.Engine.CommandContext{} = context) do
-    # context =
-    #   if context.parsed_args == "" do
-    #     %{
-    #       context
-    #       | command: %{context.command | command: normalize_direction(context.command.command)}
-    #     }
-    #   else
-    #     %{
-    #       context
-    #       | command: %{context.command | command: normalize_direction(context.parsed_args)}
-    #     }
-    #   end
+    # IO.inspect(context, label: "move execute")
+    segments = context.command.segments
 
-    # case Mud.Engine.find_obvious_exit_in_area(
-    #        context.character.location_id,
-    #        context.command.command
-    #      ) do
-    #   [] ->
-    #     append_message(
-    #       context,
-    #       %Mud.Engine.Output{
-    #         id: context.id,
-    #         character_id: context.character_id,
-    #         text: "{{error}}You cannot travel in that direction.{{/error}}"
-    #       }
-    #     )
+    cond do
+      Map.has_key?(segments, :move) and Map.has_key?(segments, :exit) ->
+        attempt_move(Enum.join(segments.exit.input, " "), context)
 
-    #   [link] ->
-    #     IO.inspect(link)
-    #     do_move(context, link)
+      Map.has_key?(segments, :move) and List.first(segments.move.input) not in ["go", "move"] ->
+        direction =
+          List.first(segments.move.input)
+          |> normalize_direction()
 
-    #   # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
-    #   # links here like object
-    #   list_of_links when length(list_of_links) < 10 ->
-    #     Logger.debug("Several Links found")
-    #     obvious_directions = Stream.map(list_of_links, & &1.text)
+        attempt_move(direction, context)
 
-    #     error =
-    #       "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
+      true ->
+        help_docs = Mud.Util.get_module_docs(__MODULE__)
 
-    #     multiple_link_error(context, list_of_links, obvious_directions, error)
+        context
+        |> append_message(
+          output(
+            context.character_id,
+            "{{help_docs}}#{help_docs}{{/help_docs}}"
+          )
+        )
+        |> set_success()
+    end
+  end
 
-    #   _many ->
-    #     Logger.debug("Many Links found")
+  defp attempt_move(direction, context) do
+    case Mud.Engine.find_obvious_exit_in_area(
+           context.character.location_id,
+           direction
+         ) do
+      [] ->
+        append_message(
+          context,
+          %Mud.Engine.Output{
+            id: context.id,
+            character_id: context.character_id,
+            text: "{{error}}You cannot travel in that direction.{{/error}}"
+          }
+        )
 
-    #     context
-    #     |> append_message(
-    #       output(
-    #         context.character_id,
-    #         "{{error}}Which Exit?{{/error}}"
-    #       )
-    #     )
-    #     |> set_success(true)
-    # IO.inspect("move")
-    context
-    # end
+      [link] ->
+        # IO.inspect(link)
+        do_move(context, link)
+
+      # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
+      # links here like object
+      list_of_links when length(list_of_links) < 10 ->
+        Logger.debug("Several Links found")
+        obvious_directions = Stream.map(list_of_links, & &1.text)
+
+        error =
+          "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
+
+        multiple_link_error(context, list_of_links, obvious_directions, error)
+
+      _many ->
+        Logger.debug("Many Links found")
+
+        context
+        |> append_message(
+          output(
+            context.character_id,
+            "{{error}}Which Exit?{{/error}}"
+          )
+        )
+        |> set_success()
+    end
   end
 
   defp do_move(context, link) do
@@ -194,7 +171,10 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp multiple_link_error(context, items, strings, error_message) do
-    items = Mud.Util.list_to_index_map(items)
+    items =
+      items
+      |> Enum.map(&("move " <> &1.text))
+      |> Mud.Util.list_to_index_map()
 
     context
     |> append_message(
@@ -207,7 +187,9 @@ defmodule Mud.Engine.Command.Move do
     |> set_is_continuation(true)
     |> set_continuation_data(items)
     |> set_continuation_module(__MODULE__)
+    |> set_continuation_type(:numeric)
     |> set_success()
+    |> IO.inspect(label: "mle")
   end
 
   defp normalize_direction(direction) do

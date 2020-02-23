@@ -15,3 +15,11 @@ import "phoenix_html"
 //
 // Local files can be imported directly using relative paths, for example:
 import "./socket"
+import "./vue_client"
+
+// import Vue from "vue";
+// import Client from "./components/Client.vue";
+
+// new Vue({
+//     render: h => h(Client)
+// }).$mount("#hello")

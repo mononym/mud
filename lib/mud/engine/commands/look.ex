@@ -189,9 +189,9 @@ defmodule Mud.Engine.Command.Look do
       segments.look != nil ->
         description = build_area_description(context)
 
-      context
-      |> append_message(output(context.character_id, description))
-      |> set_success()
+        context
+        |> append_message(output(context.character_id, description))
+        |> set_success()
     end
 
     # case context.parsed_args do
@@ -352,14 +352,14 @@ defmodule Mud.Engine.Command.Look do
   defp build_area_description(context) do
     area = Mud.Engine.get_area!(context.character.location_id)
 
-      build_area_name(area)
-      |> build_area_description(area)
-      |> maybe_build_things_of_interest(area)
-      |> maybe_build_on_ground(area)
-      |> maybe_build_hostiles(area)
-      |> maybe_build_denizens(area)
-      |> maybe_build_also_present(area, context.character_id)
-      |> maybe_build_obvious_exits(area)
+    build_area_name(area)
+    |> build_area_description(area)
+    |> maybe_build_things_of_interest(area)
+    |> maybe_build_on_ground(area)
+    |> maybe_build_hostiles(area)
+    |> maybe_build_denizens(area)
+    |> maybe_build_also_present(area, context.character_id)
+    |> maybe_build_obvious_exits(area)
   end
 
   defp build_area_name(area) do
@@ -441,7 +441,7 @@ defmodule Mud.Engine.Command.Look do
   defp build_obvious_exits_string(area_id) do
     Mud.Engine.list_obvious_exits(area_id)
     |> Enum.map(fn link ->
-      link.departure_direction
+      link.text
     end)
     |> Enum.sort()
     |> Enum.join(", ")

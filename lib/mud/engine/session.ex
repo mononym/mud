@@ -37,7 +37,8 @@ defmodule Mud.Engine.Session do
               input_processing_task: nil,
               continuation_data: nil,
               is_continuation: false,
-              continuation_module: nil
+              continuation_module: nil,
+              continuation_type: nil
   end
 
   defmodule Subscriber do
@@ -185,7 +186,8 @@ defmodule Mud.Engine.Session do
       state
       | continuation_data: execution_context.continuation_data,
         is_continuation: execution_context.is_continuation,
-        continuation_module: execution_context.continuation_module
+        continuation_module: execution_context.continuation_module,
+        continuation_type: execution_context.continuation_type
     }
 
     if execution_context.terminate_session do
@@ -321,6 +323,7 @@ defmodule Mud.Engine.Session do
       |> Map.put(:is_continuation, false)
       |> Map.put(:continuation_data, nil)
       |> Map.put(:continuation_module, nil)
+      |> Map.put(:continuation_type, nil)
 
     case Mud.Repo.get(CharacterSessionData, state.character_id) do
       nil ->
@@ -356,36 +359,6 @@ defmodule Mud.Engine.Session do
     %{state | input_processing_task: input_processing_task}
   end
 
-  # defp send_command_for_processing(command, state) do
-  #   session_pid = self()
-
-  #   # send stuff off to task
-  #   task =
-  #     Task.async(fn ->
-  #       if input.type == :normal do
-  #         GenServer.cast(session_pid, %Mud.Engine.Output{
-  #           id: input.id,
-  #           character_id: input.character_id,
-  #           text: "{{echo}}> #{command.raw_input}{{/echo}}"
-  #         })
-  #       end
-
-  #       execution_context =
-  #         Mud.Engine.Command.executev2(%Mud.Engine.CommandContext{
-  #           id: input.id,
-  #           character_id: input.character_id,
-  #           raw_input: input.text,
-  #           continuation_data: state.continuation_data,
-  #           is_continuation: state.is_continuation,
-  #           continuation_module: state.continuation_module
-  #         })
-
-  #       GenServer.cast(session_pid, {:input_processing_finished, execution_context})
-  #     end)
-
-  #   task.ref
-  # end
-
   defp send_input_for_processing(input, state) do
     session_pid = self()
 
@@ -411,7 +384,8 @@ defmodule Mud.Engine.Session do
             raw_input: input.text,
             continuation_data: state.continuation_data,
             is_continuation: state.is_continuation,
-            continuation_module: state.continuation_module
+            continuation_module: state.continuation_module,
+            continuation_type: state.continuation_type
           })
 
         GenServer.cast(session_pid, {:input_processing_finished, execution_context})

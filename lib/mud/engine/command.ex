@@ -351,113 +351,72 @@ defmodule Mud.Engine.Command do
   end
 
   def executev2(context = %CommandContext{}) do
-    IO.inspect(context, label: "executev2")
-    if context.is_continuation == true do
-      # IO.inspect("CONTINUATION")
-      context
-    else
-      case string_to_command(context.raw_input) do
-        {:ok, command} ->
-          context = Map.put(context, :command, command)
-          {:ok, context} = transaction(context, &command.callback_module.execute/1)
-          # IO.inspect(context, label: "after exectuion")
+    # IO.inspect(context, label: "executev2")
+    # IO.inspect(Integer.parse(context.raw_input), label: "executev2")
 
-          process_messages(context)
+    # IO.inspect(context.is_continuation == true and context.continuation_type == :numeric,
+    #   label: "executev2"
+    # )
 
-        {:error, :not_found} ->
-          context
-      end
-    end
-  end
-
-  @doc """
-  Take a string, find a command it matches, and execute it if possible.
-
-  After execution messages will be sent out.
-  """
-  def execute(context) do
-    trimmed_input = String.trim(context.raw_input)
-
-    if context.is_continuation == true do
-      context = Map.put(context, :raw_input, trimmed_input)
-
-      case context.continuation_module.parse_continuation_arg_string(trimmed_input) do
-        {:ok, parsed_args} ->
-          context = %{context | parsed_args: parsed_args}
-
-          {:ok, context} = transaction(context, &context.continuation_module.continue/1)
-
-          process_messages(context)
+    if context.is_continuation == true and context.continuation_type == :numeric do
+      case Integer.parse(context.raw_input) do
+        {integer, _} ->
+          # IO.inspect({integer, context.continuation_data, context.continuation_data[integer]})
 
           context
+          |> Map.put(:raw_input, context.continuation_data[integer])
+          |> CommandContext.clear_continuation_data()
+          |> CommandContext.clear_continuation_module()
+          |> CommandContext.set_is_continuation(false)
+          |> do_execute()
 
-        {:error, _error} ->
+        :error ->
           context
-          |> Mud.Engine.CommandContext.append_message(%Mud.Engine.Output{
+          |> CommandContext.append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
             character_id: context.character_id,
             text:
-              "{{error}}Selection not recognized. Please try the original command again.{{/error}}"
+              "{{warning}}Selection not recognized. Executing input as command instead.{{/warning}}"
           })
-          |> Mud.Engine.CommandContext.clear_continuation_data()
-          |> Mud.Engine.CommandContext.clear_continuation_module()
-          |> Mud.Engine.CommandContext.set_is_continuation(false)
-          |> Mud.Engine.CommandContext.set_success(true)
-          |> process_messages()
+          |> CommandContext.clear_continuation_data()
+          |> CommandContext.clear_continuation_module()
+          |> CommandContext.set_is_continuation(false)
+          |> do_execute()
       end
     else
-      split_string =
-        String.split(trimmed_input, " ", parts: 2, trim: true) |> Enum.map(&String.trim/1)
+      context
+      |> CommandContext.clear_continuation_data()
+      |> CommandContext.clear_continuation_module()
+      |> CommandContext.set_is_continuation(false)
+      |> do_execute()
+    end
+  end
 
-      raw_command = List.first(split_string)
+  defp do_execute(context) do
+    # IO.inspect(context, label: "do_execute")
 
-      case Mud.Engine.Commands.find_command(raw_command) do
-        {:ok, command} ->
-          arg_string =
-            if length(split_string) == 1 do
-              ""
-            else
-              List.last(split_string)
-            end
+    case string_to_command(context.raw_input) do
+      {:ok, command} ->
+        context = Map.put(context, :command, command)
+        {:ok, context} = transaction(context, &command.callback_module.execute/1)
+        # IO.inspect(context, label: "after execution")
 
-          context = %{
-            context
-            | command: command,
-              raw_input: trimmed_input,
-              raw_argument_string: arg_string
-          }
+        process_messages(context)
 
-          case command.callback_module.parse_execute_arg_string(arg_string) do
-            {:ok, parsed_args} ->
-              context = %{context | parsed_args: parsed_args}
-
-              {:ok, context} = transaction(context, &command.callback_module.execute/1)
-
-              process_messages(context)
-
-              context
-
-            {:error, _error} ->
-              context
-              |> Mud.Engine.CommandContext.append_message(%Mud.Engine.Output{
-                id: UUID.uuid4(),
-                character_id: context.character_id,
-                text: "{{error}}Failed to parse arguements for `#{command.raw_input}`.{{/error}}"
-              })
-              |> Mud.Engine.CommandContext.set_success(true)
-              |> process_messages()
-          end
-
-        {:error, :not_found} ->
+      {:error, :no_match} ->
+        context =
           context
-          |> Mud.Engine.CommandContext.append_message(%Mud.Engine.Output{
+          |> CommandContext.clear_continuation_data()
+          |> CommandContext.clear_continuation_module()
+          |> CommandContext.set_is_continuation(false)
+          |> CommandContext.append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
             character_id: context.character_id,
-            text: "{{error}}You want to do what?{{/error}}"
+            text: "{{error}}You what now?{{/error}}"
           })
-          |> Mud.Engine.CommandContext.set_success(true)
-          |> process_messages()
-      end
+          |> CommandContext.set_success()
+
+        process_messages(context)
     end
   end
 
