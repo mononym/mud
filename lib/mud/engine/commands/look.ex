@@ -1,7 +1,8 @@
 defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
-  alias Mud.Engine.{Character, Object}
+  alias Mud.Engine.{Character, Link, Object}
+  alias Mud.Engine.Command.Segment
   import Mud.Engine.Util
 
   require Logger
@@ -11,6 +12,9 @@ defmodule Mud.Engine.Command.Look do
     defstruct type: nil,
               data: nil
   end
+
+  @exact_match_order [:character, :object]
+  @partial_match_order [:object, :character]
 
   # @prepositions [
   #   "above",
@@ -51,301 +55,275 @@ defmodule Mud.Engine.Command.Look do
   # ]
 
   @impl true
-  def parse_execute_arg_string(raw_args) do
-    if String.starts_with?(raw_args, "at ") do
-      {:ok, String.replace_leading(raw_args, "at ", "")}
-    else
-      {:ok, raw_args}
-    end
-  end
-
-  @impl true
-  def parse_continuation_arg_string(raw_args) do
-    case Integer.parse(raw_args) do
-      {integer, _} ->
-        {:ok, integer}
-
-      :error ->
-        {:error, :not_an_integer}
-    end
-  end
-
-  @impl true
-  def continue(context) do
-    Logger.debug("Continuing to execute 'look' command")
-
-    int = context.parsed_args
-    data = context.continuation_data
-
-    # Make sure player selected an option from the list
-    if int <= 9 and int >= 0 and int < map_size(data.data) do
-      object = data.data[int]
-
-      # Search for objects
-      if data.type == :object do
-        case Mud.Engine.get_object(object.id) do
-          # The object was found
-          object = %Object{} ->
-            # Object is still on the ground in the same room as Character, so can be looked at
-            if object.location.on_ground == true and
-                 object.location.reference == context.character.location_id do
-              context
-              |> append_message(
-                Mud.Engine.Util.output(
-                  context.character_id,
-                  "{{info}}#{object.description.look_description}{{/info}}"
-                )
-              )
-              |> clear_continuation_from_context()
-              |> set_success(true)
-
-              # Object has been moved and is not on the ground in the same room as Character, so cannot be looked at
-            else
-              context
-              |> append_message(
-                output(
-                  context.character_id,
-                  "{{error}}The `#{object.key}` you were attempting to observe is no longer present.{{/error}}"
-                )
-              )
-              |> clear_continuation_from_context()
-              |> set_success(true)
-            end
-
-          # Object has been deleted
-          nil ->
-            context
-            |> append_message(
-              output(
-                context.character_id,
-                "{{error}}The `#{object.key}` you were attempting to observe is no longer present.{{/error}}"
-              )
-            )
-            |> clear_continuation_from_context()
-            |> set_success(true)
-        end
-      else
-        case Mud.Engine.get_character(object.id) do
-          character = %Character{} ->
-            # Character is still in the same room as Character run by Player, so can be looked at
-            if character.location_id == context.character.location_id do
-              context
-              |> append_message(
-                output(
-                  context.character_id,
-                  "{{info}}You see #{character.name}.{{/info}}"
-                )
-              )
-              |> clear_continuation_from_context()
-              |> set_success(true)
-
-              # Character is not in room of Character run by player, so cannot be looked at
-            else
-              context
-              |> append_message(
-                output(
-                  context.character_id,
-                  "{{error}}The person you were attempting to observe is no longer present.{{/error}}"
-                )
-              )
-              |> clear_continuation_from_context()
-              |> set_success(true)
-            end
-
-          # Character has been deleted
-          nil ->
-            context
-            |> append_message(
-              output(
-                context.character_id,
-                "{{error}}The person you were attempting to observe is no longer present.{{/error}}"
-              )
-            )
-            |> clear_continuation_from_context()
-            |> set_success(true)
-        end
-      end
-    else
-      # The number Player selected is out of bounds for the list of choices given
-      context
-      |> append_message(
-        output(
-          context.character_id,
-          "{{error}}The number `#{int}` is an invalid selection. Please `{{info}}look{{/info}}` again{{/error}}"
-        )
-      )
-      |> clear_continuation_from_context()
-      |> set_success(true)
-    end
-  end
-
-  @impl true
   def execute(context) do
     IO.inspect("Beginning execution with the following context: #{inspect(context)}")
 
     segments = context.command.segments
 
     cond do
+      # Accept either 'look at sword' or 'look sword'
+      (Map.has_key?(segments, :at) and Map.has_key?(segments, :target)) or
+          (Map.has_key?(segments, :look) and Map.has_key?(segments, :target) and
+             length(Map.keys(segments)) == 2) ->
+        Logger.debug("searching for target")
+        segment = segments.target
+
+        look_at_target(context, segment.input)
+
+      # Accept 'look'
       segments.look != nil ->
+        Logger.debug("building area description")
         description = build_area_description(context)
 
         context
         |> append_message(output(context.character_id, description))
         |> set_success()
     end
-
-    # case context.parsed_args do
-    #   # An empty argument string means the intention is to look at the area
-    #   "" ->
-    #     build_area_description(context)
-
-    #   # Player wants to look at a character or an item
-    #   name_or_item ->
-    #     split_input = String.split(name_or_item)
-
-    #     # Player only entered a single thing after the look. So: 'look box' or 'look jim'
-    #     if length(split_input) == 1 do
-    #       # Start out looking for exact character name
-    #       case Character.get_by_name(name_or_item) do
-    #         # Found a perfect match for a character name
-    #         character = %Character{} ->
-    #           Logger.debug("Character found by perfect match: #{inspect(character)}")
-
-    #           context
-    #           |> append_message(
-    #             output(
-    #               context.character_id,
-    #               "{{info}}You see #{character.name}.{{/info}}"
-    #             )
-    #           )
-    #           |> set_success()
-
-    #         # No perfect match for a character was found
-    #         nil ->
-    #           Logger.debug("Character not found")
-    #           # Look for any matches with objects
-    #           objects = Object.list_by_key_in_area(name_or_item, context.character.location_id)
-    #           Logger.debug("Listing objects")
-
-    #           case length(objects) do
-    #             # If there are no matches with objects, check for partial character name
-    #             0 ->
-    #               Logger.debug("No objects found, listing characters by prefix")
-
-    #               case Character.list_names_by_case_insensitive_prefix_in_area(
-    #                      name_or_item,
-    #                      context.character.location_id
-    #                    ) do
-    #                 [character] ->
-    #                   Logger.debug("Character found by prefix: #{inspect(character)}")
-
-    #                   context
-    #                   |> append_message(
-    #                     output(
-    #                       context.character_id,
-    #                       "{{info}}You see #{character.name}.{{/info}}"
-    #                     )
-    #                   )
-    #                   |> set_success()
-
-    #                 [] ->
-    #                   Logger.debug("No Character found")
-
-    #                   context
-    #                   |> append_message(
-    #                     output(
-    #                       context.character_id,
-    #                       "{{error}}What did you want to look at?{{/error}}"
-    #                     )
-    #                   )
-    #                   |> set_success(true)
-
-    #                 list_of_characters when length(list_of_characters) < 10 ->
-    #                   Logger.debug("Several Characters found")
-    #                   names = Stream.map(objects, & &1.name)
-
-    #                   error =
-    #                     "{{warning}}Multiple matching characters were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
-
-    #                   multiple_object_error(context, list_of_characters, names, error, :character)
-
-    #                 _many ->
-    #                   Logger.debug("Many Characters found")
-
-    #                   context
-    #                   |> append_message(
-    #                     output(
-    #                       context.character_id,
-    #                       "{{error}}Could not find what you were looking for. Please try again.{{/error}}"
-    #                     )
-    #                   )
-    #                   |> set_success(true)
-    #               end
-
-    #             _count ->
-    #               handle_object_response(context, objects)
-    #           end
-    #       end
-    #     else
-    #       objects = Object.list_by_description_in_area(split_input, context.character.location_id)
-
-    #       handle_object_response(context, objects)
-    #     end
-    # end
   end
 
-  defp handle_object_response(context, objects) do
-    case length(objects) do
-      1 ->
-        [object] = objects
+  defp look_at_target(context, [input]) do
+    Logger.debug("look_at_target")
 
+    case look_at_exact_matches(context, input) do
+      {:ok, context} ->
+        Logger.debug("exact match found")
         context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{info}}#{object.description.look_description}{{/info}}"
-          )
-        )
-        |> set_success(true)
 
-      # Multiple objects were found, but not too many to show them in a list with options
-      count when count <= 10 ->
-        looks = Stream.map(objects, & &1.description.glance_description)
+      {:error, :no_match} ->
+        Logger.debug("no exact match found")
 
-        error =
-          "{{warning}}Multiple matching items were found. Please enter the number associated with the item you wish to `look` at.{{/warning}}"
+        case look_at_partial_matches(context, input) do
+          {:ok, context} ->
+            Logger.debug("partial match found")
+            context
 
-        multiple_object_error(context, objects, looks, error, :object)
+          {:error, _} ->
+            Logger.debug("no partial match found")
 
-      _too_many ->
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{error}}Found too many items, please be more specific.{{/error}}"
-          )
-        )
-        |> set_success()
+            context
+            |> append_message(
+              output(
+                context.character_id,
+                "{{error}}Could not find what you were looking for. Please try again.{{/error}}"
+              )
+            )
+            |> set_success(true)
+        end
     end
   end
 
-  defp multiple_object_error(context, items, strings, error_message, type) do
-    items = Mud.Util.list_to_index_map(items)
+  defp look_at_exact_matches(context, input) do
+    Logger.debug("look_at_exact_matches")
+
+    Enum.find_value(@exact_match_order, {:error, :no_match}, fn exact_match_type ->
+      case find_exact_match(exact_match_type, context, input) do
+        {:ok, context} ->
+          {:ok, context}
+
+        _ ->
+          Logger.debug("No exact match found")
+
+          false
+      end
+    end)
+  end
+
+  defp find_exact_match(:character, context, input) do
+    Logger.debug("find_exact_match character")
+
+    case Character.get_by_name_in_area(input, context.character.location_id) do
+      character = %Character{} ->
+        Logger.debug("Character found by perfect match: #{inspect(character)}")
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}You see #{character.name}.{{/info}}"
+            )
+          )
+          |> set_success(true)
+
+        {:ok, context}
+
+      _ ->
+        Logger.debug("No character found")
+
+        {:error, :no_match}
+    end
+  end
+
+  defp find_exact_match(:exit, context, input) do
+    Logger.debug("find_exact_match exit")
+
+    case Link.list_obvious_exits_by_exact_description_in_area(
+           input,
+           context.character.location_id
+         ) do
+      [link] ->
+        Logger.debug("Link found: #{inspect(link)}")
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}You see #{link.description}.{{/info}}"
+            )
+          )
+          |> set_success()
+
+        {:ok, context}
+
+      [] ->
+        Logger.debug("No link found")
+        {:error, :no_match}
+
+      links when length(links) <= 10 and length(links) > 1 ->
+        Logger.debug("Several Links found")
+        directions = Stream.map(links, & &1.text)
+
+        error =
+          "{{warning}}Multiple matching exits were found. Please enter the number associated with the Exit you wish to `look` at.{{/warning}}"
+
+        context = multiple_result_error(context, directions, directions, error)
+
+        {:ok, context}
+
+      _many ->
+        Logger.debug("Many links found")
+        {:error, :no_match}
+    end
+  end
+
+  defp find_exact_match(:object, context, input) do
+    Logger.debug("find_exact_match object")
+
+    case Object.get_by_exact_key_in_area(input, context.character.location_id) do
+      object = %Object{} ->
+        Logger.debug("Object found: #{inspect(object)}")
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}You see #{object.description.look_description}.{{/info}}"
+            )
+          )
+          |> set_success()
+
+        {:ok, context}
+
+      nil ->
+        Logger.debug("No object found")
+        {:error, :no_match}
+    end
+  end
+
+  defp look_at_partial_matches(context, input) do
+    Logger.debug("look_at_partial_matches")
+
+    Enum.find_value(@partial_match_order, {:error, :no_match}, fn partial_match_type ->
+      case find_partial_match(partial_match_type, context, input) do
+        {:ok, context} ->
+          {:ok, context}
+
+        _ ->
+          Logger.debug("No partial match found")
+          false
+      end
+    end)
+  end
+
+  defp find_partial_match(:character, context, input) do
+    case Character.list_names_by_case_insensitive_prefix_in_area(input, context.character.id) do
+      [name] ->
+        Logger.debug("Character found by partial match: #{inspect(name)}")
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}You see #{name}.{{/info}}"
+            )
+          )
+          |> set_success(true)
+
+        {:ok, context}
+
+      characters when length(characters) <= 10 and length(characters) > 1 ->
+        Logger.debug("Several Characters found")
+        names = Stream.map(characters, & &1.name)
+
+        error =
+          "{{warning}}Multiple matching characters were found. Please enter the number associated with the Character you wish to `look` at.{{/warning}}"
+
+        context = multiple_result_error(context, names, names, error)
+
+        {:ok, context}
+
+      _many_or_none ->
+        Logger.debug("Many or no Characters found")
+
+        {:error, :no_match}
+    end
+  end
+
+  defp find_partial_match(:exit, context, input) do
+  end
+
+  defp find_partial_match(:object, context, input) do
+    case Object.list_by_partial_key_in_area(input, context.character.location_id) do
+      [object] ->
+        Logger.debug("Object found: #{inspect(object)}")
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}You see #{object.description.look_description}.{{/info}}"
+            )
+          )
+          |> set_success()
+
+        {:ok, context}
+
+      objects when length(objects) <= 10 and length(objects) > 1 ->
+        Logger.debug("Several Objects found")
+        descriptions = Stream.map(objects, & &1.description.glance_description)
+
+        error =
+          "{{warning}}Multiple matching objects were found. Please enter the number associated with the object you wish to `look` at.{{/warning}}"
+
+        {:ok, multiple_result_error(context, descriptions, descriptions, error)}
+
+      _many ->
+        {:error, :no_match}
+    end
+  end
+
+  defp multiple_result_error(context, keys, values, error_message) do
+    values =
+      values
+      |> Enum.map(&("look " <> &1))
+      |> Mud.Util.list_to_index_map()
 
     context
     |> append_message(
       output(
         context.character_id,
         error_message,
-        strings
+        keys
       )
     )
     |> set_is_continuation(true)
-    |> set_continuation_data(%ContinuationData{
-      data: items,
-      type: type
-    })
+    |> set_continuation_data(values)
     |> set_continuation_module(__MODULE__)
+    |> set_continuation_type(:numeric)
     |> set_success()
   end
 

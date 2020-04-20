@@ -189,7 +189,6 @@ defmodule Mud.Engine.Command.Move do
     |> set_continuation_module(__MODULE__)
     |> set_continuation_type(:numeric)
     |> set_success()
-    |> IO.inspect(label: "mle")
   end
 
   defp normalize_direction(direction) do

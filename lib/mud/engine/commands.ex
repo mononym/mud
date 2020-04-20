@@ -198,8 +198,9 @@ defmodule Mud.Engine.Commands do
   end
 
   @doc """
-  Match an input
+  Given a string as input, try to find a 
   """
+  @spec find_command(String.t()) :: {:ok, Command.t()} | {:error, :no_match}
   def find_command(input) do
     case Enum.find(@commands, fn command ->
            Enum.any?(command.segments, fn segment ->

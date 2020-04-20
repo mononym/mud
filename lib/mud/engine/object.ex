@@ -49,7 +49,19 @@ defmodule Mud.Engine.Object do
     |> Enum.map(&populate_flags/1)
   end
 
-  def list_by_key_in_area(simple_input, area_id) do
+  def get_by_exact_key_in_area(simple_input, area_id) do
+    simple_input = String.downcase(simple_input)
+
+    object_base_query()
+    |> where(
+      [object, location, _description, _scenery],
+      object.key == ^simple_input and location.reference == ^area_id and
+        location.on_ground == true
+    )
+    |> Repo.one()
+  end
+
+  def list_by_partial_key_in_area(simple_input, area_id) do
     simple_input = String.downcase(simple_input)
 
     list =

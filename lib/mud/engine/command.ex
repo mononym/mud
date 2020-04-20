@@ -7,9 +7,6 @@ defmodule Mud.Engine.Command do
   alias Mud.Engine.CommandContext
   require Logger
 
-  # throw rock at wall with sling
-  # command, <object/character/denizen>, <key>
-
   defmodule Dependencies do
     defstruct all: [],
               any: []
@@ -25,16 +22,14 @@ defmodule Mud.Engine.Command do
               # In the other, a prefix is split off from a string and used to populate a segment, while the second half of the
               # string is processed against the next segment in line.
               prefix: nil,
-              autocomplete: true,
               # This segment can only be processed if a segment with the specified key has been
               # successfully populated. For example, there should be no character name segment for
               # the following partial command: "say /slowly"
-              #
-              # Whereas there should be character autocomplete for the following partial command
               must_follow: nil,
               cannot_follow: nil,
               # character, scenery, exit, denizen, self
               search: [],
+              autocomplete: true,
               key: :look,
               # The string that was parsed/assigned to this segment
               input: [],
@@ -43,6 +38,9 @@ defmodule Mud.Engine.Command do
   end
 
   defmodule State do
+    @moduledoc false
+    # Used to hold the state during the processing of a string into a Command
+
     defstruct segments_to_process: [],
               populated_segments: [],
               raw_input: [],
@@ -50,12 +48,20 @@ defmodule Mud.Engine.Command do
               potential_combinations: []
   end
 
+  @doc """
+  Given a string such as 'look' or 'move west' turn it into a populated '__MODULE__{}.t()' struct.
+  """
   @spec string_to_command(String.t()) ::
           {:error, :no_match | :not_found} | {:ok, Mud.Engine.Command.t()}
   def string_to_command(input) do
+    # Populate the initial state for the processing
     state = %State{raw_input: input, split_input: String.split(input)}
+
+    # The command is assumed to be the first distinct set of characters provided.
+    # It could be a shortened version of the command such as 'loo' or it could be the entire thing such as 'move west'.
     command_string = List.first(state.split_input)
 
+    # Attempt to turn the command string into a command object
     case Commands.find_command(command_string) do
       {:ok, command} ->
         case find_matching_combinations(command, state, false) do

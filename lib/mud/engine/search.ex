@@ -76,7 +76,7 @@ defmodule Mud.Engine.Search do
   end
 
   defp search(:obvious_exit, text, character_id) do
-    Link.list_text_of_obvious_exits_around_character(text, character_id)
+    # Link.list_text_of_obvious_exits_around_character(text, character_id)
   end
 
   # defp search(:object, text, character_id) do

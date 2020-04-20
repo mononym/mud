@@ -167,10 +167,10 @@ defmodule Mud.Engine do
 
   ## Examples
 
-      iex> find_obvious_exit_in_character_location("valid character id", "valid direction")
+      iex> find_obvious_exit_in_area("valid area id", "valid direction")
       [%Link{}]
 
-      iex> find_obvious_exit_in_character_location("valid character id", "invalid direction")
+      iex> find_obvious_exit_in_area("valid area id", "invalid direction")
       []
 
   """
