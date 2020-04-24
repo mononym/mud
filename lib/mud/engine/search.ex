@@ -4,7 +4,7 @@ defmodule Mud.Engine.Search do
   """
 
   alias Mud.Engine.Character
-  alias Mud.Engine.Link
+  # alias Mud.Engine.Link
 
   @doc """
   Constant for matching against what type of thing to search for during autocomplete.
@@ -75,9 +75,9 @@ defmodule Mud.Engine.Search do
     Character.list_names_by_case_insensitive_prefix_in_area(text, character_id)
   end
 
-  defp search(:obvious_exit, text, character_id) do
-    # Link.list_text_of_obvious_exits_around_character(text, character_id)
-  end
+  # defp search(:obvious_exit, text, character_id) do
+  #   # Link.list_text_of_obvious_exits_around_character(text, character_id)
+  # end
 
   # defp search(:object, text, character_id) do
   #   Object.list_description_by_description_in_area(text, character_id)

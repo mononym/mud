@@ -58,7 +58,7 @@ defmodule Mud.Engine.Object do
       object.key == ^simple_input and location.reference == ^area_id and
         location.on_ground == true
     )
-    |> Repo.one()
+    |> Repo.all()
   end
 
   def list_by_partial_key_in_area(simple_input, area_id) do
@@ -84,19 +84,16 @@ defmodule Mud.Engine.Object do
     end
   end
 
-  def list_by_description_in_area(complex_input, area_id) do
-    search_string = Mud.Engine.Search.text_to_search_terms(complex_input)
-
+  def list_by_exact_description_in_area(input, area_id) do
     object_base_query()
     |> where(
       [_object, location, description, _scenery],
-      location.reference == ^area_id and like(description.glance_description, ^search_string)
+      location.reference == ^area_id and description.glance_description == ^input
     )
     |> Repo.all()
-    |> Enum.map(&populate_flags/1)
   end
 
-  def list_description_by_description_in_area(complex_input, area_id) do
+  def list_by_partial_description_in_area(complex_input, area_id) do
     search_string = Mud.Engine.Search.text_to_search_terms(complex_input)
 
     object_base_query()
@@ -104,8 +101,12 @@ defmodule Mud.Engine.Object do
       [_object, location, description, _scenery],
       location.reference == ^area_id and like(description.glance_description, ^search_string)
     )
-    |> select([_object, _location, description, _scenery], description.glance_description)
     |> Repo.all()
+  end
+
+  def list_descriptions_by_partial_description_in_area(complex_input, area_id) do
+    list_by_partial_description_in_area(complex_input, area_id)
+    |> Enum.map(& &1.description.glance_description)
   end
 
   defp object_base_query() do
