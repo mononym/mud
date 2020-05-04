@@ -28,7 +28,7 @@ defmodule Mud.Engine.Commands do
                   %Segment{
                     key: :target,
                     must_follow: [:at, :look, :switch],
-                    max_allowed: :infinite
+                    greedy: true
                   }
                 ]
               },
@@ -62,7 +62,7 @@ defmodule Mud.Engine.Commands do
                   %Segment{
                     must_follow: [:character, :say, :switch, :at],
                     key: :words,
-                    max_allowed: :infinite
+                    greedy: true
                   }
                 ]
               },
@@ -99,8 +99,7 @@ defmodule Mud.Engine.Commands do
                   %Segment{
                     must_follow: [:move],
                     match_strings: [],
-                    key: :exit,
-                    max_allowed: :infinite
+                    key: :exit
                   }
                 ]
               },

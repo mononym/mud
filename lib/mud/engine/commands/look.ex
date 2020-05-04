@@ -62,17 +62,19 @@ defmodule Mud.Engine.Command.Look do
 
     cond do
       # Accept either 'look at sword' or 'look sword'
-      (Map.has_key?(segments, :at) and Map.has_key?(segments, :target) and
-         length(Map.keys(segments)) == 3) or
-          (Map.has_key?(segments, :look) and Map.has_key?(segments, :target) and
-             length(Map.keys(segments)) == 2) ->
+      (get_in(segments.children, [:at, :target]) != nil and
+         get_in(segments.children, [:at, :target, :path]) == nil) or
+          (get_in(segments.children, [:target]) != nil and
+             get_in(segments.children, [:target, :path]) == nil) ->
         Logger.debug("searching for target")
-        segment = segments.target
+
+        segment =
+          get_in(segments.children, [:at, :target]) || get_in(segments.children, [:target])
 
         look_at_target(context, Enum.join(segment.input, " "))
 
-      # Accept 'look'
-      segments.look != nil ->
+      # Accept 'look', default fallback for now, will need expanding as logic expands
+      true ->
         Logger.debug("building area description")
         IO.inspect(context)
         description = build_area_description(context.character.location_id, context.character.id)

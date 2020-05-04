@@ -12,8 +12,6 @@ defmodule Mud.Engine.Command do
     # @enforce_keys [:autocomplete, :key, :match_strings, :optional]
     # "@", "/", "at ", "with ", ""
     defstruct match_strings: [],
-              # Prefixes are split or trimmed from a string based on this flag.
-              is_prefix: false,
               # Prefixes are used in two ways. In one a prefix is trimmed from a string before it is saved to the segment.
               # In the other, a prefix is split off from a string and used to populate a segment, while the second half of the
               # string is processed against the next segment in line.
@@ -26,8 +24,48 @@ defmodule Mud.Engine.Command do
               key: nil,
               # The string that was parsed/assigned to this segment
               input: [],
-              # How many of these segments are allowed in a row
-              max_allowed: 1
+              children: %{},
+              # when checking whether an input belongs to one segment or the following, a greedy segment will consume
+              # the input rather than let it be inserted into the next segment.
+              # Most segments should be greedy.
+              greedy: false
+
+    @behaviour Access
+
+    @impl Access
+    def fetch(struct, key), do: Map.fetch(struct, key)
+
+    @impl Access
+    def get_and_update(struct, key, fun) when is_function(fun, 1) do
+      current = Map.get(struct, key)
+
+      case fun.(current) do
+        {get, update} ->
+          {get, Map.put(struct, key, update)}
+
+        :pop ->
+          pop(struct, key)
+
+        other ->
+          raise "the given function must return a two-element tuple or :pop, got: #{
+                  inspect(other)
+                }"
+      end
+    end
+
+    @impl Access
+    def pop(struct, key, default \\ nil) do
+      case fetch(struct, key) do
+        {:ok, old_value} ->
+          {old_value, Map.put(struct, key, nil)}
+
+        :error ->
+          {default, struct}
+      end
+    end
+
+    # How many of these segments are allowed in a row
+    # max_allowed: 1
   end
 
   defmodule State do
@@ -77,24 +115,30 @@ defmodule Mud.Engine.Command do
 
           # A single, hopefully correct, combination was found.
           matched_combination ->
-            Logger.debug("successfully populated segments")
+            Logger.debug("successfully populated segments: #{inspect(matched_combination)}")
 
-            # Turn the list of Segments into a map so the Segments can be easily accessed via their keys.
-            # TODO: This will not work if multiple segments have the same key, so can't have multiple
-            # path elements for example. Change this to build an AST rather than a flat map.
-            segments_map =
-              Enum.reduce(matched_combination, %{}, fn segment, map ->
-                Map.put(map, segment.key, segment)
-              end)
+            [last_segment | rest_of_segments] = Enum.reverse(matched_combination)
+
+            segments_tree = build_ast(last_segment, rest_of_segments)
 
             # Command is returned with the Segment map populated for easy parsing/processing by Command logic.
-            {:ok, %{command | raw_input: input, segments: segments_map}}
+            {:ok, %{command | raw_input: input, segments: segments_tree}}
         end
 
       error ->
         Logger.debug("command not found")
         error
     end
+  end
+
+  defp build_ast(ast_node, []) do
+    ast_node
+  end
+
+  defp build_ast(ast_node, [segment | rest_of_segments]) do
+    new_ast_node = %{segment | children: Map.put(segment.children, ast_node.key, ast_node)}
+
+    build_ast(new_ast_node, rest_of_segments)
   end
 
   # Given a Command struct, and an initial state, attempts to build potential matching Segment combinations.
@@ -104,11 +148,17 @@ defmodule Mud.Engine.Command do
     potential_combinations =
       enumerate_potential_combinations(command.segments, length(state.remaining_input_chunks))
 
+    Logger.debug("Potential combinations: #{inspect(potential_combinations)}")
+
     # Reverse everything so lists are in expected order, rather than the efficient order for building lists
     normalized_combinations = normalize_combinations(potential_combinations)
     state = %{state | potential_combinations: normalized_combinations}
 
+    Logger.debug("Normalized combinations: #{inspect(potential_combinations)}")
+
     Enum.reduce(state.potential_combinations, [], fn combination, matches ->
+      Logger.debug("Checking potential combination: #{inspect(combination)}")
+
       case v2(%{state | segments_to_process: combination}) do
         {:ok, combo} ->
           normalize_combination(combo)
@@ -229,15 +279,19 @@ defmodule Mud.Engine.Command do
     |> Enum.reverse()
   end
 
+  # TODO: Clean this up. It's embarrassing.
   defp v2(state) do
+    Logger.debug("Start of v2")
+
     with true <- safe_to_process(state),
          [segment | segments] <- state.segments_to_process,
          [input | rest] <- state.remaining_input_chunks,
          {:ok, normalized_input} <- normalize_input_prefix(input, segment),
          true <- input_and_segment_match(normalized_input, segment),
-         segment <- update_allowance(segment),
+         {:error, :no_match} <- input_and_segment_match(normalized_input, List.first(segments)),
+         #  segment <- update_allowance(segment),
          segment <- update_input(segment, normalized_input) do
-      if segment.max_allowed > 0 do
+      if segment.greedy do
         {:ok,
          %{
            state
@@ -253,6 +307,8 @@ defmodule Mud.Engine.Command do
              remaining_input_chunks: rest
          }}
       end
+
+      # end
     else
       {:error, :unsafe_to_process} ->
         cond do
@@ -295,6 +351,43 @@ defmodule Mud.Engine.Command do
       {:match, new_state} ->
         {:match, new_state.populated_segments}
 
+      # input matches next segment in the sequence.
+      true ->
+        segment = List.first(state.segments_to_process)
+
+        # The current segment has input, which means we can safely move on and populate the next segment with the input
+        if length(segment.input) > 0 do
+          [segment | segments] = state.segments_to_process
+
+          {:ok,
+           %{
+             state
+             | populated_segments: [segment | state.populated_segments],
+               segments_to_process: segments
+           }}
+        else
+          [segment | segments] = state.segments_to_process
+          [input | rest] = state.remaining_input_chunks
+          segment = update_input(segment, input)
+
+          if segment.greedy do
+            {:ok,
+             %{
+               state
+               | segments_to_process: [segment | segments],
+                 remaining_input_chunks: rest
+             }}
+          else
+            {:ok,
+             %{
+               state
+               | populated_segments: [segment | state.populated_segments],
+                 segments_to_process: segments,
+                 remaining_input_chunks: rest
+             }}
+          end
+        end
+
       _error ->
         {:error, Enum.reverse(state.segments_to_process) ++ state.populated_segments}
     end
@@ -314,13 +407,13 @@ defmodule Mud.Engine.Command do
     %{segment | input: [input | segment.input]}
   end
 
-  defp update_allowance(segment) do
-    if segment.max_allowed == :infinite do
-      segment
-    else
-      %{segment | max_allowed: segment.max_allowed - 1}
-    end
-  end
+  # defp update_allowance(segment) do
+  #   if segment.max_allowed == :infinite do
+  #     segment
+  #   else
+  #     %{segment | max_allowed: segment.max_allowed - 1}
+  #   end
+  # end
 
   defp normalize_input_prefix(input, segment) do
     if segment.prefix != nil do
@@ -334,23 +427,34 @@ defmodule Mud.Engine.Command do
     end
   end
 
+  defp input_and_segment_match(_input, nil), do: {:error, :no_match}
+
   defp input_and_segment_match(input, segment) do
+    Logger.debug("Checking input (#{input}) against segment: #{inspect(segment)}")
+
     if any_strings_match?(segment.match_strings, input) do
+      Logger.debug("input matched segment")
       true
     else
+      Logger.debug("input did not match segment")
       {:error, :no_match}
     end
   end
 
   defp safe_to_process(state) do
+    Logger.debug("Checking if it is safe to process input")
+
     cond do
       Enum.empty?(state.segments_to_process) and Enum.empty?(state.remaining_input_chunks) ->
+        Logger.debug("Both state and remaining input chunks are empty. There is a match.")
         {:match, state}
 
       not Enum.empty?(state.segments_to_process) and not Enum.empty?(state.remaining_input_chunks) ->
+        Logger.debug("No more segments but the input is not empty. Safe to continue processing.")
         true
 
       true ->
+        Logger.debug("Not safe to process.")
         {:error, :unsafe_to_process}
     end
   end
