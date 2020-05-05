@@ -114,7 +114,7 @@ defmodule Mud.Engine.Command do
             {:error, :no_match}
 
           # A single, hopefully correct, combination was found.
-          matched_combination ->
+          [matched_combination] ->
             Logger.debug("successfully populated segments: #{inspect(matched_combination)}")
 
             [last_segment | rest_of_segments] = Enum.reverse(matched_combination)
@@ -156,15 +156,37 @@ defmodule Mud.Engine.Command do
 
     Logger.debug("Normalized combinations: #{inspect(potential_combinations)}")
 
+    match_combinations(state)
+  end
+
+  defp match_combinations(state) do
     Enum.reduce(state.potential_combinations, [], fn combination, matches ->
       Logger.debug("Checking potential combination: #{inspect(combination)}")
 
       case v2(%{state | segments_to_process: combination}) do
         {:ok, combo} ->
-          normalize_combination(combo)
+          [normalize_combination(combo) | matches]
 
         {:error, _combo} ->
           matches
+      end
+    end)
+    |> Enum.sort()
+    |> Enum.reduce([], fn combo, matching_combinations ->
+      max_length =
+        Enum.reduce(matching_combinations, 0, fn combination, longest ->
+          max(longest, length(combination))
+        end)
+
+      cond do
+        length(combo) > max_length ->
+          [combo]
+
+        length(combo) == max_length ->
+          [combo | matching_combinations]
+
+        length(combo) < max_length ->
+          matching_combinations
       end
     end)
   end
@@ -181,6 +203,7 @@ defmodule Mud.Engine.Command do
     |> Enum.sort(fn list1, list2 ->
       length(list1) >= length(list2)
     end)
+    |> Enum.uniq()
   end
 
   defp inject_segment(combinations, segment) do

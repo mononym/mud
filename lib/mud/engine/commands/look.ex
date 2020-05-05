@@ -13,6 +13,12 @@ defmodule Mud.Engine.Command.Look do
               data: nil
   end
 
+  defmodule Match do
+    @enforce_keys [:glance, :look]
+    defstruct glance: nil,
+              look: nil
+  end
+
   @exact_match_order [:character, :object, :exit]
   @partial_match_order [:character, :object, :exit]
 
@@ -61,17 +67,37 @@ defmodule Mud.Engine.Command.Look do
     segments = context.command.segments
 
     cond do
-      # Accept either 'look at sword' or 'look sword'
-      (get_in(segments.children, [:at, :target]) != nil and
-         get_in(segments.children, [:at, :target, :path]) == nil) or
+      # Accept either 'look at sword' or 'look sword' or 'look at 2 sword' or 'look 2 sword'
+      (get_in(segments.children, [:number, :children, :at, :children, :target]) != nil and
+         get_in(segments.children, [:number, :children, :at, :children, :target, :children, :path]) ==
+           nil) or
+        (get_in(segments.children, [:at, :children, :target]) != nil and
+           get_in(segments.children, [:at, :children, :target, :children, :path]) == nil) or
+        (get_in(segments.children, [:number, :children, :target]) != nil and
+           get_in(segments.children, [:number, :children, :target, :children, :path]) == nil) or
           (get_in(segments.children, [:target]) != nil and
-             get_in(segments.children, [:target, :path]) == nil) ->
+             get_in(segments.children, [:target, :children, :path]) == nil) ->
         Logger.debug("searching for target")
 
         segment =
-          get_in(segments.children, [:at, :target]) || get_in(segments.children, [:target])
+          get_in(segments.children, [:number, :children, :at, :children, :target]) ||
+            get_in(segments.children, [:at, :children, :target]) ||
+            get_in(segments.children, [:target]) ||
+            get_in(segments.children, [:number, :children, :target])
 
-        look_at_target(context, Enum.join(segment.input, " "))
+        which_target =
+          if Map.has_key?(segments.children, :number) do
+            {int, _} =
+              segments.children.number.input
+              |> List.first()
+              |> Integer.parse()
+
+            min(1, int)
+          else
+            0
+          end
+
+        look_at_target(context, Enum.join(segment.input, " "), which_target)
 
       # Accept 'look', default fallback for now, will need expanding as logic expands
       true ->
@@ -85,7 +111,7 @@ defmodule Mud.Engine.Command.Look do
     end
   end
 
-  defp look_at_target(context, input) do
+  defp look_at_target(context, input, which_target) do
     Logger.debug("look_at_target")
 
     case look_at_exact_matches(context, input) do
@@ -96,7 +122,7 @@ defmodule Mud.Engine.Command.Look do
       {:error, :no_match} ->
         Logger.debug("no exact match found")
 
-        case look_at_partial_matches(context, input) do
+        case look_at_partial_matches(context, input, which_target) do
           {:ok, context} ->
             Logger.debug("partial match found")
             context
@@ -231,7 +257,7 @@ defmodule Mud.Engine.Command.Look do
     end
   end
 
-  defp look_at_partial_matches(context, input) do
+  defp look_at_partial_matches(context, input, which_target) do
     Logger.debug("look_at_partial_matches")
 
     potential_matches =
@@ -250,20 +276,39 @@ defmodule Mud.Engine.Command.Look do
           |> append_message(
             output(
               context.character_id,
-              "{{info}}#{match}{{/info}}"
+              "{{info}}#{match.look}{{/info}}"
             )
           )
           |> set_success(true)
 
         {:ok, context}
 
-      matches when length(matches) <= 10 and length(matches) > 1 ->
+      matches when length(matches) > 1 and which_target > 0 and which_target <= length(matches) ->
+        Logger.debug("Several matches found, and a specific one already chosen")
+
+        match = Enum.at(matches, which_target)
+
+        context =
+          context
+          |> append_message(
+            output(
+              context.character_id,
+              "{{info}}#{match.look}{{/info}}"
+            )
+          )
+          |> set_success(true)
+
+        {:ok, context}
+
+      matches when length(matches) <= 9 and length(matches) > 1 ->
         Logger.debug("Several matches found")
+
+        glance_descriptions = Enum.map(matches, & &1.glance)
 
         error =
           "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
 
-        context = multiple_result_error(context, matches, matches, error)
+        context = multiple_result_error(context, glance_descriptions, glance_descriptions, error)
 
         {:ok, context}
 
@@ -274,118 +319,27 @@ defmodule Mud.Engine.Command.Look do
     end
   end
 
+  # Eventually this will need to bring back a character and do something more complex.
+  # For the look it would need to actually build the look for the character.
   defp find_partial_match(:character, context, input) do
     Character.list_names_by_case_insensitive_prefix_in_area(input, context.character.id)
-    # case Character.list_names_by_case_insensitive_prefix_in_area(input, context.character.id) do
-    #   [name] ->
-    #     Logger.debug("Character found by partial match: #{inspect(name)}")
-
-    #     context =
-    #       context
-    #       |> append_message(
-    #         output(
-    #           context.character_id,
-    #           "{{info}}You see #{name}.{{/info}}"
-    #         )
-    #       )
-    #       |> set_success(true)
-
-    #     {:ok, context}
-
-    #   characters when length(characters) <= 10 and length(characters) > 1 ->
-    #     Logger.debug("Several Characters found")
-    #     names = Stream.map(characters, & &1.name)
-
-    #     error =
-    #       "{{warning}}Multiple matching characters were found. Please enter the number associated with the Character you wish to `look` at.{{/warning}}"
-
-    #     context = multiple_result_error(context, names, names, error)
-
-    #     {:ok, context}
-
-    #   _many_or_none ->
-    #     Logger.debug("Many or no Characters found")
-
-    #     {:error, :no_match}
-    # end
+    |> Enum.map(fn name ->
+      %Match{glance: name, look: name}
+    end)
   end
 
   defp find_partial_match(:exit, context, input) do
     # Logger.debug("find_partial_match exit")
 
     Link.list_obvious_exits_by_partial_description_in_area(input, context.character.location_id)
-    |> Enum.map(& &1.text)
-
-    # case Link.list_obvious_exits_by_partial_description_in_area(
-    #        input,
-    #        context.character.location_id
-    #      ) do
-    #   [link] ->
-    #     Logger.debug("Link found: #{inspect(link)}")
-
-    #     context =
-    #       context
-    #       |> append_message(
-    #         output(
-    #           context.character_id,
-    #           "{{info}}You see #{link.description}.{{/info}}"
-    #         )
-    #       )
-    #       |> set_success()
-
-    #     {:ok, context}
-
-    #   [] ->
-    #     Logger.debug("No link found")
-    #     {:error, :no_match}
-
-    #   links when length(links) <= 10 and length(links) > 1 ->
-    #     Logger.debug("Several Links found")
-    #     directions = Stream.map(links, & &1.text)
-
-    #     error =
-    #       "{{warning}}Multiple matching exits were found. Please enter the number associated with the Exit you wish to `look` at.{{/warning}}"
-
-    #     context = multiple_result_error(context, directions, directions, error)
-
-    #     {:ok, context}
-
-    #   _many ->
-    #     Logger.debug("Many links found")
-    #     {:error, :no_match}
-    # end
+    |> Enum.map(&%Match{glance: &1.text, look: &1.text})
   end
 
   defp find_partial_match(:object, context, input) do
-    Object.list_descriptions_by_partial_description_in_area(input, context.character.location_id)
-    # case Object.list_by_partial_key_in_area(input, context.character.location_id) do
-    #   [object] ->
-    #     Logger.debug("Object found: #{inspect(object)}")
-
-    #     context =
-    #       context
-    #       |> append_message(
-    #         output(
-    #           context.character_id,
-    #           "{{info}}You see #{object.description.look_description}.{{/info}}"
-    #         )
-    #       )
-    #       |> set_success()
-
-    #     {:ok, context}
-
-    #   objects when length(objects) <= 10 and length(objects) > 1 ->
-    #     Logger.debug("Several Objects found")
-    #     descriptions = Stream.map(objects, & &1.description.glance_description)
-
-    #     error =
-    #       "{{warning}}Multiple matching objects were found. Please enter the number associated with the object you wish to `look` at.{{/warning}}"
-
-    #     {:ok, multiple_result_error(context, descriptions, descriptions, error)}
-
-    #   _many ->
-    #     {:error, :no_match}
-    # end
+    Object.list_by_partial_glance_description_in_area(input, context.character.location_id)
+    |> Enum.map(
+      &%Match{glance: &1.description.glance_description, look: &1.description.look_description}
+    )
   end
 
   defp multiple_result_error(context, keys, values, error_message) do
@@ -410,7 +364,6 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp build_area_description(area_id, character_id) do
-    IO.inspect({area_id, character_id})
     area = Mud.Engine.get_area!(area_id)
 
     build_area_name(area)

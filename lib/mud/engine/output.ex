@@ -6,7 +6,7 @@ defmodule Mud.Engine.Output do
     list_items = Enum.join(table_data, "</li>{{/info}}{{info}}<li>")
 
     text =
-      "<ol id=\"#{output.id}\" class=\"list-decimal list-inside\" start=\"0\">{{info}}<li>" <>
+      "<ol id=\"#{output.id}\" class=\"list-decimal list-inside\" start=\"1\">{{info}}<li>" <>
         list_items <> "</li></ol>{{/info}}"
 
     case message do

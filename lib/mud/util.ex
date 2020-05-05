@@ -51,7 +51,7 @@ defmodule Mud.Util do
 
   def list_to_index_map(list) do
     list
-    |> Stream.with_index()
+    |> Stream.with_index(1)
     |> Enum.reduce(%{}, fn {thing, index}, map ->
       Map.put(map, index, thing)
     end)

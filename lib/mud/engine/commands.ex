@@ -26,8 +26,13 @@ defmodule Mud.Engine.Commands do
                     must_follow: [:look, :switch]
                   },
                   %Segment{
+                    key: :number,
+                    match_strings: [~r/\d/],
+                    must_follow: [:at, :look, :switch]
+                  },
+                  %Segment{
                     key: :target,
-                    must_follow: [:at, :look, :switch],
+                    must_follow: [:at, :look, :switch, :number],
                     greedy: true
                   }
                 ]
