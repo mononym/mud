@@ -2,7 +2,6 @@ defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
   alias Mud.Engine.{Character, Link, Object}
-  alias Mud.Engine.Command.Segment
   import Mud.Engine.Util
 
   require Logger

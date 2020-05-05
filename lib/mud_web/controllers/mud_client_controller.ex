@@ -2,7 +2,6 @@ defmodule MudWeb.MudClientController do
   use MudWeb, :controller
 
   require Logger
-  import Phoenix.LiveView.Controller
 
   alias Mud.Engine
 
@@ -17,12 +16,12 @@ defmodule MudWeb.MudClientController do
       Mud.Engine.start_character_session(character_id)
 
       # Send a silent history command
-      # Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
-      #   id: UUID.uuid4(),
-      #   character_id: character_id,
-      #   text: "history",
-      #   type: :silent
-      # })
+      Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
+        id: UUID.uuid4(),
+        character_id: character_id,
+        text: "history",
+        type: :silent
+      })
 
       # Send a silent look command
       Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{

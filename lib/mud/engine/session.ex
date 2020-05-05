@@ -98,7 +98,7 @@ defmodule Mud.Engine.Session do
         {:ok, :already_started}
 
       {:error, error} ->
-        {:ok, error}
+        {:error, error}
     end
   end
 
@@ -230,6 +230,11 @@ defmodule Mud.Engine.Session do
     ref = Process.link(process)
 
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
+
+    Map.values(updated_subscribers)
+    |> Enum.each(fn subscriber ->
+      GenServer.cast(subscriber.pid, zip_output(state.text_buffer))
+    end)
 
     state =
       if length(state.undelivered_text) != 0 do

@@ -1,5 +1,5 @@
 defmodule Mud.Engine.Output do
-  defstruct id: nil, text: nil, character_id: nil, table_data: nil
+  defstruct id: nil, text: nil, character_id: nil, table_data: nil, silent: false
 
   def transform_for_web(output = %__MODULE__{table_data: table_data, text: message})
       when not is_nil(table_data) do

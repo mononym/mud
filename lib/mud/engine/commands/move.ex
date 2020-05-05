@@ -26,16 +26,15 @@ defmodule Mud.Engine.Command.Move do
 
   @impl true
   def execute(%Mud.Engine.CommandContext{} = context) do
-    # IO.inspect(context, label: "move execute")
     segments = context.command.segments
 
     cond do
-      Map.has_key?(segments, :move) and Map.has_key?(segments, :exit) ->
-        attempt_move(Enum.join(segments.exit.input, " "), context)
+      get_in(segments.children, [:exit]) != nil ->
+        attempt_move(Enum.join(segments.children.exit.input, " "), context)
 
-      Map.has_key?(segments, :move) and List.first(segments.move.input) not in ["go", "move"] ->
+      List.first(segments.input) not in ["go", "move"] ->
         direction =
-          List.first(segments.move.input)
+          List.first(segments.input)
           |> normalize_direction()
 
         attempt_move(direction, context)
