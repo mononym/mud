@@ -28,7 +28,9 @@ defmodule Mud.Engine.Command do
               # when checking whether an input belongs to one segment or the following, a greedy segment will consume
               # the input rather than let it be inserted into the next segment.
               # Most segments should be greedy.
-              greedy: false
+              greedy: false,
+              # An optional transformation function to run input through before adding it to the Segment
+              transformer: nil
 
     @behaviour Access
 
@@ -427,6 +429,13 @@ defmodule Mud.Engine.Command do
   end
 
   defp update_input(segment, input) do
+    input =
+      if is_function(segment.transformer) do
+        segment.transformer(input)
+      else
+        input
+      end
+
     %{segment | input: [input | segment.input]}
   end
 

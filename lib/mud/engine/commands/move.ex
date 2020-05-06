@@ -74,7 +74,7 @@ defmodule Mud.Engine.Command.Move do
 
       # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
       # links here like object
-      list_of_links when length(list_of_links) < 10 ->
+      list_of_links when length(list_of_links) < 9 ->
         Logger.debug("Several Links found")
         obvious_directions = Stream.map(list_of_links, & &1.text)
 

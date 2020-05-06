@@ -28,7 +28,8 @@ defmodule Mud.Engine.Commands do
                   %Segment{
                     key: :number,
                     match_strings: [~r/\d/],
-                    must_follow: [:at, :look, :switch]
+                    must_follow: [:at, :look, :switch],
+                    transformer: &String.to_integer/1
                   },
                   %Segment{
                     key: :target,

@@ -86,12 +86,7 @@ defmodule Mud.Engine.Command.Look do
 
         which_target =
           if Map.has_key?(segments.children, :number) do
-            {int, _} =
-              segments.children.number.input
-              |> List.first()
-              |> Integer.parse()
-
-            min(1, int)
+            min(1, List.first(segments.children.number.input))
           else
             0
           end
