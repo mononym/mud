@@ -1,11 +1,22 @@
 <div class="flex flex-col bg-gray-900">
   <div name="hero" class="py-20 flex-grow">
     <div class="container mx-auto px-6 flex flex-col">
-      <h2 class="text-4xl font-bold mb-2 mx-auto">
-        Please click the button below to create your first character!
-      </h2>
+      <%= if @characters_exist do %>
+        <h2 class="text-4xl font-bold mb-2 mx-auto">
+          Welcome back! Click a name below to continue an adventure!
+        </h2>
 
-      <a href="/characters/new" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Create a Character</a>
+        <%= for character <- @characters do %>
+          <a href="/play/<%= character.id %>" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Play <%= character.name %></a>
+          <a href="/characters/new" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Create a Character</a>
+        <% end %>
+      <% else %>
+        <h2 class="text-4xl font-bold mb-2 mx-auto">
+          Please click the button below to create your first character!
+        </h2>
+
+        <a href="/characters/new" class="inline-block text-sm px-4 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-teal-500 hover:bg-white mt-4 lg:mt-0">Create a Character</a>
+      <% end %>
     </div>
   </div>
 </div>

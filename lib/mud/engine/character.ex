@@ -34,6 +34,7 @@ defmodule Mud.Engine.Character do
     |> unique_constraint(:name)
   end
 
+  @spec list_names_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
   def list_names_by_case_insensitive_prefix_in_area(partial_name, character_id) do
     Repo.all(
       from(
@@ -43,11 +44,21 @@ defmodule Mud.Engine.Character do
     )
   end
 
+  @spec list_by_player_id(String.t()) :: [%__MODULE__{}]
+  def list_by_player_id(player_id) do
+    from(character in __MODULE__,
+      where: character.player_id == ^player_id
+    )
+    |> Repo.all()
+  end
+
+  @spec get_by_name(String.t()) :: %__MODULE__{} | nil
   def get_by_name(name) do
     Repo.get_by(__MODULE__, name: name)
   end
 
-  def get_by_name_in_area(name, area_id) do
+  @spec list_by_name_in_area(String.t(), String.t()) :: [%__MODULE__{}]
+  def list_by_name_in_area(name, area_id) do
     Repo.all(
       from(
         character in __MODULE__,

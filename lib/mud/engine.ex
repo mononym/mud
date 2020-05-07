@@ -284,8 +284,26 @@ defmodule Mud.Engine do
       [%Character{}, ...]
 
   """
+  @spec list_characters() :: [%Character{}]
   def list_characters do
     Repo.all(Character)
+  end
+
+  @doc """
+  Returns the list of characters.
+
+  ## Examples
+
+      iex> list_characters_by_player(good_player_id)
+      [%Character{}, ...]
+
+      iex> list_characters_by_player(good_or_bad_player_id)
+      []
+
+  """
+  @spec list_characters_by_player(String.t()) :: [%Character{}]
+  def list_characters_by_player(player_id) do
+    Character.list_by_player_id(player_id)
   end
 
   @doc """

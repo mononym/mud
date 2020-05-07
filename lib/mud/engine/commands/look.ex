@@ -155,8 +155,8 @@ defmodule Mud.Engine.Command.Look do
   defp find_exact_match(:character, context, input) do
     Logger.debug("find_exact_match character")
 
-    case Character.get_by_name_in_area(input, context.character.location_id) do
-      character = %Character{} ->
+    case Character.list_by_name_in_area(input, context.character.location_id) do
+      [character] = [%Character{}] ->
         Logger.debug("Character found by perfect match: #{inspect(character)}")
 
         context =
