@@ -227,7 +227,7 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_call({:subscribe, process}, _from, state) do
-    ref = Process.link(process)
+    ref = Process.monitor(process)
 
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
 
@@ -376,7 +376,7 @@ defmodule Mud.Engine.Session do
           GenServer.cast(session_pid, %Mud.Engine.Output{
             id: input.id,
             character_id: input.character_id,
-            text: "<span id=\"#{input.id}\">{{echo}}> #{input.text}{{/echo}}</span>"
+            text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
           })
         end
 

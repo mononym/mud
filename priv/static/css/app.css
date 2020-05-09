@@ -11331,6 +11331,22 @@ div[name="message"] {
   flex-shrink: 0;
 }
 
+.while-submitting {
+  display: none;
+}
+
+.inputs {
+  display: block;
+}
+
+.phx-submit-loading .while-submitting {
+  display: block;
+}
+
+.phx-submit-loading .inputs {
+  display: none;
+}
+
 @media (min-width: 640px) {
   .sm\:sr-only {
     position: absolute;

@@ -357,7 +357,7 @@ defmodule Mud.Engine.Command.Look do
     |> set_success()
   end
 
-  defp build_area_description(area_id, character_id) do
+  def build_area_description(area_id, character_id) do
     area = Mud.Engine.get_area!(area_id)
 
     build_area_name(area)

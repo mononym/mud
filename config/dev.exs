@@ -67,7 +67,7 @@ config :mud, MudWeb.Endpoint,
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console,
-  format: "$metadata[$level] $message\n",
+  format: "$time $metadata[$level] $message\n",
   metadata: [:module, :function, :line],
   level: :debug
 

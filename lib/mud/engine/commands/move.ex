@@ -108,11 +108,10 @@ defmodule Mud.Engine.Command.Move do
     context_with_look_command =
       append_message(
         context,
-        %Mud.Engine.Input{
+        %Mud.Engine.Output{
           id: UUID.uuid4(),
           character_id: context.character_id,
-          text: "look",
-          type: :silent
+          text: Mud.Engine.Command.Look.build_area_description(link.to_id, context.character_id)
         }
       )
 

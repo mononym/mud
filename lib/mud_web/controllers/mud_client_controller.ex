@@ -15,14 +15,6 @@ defmodule MudWeb.MudClientController do
     if character.player_id === conn.assigns.player.id do
       Mud.Engine.start_character_session(character_id)
 
-      # Send a silent history command
-      Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
-        id: UUID.uuid4(),
-        character_id: character_id,
-        text: "history",
-        type: :silent
-      })
-
       # Send a silent look command
       Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
         id: UUID.uuid4(),
@@ -33,8 +25,8 @@ defmodule MudWeb.MudClientController do
 
       conn
       |> put_session(:character_id, character_id)
-      |> put_layout("vue_client_page.html")
-      |> render("vue.html", character_id: character.id)
+      |> put_layout("liveview_client_page.html")
+      |> live_render(MudWeb.MudClientLive, character_id: character.id)
     else
       conn
       |> put_flash(:error, "You do not have permission to access that Character.")

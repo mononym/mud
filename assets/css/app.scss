@@ -28,3 +28,19 @@ div[name="message"] {
     flex-shrink: 0;
   }
 }
+
+.while-submitting {
+  display: none;
+}
+.inputs {
+  display: block;
+}
+
+.phx-submit-loading {
+  .while-submitting {
+    display: block;
+  }
+  .inputs {
+    display: none;
+  }
+}
