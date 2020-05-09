@@ -28,7 +28,7 @@ defmodule MudWeb.CharacterController do
       {:ok, character} ->
         conn
         |> put_flash(:info, "Character created successfully.")
-        |> redirect(to: Routes.character_path(conn, :show, character))
+        |> redirect(to: Routes.character_path(conn, :edit, character))
 
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)

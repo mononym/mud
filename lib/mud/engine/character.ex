@@ -4,7 +4,24 @@ defmodule Mud.Engine.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.Component.{Attributes}
+  alias Mud.Engine.Component.{CharacterAttributes, CharacterFeature}
+
+  defmodule BiologicalSex do
+    defstruct name: nil
+  end
+
+  defmodule Feature do
+    @enforce_keys [:name, :options, :order]
+    defstruct name: nil, options: nil, biological_sexes: [], required: false, order: nil
+  end
+
+  defmodule Race do
+    defstruct name: nil, biological_sexes: [], features: [], body_parts: []
+  end
+
+  defmodule BodyPart do
+    defstruct name: nil, body_parts: [], features: []
+  end
 
   schema "characters" do
     field(:name, :string)
@@ -20,7 +37,8 @@ defmodule Mud.Engine.Character do
       foreign_key: :player_id
     )
 
-    has_one(:attributes, Attributes)
+    has_one(:attributes, CharacterAttributes)
+    has_one(:description, CharacterFeature)
   end
 
   @doc false

@@ -1,12 +1,12 @@
-defmodule Mud.Engine.Component.CharacterDescription do
+defmodule Mud.Engine.Component.CharacterFeature do
   use Mud.Schema
   import Ecto.Changeset
 
-  @primary_key {:object_id, :binary_id, autogenerate: false}
-  schema "character_description_components" do
-    field(:examine_description, :string)
-    field(:glance_description, :string)
-    field(:look_description, :string)
+  @primary_key {:character_id, :binary_id, autogenerate: false}
+  schema "character_feature_components" do
+    field(:name, :string)
+    field(:description, :string)
+    field(:type, :string)
 
     belongs_to(:character, Mud.Engine.Character,
       type: :binary_id,

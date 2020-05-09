@@ -116,7 +116,7 @@ defmodule Mud.Engine.Commands do
                     match_strings: [
                       "quit"
                     ],
-                    key: :move
+                    key: :quit
                   }
                 ]
               }

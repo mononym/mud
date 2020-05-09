@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.Attributes do
+defmodule Mud.Engine.Component.CharacterAttributes do
   use Mud.Schema
 
   @primary_key {:character_id, :binary_id, autogenerate: false}
