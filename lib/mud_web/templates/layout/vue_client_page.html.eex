@@ -13,7 +13,7 @@
     <%= render_existing @view_module, "scripts.html", assigns %>
   </head>
   <body class="min-w-full min-h-full h-screen flex flex-col overflow-hidden max-h-screen">
-    <%= render @view_module, @view_template, assigns %>
+    <%= @inner_content %>
   </body>
   <script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
 </html>

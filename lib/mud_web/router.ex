@@ -1,11 +1,12 @@
 defmodule MudWeb.Router do
+  import Phoenix.LiveDashboard.Router
   use MudWeb, :router
 
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
     plug(:fetch_flash)
-    plug(Phoenix.LiveView.Flash)
+    plug(:fetch_live_flash)
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(MudWeb.Plug.SetPlayer)
@@ -21,6 +22,11 @@ defmodule MudWeb.Router do
 
   if Mix.env() == :dev do
     forward("/sent_emails", Bamboo.SentEmailViewerPlug)
+
+    scope "/" do
+      pipe_through(:browser)
+      live_dashboard("/dashboard")
+    end
   end
 
   scope "/", MudWeb do

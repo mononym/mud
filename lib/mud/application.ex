@@ -10,6 +10,7 @@ defmodule Mud.Application do
 
     # List all child processes to be supervised
     children = [
+      {Phoenix.PubSub, name: Mud.PubSub},
       # Start the Ecto repository
       Mud.Repo,
       # Start the endpoint when the application starts

@@ -22,7 +22,7 @@ config :mud, MudWeb.Endpoint,
   live_view: [
     signing_salt: "Hz6eFBuUhASk+hEzu8RGk11Qie/qca+s"
   ],
-  pubsub: [name: Mud.PubSub, adapter: Phoenix.PubSub.PG2],
+  pubsub_server: Mud.PubSub,
   render_errors: [view: MudWeb.ErrorView, accepts: ~w(html json)],
   secret_key_base: "iff1P8hsrga25XbaqXbai+qItD2JpKH1kAb8znVlaSTG2s5+VZR6MO19i7mAEAIB",
   url: [host: "localhost"],
