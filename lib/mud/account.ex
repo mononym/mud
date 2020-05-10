@@ -152,7 +152,7 @@ defmodule Mud.Account do
   end
 
   defp redis_set_player_auth_token(auth_token, type, player_id, expiry) do
-    Redix.command(:redix, [
+    Redix.command!(:redix, [
       "SET",
       "player-auth-token:#{auth_token}",
       "#{type}:#{player_id}",
@@ -192,7 +192,7 @@ defmodule Mud.Account do
         case type do
           "signup" ->
             from(auth_email in Account.AuthEmail, where: auth_email.player_id == ^player_id)
-            |> Mud.Repo.update_all(set: [email_validated: true])
+            |> Mud.Repo.update_all(set: [email_verified: true])
 
             Mud.Repo.update_all(player_update_query,
               set: [status: Account.Constants.PlayerStatus.created()]

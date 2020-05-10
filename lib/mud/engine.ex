@@ -348,8 +348,9 @@ defmodule Mud.Engine do
       from(
         character in Character,
         join: attributes in assoc(character, :attributes),
+        join: physical_features in assoc(character, :physical_features),
         where: character.id == ^id,
-        preload: [attributes: attributes]
+        preload: [attributes: attributes, physical_features: physical_features]
       )
     )
   end
@@ -373,8 +374,9 @@ defmodule Mud.Engine do
       from(
         character in Character,
         join: attributes in assoc(character, :attributes),
+        join: physical_features in assoc(character, :physical_features),
         where: character.id == ^id,
-        preload: [attributes: attributes]
+        preload: [attributes: attributes, physical_features: physical_features]
       )
     )
   end
@@ -402,7 +404,10 @@ defmodule Mud.Engine do
 
     case result do
       {:ok, character} ->
-        Ecto.build_assoc(character, :attributes, %{})
+        Ecto.build_assoc(character, :attributes, attrs)
+        |> Repo.insert!()
+
+        Ecto.build_assoc(character, :physical_features, attrs)
         |> Repo.insert!()
 
         {:ok, character}
@@ -424,7 +429,7 @@ defmodule Mud.Engine do
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_character(%Character{} = character, attrs) do
+  def update_character(character, attrs \\ %{}) do
     character
     |> Character.changeset(attrs)
     |> Repo.update()
@@ -444,6 +449,32 @@ defmodule Mud.Engine do
   """
   def delete_character(%Character{} = character) do
     Repo.delete(character)
+  end
+
+  @doc """
+  Deletes a character.
+
+  ## Examples
+
+      iex> describe_character(character_physical_features)
+      "awesome description"
+
+  """
+  def describe_character(character) do
+    character_physical_features = character.physical_features
+
+    a_or_an =
+      if Regex.match?(~r/^[aeiouAEIOU]/, character_physical_features.race) do
+        "an"
+      else
+        "a"
+      end
+
+    "#{character.name} is #{a_or_an} #{character_physical_features.race}. They have #{
+      character_physical_features.hair_color
+    } hair, #{character_physical_features.eye_color} eyes, and #{
+      character_physical_features.skin_color
+    } skin."
   end
 
   @doc """

@@ -153,18 +153,16 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp find_exact_match(:character, context, input) do
-    Logger.debug("find_exact_match character")
-
     case Character.list_by_name_in_area(input, context.character.location_id) do
       [character] = [%Character{}] ->
-        Logger.debug("Character found by perfect match: #{inspect(character)}")
+        description = Mud.Engine.describe_character(character)
 
         context =
           context
           |> append_message(
             output(
               context.character_id,
-              "{{info}}You see #{character.name}.{{/info}}"
+              "{{info}}#{description}{{/info}}"
             )
           )
           |> set_success(true)
@@ -172,22 +170,16 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       _ ->
-        Logger.debug("No character found")
-
         {:error, :no_match}
     end
   end
 
   defp find_exact_match(:exit, context, input) do
-    Logger.debug("find_exact_match exit")
-
     case Link.list_obvious_exits_by_exact_description_in_area(
            input,
            context.character.location_id
          ) do
       [link] ->
-        Logger.debug("Link found: #{inspect(link)}")
-
         room_description = build_area_description(link.to_id, context.character.id)
 
         context =
@@ -203,11 +195,9 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       [] ->
-        Logger.debug("No link found")
         {:error, :no_match}
 
       links when length(links) <= 10 and length(links) > 1 ->
-        Logger.debug("Several Links found")
         directions = Stream.map(links, & &1.text)
 
         error =
@@ -218,21 +208,16 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       _many ->
-        Logger.debug("Many links found")
         {:error, :no_match}
     end
   end
 
   defp find_exact_match(:object, context, input) do
-    Logger.debug("find_exact_match object")
-
     case Object.list_by_exact_description_in_area(
            input,
            context.character.location_id
          ) do
       [object = %Object{}] ->
-        Logger.debug("Object found: #{inspect(object)}")
-
         context =
           context
           |> append_message(
@@ -246,14 +231,11 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       _ ->
-        Logger.debug("Zero or multiple objects found")
         {:error, :no_match}
     end
   end
 
   defp look_at_partial_matches(context, input, which_target) do
-    Logger.debug("look_at_partial_matches")
-
     potential_matches =
       @partial_match_order
       |> Enum.map(fn partial_match_type ->
@@ -263,8 +245,6 @@ defmodule Mud.Engine.Command.Look do
 
     case potential_matches do
       [match] ->
-        Logger.debug("Single partial match found: #{inspect(match)}")
-
         context =
           context
           |> append_message(
@@ -278,8 +258,6 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       matches when length(matches) > 1 and which_target > 0 and which_target <= length(matches) ->
-        Logger.debug("Several matches found, and a specific one already chosen")
-
         match = Enum.at(matches, which_target)
 
         context =
@@ -295,8 +273,6 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       matches when length(matches) <= 9 and length(matches) > 1 ->
-        Logger.debug("Several matches found")
-
         glance_descriptions = Enum.map(matches, & &1.glance)
 
         error =
@@ -307,8 +283,6 @@ defmodule Mud.Engine.Command.Look do
         {:ok, context}
 
       _many_or_none ->
-        Logger.debug("Many or no matches found")
-
         {:error, :no_match}
     end
   end
@@ -323,8 +297,6 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp find_partial_match(:exit, context, input) do
-    # Logger.debug("find_partial_match exit")
-
     Link.list_obvious_exits_by_partial_description_in_area(input, context.character.location_id)
     |> Enum.map(&%Match{glance: &1.text, look: &1.text})
   end

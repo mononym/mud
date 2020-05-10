@@ -4,19 +4,21 @@ defmodule Mud.Engine.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.Component.{CharacterAttributes, CharacterFeature}
+  alias Mud.Engine.Component.{CharacterAttributes, CharacterPhysicalFeatures}
 
-  defmodule BiologicalSex do
-    defstruct name: nil
+  defmodule AttributeModifier do
+    @enforce_keys [:attribute, :modifier, :amount]
+    defstruct attribute: nil, modifier: nil, amount: nil
+  end
+
+  defmodule PhysicalFeatureSet do
+    @enforce_keys [:name]
+    defstruct name: nil, description: nil
   end
 
   defmodule Feature do
-    @enforce_keys [:name, :options, :order]
-    defstruct name: nil, options: nil, biological_sexes: [], required: false, order: nil
-  end
-
-  defmodule Race do
-    defstruct name: nil, biological_sexes: [], features: [], body_parts: []
+    @enforce_keys [:name, :options]
+    defstruct name: nil, options: nil, physical_feature_sets: [], required: false, order: nil
   end
 
   defmodule BodyPart do
@@ -38,7 +40,7 @@ defmodule Mud.Engine.Character do
     )
 
     has_one(:attributes, CharacterAttributes)
-    has_one(:description, CharacterFeature)
+    has_one(:physical_features, CharacterPhysicalFeatures)
   end
 
   @doc false
@@ -82,7 +84,9 @@ defmodule Mud.Engine.Character do
         character in __MODULE__,
         join: attributes in assoc(character, :attributes),
         where: character.location_id == ^area_id and character.name == ^name,
-        preload: [attributes: attributes]
+        join: physical_features in assoc(character, :physical_features),
+        where: character.id == physical_features.character_id,
+        preload: [attributes: attributes, physical_features: physical_features]
       )
     )
   end

@@ -17,7 +17,8 @@ config :mud,
   character_inactivity_timeout_warning:
     String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "600000")),
   character_inactivity_timeout_final:
-    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "1200000"))
+    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "1200000")),
+  create_player_token_ttl: String.to_integer(System.get_env("CREATE_PLAYER_TOKEN_TTL", "1800"))
 
 config :mud, :generators,
   migration: true,

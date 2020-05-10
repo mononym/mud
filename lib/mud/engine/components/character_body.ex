@@ -1,12 +1,12 @@
-defmodule Mud.Engine.Component.CharacterFeature do
+defmodule Mud.Engine.Component.CharacterBody do
   use Mud.Schema
   import Ecto.Changeset
 
   @primary_key {:character_id, :binary_id, autogenerate: false}
   schema "character_feature_components" do
-    field(:name, :string)
-    field(:description, :string)
-    field(:type, :string)
+    field(:race, :string)
+    field(:biological_sex, :string)
+    field(:features, :map)
 
     belongs_to(:character, Mud.Engine.Character,
       type: :binary_id,
@@ -19,12 +19,11 @@ defmodule Mud.Engine.Component.CharacterFeature do
   @doc false
   def changeset(description, attrs) do
     description
-    |> cast(attrs, [:object_id, :glance_description, :look_description, :examine_description])
+    |> cast(attrs, [:character_id, :race, :features])
     |> validate_required([
-      :object_id,
-      :glance_description,
-      :look_description,
-      :examine_description
+      :character_id,
+      :race,
+      :features
     ])
   end
 end

@@ -5,11 +5,13 @@ defmodule MudWeb.Schema.CharacterCreationForm do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:name, :string)
+    field(:eye_color, :string)
+    field(:hair_color, :string)
+    field(:skin_color, :string)
   end
 
   def new() do
-    %__MODULE__{}
+    %__MODULE__{} |> changeset()
   end
 
   def changeset(form) do
@@ -18,21 +20,23 @@ defmodule MudWeb.Schema.CharacterCreationForm do
 
   def update(name, attrs) do
     name
-    |> cast(attrs, [:name])
-    |> validate()
+    |> cast(attrs, [:eye_color, :hair_color, :skin_color])
+    |> validate_required([:eye_color, :hair_color, :skin_color])
+
+    # |> validate()
   end
 
   def new(attrs) when is_map(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:name])
-    |> validate_required([:name])
-    |> validate()
+    |> cast(attrs, [:eye_color, :hair_color, :skin_color])
+    |> validate_required([:eye_color, :hair_color, :skin_color])
+
+    # |> validate()
   end
 
-  @spec validate(Ecto.Changeset.t()) :: Ecto.Changeset.t()
-  def validate(name) do
-    name
-    |> change()
-    |> validate_format(:name, ~r/^A-Z[a-z]{1,19}$/)
-  end
+  # @spec validate(Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  # def validate(name) do
+  #   name
+  #   |> change()
+  # end
 end
