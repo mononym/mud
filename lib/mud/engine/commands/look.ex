@@ -97,7 +97,7 @@ defmodule Mud.Engine.Command.Look do
       true ->
         Logger.debug("building area description")
         IO.inspect(context)
-        description = build_area_description(context.character.location_id, context.character.id)
+        description = build_area_description(context.character.area_id, context.character.id)
 
         context
         |> append_message(output(context.character_id, description))
@@ -153,7 +153,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp find_exact_match(:character, context, input) do
-    case Character.list_by_name_in_area(input, context.character.location_id) do
+    case Character.list_by_name_in_area(input, context.character.area_id) do
       [character] = [%Character{}] ->
         description = Mud.Engine.describe_character(character)
 
@@ -177,7 +177,7 @@ defmodule Mud.Engine.Command.Look do
   defp find_exact_match(:exit, context, input) do
     case Link.list_obvious_exits_by_exact_description_in_area(
            input,
-           context.character.location_id
+           context.character.area_id
          ) do
       [link] ->
         room_description = build_area_description(link.to_id, context.character.id)
@@ -215,7 +215,7 @@ defmodule Mud.Engine.Command.Look do
   defp find_exact_match(:object, context, input) do
     case Object.list_by_exact_description_in_area(
            input,
-           context.character.location_id
+           context.character.area_id
          ) do
       [object = %Object{}] ->
         context =
@@ -290,19 +290,19 @@ defmodule Mud.Engine.Command.Look do
   # Eventually this will need to bring back a character and do something more complex.
   # For the look it would need to actually build the look for the character.
   defp find_partial_match(:character, context, input) do
-    Character.list_names_by_case_insensitive_prefix_in_area(input, context.character.id)
+    Character.list_by_case_insensitive_prefix_in_area(input, context.character.id)
     |> Enum.map(fn name ->
       %Match{glance: name, look: name}
     end)
   end
 
   defp find_partial_match(:exit, context, input) do
-    Link.list_obvious_exits_by_partial_description_in_area(input, context.character.location_id)
+    Link.list_obvious_exits_by_partial_description_in_area(input, context.character.area_id)
     |> Enum.map(&%Match{glance: &1.text, look: &1.text})
   end
 
   defp find_partial_match(:object, context, input) do
-    Object.list_by_partial_glance_description_in_area(input, context.character.location_id)
+    Object.list_by_partial_glance_description_in_area(input, context.character.area_id)
     |> Enum.map(
       &%Match{glance: &1.description.glance_description, look: &1.description.look_description}
     )
@@ -429,7 +429,7 @@ defmodule Mud.Engine.Command.Look do
 
   # Character list should not contain the character the look is being performed for
   defp build_player_characters_string(area_id, character_id) do
-    Mud.Engine.list_active_characters_in_areas(area_id)
+    Mud.Engine.Character.list_active_in_areas(area_id)
     # filter out self
     |> Enum.filter(fn char ->
       char.id != character_id

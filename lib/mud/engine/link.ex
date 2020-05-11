@@ -49,7 +49,7 @@ defmodule Mud.Engine.Link do
   #     from(
   #       link in __MODULE__,
   #       join: char in subquery(subset_query),
-  #       on: char.location_id == link.from_id,
+  #       on: char.area_id == link.from_id,
   #       where:
   #         link.type == "obvious" and char.id == ^character_id and
   #           like(link.text, ^search_string),

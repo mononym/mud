@@ -10,7 +10,7 @@ defmodule MudWeb.MudClientController do
   plug(MudWeb.Plug.RedirectAnonymousPlayer, "/" when action in [:play])
 
   def play(conn, %{"character" => character_id}) do
-    character = Engine.get_character!(character_id)
+    character = Engine.Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
       Mud.Engine.start_character_session(character_id)

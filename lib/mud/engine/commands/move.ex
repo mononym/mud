@@ -55,7 +55,7 @@ defmodule Mud.Engine.Command.Move do
 
   defp attempt_move(direction, context) do
     case Mud.Engine.find_obvious_exit_in_area(
-           context.character.location_id,
+           context.character.area_id,
            direction
          ) do
       [] ->
@@ -69,10 +69,8 @@ defmodule Mud.Engine.Command.Move do
         )
 
       [link] ->
-        # IO.inspect(link)
         do_move(context, link)
 
-      # TODO: MAKE THIS LOGIC LIKE LOOK LOGIC WITH MULTIPLE MATCHES
       # links here like object
       list_of_links when length(list_of_links) < 9 ->
         Logger.debug("Several Links found")
@@ -81,7 +79,7 @@ defmodule Mud.Engine.Command.Move do
         error =
           "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
 
-        multiple_link_error(context, list_of_links, obvious_directions, error)
+        multiple_link_error(context, "move", list_of_links, obvious_directions, error, __MODULE__)
 
       _many ->
         Logger.debug("Many Links found")
@@ -101,8 +99,8 @@ defmodule Mud.Engine.Command.Move do
     # Move the character in the database
     {:ok, character} =
       context.character_id
-      |> Mud.Engine.get_character!()
-      |> Mud.Engine.update_character(%{location_id: link.to_id})
+      |> Mud.Engine.Character.get_by_id!()
+      |> Mud.Engine.update_character(%{area_id: link.to_id})
 
     # Perform look logic for character
     context_with_look_command =
@@ -116,51 +114,31 @@ defmodule Mud.Engine.Command.Move do
       )
 
     # List all the characters that need to be informed of a move
-    characters_by_location =
-      Mud.Engine.list_active_characters_in_areas([link.to_id, link.from_id])
+    characters_by_area =
+      Mud.Engine.Character.list_active_in_areas([link.to_id, link.from_id])
       # Filter out "self"
       |> Enum.filter(fn char ->
         char.id != character.id
       end)
       # Group by location
       |> Enum.group_by(fn char ->
-        char.location_id
+        char.area_id
       end)
 
     # Send messages to everyone in room that the character just left
     context_with_some_messages =
-      Enum.reduce(
-        characters_by_location[link.from_id] || [],
+      add_message_for_all_characters(
         context_with_look_command,
-        fn char, ctx ->
-          append_message(
-            ctx,
-            %Mud.Engine.Output{
-              id: UUID.uuid4(),
-              character_id: char.id,
-              text:
-                "{{info}}#{character.name} left the area heading #{link.departure_direction}.{{/info}}"
-            }
-          )
-        end
+        "{{info}}#{character.name} left the area heading #{link.departure_direction}.{{/info}}",
+        characters_by_area[link.from_id]
       )
 
     # Send messages to everyone in room that the character is arriving in
     context_with_all_messages =
-      Enum.reduce(
-        characters_by_location[link.to_id] || [],
+      add_message_for_all_characters(
         context_with_some_messages,
-        fn char, ctx ->
-          append_message(
-            ctx,
-            %Mud.Engine.Output{
-              id: UUID.uuid4(),
-              character_id: char.id,
-              text:
-                "{{info}}#{character.name} has entered the area from #{link.arrival_direction}.{{info}}"
-            }
-          )
-        end
+        "{{info}}#{character.name} has entered the area from #{link.arrival_direction}.{{info}}",
+        characters_by_area[link.to_id]
       )
 
     context_with_all_messages
@@ -168,25 +146,21 @@ defmodule Mud.Engine.Command.Move do
     |> set_success()
   end
 
-  defp multiple_link_error(context, items, strings, error_message) do
-    items =
-      items
-      |> Enum.map(&("move " <> &1.text))
-      |> Mud.Util.list_to_index_map()
-
-    context
-    |> append_message(
-      output(
-        context.character_id,
-        error_message,
-        strings
-      )
+  defp add_message_for_all_characters(context, text, characters) do
+    Enum.reduce(
+      characters,
+      context,
+      fn char, ctx ->
+        append_message(
+          ctx,
+          %Mud.Engine.Output{
+            id: UUID.uuid4(),
+            character_id: char.id,
+            text: text
+          }
+        )
+      end
     )
-    |> set_is_continuation(true)
-    |> set_continuation_data(items)
-    |> set_continuation_module(__MODULE__)
-    |> set_continuation_type(:numeric)
-    |> set_success()
   end
 
   defp normalize_direction(direction) do

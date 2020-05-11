@@ -8,7 +8,7 @@ defmodule MudWeb.CharacterCreationWizardLive do
 
   def mount(_params, session, socket) do
     Logger.debug("session data: #{inspect(session)}")
-    character = Mud.Engine.get_character!(session["character_id"])
+    character = Mud.Engine.Character.get_by_id!(session["character_id"])
     Logger.debug("character: #{inspect(character)}")
 
     races =

@@ -1,24 +1,50 @@
 defmodule Mud.Engine.Object do
+  defmodule CreateObjectRequest do
+    @enforce_keys [:description]
+    defstruct scenery: %Scenery{},
+              location: %Location{},
+              furniture: %Furniture{},
+              description: nil
+
+    defmodule Description do
+      @enforce_keys [:glance_description, :look_description]
+      defstruct glance_description: nil, look_description: nil
+    end
+
+    defmodule Location do
+      defstruct contained: false,
+                hand: nil,
+                held: false,
+                on_ground: false,
+                reference: nil,
+                worn: false
+    end
+
+    defmodule Scenery do
+      defstruct hidden: false
+    end
+
+    defmodule Furniture do
+      defstruct is_furniture: false
+    end
+  end
+
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
 
   alias Mud.Repo
 
-  alias Mud.Engine.Component.{ObjectDescription, Location, Scenery}
+  alias Mud.Engine.Component.{ObjectDescription, Location}
+  alias Mud.Engine.Component.Object.{Furniture, Scenery}
 
   schema "objects" do
     field(:key, :string)
 
     has_one(:description, ObjectDescription)
     has_one(:location, Location)
-
-    field(:is_scenery, :boolean, virtual: true, default: false)
+    has_one(:furniture, Furniture)
     has_one(:scenery, Scenery)
-
-    field(:is_furniture, :boolean, virtual: true, default: false)
-    field(:is_weapon, :boolean, virtual: true, default: false)
-    field(:look_through, :boolean, virtual: true, default: false)
   end
 
   @doc false
@@ -77,17 +103,24 @@ defmodule Mud.Engine.Object do
 
     if Enum.any?(list, match_fun) do
       Enum.filter(list, match_fun)
-      |> Enum.map(&populate_flags/1)
     else
       list
-      |> Enum.map(&populate_flags/1)
     end
   end
 
-  def list_by_exact_description_in_area(input, area_id) do
+  def list_by_exact_glance_description_in_area(input, area_id) do
     object_base_query()
     |> where(
-      [_object, location, description, _scenery],
+      [location: location, description: description],
+      location.reference == ^area_id and description.glance_description == ^input
+    )
+    |> Repo.all()
+  end
+
+  def list_by_exact_glance_description_in_area(input, area_id) do
+    object_base_query()
+    |> where(
+      [location: location, description: description],
       location.reference == ^area_id and description.glance_description == ^input
     )
     |> Repo.all()
@@ -98,30 +131,69 @@ defmodule Mud.Engine.Object do
 
     object_base_query()
     |> where(
-      [_object, location, description, _scenery],
+      [location: location, description: description],
       location.reference == ^area_id and like(description.glance_description, ^search_string)
     )
     |> Repo.all()
+  end
+
+  @doc """
+  Creates a object.
+
+  ## Examples
+
+      iex> create_object(%{field: value})
+      {:ok, %Object{}}
+
+      iex> create_object(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_object(request = %CreateObjectRequest{}) do
+    Repo.transaction(fn ->
+      object =
+        %Object{}
+        |> Object.changeset(Map.from_struct(request))
+        |> Repo.insert()
+
+      case object do
+        {:ok, object} ->
+          object
+          |> Ecto.build_assoc(:location, Map.from_struct(request.location))
+          |> Repo.insert!()
+
+          object
+          |> Ecto.build_assoc(:description, Map.from_struct(request.description))
+          |> Repo.insert!()
+
+          object
+          |> Ecto.build_assoc(:scenery, Map.from_struct(request.scenery))
+          |> Repo.insert!()
+
+          object
+          |> Ecto.build_assoc(:furniture, Map.from_struct(request.furniture))
+          |> Repo.insert!()
+
+          Object.get!(object.id)
+
+        {:error, changeset} ->
+          Repo.rollback(changeset)
+      end
+    end)
   end
 
   defp object_base_query() do
     from(
       object in __MODULE__,
       join: location in Location,
-      on: object.id == location.object_id,
       join: description in ObjectDescription,
-      on: object.id == description.object_id,
       left_join: scenery in Scenery,
-      on: object.id == scenery.object_id,
-      preload: [location: location, description: description, scenery: scenery]
+      preload: [
+        location: location,
+        description: description,
+        scenery: scenery,
+        furniture: furniture
+      ]
     )
-  end
-
-  defp populate_flags(object) do
-    if object != nil and Ecto.assoc_loaded?(object.scenery) do
-      %{object | is_scenery: true}
-    else
-      object
-    end
   end
 end

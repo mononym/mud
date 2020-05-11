@@ -110,6 +110,25 @@ defmodule Mud.Engine.Commands do
                 ]
               },
               %Command{
+                callback_module: Command.Sit,
+                segments: [
+                  %Segment{
+                    match_strings: ["sit"],
+                    key: :sit
+                  },
+                  %Segment{
+                    must_follow: [:sit],
+                    match_strings: ["on"],
+                    key: :position
+                  },
+                  %Segment{
+                    must_follow: [:position, :sit],
+                    match_strings: [],
+                    key: :target
+                  }
+                ]
+              },
+              %Command{
                 callback_module: Command.Quit,
                 segments: [
                   %Segment{

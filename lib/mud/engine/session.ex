@@ -121,7 +121,7 @@ defmodule Mud.Engine.Session do
 
     # Set character to active
     state.character_id
-    |> Mud.Engine.get_character!()
+    |> Mud.Engine.Character.get_by_id!()
     |> Mud.Engine.update_character(%{active: true})
 
     # Start inactivity timer

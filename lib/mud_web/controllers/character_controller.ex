@@ -15,14 +15,14 @@ defmodule MudWeb.CharacterController do
   end
 
   def create(conn, %{"character" => character_params}) do
-    starting_location =
+    starting_area =
       Mud.Engine.list_areas()
       |> Enum.random()
 
     params =
       character_params
       |> Map.put("player_id", conn.assigns.player.id)
-      |> Map.put("location_id", starting_location.id)
+      |> Map.put("area_id", starting_area.id)
 
     case Engine.create_character(params) do
       {:ok, character} ->
@@ -36,7 +36,7 @@ defmodule MudWeb.CharacterController do
   end
 
   def show(conn, %{"id" => id}) do
-    character = Engine.get_character!(id)
+    character = Engine.Character.get_by_id!(id)
     render(conn, "show.html", character: character)
   end
 
@@ -48,7 +48,7 @@ defmodule MudWeb.CharacterController do
   end
 
   def play(conn, %{"character" => character_id}) do
-    character = Engine.get_character!(character_id)
+    character = Engine.Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
       Mud.Engine.start_character_session(character_id)
@@ -73,7 +73,7 @@ defmodule MudWeb.CharacterController do
   end
 
   def update(conn, %{"id" => id, "character" => character_params}) do
-    character = Engine.get_character!(id)
+    character = Engine.Character.get_by_id!(id)
 
     case Engine.update_character(character, character_params) do
       {:ok, character} ->
@@ -87,7 +87,7 @@ defmodule MudWeb.CharacterController do
   end
 
   def delete(conn, %{"id" => id}) do
-    character = Engine.get_character!(id)
+    character = Engine.Character.get_by_id!(id)
     {:ok, _character} = Engine.delete_character(character)
 
     conn

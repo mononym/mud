@@ -72,7 +72,7 @@ defmodule Mud.Engine.Search do
   end
 
   defp search(:character, text, character_id) do
-    Character.list_names_by_case_insensitive_prefix_in_area(text, character_id)
+    Character.list_by_case_insensitive_prefix_in_area(text, character_id)
   end
 
   # defp search(:obvious_exit, text, character_id) do

@@ -1,4 +1,4 @@
-defmodule Mud.Rules.PlayerRaces do
+defmodule Mud.Engine.Rules.PlayerRaces do
   defmodule Race do
     defstruct name: nil,
               eye_colors: [],

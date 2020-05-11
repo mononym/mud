@@ -35,7 +35,15 @@ defmodule Mud.Engine.Command do
     @behaviour Access
 
     @impl Access
-    def fetch(struct, key), do: Map.fetch(struct, key)
+    def fetch(struct, key) do
+      keys = Map.keys(struct)
+
+      if key in struct do
+        Map.fetch(struct, key)
+      else
+        struct.children[key]
+      end
+    end
 
     @impl Access
     def get_and_update(struct, key, fun) when is_function(fun, 1) do
@@ -314,7 +322,6 @@ defmodule Mud.Engine.Command do
          {:ok, normalized_input} <- normalize_input_prefix(input, segment),
          true <- input_and_segment_match(normalized_input, segment),
          {:error, :no_match} <- input_and_segment_match(normalized_input, List.first(segments)),
-         #  segment <- update_allowance(segment),
          segment <- update_input(segment, normalized_input) do
       if segment.greedy do
         {:ok,
@@ -506,18 +513,9 @@ defmodule Mud.Engine.Command do
   end
 
   def executev2(context = %CommandContext{}) do
-    IO.inspect(context, label: "executev2")
-    # IO.inspect(Integer.parse(context.raw_input), label: "executev2")
-
-    IO.inspect(context.is_continuation == true and context.continuation_type == :numeric,
-      label: "executev2"
-    )
-
     if context.is_continuation == true and context.continuation_type == :numeric do
       case Integer.parse(context.raw_input) do
         {integer, _} ->
-          IO.inspect({integer, context.continuation_data, context.continuation_data[integer]})
-
           context
           |> Map.put(:raw_input, context.continuation_data[integer])
           |> CommandContext.clear_continuation_data()
@@ -548,14 +546,11 @@ defmodule Mud.Engine.Command do
   end
 
   defp do_execute(context) do
-    # IO.inspect(context, label: "do_execute")
-
     case string_to_command(context.raw_input) do
       {:ok, command} ->
         Logger.debug("turned string into a command")
         context = Map.put(context, :command, command)
         {:ok, context} = transaction(context, &command.callback_module.execute/1)
-        # IO.inspect(context, label: "after execution")
 
         process_messages(context)
 
@@ -580,7 +575,7 @@ defmodule Mud.Engine.Command do
 
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
-      character = Mud.Engine.get_character!(context.character_id)
+      character = Mud.Engine.Character.get_by_id!(context.character_id)
       context = %{context | character: character}
 
       if context.is_continuation do
