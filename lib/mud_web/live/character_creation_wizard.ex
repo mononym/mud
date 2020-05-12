@@ -12,7 +12,7 @@ defmodule MudWeb.CharacterCreationWizardLive do
     Logger.debug("character: #{inspect(character)}")
 
     races =
-      Mud.Rules.PlayerRaces.list_races()
+      Mud.Engine.Rules.PlayerRaces.list_races()
       |> Enum.reduce(%{}, fn race, map -> Map.put(map, race.name, race) end)
 
     selected_race =

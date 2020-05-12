@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.ObjectDescription do
+defmodule Mud.Engine.Component.Object.Description do
   use Mud.Schema
   import Ecto.Changeset
 
@@ -8,7 +8,7 @@ defmodule Mud.Engine.Component.ObjectDescription do
     field(:glance_description, :string)
     field(:look_description, :string)
 
-    belongs_to(:object, Mud.Engine.Object,
+    belongs_to(:object, Mud.Engine.Model.ObjectModel,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,

@@ -213,11 +213,11 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp find_exact_match(:object, context, input) do
-    case Object.list_by_exact_description_in_area(
+    case Object.list_by_exact_glance_description_in_area(
            input,
            context.character.area_id
          ) do
-      [object = %Object{}] ->
+      [object] ->
         context =
           context
           |> append_message(

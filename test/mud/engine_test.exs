@@ -339,7 +339,7 @@ defmodule Mud.EngineTest do
   end
 
   describe "description_components" do
-    alias Mud.Engine.Component.ObjectDescription
+    alias Mud.Engine.Component.Description
 
     @valid_attrs %{
       examine_description: "some examine_description",
@@ -380,7 +380,7 @@ defmodule Mud.EngineTest do
     end
 
     test "create_description/1 with valid data creates a description" do
-      assert {:ok, %ObjectDescription{} = description} = Engine.create_description(@valid_attrs)
+      assert {:ok, %Description{} = description} = Engine.create_description(@valid_attrs)
       assert description.examine_description == "some examine_description"
       assert description.glance_description == "some glance_description"
       assert description.look_description == "some look_description"
@@ -394,7 +394,7 @@ defmodule Mud.EngineTest do
     test "update_description/2 with valid data updates the description" do
       description = description_fixture()
 
-      assert {:ok, %ObjectDescription{} = description} =
+      assert {:ok, %Description{} = description} =
                Engine.update_description(description, @update_attrs)
 
       assert description.examine_description == "some updated examine_description"
@@ -411,7 +411,7 @@ defmodule Mud.EngineTest do
 
     test "delete_description/1 deletes the description" do
       description = description_fixture()
-      assert {:ok, %ObjectDescription{}} = Engine.delete_description(description)
+      assert {:ok, %Description{}} = Engine.delete_description(description)
       assert_raise Ecto.NoResultsError, fn -> Engine.get_description!(description.id) end
     end
 

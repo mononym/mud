@@ -106,6 +106,18 @@ defmodule Mud.Engine.Commands do
                     must_follow: [:move],
                     match_strings: [],
                     key: :exit
+                  },
+                  %Segment{
+                    must_follow: [:move],
+                    match_strings: ["/continue"],
+                    key: :continue
+                  },
+                  %Segment{
+                    must_follow: [:continue],
+                    match_strings: [
+                      ~r/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/
+                    ],
+                    key: :link_id
                   }
                 ]
               },
@@ -115,6 +127,18 @@ defmodule Mud.Engine.Commands do
                   %Segment{
                     match_strings: ["sit"],
                     key: :sit
+                  },
+                  %Segment{
+                    must_follow: [:sit],
+                    match_strings: ["/continue"],
+                    key: :continue
+                  },
+                  %Segment{
+                    must_follow: [:continue],
+                    match_strings: [
+                      ~r/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/
+                    ],
+                    key: :object_id
                   },
                   %Segment{
                     must_follow: [:sit],

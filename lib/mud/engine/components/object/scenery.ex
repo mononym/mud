@@ -7,7 +7,7 @@ defmodule Mud.Engine.Component.Object.Scenery do
     field(:is_scenery, :boolean, default: false)
     field(:hidden, :boolean, default: false)
 
-    belongs_to(:object, Mud.Engine.Object,
+    belongs_to(:object, Mud.Engine.Model.ObjectModel,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,

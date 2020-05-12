@@ -38,7 +38,7 @@ defmodule Mud.Engine.Command do
     def fetch(struct, key) do
       keys = Map.keys(struct)
 
-      if key in struct do
+      if key in keys do
         Map.fetch(struct, key)
       else
         struct.children[key]

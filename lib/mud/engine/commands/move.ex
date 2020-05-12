@@ -72,14 +72,21 @@ defmodule Mud.Engine.Command.Move do
         do_move(context, link)
 
       # links here like object
-      list_of_links when length(list_of_links) < 9 ->
+      list_of_links when length(list_of_links) < 10 ->
         Logger.debug("Several Links found")
-        obvious_directions = Stream.map(list_of_links, & &1.text)
+        obvious_directions = Enum.map(list_of_links, & &1.text)
+        link_ids = Enum.map(list_of_links, & &1.id)
 
         error =
           "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
 
-        multiple_link_error(context, "move", list_of_links, obvious_directions, error, __MODULE__)
+        multiple_match_error(
+          context,
+          "move",
+          obvious_directions,
+          link_ids,
+          error
+        )
 
       _many ->
         Logger.debug("Many Links found")

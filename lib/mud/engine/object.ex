@@ -1,57 +1,22 @@
 defmodule Mud.Engine.Object do
-  defmodule CreateObjectRequest do
-    @enforce_keys [:description]
-    defstruct scenery: %Scenery{},
-              location: %Location{},
-              furniture: %Furniture{},
-              description: nil
-
-    defmodule Description do
-      @enforce_keys [:glance_description, :look_description]
-      defstruct glance_description: nil, look_description: nil
-    end
-
-    defmodule Location do
-      defstruct contained: false,
-                hand: nil,
-                held: false,
-                on_ground: false,
-                reference: nil,
-                worn: false
-    end
-
-    defmodule Scenery do
-      defstruct hidden: false
-    end
-
-    defmodule Furniture do
-      defstruct is_furniture: false
-    end
-  end
-
-  use Mud.Schema
-  import Ecto.Changeset
+  @moduledoc """
+  Almost everything in a world is an Object. That said, Components are where they get their power.
+  """
   import Ecto.Query
 
   alias Mud.Repo
+  alias Mud.Engine.Object
+  alias Mud.Engine.Model.{CreateObjectRequest, ObjectModel}
+  alias Mud.Engine.Component.{Description, Furniture, Location, Scenery}
 
-  alias Mud.Engine.Component.{ObjectDescription, Location}
-  alias Mud.Engine.Component.Object.{Furniture, Scenery}
-
-  schema "objects" do
-    field(:key, :string)
-
-    has_one(:description, ObjectDescription)
-    has_one(:location, Location)
-    has_one(:furniture, Furniture)
-    has_one(:scenery, Scenery)
-  end
-
-  @doc false
-  def changeset(object, attrs) do
-    object
-    |> cast(attrs, [:key])
-    |> validate_required([:key])
+  @spec get!(id :: binary) :: __MODULE__.t()
+  def get!(id) when is_binary(id) do
+    object_base_query()
+    |> where(
+      [object, _location, _description, _scenery],
+      object.id == ^id
+    )
+    |> Repo.one!()
   end
 
   @spec get(id :: binary) :: nil | __MODULE__.t()
@@ -62,7 +27,6 @@ defmodule Mud.Engine.Object do
       object.id == ^id
     )
     |> Repo.one()
-    |> populate_flags()
   end
 
   def list_in_area(area_id) do
@@ -72,7 +36,6 @@ defmodule Mud.Engine.Object do
       location.reference == ^area_id and location.on_ground == true
     )
     |> Repo.all()
-    |> Enum.map(&populate_flags/1)
   end
 
   def get_by_exact_key_in_area(simple_input, area_id) do
@@ -117,11 +80,12 @@ defmodule Mud.Engine.Object do
     |> Repo.all()
   end
 
-  def list_by_exact_glance_description_in_area(input, area_id) do
+  def list_furniture_by_exact_glance_description_in_area(input, area_id) do
     object_base_query()
     |> where(
-      [location: location, description: description],
-      location.reference == ^area_id and description.glance_description == ^input
+      [location: location, description: description, furniture: furniture],
+      location.reference == ^area_id and description.glance_description == ^input and
+        furniture.is_furniture
     )
     |> Repo.all()
   end
@@ -133,6 +97,18 @@ defmodule Mud.Engine.Object do
     |> where(
       [location: location, description: description],
       location.reference == ^area_id and like(description.glance_description, ^search_string)
+    )
+    |> Repo.all()
+  end
+
+  def list_furniture_by_partial_glance_description_in_area(complex_input, area_id) do
+    search_string = Mud.Engine.Search.text_to_search_terms(complex_input)
+
+    object_base_query()
+    |> where(
+      [location: location, description: description, furniture: furniture],
+      location.reference == ^area_id and like(description.glance_description, ^search_string) and
+        furniture.is_furniture
     )
     |> Repo.all()
   end
@@ -152,8 +128,8 @@ defmodule Mud.Engine.Object do
   def create_object(request = %CreateObjectRequest{}) do
     Repo.transaction(fn ->
       object =
-        %Object{}
-        |> Object.changeset(Map.from_struct(request))
+        %ObjectModel{}
+        |> ObjectModel.changeset(Map.from_struct(request))
         |> Repo.insert()
 
       case object do
@@ -184,10 +160,11 @@ defmodule Mud.Engine.Object do
 
   defp object_base_query() do
     from(
-      object in __MODULE__,
+      object in ObjectModel,
       join: location in Location,
-      join: description in ObjectDescription,
+      join: description in Description,
       left_join: scenery in Scenery,
+      left_join: furniture in Furniture,
       preload: [
         location: location,
         description: description,

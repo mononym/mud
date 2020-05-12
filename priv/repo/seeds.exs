@@ -429,7 +429,7 @@ Mud.Engine.create_object(%CreateObjectRequest{
     reference: north_room.id,
     on_ground: true
   },
-  description: %CreateObjectRequest.ObjectDescription{
+  description: %CreateObjectRequest.Description{
     glance_description: "a flat rounded rock",
     look_description:
       "This rock has been worn down over time by water into a smooth, flat round rock."
@@ -443,7 +443,7 @@ Mud.Engine.create_object(%CreateObjectRequest{
     reference: north_room.id,
     on_ground: true
   },
-  description: %CreateObjectRequest.ObjectDescription{
+  description: %CreateObjectRequest.Description{
     glance_description: "a rough round rock",
     look_description:
       "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
@@ -457,7 +457,7 @@ Mud.Engine.create_object(%CreateObjectRequest{
     reference: north_room.id,
     on_ground: true
   },
-  description: %CreateObjectRequest.ObjectDescription{
+  description: %CreateObjectRequest.Description{
     glance_description: "a leafy branch",
     look_description:
       "The leafy branch has only recently been removed from its tree, the leaves not yet wilted.",
@@ -473,7 +473,7 @@ Mud.Engine.create_object(%CreateObjectRequest{
     reference: center_room.id,
     on_ground: true
   },
-  description: %CreateObjectRequest.ObjectDescription{
+  description: %CreateObjectRequest.Description{
     glance_description: "a massive fountain",
     look_description:
       "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself."
@@ -490,7 +490,7 @@ Mud.Engine.create_object(%CreateObjectRequest{
     reference: center_room.id,
     on_ground: true
   },
-  description: %CreateObjectRequest.ObjectDescription{
+  description: %CreateObjectRequest.Description{
     glance_description: "a worn wooden bench",
     look_description:
       "The stury wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."

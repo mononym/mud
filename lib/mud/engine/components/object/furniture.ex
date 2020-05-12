@@ -6,7 +6,7 @@ defmodule Mud.Engine.Component.Object.Furniture do
   schema "object_furniture_components" do
     field(:is_furniture, :boolean)
 
-    belongs_to(:object, Mud.Engine.Object,
+    belongs_to(:object, Mud.Engine.Model.ObjectModel,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,

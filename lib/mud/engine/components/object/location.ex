@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.Location do
+defmodule Mud.Engine.Component.Object.Location do
   use Mud.Schema
   import Ecto.Changeset
 
@@ -11,7 +11,7 @@ defmodule Mud.Engine.Component.Location do
     field(:reference, :string)
     field(:worn, :boolean, default: false)
 
-    belongs_to(:object, Mud.Engine.Object,
+    belongs_to(:object, Mud.Engine.Model.ObjectModel,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,
