@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Area do
+defmodule Mud.Engine.Model.AreaModel do
   use Mud.Schema
   import Ecto.Changeset
 

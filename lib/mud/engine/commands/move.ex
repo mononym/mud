@@ -25,10 +25,22 @@ defmodule Mud.Engine.Command.Move do
   import Mud.Engine.Util
 
   @impl true
+  def continue(%Mud.Engine.CommandContext{} = context) do
+    attempt_move_by_id(context.raw_input, context)
+  end
+
+  @impl true
   def execute(%Mud.Engine.CommandContext{} = context) do
     segments = context.command.segments
 
     cond do
+      List.first(segments.input) not in ["go", "move"] ->
+        direction =
+          List.first(segments.input)
+          |> normalize_direction()
+
+        attempt_move(direction, context)
+
       get_in(segments.children, [:exit]) != nil ->
         attempt_move(Enum.join(segments.children.exit.input, " "), context)
 
@@ -50,6 +62,23 @@ defmodule Mud.Engine.Command.Move do
           )
         )
         |> set_success()
+    end
+  end
+
+  defp attempt_move_by_id(link_id, context) do
+    link = Mud.Engine.get_link!(link_id)
+
+    if link.from_id == context.character.physical_status.location_id do
+      do_move(context, link)
+    else
+      context
+      |> append_message(
+        output(
+          context.character_id,
+          "{{error}}Unfortunately, your desired direction of travel is no longer possible.{{/error}}"
+        )
+      )
+      |> set_success()
     end
   end
 
@@ -82,10 +111,10 @@ defmodule Mud.Engine.Command.Move do
 
         multiple_match_error(
           context,
-          "move",
           obvious_directions,
           link_ids,
-          error
+          error,
+          __MODULE__
         )
 
       _many ->

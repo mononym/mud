@@ -17,33 +17,15 @@ defmodule Mud.Engine.CommandCallback do
       import Mud.Engine.CommandContext
 
       @doc false
-      def parse_execute_arg_string(raw_args), do: {:ok, String.trim(raw_args)}
-
-      @doc false
-      def parse_continuation_arg_string(raw_args), do: {:ok, String.trim(raw_args)}
-
-      @doc false
       def type(), do: "basic"
 
       @doc false
       def continue(_context), do: raise("Callback continue/1 not implemented for #{__MODULE__}")
 
-      defoverridable parse_execute_arg_string: 1,
-                     parse_continuation_arg_string: 1,
-                     continue: 1,
+      defoverridable continue: 1,
                      type: 0
     end
   end
-
-  @doc """
-  Called when the Engine is checking if the callback module can handle the args passed in for exection
-  """
-  @callback parse_execute_arg_string(String.t()) :: {:ok, term} | {:error, error}
-
-  @doc """
-  Called when the Engine is checking if the callback module can handle the args passed in for a continuation
-  """
-  @callback parse_continuation_arg_string(String.t()) :: {:ok, term} | {:error, error}
 
   @doc """
   Called when the Engine determines the Command should be executed. This means all the matching, parsing, and

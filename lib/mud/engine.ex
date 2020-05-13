@@ -6,12 +6,12 @@ defmodule Mud.Engine do
   import Ecto.Query, warn: false
   alias Mud.Repo
 
-  alias Mud.Engine.Area
   alias Mud.Engine.Character
   alias Mud.Engine.Object
+  alias Mud.Engine.Link
   alias Mud.Engine.CreateObjectRequest
   alias Mud.Engine.Component.Object.{Description, Location}
-  alias Mud.Engine.Model.{ObjectModel}
+  alias Mud.Engine.Model.{AreaModel, ObjectModel}
 
   require Logger
 
@@ -21,11 +21,11 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> list_areas()
-      [%Area{}, ...]
+      [%AreaModel{}, ...]
 
   """
   def list_areas do
-    Repo.all(Area)
+    Repo.all(AreaModel)
   end
 
   @doc """
@@ -36,13 +36,13 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> get_area!(123)
-      %Area{}
+      %AreaModel{}
 
       iex> get_area!(456)
       ** (Ecto.NoResultsError)
 
   """
-  def get_area!(id), do: Repo.get!(Area, id)
+  def get_area!(id), do: Repo.get!(AreaModel, id)
 
   @doc """
   Creates a area.
@@ -50,15 +50,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> create_area(%{field: value})
-      {:ok, %Area{}}
+      {:ok, %AreaModel{}}
 
       iex> create_area(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
   def create_area(attrs \\ %{}) do
-    %Area{}
-    |> Area.changeset(attrs)
+    %AreaModel{}
+    |> AreaModel.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -68,15 +68,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> update_area(area, %{field: new_value})
-      {:ok, %Area{}}
+      {:ok, %AreaModel{}}
 
       iex> update_area(area, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_area(%Area{} = area, attrs) do
+  def update_area(%AreaModel{} = area, attrs) do
     area
-    |> Area.changeset(attrs)
+    |> AreaModel.changeset(attrs)
     |> Repo.update()
   end
 
@@ -86,13 +86,13 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> delete_area(area)
-      {:ok, %Area{}}
+      {:ok, %AreaModel{}}
 
       iex> delete_area(area)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_area(%Area{} = area) do
+  def delete_area(%AreaModel{} = area) do
     Repo.delete(area)
   end
 
@@ -102,14 +102,14 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> change_area(area)
-      %Ecto.Changeset{source: %Area{}}
+      %Ecto.Changeset{source: %AreaModel{}}
 
   """
-  def change_area(%Area{} = area) do
-    Area.changeset(area, %{})
+  def change_area(%AreaModel{} = area) do
+    AreaModel.changeset(area, %{})
   end
 
-  alias Mud.Engine.Link
+  alias Mud.Engine.Model.LinkModel
 
   @doc """
   Returns the list of links.
@@ -117,11 +117,11 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> list_links()
-      [%Link{}, ...]
+      [%LinkModel{}, ...]
 
   """
   def list_links do
-    Repo.all(Link)
+    Repo.all(LinkModel)
   end
 
   @doc """
@@ -130,12 +130,12 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> list_obvious_exits("valid room id")
-      [%Link{}, ...]
+      [%LinkModel{}, ...]
 
   """
   def list_obvious_exits(area_id) do
     Repo.all(
-      from(link in Link,
+      from(link in LinkModel,
         where: link.from_id == ^area_id and link.type == ^"obvious"
       )
     )
@@ -147,7 +147,7 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> find_obvious_exit_in_area("valid area id", "valid direction")
-      [%Link{}]
+      [%LinkModel{}]
 
       iex> find_obvious_exit_in_area("valid area id", "invalid direction")
       []
@@ -165,7 +165,7 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> get_link!(123)
-      %Link{}
+      %LinkModel{}
 
       iex> get_link!(456)
       ** (Ecto.NoResultsError)
@@ -179,7 +179,7 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> get_link(123)
-      %Link{}
+      %LinkModel{}
 
       iex> get_link(456)
       nil
@@ -193,15 +193,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> create_link(%{field: value})
-      {:ok, %Link{}}
+      {:ok, %LinkModel{}}
 
       iex> create_link(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
   def create_link(attrs \\ %{}) do
-    %Link{}
-    |> Link.changeset(attrs)
+    %LinkModel{}
+    |> LinkModel.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -211,15 +211,15 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> update_link(link, %{field: new_value})
-      {:ok, %Link{}}
+      {:ok, %LinkModel{}}
 
       iex> update_link(link, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  def update_link(%Link{} = link, attrs) do
+  def update_link(%LinkModel{} = link, attrs) do
     link
-    |> Link.changeset(attrs)
+    |> LinkModel.changeset(attrs)
     |> Repo.update()
   end
 
@@ -229,13 +229,13 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> delete_link(link)
-      {:ok, %Link{}}
+      {:ok, %LinkModel{}}
 
       iex> delete_link(link)
       {:error, %Ecto.Changeset{}}
 
   """
-  def delete_link(%Link{} = link) do
+  def delete_link(%LinkModel{} = link) do
     Repo.delete(link)
   end
 
@@ -245,11 +245,11 @@ defmodule Mud.Engine do
   ## Examples
 
       iex> change_link(link)
-      %Ecto.Changeset{source: %Link{}}
+      %Ecto.Changeset{source: %LinkModel{}}
 
   """
-  def change_link(%Link{} = link) do
-    Link.changeset(link, %{})
+  def change_link(%LinkModel{} = link) do
+    LinkModel.changeset(link, %{})
   end
 
   alias Mud.Engine.Character
@@ -339,11 +339,11 @@ defmodule Mud.Engine do
   end
 
   @doc """
-  Deletes a character.
+  Describes a character.
 
   ## Examples
 
-      iex> describe_character(character_physical_features)
+      iex> describe_character(character)
       "awesome description"
 
   """

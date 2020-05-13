@@ -2,7 +2,7 @@ defmodule MudWeb.LinkController do
   use MudWeb, :controller
 
   alias Mud.Engine
-  alias Mud.Engine.Link
+  alias Mud.Engine.Model.LinkModel
 
   def index(conn, _params) do
     links = Engine.list_links()
@@ -10,7 +10,7 @@ defmodule MudWeb.LinkController do
   end
 
   def new(conn, _params) do
-    changeset = Engine.change_link(%Link{})
+    changeset = Engine.change_link(%LinkModel{})
     render(conn, "new.html", changeset: changeset)
   end
 

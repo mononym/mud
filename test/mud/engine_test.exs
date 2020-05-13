@@ -65,7 +65,7 @@ defmodule Mud.EngineTest do
   end
 
   describe "links" do
-    alias Mud.Engine.Link
+    alias Mud.Engine.Model.LinkModel
 
     @valid_attrs %{text: "some text", type: "some type"}
     @update_attrs %{text: "some updated text", type: "some updated type"}
@@ -91,7 +91,7 @@ defmodule Mud.EngineTest do
     end
 
     test "create_link/1 with valid data creates a link" do
-      assert {:ok, %Link{} = link} = Engine.create_link(@valid_attrs)
+      assert {:ok, %LinkModel{} = link} = Engine.create_link(@valid_attrs)
       assert link.text == "some text"
       assert link.type == "some type"
     end
@@ -102,7 +102,7 @@ defmodule Mud.EngineTest do
 
     test "update_link/2 with valid data updates the link" do
       link = link_fixture()
-      assert {:ok, %Link{} = link} = Engine.update_link(link, @update_attrs)
+      assert {:ok, %LinkModel{} = link} = Engine.update_link(link, @update_attrs)
       assert link.text == "some updated text"
       assert link.type == "some updated type"
     end
@@ -115,7 +115,7 @@ defmodule Mud.EngineTest do
 
     test "delete_link/1 deletes the link" do
       link = link_fixture()
-      assert {:ok, %Link{}} = Engine.delete_link(link)
+      assert {:ok, %LinkModel{}} = Engine.delete_link(link)
       assert_raise Ecto.NoResultsError, fn -> Engine.get_link!(link.id) end
     end
 

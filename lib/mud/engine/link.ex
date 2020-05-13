@@ -1,40 +1,9 @@
 defmodule Mud.Engine.Link do
   use Mud.Schema
-  import Ecto.Changeset
   import Ecto.Query
 
+  alias Mud.Engine.Model.LinkModel
   alias Mud.Repo
-
-  schema "links" do
-    field(:departure_direction, :string)
-    field(:arrival_direction, :string)
-    field(:text, :string)
-    field(:type, :string)
-
-    belongs_to(:from, Mud.Engine.Area,
-      type: :binary_id,
-      foreign_key: :from_id
-    )
-
-    belongs_to(:to, Mud.Engine.Area,
-      type: :binary_id,
-      foreign_key: :to_id
-    )
-  end
-
-  @doc false
-  def changeset(link, attrs) do
-    link
-    |> cast(attrs, [:type, :arrival_direction, :departure_direction, :from_id, :to_id, :text])
-    |> validate_required([
-      :type,
-      :arrival_direction,
-      :departure_direction,
-      :from_id,
-      :to_id,
-      :text
-    ])
-  end
 
   # def list_text_of_obvious_exits_around_character(text, character_id) do
   #   search_string = Mud.Engine.Search.text_to_search_terms(text)
@@ -62,7 +31,7 @@ defmodule Mud.Engine.Link do
     description = String.downcase(description)
 
     Repo.all(
-      from(link in __MODULE__,
+      from(link in LinkModel,
         where:
           link.type == "obvious" and link.text == ^description and
             link.from_id == ^area_id
@@ -77,7 +46,7 @@ defmodule Mud.Engine.Link do
       |> make_search_string()
 
     Repo.all(
-      from(link in __MODULE__,
+      from(link in LinkModel,
         where:
           link.type == "obvious" and like(link.text, ^search_string) and
             link.from_id == ^area_id
@@ -85,13 +54,13 @@ defmodule Mud.Engine.Link do
     )
   end
 
-  @spec find_all_in_area(binary, binary, binary) :: [__MODULE__.t()]
+  @spec find_all_in_area(binary, binary, binary) :: [LinkModel.t()]
   def find_all_in_area(area_id, type, direction) do
     search_string = make_search_string(direction)
 
     list =
       Repo.all(
-        from(link in __MODULE__,
+        from(link in LinkModel,
           where:
             link.type == ^type and like(link.text, ^search_string) and
               link.from_id == ^area_id

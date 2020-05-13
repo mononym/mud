@@ -2,6 +2,8 @@ defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
   alias Mud.Engine.{Character, Link, Object}
+  alias Mud.Engine.Model.{CharacterModel, LinkModel, ObjectModel}
+  alias Mud.Engine.CommandContext
   import Mud.Engine.Util
 
   require Logger
@@ -60,6 +62,15 @@ defmodule Mud.Engine.Command.Look do
   # ]
 
   @impl true
+  @spec continue(context :: CommandContext.t()) :: CommandContext.t()
+  def continue(context) do
+    segments = context.command.segments
+
+    attempt_look_by_match(context.raw_input, context)
+  end
+
+  @impl true
+  @spec execute(context :: CommandContext.t()) :: CommandContext.t()
   def execute(context) do
     IO.inspect("Beginning execution with the following context: #{inspect(context)}")
 
@@ -95,14 +106,19 @@ defmodule Mud.Engine.Command.Look do
 
       # Accept 'look', default fallback for now, will need expanding as logic expands
       true ->
-        Logger.debug("building area description")
-        IO.inspect(context)
-        description = build_area_description(context.character.area_id, context.character.id)
+        description = describe_thing(Mud.Engine.get_area!(area_id), context.character)
 
         context
         |> append_message(output(context.character_id, description))
         |> set_success()
     end
+  end
+
+  @spec attempt_look_by_match(
+          match :: ObjectModel.t() | LinkModel.t() | CharacterModel.t(),
+          context :: CommandContext.t()
+        )
+  defp attempt_look_by_match(match, context) do
   end
 
   defp look_at_target(context, input, which_target) do
@@ -155,7 +171,7 @@ defmodule Mud.Engine.Command.Look do
   defp find_exact_match(:character, context, input) do
     case Character.list_by_name_in_area(input, context.character.area_id) do
       [character] = [%Character{}] ->
-        description = Mud.Engine.describe_character(character)
+        description = describe_thing(character)
 
         context =
           context
@@ -180,7 +196,7 @@ defmodule Mud.Engine.Command.Look do
            context.character.area_id
          ) do
       [link] ->
-        room_description = build_area_description(link.to_id, context.character.id)
+        room_description = describe_thing(link, context.character)
 
         context =
           context
@@ -203,7 +219,7 @@ defmodule Mud.Engine.Command.Look do
         error =
           "{{warning}}Multiple matching exits were found. Please enter the number associated with the Exit you wish to `look` at.{{/warning}}"
 
-        context = multiple_result_error(context, directions, directions, error)
+        context = multiple_result_error(context, directions, links, error, __MODULE__)
 
         {:ok, context}
 
@@ -278,7 +294,7 @@ defmodule Mud.Engine.Command.Look do
         error =
           "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
 
-        context = multiple_result_error(context, glance_descriptions, glance_descriptions, error)
+        context = multiple_result_error(context, glance_descriptions, matches, error, __MODULE__)
 
         {:ok, context}
 
@@ -306,27 +322,6 @@ defmodule Mud.Engine.Command.Look do
     |> Enum.map(
       &%Match{glance: &1.description.glance_description, look: &1.description.look_description}
     )
-  end
-
-  defp multiple_result_error(context, keys, values, error_message) do
-    values =
-      values
-      |> Enum.map(&("look " <> &1))
-      |> Mud.Util.list_to_index_map()
-
-    context
-    |> append_message(
-      output(
-        context.character_id,
-        error_message,
-        keys
-      )
-    )
-    |> set_is_continuation(true)
-    |> set_continuation_data(values)
-    |> set_continuation_module(__MODULE__)
-    |> set_continuation_type(:numeric)
-    |> set_success()
   end
 
   def build_area_description(area_id, character_id) do
@@ -439,5 +434,17 @@ defmodule Mud.Engine.Command.Look do
     end)
     |> Enum.sort()
     |> Enum.join(", ")
+  end
+
+  defp describe_thing(character = %CharacterModel{}, looking_character = %CharacterModel{}) do
+    Mud.Engine.describe_character(character)
+  end
+
+  defp describe_thing(link = %LinkModel{}, looking_character = %CharacterModel{}) do
+    build_area_description(link.to_id, looking_character.id)
+  end
+
+  defp describe_thing(link = %AreaModel{}, looking_character = %CharacterModel{}) do
+    build_area_description(link.to_id, looking_character.id)
   end
 end

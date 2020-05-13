@@ -23,17 +23,13 @@ defmodule Mud.Engine.Util do
 
   @spec multiple_match_error(
           command_context :: CommandContext.t(),
-          command :: String.t(),
           keys :: [String.t()],
           values :: [String.t()],
           error_message :: String.t(),
           continuation_module :: module()
         ) :: CommandContext.t()
-  def multiple_match_error(context, command, keys, values, error_message, continuation_module) do
-    indexed_values =
-      values
-      |> Enum.map(&(command <> " /continue " <> &1))
-      |> Mud.Util.list_to_index_map()
+  def multiple_match_error(context, keys, values, error_message, continuation_module) do
+    indexed_values = Mud.Util.list_to_index_map(values)
 
     context
     |> append_message(

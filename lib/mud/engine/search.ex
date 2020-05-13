@@ -4,7 +4,7 @@ defmodule Mud.Engine.Search do
   """
 
   alias Mud.Engine.Character
-  # alias Mud.Engine.Link
+  # alias Mud.Engine.Model.LinkModel
 
   @doc """
   Constant for matching against what type of thing to search for during autocomplete.

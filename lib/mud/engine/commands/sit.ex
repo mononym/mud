@@ -137,7 +137,7 @@ defmodule Mud.Engine.Command.Sit do
 
         context =
           context
-          |> multiple_match_error("move", descriptions, objects, error)
+          |> multiple_match_error("move", descriptions, objects, error, __MODULE__)
           |> set_success()
 
         {:ok, context}

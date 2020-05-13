@@ -516,12 +516,14 @@ defmodule Mud.Engine.Command do
     if context.is_continuation == true and context.continuation_type == :numeric do
       case Integer.parse(context.raw_input) do
         {integer, _} ->
-          context
-          |> Map.put(:raw_input, context.continuation_data[integer])
-          |> CommandContext.clear_continuation_data()
-          |> CommandContext.clear_continuation_module()
-          |> CommandContext.set_is_continuation(false)
-          |> do_execute()
+          context =
+            context
+            |> Map.put(:raw_input, context.continuation_data[integer])
+            |> CommandContext.clear_continuation_data()
+            |> CommandContext.clear_continuation_module()
+            |> CommandContext.set_is_continuation(false)
+
+          {:ok, context} = transaction(context, &context.continuation_module.continue/1)
 
         :error ->
           context

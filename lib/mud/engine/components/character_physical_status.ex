@@ -11,7 +11,7 @@ defmodule Mud.Engine.Component.CharacterPhysicalStatus do
     field(:relative_position, :string)
 
     # populated with the object the character is in/under/on/near
-    belongs_to(:relative_object, Mud.Engine.Object,
+    belongs_to(:relative_object, Mud.Engine.Model.ObjectModel,
       type: :binary_id,
       foreign_key: :relative_object_id,
       primary_key: false,
@@ -20,7 +20,7 @@ defmodule Mud.Engine.Component.CharacterPhysicalStatus do
 
     belongs_to(:location, Mud.Engine.Area,
       type: :binary_id,
-      foreign_key: :area_id,
+      foreign_key: :location_id,
       primary_key: false,
       define_field: true
     )
