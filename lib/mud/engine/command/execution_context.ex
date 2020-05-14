@@ -1,4 +1,4 @@
-defmodule Mud.Engine.CommandContext do
+defmodule Mud.Engine.Command.ExecutionContext do
   @moduledoc """
   A CommandContext struct contains everything required for the processing of a Command.
   The context is intended to be passed between multiple middlewares, some of which may need to run before others to
@@ -11,8 +11,6 @@ defmodule Mud.Engine.CommandContext do
     :id,
     # The populated Command struct
     :command,
-    # Parsed arguments for the command.
-    :parsed_args,
     # ID for the Character that the command is being processed for.
     :character_id,
     # The Character that the command is being processed for. Will be populated immediatly before execution, in the
@@ -22,8 +20,6 @@ defmodule Mud.Engine.CommandContext do
     {:messages, []},
     # The raw text input before any processing.
     :raw_input,
-    # The raw argument string, which is the raw_input minus the verb.
-    :raw_argument_string,
     # Whether or not the execution was successful. Will be nil if execution has not been performed.
     :success,
     # If success is false, the message will be populated with the reason why.

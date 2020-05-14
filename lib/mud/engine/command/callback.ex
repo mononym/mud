@@ -1,4 +1,4 @@
-defmodule Mud.Engine.CommandCallback do
+defmodule Mud.Engine.Command.Callback do
   @moduledoc """
   A callback module for commands.
 

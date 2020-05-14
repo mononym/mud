@@ -1,8 +1,7 @@
 defmodule Mud.Engine.Command.Look do
   use Mud.Engine.CommandCallback
 
-  alias Mud.Engine.{Character, Link, Object}
-  alias Mud.Engine.Model.{CharacterModel, LinkModel, ObjectModel}
+  alias Mud.Engine.Component.{Area, Character, Link, Object}
   alias Mud.Engine.CommandContext
   import Mud.Engine.Util
 
@@ -62,42 +61,43 @@ defmodule Mud.Engine.Command.Look do
   # ]
 
   @impl true
-  @spec continue(context :: CommandContext.t()) :: CommandContext.t()
   def continue(context) do
-    segments = context.command.segments
+    description = attempt_look_by_match(context.raw_input, context.character)
 
-    attempt_look_by_match(context.raw_input, context)
+    context
+    |> append_message(
+      output(
+        context.character_id,
+        "{{info}}#{description}{{/info}}"
+      )
+    )
+    |> set_success()
   end
 
   @impl true
-  @spec execute(context :: CommandContext.t()) :: CommandContext.t()
   def execute(context) do
-    IO.inspect("Beginning execution with the following context: #{inspect(context)}")
-
     segments = context.command.segments
 
     cond do
       # Accept either 'look at sword' or 'look sword' or 'look at 2 sword' or 'look 2 sword'
-      (get_in(segments.children, [:number, :children, :at, :children, :target]) != nil and
-         get_in(segments.children, [:number, :children, :at, :children, :target, :children, :path]) ==
+      (get_in(segments, [:number, :at, :target]) != nil and
+         get_in(segments, [:number, :at, :target, :path]) ==
            nil) or
-        (get_in(segments.children, [:at, :children, :target]) != nil and
-           get_in(segments.children, [:at, :children, :target, :children, :path]) == nil) or
-        (get_in(segments.children, [:number, :children, :target]) != nil and
-           get_in(segments.children, [:number, :children, :target, :children, :path]) == nil) or
-          (get_in(segments.children, [:target]) != nil and
-             get_in(segments.children, [:target, :children, :path]) == nil) ->
-        Logger.debug("searching for target")
-
+        (get_in(segments, [:at, :target]) != nil and
+           get_in(segments, [:at, :target, :path]) == nil) or
+        (get_in(segments, [:number, :target]) != nil and
+           get_in(segments, [:number, :target, :path]) == nil) or
+          (get_in(segments, [:target]) != nil and
+             get_in(segments, [:target, :path]) == nil) ->
         segment =
-          get_in(segments.children, [:number, :children, :at, :children, :target]) ||
-            get_in(segments.children, [:at, :children, :target]) ||
-            get_in(segments.children, [:target]) ||
-            get_in(segments.children, [:number, :children, :target])
+          get_in(segments, [:number, :at, :target]) ||
+            get_in(segments, [:at, :target]) ||
+            get_in(segments, [:target]) ||
+            get_in(segments, [:number, :target])
 
         which_target =
-          if Map.has_key?(segments.children, :number) do
-            min(1, List.first(segments.children.number.input))
+          if Map.has_key?(segments, :number) do
+            min(1, List.first(segments.number.input))
           else
             0
           end
@@ -106,7 +106,11 @@ defmodule Mud.Engine.Command.Look do
 
       # Accept 'look', default fallback for now, will need expanding as logic expands
       true ->
-        description = describe_thing(Mud.Engine.get_area!(area_id), context.character)
+        description =
+          describe_thing(
+            Area.get_area!(context.character.location.location_id),
+            context.character
+          )
 
         context
         |> append_message(output(context.character_id, description))
@@ -115,10 +119,11 @@ defmodule Mud.Engine.Command.Look do
   end
 
   @spec attempt_look_by_match(
-          match :: ObjectModel.t() | LinkModel.t() | CharacterModel.t(),
-          context :: CommandContext.t()
-        )
-  defp attempt_look_by_match(match, context) do
+          match :: Object.t() | Link.t() | Character.t(),
+          character :: Character.t()
+        ) :: String.t()
+  defp attempt_look_by_match(match, character) do
+    describe_thing(match, character)
   end
 
   defp look_at_target(context, input, which_target) do
@@ -163,7 +168,7 @@ defmodule Mud.Engine.Command.Look do
         _ ->
           Logger.debug("No exact match found")
 
-          false
+          {:error, :no_match}
       end
     end)
   end
@@ -171,7 +176,7 @@ defmodule Mud.Engine.Command.Look do
   defp find_exact_match(:character, context, input) do
     case Character.list_by_name_in_area(input, context.character.area_id) do
       [character] = [%Character{}] ->
-        description = describe_thing(character)
+        description = describe_thing(character, context.character)
 
         context =
           context
@@ -214,12 +219,12 @@ defmodule Mud.Engine.Command.Look do
         {:error, :no_match}
 
       links when length(links) <= 10 and length(links) > 1 ->
-        directions = Stream.map(links, & &1.text)
+        directions = Enum.map(links, & &1.text)
 
         error =
           "{{warning}}Multiple matching exits were found. Please enter the number associated with the Exit you wish to `look` at.{{/warning}}"
 
-        context = multiple_result_error(context, directions, links, error, __MODULE__)
+        context = multiple_match_error(context, directions, links, error, __MODULE__)
 
         {:ok, context}
 
@@ -294,7 +299,7 @@ defmodule Mud.Engine.Command.Look do
         error =
           "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
 
-        context = multiple_result_error(context, glance_descriptions, matches, error, __MODULE__)
+        context = multiple_match_error(context, glance_descriptions, matches, error, __MODULE__)
 
         {:ok, context}
 
@@ -324,8 +329,9 @@ defmodule Mud.Engine.Command.Look do
     )
   end
 
+  @spec build_area_description(String.t(), String.t()) :: String.t()
   def build_area_description(area_id, character_id) do
-    area = Mud.Engine.get_area!(area_id)
+    area = Mud.Engine.Component.Area.get_area!(area_id)
 
     build_area_name(area)
     |> build_area_desc(area)
@@ -414,7 +420,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp build_obvious_exits_string(area_id) do
-    Mud.Engine.list_obvious_exits(area_id)
+    Mud.Engine.Component.Link.list_obvious_exits(area_id)
     |> Enum.map(fn link ->
       link.text
     end)
@@ -424,7 +430,7 @@ defmodule Mud.Engine.Command.Look do
 
   # Character list should not contain the character the look is being performed for
   defp build_player_characters_string(area_id, character_id) do
-    Mud.Engine.Character.list_active_in_areas(area_id)
+    Mud.Engine.Component.Character.list_active_in_areas(area_id)
     # filter out self
     |> Enum.filter(fn char ->
       char.id != character_id
@@ -436,15 +442,15 @@ defmodule Mud.Engine.Command.Look do
     |> Enum.join(", ")
   end
 
-  defp describe_thing(character = %CharacterModel{}, looking_character = %CharacterModel{}) do
-    Mud.Engine.describe_character(character)
+  defp describe_thing(character = %Character{}, looking_character = %Character{}) do
+    Character.describe_character(character, looking_character)
   end
 
-  defp describe_thing(link = %LinkModel{}, looking_character = %CharacterModel{}) do
+  defp describe_thing(link = %Link{}, looking_character = %Character{}) do
     build_area_description(link.to_id, looking_character.id)
   end
 
-  defp describe_thing(link = %AreaModel{}, looking_character = %CharacterModel{}) do
+  defp describe_thing(link = %Area{}, looking_character = %Character{}) do
     build_area_description(link.to_id, looking_character.id)
   end
 end

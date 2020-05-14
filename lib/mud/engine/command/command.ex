@@ -1,82 +1,12 @@
 defmodule Mud.Engine.Command do
   defstruct callback_module: nil,
             segments: [],
-            segment_table: nil,
             raw_input: ""
 
-  alias Mud.Engine.Commands
-  alias Mud.Engine.CommandContext
+  alias Mud.Engine.Rules.Commands
+  alias Mud.Engine.Command.Segment
+  alias Mud.Engine.Command.ExecutionContext
   require Logger
-
-  defmodule Segment do
-    # @enforce_keys [:autocomplete, :key, :match_strings, :optional]
-    # "@", "/", "at ", "with ", ""
-    defstruct match_strings: [],
-              # Prefixes are used in two ways. In one a prefix is trimmed from a string before it is saved to the segment.
-              # In the other, a prefix is split off from a string and used to populate a segment, while the second half of the
-              # string is processed against the next segment in line.
-              prefix: nil,
-              # This segment can only be processed if a segment with the specified key has been
-              # successfully populated. For example, there should be no character name segment for
-              # the following partial command: "say /slowly"
-              must_follow: nil,
-              # How the segment will be uniquely known in the AST
-              key: nil,
-              # The string that was parsed/assigned to this segment
-              input: [],
-              children: %{},
-              # when checking whether an input belongs to one segment or the following, a greedy segment will consume
-              # the input rather than let it be inserted into the next segment.
-              # Most segments should be greedy.
-              greedy: false,
-              # An optional transformation function to run input through before adding it to the Segment
-              transformer: nil
-
-    @behaviour Access
-
-    @impl Access
-    def fetch(struct, key) do
-      keys = Map.keys(struct)
-
-      if key in keys do
-        Map.fetch(struct, key)
-      else
-        struct.children[key]
-      end
-    end
-
-    @impl Access
-    def get_and_update(struct, key, fun) when is_function(fun, 1) do
-      current = Map.get(struct, key)
-
-      case fun.(current) do
-        {get, update} ->
-          {get, Map.put(struct, key, update)}
-
-        :pop ->
-          pop(struct, key)
-
-        other ->
-          raise "the given function must return a two-element tuple or :pop, got: #{
-                  inspect(other)
-                }"
-      end
-    end
-
-    @impl Access
-    def pop(struct, key, default \\ nil) do
-      case fetch(struct, key) do
-        {:ok, old_value} ->
-          {old_value, Map.put(struct, key, nil)}
-
-        :error ->
-          {default, struct}
-      end
-    end
-
-    # How many of these segments are allowed in a row
-    # max_allowed: 1
-  end
 
   defmodule State do
     @moduledoc false
@@ -512,37 +442,39 @@ defmodule Mud.Engine.Command do
     end)
   end
 
-  def executev2(context = %CommandContext{}) do
+  def executev2(context = %ExecutionContext{}) do
     if context.is_continuation == true and context.continuation_type == :numeric do
       case Integer.parse(context.raw_input) do
         {integer, _} ->
           context =
             context
             |> Map.put(:raw_input, context.continuation_data[integer])
-            |> CommandContext.clear_continuation_data()
-            |> CommandContext.clear_continuation_module()
-            |> CommandContext.set_is_continuation(false)
+            |> ExecutionContext.clear_continuation_data()
+            |> ExecutionContext.clear_continuation_module()
+            |> ExecutionContext.set_is_continuation(false)
 
           {:ok, context} = transaction(context, &context.continuation_module.continue/1)
 
+          context
+
         :error ->
           context
-          |> CommandContext.append_message(%Mud.Engine.Output{
+          |> ExecutionContext.append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
             character_id: context.character_id,
             text:
               "{{warning}}Selection not recognized. Executing input as command instead.{{/warning}}"
           })
-          |> CommandContext.clear_continuation_data()
-          |> CommandContext.clear_continuation_module()
-          |> CommandContext.set_is_continuation(false)
+          |> ExecutionContext.clear_continuation_data()
+          |> ExecutionContext.clear_continuation_module()
+          |> ExecutionContext.set_is_continuation(false)
           |> do_execute()
       end
     else
       context
-      |> CommandContext.clear_continuation_data()
-      |> CommandContext.clear_continuation_module()
-      |> CommandContext.set_is_continuation(false)
+      |> ExecutionContext.clear_continuation_data()
+      |> ExecutionContext.clear_continuation_module()
+      |> ExecutionContext.set_is_continuation(false)
       |> do_execute()
     end
   end
@@ -561,15 +493,15 @@ defmodule Mud.Engine.Command do
 
         context =
           context
-          |> CommandContext.clear_continuation_data()
-          |> CommandContext.clear_continuation_module()
-          |> CommandContext.set_is_continuation(false)
-          |> CommandContext.append_message(%Mud.Engine.Output{
+          |> ExecutionContext.clear_continuation_data()
+          |> ExecutionContext.clear_continuation_module()
+          |> ExecutionContext.set_is_continuation(false)
+          |> ExecutionContext.append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
             character_id: context.character_id,
             text: "{{error}}No matching commands were found. Please try again.{{/error}}"
           })
-          |> CommandContext.set_success()
+          |> ExecutionContext.set_success()
 
         process_messages(context)
     end
@@ -577,7 +509,7 @@ defmodule Mud.Engine.Command do
 
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
-      character = Mud.Engine.Character.get_by_id!(context.character_id)
+      character = Mud.Engine.Component.Character.get_by_id!(context.character_id)
       context = %{context | character: character}
 
       if context.is_continuation do
@@ -591,7 +523,7 @@ defmodule Mud.Engine.Command do
   defp process_messages(context) do
     if context.success do
       Enum.each(context.messages, fn message ->
-        Mud.Engine.cast_message_to_character_session(message)
+        Mud.Engine.Session.cast_message(message)
       end)
     end
 

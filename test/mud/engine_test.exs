@@ -19,9 +19,9 @@ defmodule Mud.EngineTest do
       area
     end
 
-    test "list_areas/0 returns all areas" do
+    test "list_all/0 returns all areas" do
       area = area_fixture()
-      assert Engine.list_areas() == [area]
+      assert Engine.list_all() == [area]
     end
 
     test "get_area!/1 returns the area with given id" do

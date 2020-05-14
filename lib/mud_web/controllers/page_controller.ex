@@ -18,7 +18,7 @@ defmodule MudWeb.PageController do
   plug(MudWeb.Plug.RedirectAnonymousPlayer, "/" when action in [:show_home_page])
 
   def show_home_page(conn, _params) do
-    characters = Engine.Character.list_by_player_id(conn.assigns.player.id)
+    characters = Engine.Component.Character.list_by_player_id(conn.assigns.player.id)
     characters_exist = not Enum.empty?(characters)
 
     conn

@@ -1,11 +1,11 @@
 defmodule MudWeb.CharacterController do
   use MudWeb, :controller
 
-  alias Mud.Engine
-  alias Mud.Engine.Character
+  alias Mud.Engine.Component.{Area, Character}
+  alias Mud.Engine.Session
 
   def index(conn, _params) do
-    characters = Engine.list_characters()
+    characters = Character.list_all()
     render(conn, "index.html", characters: characters)
   end
 
@@ -16,7 +16,7 @@ defmodule MudWeb.CharacterController do
 
   def create(conn, %{"character" => character_params}) do
     starting_area =
-      Mud.Engine.list_areas()
+      Area.list_all()
       |> Enum.random()
 
     params =
@@ -24,19 +24,19 @@ defmodule MudWeb.CharacterController do
       |> Map.put("player_id", conn.assigns.player.id)
       |> Map.put("area_id", starting_area.id)
 
-    case Engine.create_character(params) do
+    case Character.create(params) do
       {:ok, character} ->
         conn
         |> put_flash(:info, "Character created successfully.")
         |> redirect(to: Routes.character_path(conn, :edit, character))
 
-      {:error, %Ecto.Changeset{} = changeset} ->
+      {:error, changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
 
   def show(conn, %{"id" => id}) do
-    character = Engine.Character.get_by_id!(id)
+    character = Character.get_by_id!(id)
     render(conn, "show.html", character: character)
   end
 
@@ -48,13 +48,13 @@ defmodule MudWeb.CharacterController do
   end
 
   def play(conn, %{"character" => character_id}) do
-    character = Engine.Character.get_by_id!(character_id)
+    character = Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
-      Mud.Engine.start_character_session(character_id)
+      Session.start(character.player_id, character_id)
 
       # Send a silent look command
-      Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
+      Session.cast_message(%Mud.Engine.Input{
         id: UUID.uuid4(),
         character_id: character_id,
         text: "look",
@@ -73,9 +73,9 @@ defmodule MudWeb.CharacterController do
   end
 
   def update(conn, %{"id" => id, "character" => character_params}) do
-    character = Engine.Character.get_by_id!(id)
+    character = Character.get_by_id!(id)
 
-    case Engine.update_character(character, character_params) do
+    case Character.update(character, character_params) do
       {:ok, character} ->
         conn
         |> put_flash(:info, "Character updated successfully.")
@@ -87,8 +87,8 @@ defmodule MudWeb.CharacterController do
   end
 
   def delete(conn, %{"id" => id}) do
-    character = Engine.Character.get_by_id!(id)
-    {:ok, _character} = Engine.delete_character(character)
+    character = Character.get_by_id!(id)
+    {:ok, _character} = Character.delete(character)
 
     conn
     |> put_flash(:info, "Character deleted successfully.")

@@ -4,7 +4,7 @@ defmodule Mud.Engine.Session do
   import Ecto.Query, warn: false
   require Logger
   alias Mud.Engine.CharacterSessionData
-  alias Mud.Engine.Output
+  alias Mud.Engine.Component.{Character, Output}
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -52,8 +52,8 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  def cast_message(character_id, message) do
-    GenServer.cast(via(character_id), message)
+  def cast_message(message) do
+    GenServer.cast(via(message.character_id), message)
   end
 
   @doc """
@@ -121,8 +121,8 @@ defmodule Mud.Engine.Session do
 
     # Set character to active
     state.character_id
-    |> Mud.Engine.Character.get_by_id!()
-    |> Mud.Engine.update_character(%{active: true})
+    |> Mud.Engine.Component.Character.get_by_id!()
+    |> Mud.Engine.Component.Character.update(%{active: true})
 
     # Start inactivity timer
     state = update_timeout(state, @character_inactivity_timeout_warning)
@@ -130,11 +130,11 @@ defmodule Mud.Engine.Session do
     {:ok, state}
   end
 
-  def handle_cast(%Output{} = output, state) do
+  def handle_cast(%Mud.Engine.Output{} = output, state) do
     Logger.debug("#{inspect(output)}")
     Logger.debug("#{inspect(state.subscribers)}")
 
-    output = %{output | text: Output.transform_for_web(output)}
+    output = %{output | text: Mud.Engine.Output.transform_for_web(output)}
 
     state = update_buffer(state, output)
 

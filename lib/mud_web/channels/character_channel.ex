@@ -32,7 +32,7 @@ defmodule MudWeb.CharacterChannel do
   def handle_in("autocomplete", input, socket) do
     Logger.debug(input, label: "character_channel autocomplete")
 
-    Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
+    Mud.Engine.Session.cast_message(%Mud.Engine.Input{
       character_id: socket.assigns.character_id,
       text: input,
       id: UUID.uuid4(),
@@ -45,7 +45,7 @@ defmodule MudWeb.CharacterChannel do
   def handle_in("input", input, socket) do
     Logger.debug(input, label: "character_channel input")
 
-    Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
+    Mud.Engine.Session.cast_message(%Mud.Engine.Input{
       character_id: socket.assigns.character_id,
       text: input,
       id: UUID.uuid4()

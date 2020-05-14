@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.Object.Furniture do
+defmodule Mud.Engine.Component.Furniture do
   use Mud.Schema
   import Ecto.Changeset
 
@@ -6,7 +6,7 @@ defmodule Mud.Engine.Component.Object.Furniture do
   schema "object_furniture_components" do
     field(:is_furniture, :boolean)
 
-    belongs_to(:object, Mud.Engine.Model.ObjectModel,
+    belongs_to(:object, Mud.Engine.Component.Object,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,

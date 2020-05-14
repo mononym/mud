@@ -49,9 +49,7 @@ defmodule MudWeb.Router do
     get("/logout", PlayerAuthController, :logout)
 
     # Mud related stuff
-    resources("/areas", AreaController)
     resources("/characters", CharacterController)
-    resources("/links", LinkController)
 
     get("/play/:character", MudClientController, :play)
   end

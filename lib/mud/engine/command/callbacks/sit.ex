@@ -12,10 +12,10 @@ defmodule Mud.Engine.Command.Sit do
     - sit chair
     - sit on chair
   """
-  use Mud.Engine.CommandCallback
+  use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.{CommandContext, Object}
-  alias Mud.Engine.Component.{CharacterPhysicalStatus}
+  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Component.{Character, Object}
   alias Mud.Repo
 
   require Logger
@@ -23,7 +23,7 @@ defmodule Mud.Engine.Command.Sit do
   import Mud.Engine.Util
 
   @impl true
-  def execute(%Mud.Engine.CommandContext{} = context) do
+  def execute(%ExecutionContext{} = context) do
     segments = context.command.segments
 
     cond do
@@ -79,8 +79,8 @@ defmodule Mud.Engine.Command.Sit do
     end
   end
 
-  @spec make_character_sit(context :: CommandContext.t(), furniture_object :: Object.t()) ::
-          {:ok, CommandContext.t()} | {:error, :nomatch}
+  @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t()) ::
+          {:ok, ExecutionContext.t()} | {:error, :nomatch}
   defp make_character_sit(context, furniture_object) do
     if furniture_object.furniture.is_furniture do
       physical_status = context.character.physical_status
@@ -91,7 +91,7 @@ defmodule Mud.Engine.Command.Sit do
         relative_object: furniture_object.id
       }
 
-      CharacterPhysicalStatus.changeset(physical_status, update)
+      Character.changeset(physical_status, update)
       |> Repo.update!()
 
       context =
@@ -137,7 +137,7 @@ defmodule Mud.Engine.Command.Sit do
 
         context =
           context
-          |> multiple_match_error("move", descriptions, objects, error, __MODULE__)
+          |> multiple_match_error(descriptions, objects, error, __MODULE__)
           |> set_success()
 
         {:ok, context}

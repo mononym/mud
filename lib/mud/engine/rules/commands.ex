@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Commands do
+defmodule Mud.Engine.Rules.Commands do
   @moduledoc """
   Work with the Commands known to the engine.
   """

@@ -9,14 +9,15 @@ defmodule MudWeb.MudClientController do
 
   plug(MudWeb.Plug.RedirectAnonymousPlayer, "/" when action in [:play])
 
+  @spec play(Plug.Conn.t(), map) :: Plug.Conn.t()
   def play(conn, %{"character" => character_id}) do
-    character = Engine.Character.get_by_id!(character_id)
+    character = Engine.Component.Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
       Mud.Engine.start_character_session(character_id)
 
       # Send a silent look command
-      Mud.Engine.cast_message_to_character_session(%Mud.Engine.Input{
+      Mud.Engine.Session.cast_message(%Mud.Engine.Input{
         id: UUID.uuid4(),
         character_id: character_id,
         text: "look",

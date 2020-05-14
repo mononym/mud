@@ -3,7 +3,7 @@ defmodule Mud.Engine.Util do
   Helper functions.
   """
 
-  import Mud.Engine.CommandContext
+  import Mud.Engine.Command.ExecutionContext
 
   def output(who, text, table_data \\ nil) do
     %Mud.Engine.Output{

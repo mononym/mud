@@ -1,14 +1,13 @@
 defmodule MudWeb.CharacterCreationWizardLive do
   alias MudWeb.Schema.CharacterCreationForm
-  alias Mud.Engine
-  alias Mud.Engine.Character
+  alias Mud.Engine.Component.Character
   use Phoenix.LiveView
 
   require Logger
 
   def mount(_params, session, socket) do
     Logger.debug("session data: #{inspect(session)}")
-    character = Mud.Engine.Character.get_by_id!(session["character_id"])
+    character = Character.get_by_id!(session["character_id"])
     Logger.debug("character: #{inspect(character)}")
 
     races =
@@ -56,7 +55,7 @@ defmodule MudWeb.CharacterCreationWizardLive do
     socket.assigns.character
     |> Character.changeset(%{character_created: true})
     |> Ecto.Changeset.put_assoc(:physical_features, assoc_data)
-    |> Engine.update_character()
+    |> Character.update()
 
     {:noreply, redirect(socket, to: "/play/#{socket.assigns.character.id}")}
   end

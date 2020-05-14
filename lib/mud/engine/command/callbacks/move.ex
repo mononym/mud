@@ -66,7 +66,7 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp attempt_move_by_id(link_id, context) do
-    link = Mud.Engine.get_link!(link_id)
+    link = Mud.Engine.Component.Link.get!(link_id)
 
     if link.from_id == context.character.physical_status.location_id do
       do_move(context, link)
@@ -83,7 +83,7 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp attempt_move(direction, context) do
-    case Mud.Engine.find_obvious_exit_in_area(
+    case Mud.Engine.Component.Link.find_obvious_exit_in_area(
            context.character.area_id,
            direction
          ) do
@@ -135,8 +135,8 @@ defmodule Mud.Engine.Command.Move do
     # Move the character in the database
     {:ok, character} =
       context.character_id
-      |> Mud.Engine.Character.get_by_id!()
-      |> Mud.Engine.update_character(%{area_id: link.to_id})
+      |> Mud.Engine.Component.Character.get_by_id!()
+      |> Mud.Engine.Component.Character.update(%{area_id: link.to_id})
 
     # Perform look logic for character
     context_with_look_command =
@@ -151,7 +151,7 @@ defmodule Mud.Engine.Command.Move do
 
     # List all the characters that need to be informed of a move
     characters_by_area =
-      Mud.Engine.Character.list_active_in_areas([link.to_id, link.from_id])
+      Mud.Engine.Component.Character.list_active_in_areas([link.to_id, link.from_id])
       # Filter out "self"
       |> Enum.filter(fn char ->
         char.id != character.id

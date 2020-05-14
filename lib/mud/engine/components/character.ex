@@ -1,29 +1,83 @@
-defmodule Mud.Engine.Character do
+defmodule Mud.Engine.Component.Character do
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
 
   alias Mud.Repo
 
-  alias Mud.Engine.Component.{
-    CharacterAttributes,
-    CharacterPhysicalFeatures,
-    CharacterPhysicalStatus
-  }
+  ##
+  ##
+  # Defining the data object
+  ##
+  ##
 
+  @primary_key {:object_id, :binary_id, autogenerate: false}
   schema "characters" do
+    # Naming and Titles
     field(:name, :string)
+
+    # Game Status
     field(:active, :boolean, default: false)
+
+    # Attributes
+    field(:strength, :integer, default: 10)
+    field(:stamina, :integer, default: 10)
+    field(:constitution, :integer, default: 10)
+    field(:dexterity, :integer, default: 10)
+    field(:agility, :integer, default: 10)
+    field(:reflexes, :integer, default: 10)
+    field(:intelligence, :integer, default: 10)
+    field(:wisdom, :integer, default: 10)
+    field(:charisma, :integer, default: 10)
+
+    # Physical Features
+    field(:race, :string, default: "Human")
+    field(:eye_color, :string, default: "Brown")
+    field(:hair_color, :string, default: "Brown")
+    field(:skin_color, :string, default: "Dark")
+
+    #
+    # Physical Status
+    #
+
+    # standing, sitting, kneeling, etc...
+    field(:position, :string, default: "standing")
+
+    # on, under, over, in
+    field(:relative_position, :string)
+
+    # the thing the Character is relative to
+    belongs_to(:relative_object, Mud.Engine.Component.Object,
+      type: :binary_id,
+      foreign_key: :relative_object_id
+    )
+
+    #
+    # Player related stuff
+    #
 
     belongs_to(:player, Mud.Account.Player,
       type: :binary_id,
       foreign_key: :player_id
     )
 
-    has_one(:attributes, CharacterAttributes)
-    has_one(:physical_features, CharacterPhysicalFeatures)
-    has_one(:physical_status, CharacterPhysicalStatus)
+    #
+    # Defines the Object that is the in game representation of the Character
+    #
+
+    belongs_to(:object, Mud.Engine.Component.Object,
+      type: :binary_id,
+      foreign_key: :object_id,
+      primary_key: true,
+      define_field: false
+    )
   end
+
+  ##
+  ##
+  # Public API
+  ##
+  ##
 
   @doc false
   def changeset(character, attrs) do
@@ -35,6 +89,52 @@ defmodule Mud.Engine.Character do
     |> unique_constraint(:name)
   end
 
+  @doc """
+  Creates a Character.
+
+  ## Examples
+
+      iex> create(%{field: value})
+      {:ok, %__MODULE__{}}
+
+      iex> create(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  @spec create(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  def create(attrs \\ %{}) do
+    %__MODULE__{}
+    |> changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Describes a character.
+
+  ## Examples
+
+      iex> describe_character(character)
+      "awesome description"
+
+  """
+  @spec describe_character(Character.t(), Character.t()) :: String.t()
+  def describe_character(character, _character_doing_the_looking) do
+    character_physical_features = character.physical_features
+
+    a_or_an =
+      if Regex.match?(~r/^[aeiouAEIOU]/, character_physical_features.race) do
+        "an"
+      else
+        "a"
+      end
+
+    "#{character.name} is #{a_or_an} #{character_physical_features.race}. They have #{
+      character_physical_features.hair_color
+    } hair, #{character_physical_features.eye_color} eyes, and #{
+      character_physical_features.skin_color
+    } skin."
+  end
+
   @spec list_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
   def list_by_case_insensitive_prefix_in_area(partial_name, character_id) do
     base_query()
@@ -43,6 +143,20 @@ defmodule Mud.Engine.Character do
       character.id == ^character_id and like(character.name, ^"#{partial_name}%")
     )
     |> Repo.all()
+  end
+
+  @doc """
+  Returns a list of characters all characters.
+
+  ## Examples
+
+      iex> list_all()
+      [%Character{}, ...]
+
+  """
+  @spec list_all :: [__MODULE__.t()]
+  def list_all do
+    Repo.all(__MODULE__)
   end
 
   @doc """
@@ -139,6 +253,43 @@ defmodule Mud.Engine.Character do
     |> where([physical_status: physical_status], physical_status.area_id == ^area_id)
     |> where([character: character], character.name == ^name)
     |> Repo.all()
+  end
+
+  @doc """
+  Updates a character.
+
+  ## Examples
+
+      iex> update(area, %{field: new_value})
+      {:ok, %__MODULE__{}}
+
+      iex> update(area, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  @spec update(area :: __MODULE__.t(), attributes :: map()) ::
+          {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  def update(area, attrs \\ %{}) do
+    area
+    |> changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a character.
+
+  ## Examples
+
+      iex> delete(character)
+      {:ok, %__MODULE__{}}
+
+      iex> delete(character)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  @spec delete(character :: __MODULE__.t()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  def delete(character) do
+    Repo.delete(character)
   end
 
   defp base_query do

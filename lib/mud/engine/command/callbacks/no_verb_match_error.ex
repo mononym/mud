@@ -1,5 +1,5 @@
 defmodule Mud.Engine.Command.NoVerbMatchError do
-  use Mud.Engine.CommandCallback
+  use Mud.Engine.Command.Callback
 
   def execute(context) do
     context

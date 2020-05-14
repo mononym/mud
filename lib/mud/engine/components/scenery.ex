@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.Object.Scenery do
+defmodule Mud.Engine.Component.Scenery do
   use Mud.Schema
   import Ecto.Changeset
 
@@ -7,7 +7,7 @@ defmodule Mud.Engine.Component.Object.Scenery do
     field(:is_scenery, :boolean, default: false)
     field(:hidden, :boolean, default: false)
 
-    belongs_to(:object, Mud.Engine.Model.ObjectModel,
+    belongs_to(:object, Mud.Engine.Component.Object,
       type: :binary_id,
       foreign_key: :object_id,
       primary_key: true,

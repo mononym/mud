@@ -1,13 +1,28 @@
-defmodule Mud.Engine.Object do
-  @moduledoc """
-  Almost everything in a world is an Object. That said, Components are where they get their power.
-  """
+defmodule Mud.Engine.Component.Object do
+  use Mud.Schema
+
+  import Ecto.Changeset
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.Object
-  alias Mud.Engine.Model.{CreateObjectRequest, ObjectModel}
   alias Mud.Engine.Component.{Description, Furniture, Location, Scenery}
+  alias Mud.Engine.CreateObjectRequest
+
+  schema "objects" do
+    field(:key, :string)
+
+    has_one(:description, Description, foreign_key: :object_id)
+    has_one(:location, Location, foreign_key: :object_id)
+    has_one(:furniture, Furniture, foreign_key: :object_id)
+    has_one(:scenery, Scenery, foreign_key: :object_id)
+  end
+
+  @doc false
+  def changeset(character, attrs) do
+    character
+    |> cast(attrs, [:key, :description, :location, :furniture, :scenery])
+    |> validate_required([:key, :description, :location, :furniture, :scenery])
+  end
 
   @spec get!(id :: binary) :: __MODULE__.t()
   def get!(id) when is_binary(id) do
@@ -128,8 +143,8 @@ defmodule Mud.Engine.Object do
   def create_object(request = %CreateObjectRequest{}) do
     Repo.transaction(fn ->
       object =
-        %ObjectModel{}
-        |> ObjectModel.changeset(Map.from_struct(request))
+        %__MODULE__{}
+        |> changeset(Map.from_struct(request))
         |> Repo.insert()
 
       case object do
@@ -150,7 +165,7 @@ defmodule Mud.Engine.Object do
           |> Ecto.build_assoc(:furniture, Map.from_struct(request.furniture))
           |> Repo.insert!()
 
-          Object.get!(object.id)
+          get!(object.id)
 
         {:error, changeset} ->
           Repo.rollback(changeset)
@@ -160,7 +175,7 @@ defmodule Mud.Engine.Object do
 
   defp object_base_query() do
     from(
-      object in ObjectModel,
+      object in __MODULE__,
       join: location in Location,
       join: description in Description,
       left_join: scenery in Scenery,
