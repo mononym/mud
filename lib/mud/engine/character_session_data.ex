@@ -6,7 +6,7 @@ defmodule Mud.Engine.CharacterSessionData do
   schema "character_session_data" do
     field(:data, :binary)
 
-    belongs_to(:character, Mud.Engine.Character,
+    belongs_to(:character, Mud.Engine.Model.Character,
       type: :binary_id,
       foreign_key: :character_id,
       primary_key: true,

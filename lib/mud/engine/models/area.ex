@@ -1,11 +1,17 @@
-defmodule Mud.Engine.Component.Area do
+defmodule Mud.Engine.Model.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
 
+  @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
     field(:description, :string)
     field(:name, :string)
+
+    has_many(:characters, Mud.Engine.Model.Character)
+    has_many(:items, Mud.Engine.Model.Item)
+    has_many(:to_links, Mud.Engine.Model.Link, foreign_key: :to_id)
+    has_many(:from_links, Mud.Engine.Model.Link, foreign_key: :from_id)
   end
 
   @doc """

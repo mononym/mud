@@ -12,9 +12,9 @@ defmodule Mud.Engine.Command.Callback do
   @doc false
   defmacro __using__(_) do
     quote location: :keep do
-      @behaviour Mud.Engine.CommandCallback
+      @behaviour Mud.Engine.Command.Callback
 
-      import Mud.Engine.CommandContext
+      import Mud.Engine.Command.ExecutionContext
 
       @doc false
       def type(), do: "basic"
@@ -55,5 +55,5 @@ defmodule Mud.Engine.Command.Callback do
   @type error :: term
 
   @typedoc "An execution context providing the required information to execute a command."
-  @type context :: %Mud.Engine.CommandContext{}
+  @type context :: %Mud.Engine.Command.ExecutionContext{}
 end

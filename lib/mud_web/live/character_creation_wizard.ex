@@ -1,6 +1,6 @@
 defmodule MudWeb.CharacterCreationWizardLive do
   alias MudWeb.Schema.CharacterCreationForm
-  alias Mud.Engine.Component.Character
+  alias Mud.Engine.Model.Character
   use Phoenix.LiveView
 
   require Logger

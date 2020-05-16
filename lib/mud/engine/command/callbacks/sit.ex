@@ -27,11 +27,11 @@ defmodule Mud.Engine.Command.Sit do
     segments = context.command.segments
 
     cond do
-      get_in(segments.children, [:sit, :position, :target]) != nil or
-          get_in(segments.children, [:sit, :target]) != nil ->
+      get_in(segments, [:sit, :position, :target]) != nil or
+          get_in(segments, [:sit, :target]) != nil ->
         target =
-          get_in(segments.children, [:sit, :position, :target]) ||
-            get_in(segments.children, [:sit, :target])
+          get_in(segments, [:sit, :position, :target]) ||
+            get_in(segments, [:sit, :target])
 
         sit_on_target(
           context,

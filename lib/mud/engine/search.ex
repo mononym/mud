@@ -3,7 +3,7 @@ defmodule Mud.Engine.Search do
   Utilities to help with searching during autocomplete.
   """
 
-  alias Mud.Engine.Component.Character
+  alias Mud.Engine.Model.Character
   # alias Mud.Engine.Model.LinkModel
 
   @doc """

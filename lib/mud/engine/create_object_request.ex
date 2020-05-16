@@ -20,7 +20,7 @@ defmodule Mud.Engine.CreateObjectRequest.Scenery do
 end
 
 defmodule Mud.Engine.CreateObjectRequest do
-  alias Mud.Engine.Model.CreateObjectRequest.{Description, Furniture, Location, Scenery}
+  alias Mud.Engine.CreateObjectRequest.{Description, Furniture, Location, Scenery}
 
   @enforce_keys [:description]
   defstruct scenery: %Scenery{},

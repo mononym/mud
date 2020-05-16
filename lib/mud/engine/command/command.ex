@@ -509,7 +509,7 @@ defmodule Mud.Engine.Command do
 
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
-      character = Mud.Engine.Component.Character.get_by_id!(context.character_id)
+      character = Mud.Engine.Model.Character.get_by_id!(context.character_id)
       context = %{context | character: character}
 
       if context.is_continuation do

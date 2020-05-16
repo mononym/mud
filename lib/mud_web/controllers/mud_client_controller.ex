@@ -11,7 +11,7 @@ defmodule MudWeb.MudClientController do
 
   @spec play(Plug.Conn.t(), map) :: Plug.Conn.t()
   def play(conn, %{"character" => character_id}) do
-    character = Engine.Component.Character.get_by_id!(character_id)
+    character = Engine.Model.Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
       Mud.Engine.start_character_session(character_id)

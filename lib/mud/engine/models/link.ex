@@ -1,21 +1,30 @@
-defmodule Mud.Engine.Component.Link do
+defmodule Mud.Engine.Model.Link do
+  @moduledoc """
+  Links provide a lot of flexibility in how areas are connected.
+
+  In the simple example you have a directional exit from a room, such as 'east' or 'north'.
+
+  In a more complex case you might have magical connections between areas that changes can propogate, and the links
+  serve as a way to tie the areas together.
+  """
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
 
+  @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
     field(:departure_direction, :string)
     field(:arrival_direction, :string)
     field(:text, :string)
     field(:type, :string)
 
-    belongs_to(:from, Mud.Engine.Component.Area,
+    belongs_to(:from, Mud.Engine.Model.Area,
       type: :binary_id,
       foreign_key: :from_id
     )
 
-    belongs_to(:to, Mud.Engine.Component.Area,
+    belongs_to(:to, Mud.Engine.Model.Area,
       type: :binary_id,
       foreign_key: :to_id
     )

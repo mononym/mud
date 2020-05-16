@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Component.Character do
+defmodule Mud.Engine.Model.Character do
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -11,7 +11,7 @@ defmodule Mud.Engine.Component.Character do
   ##
   ##
 
-  @primary_key {:object_id, :binary_id, autogenerate: false}
+  @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
     # Naming and Titles
     field(:name, :string)
@@ -34,7 +34,7 @@ defmodule Mud.Engine.Component.Character do
     field(:race, :string, default: "Human")
     field(:eye_color, :string, default: "Brown")
     field(:hair_color, :string, default: "Brown")
-    field(:skin_color, :string, default: "Dark")
+    field(:skin_color, :string, default: "Brown")
 
     #
     # Physical Status
@@ -47,30 +47,17 @@ defmodule Mud.Engine.Component.Character do
     field(:relative_position, :string)
 
     # the thing the Character is relative to
-    belongs_to(:relative_object, Mud.Engine.Component.Object,
-      type: :binary_id,
-      foreign_key: :relative_object_id
-    )
+    belongs_to(:relative_item, Mud.Engine.Model.Item, type: :binary_id)
+    belongs_to(:relative_character, Mud.Engine.Model.Character, type: :binary_id)
+
+    # The Object where the
+    belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
 
     #
     # Player related stuff
     #
 
-    belongs_to(:player, Mud.Account.Player,
-      type: :binary_id,
-      foreign_key: :player_id
-    )
-
-    #
-    # Defines the Object that is the in game representation of the Character
-    #
-
-    belongs_to(:object, Mud.Engine.Component.Object,
-      type: :binary_id,
-      foreign_key: :object_id,
-      primary_key: true,
-      define_field: false
-    )
+    belongs_to(:player, Mud.Account.Player, type: :binary_id)
   end
 
   ##

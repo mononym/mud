@@ -1,5 +1,5 @@
 defmodule Mud.Engine.Command.Quit do
-  use Mud.Engine.CommandCallback
+  use Mud.Engine.Command.Callback
 
   def execute(context) do
     do_ingame_stuff(context)
@@ -10,10 +10,10 @@ defmodule Mud.Engine.Command.Quit do
   def do_ingame_stuff(context) do
     {:ok, character} =
       context.character_id
-      |> Mud.Engine.Component.Character.get_by_id!()
-      |> Mud.Engine.Component.Character.update(%{active: false})
+      |> Mud.Engine.Model.Character.get_by_id!()
+      |> Mud.Engine.Model.Character.update(%{active: false})
 
-    characters = Mud.Engine.Component.Character.list_active_in_areas(character.area_id)
+    characters = Mud.Engine.Model.Character.list_active_in_areas(character.area_id)
 
     Enum.each(characters, fn char ->
       Mud.Engine.Session.cast_message(%Mud.Engine.Output{

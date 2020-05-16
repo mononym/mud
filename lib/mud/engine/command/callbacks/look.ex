@@ -1,8 +1,7 @@
 defmodule Mud.Engine.Command.Look do
-  use Mud.Engine.CommandCallback
+  use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Component.{Area, Character, Link, Object}
-  alias Mud.Engine.CommandContext
+  alias Mud.Engine.Model.{Area, Character, Link, Item}
   import Mud.Engine.Util
 
   require Logger
@@ -108,7 +107,7 @@ defmodule Mud.Engine.Command.Look do
       true ->
         description =
           describe_thing(
-            Area.get_area!(context.character.location.location_id),
+            Area.get_area!(context.character.area_id),
             context.character
           )
 
@@ -128,6 +127,20 @@ defmodule Mud.Engine.Command.Look do
 
   defp look_at_target(context, input, which_target) do
     Logger.debug("look_at_target")
+
+    # gather all the items
+    items = Item.list_in_area(context.character.area_id)
+    characters = Character.list_in_area(context.character.area_id)
+    everything = items ++ characters
+    # describe all of them
+    descriptions = Enum.map(fn thing -> describe_thing(thing, context.character) end)
+    # check for exact matches
+    exact_matches = Enum.filter(descriptions, & &1 == input)
+
+    if not Enum.empty?(exact_matches) do
+      
+    end
+    # check for partial matches
 
     case look_at_exact_matches(context, input) do
       {:ok, context} ->
@@ -234,10 +247,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp find_exact_match(:object, context, input) do
-    case Object.list_by_exact_glance_description_in_area(
-           input,
-           context.character.area_id
-         ) do
+    case Item.list_in_area(context.character.area_id) do
       [object] ->
         context =
           context
@@ -331,7 +341,7 @@ defmodule Mud.Engine.Command.Look do
 
   @spec build_area_description(String.t(), String.t()) :: String.t()
   def build_area_description(area_id, character_id) do
-    area = Mud.Engine.Component.Area.get_area!(area_id)
+    area = Mud.Engine.Model.Area.get_area!(area_id)
 
     build_area_name(area)
     |> build_area_desc(area)
@@ -420,7 +430,7 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp build_obvious_exits_string(area_id) do
-    Mud.Engine.Component.Link.list_obvious_exits(area_id)
+    Mud.Engine.Model.Link.list_obvious_exits(area_id)
     |> Enum.map(fn link ->
       link.text
     end)
@@ -430,7 +440,7 @@ defmodule Mud.Engine.Command.Look do
 
   # Character list should not contain the character the look is being performed for
   defp build_player_characters_string(area_id, character_id) do
-    Mud.Engine.Component.Character.list_active_in_areas(area_id)
+    Mud.Engine.Model.Character.list_active_in_areas(area_id)
     # filter out self
     |> Enum.filter(fn char ->
       char.id != character_id

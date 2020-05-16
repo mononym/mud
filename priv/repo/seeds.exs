@@ -11,65 +11,66 @@
 # and so on) as they will fail if something goes wrong.
 
 # Room insertions
+alias Mud.Engine.Component.{Area, Link}
 
 center_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "Water Fountain",
     description:
       "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors."
   })
 
 east_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "East Garden Path",
     description:
       "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
 west_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "West Garden Path",
     description:
       "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
 north_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "North Garden Path",
     description:
       "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
 south_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "South Garden Path",
     description:
       "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
 northeast_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "NorthEast Garden Path",
     description:
       "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
 southeast_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "SouthEast Garden Path",
     description:
       "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
 northwest_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "NorthWest Garden Path",
     description:
       "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
 southwest_room =
-  Mud.Repo.insert!(%Mud.Engine.Area{
+  Mud.Repo.insert!(%Area{
     name: "SouthWest Garden Path",
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
@@ -78,7 +79,7 @@ southwest_room =
 # Link insertions
 
 # center room east room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: east_room.id,
   departure_direction: "east",
@@ -87,7 +88,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "east"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: center_room.id,
   departure_direction: "west",
@@ -97,7 +98,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room west room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: west_room.id,
   departure_direction: "west",
@@ -106,7 +107,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "west"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: center_room.id,
   departure_direction: "east",
@@ -116,7 +117,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room north room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: north_room.id,
   departure_direction: "north",
@@ -125,7 +126,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "north"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: center_room.id,
   departure_direction: "south",
@@ -135,7 +136,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room south room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: south_room.id,
   departure_direction: "south",
@@ -144,7 +145,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "south"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: center_room.id,
   departure_direction: "north",
@@ -154,7 +155,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room southeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: southeast_room.id,
   departure_direction: "southeast",
@@ -163,7 +164,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "southeast"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: center_room.id,
   departure_direction: "northwest",
@@ -173,7 +174,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room southwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: southwest_room.id,
   departure_direction: "southwest",
@@ -182,7 +183,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "southwest"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: center_room.id,
   departure_direction: "northeast",
@@ -192,7 +193,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room northwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: northwest_room.id,
   departure_direction: "northwest",
@@ -201,7 +202,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "northwest"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: center_room.id,
   departure_direction: "southeast",
@@ -211,7 +212,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # center room northeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: northeast_room.id,
   departure_direction: "northeast",
@@ -220,7 +221,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "northeast"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: center_room.id,
   departure_direction: "southwest",
@@ -230,7 +231,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # north room northeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: northeast_room.id,
   departure_direction: "east",
@@ -239,7 +240,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "east"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: north_room.id,
   departure_direction: "west",
@@ -249,7 +250,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # north room northwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: northwest_room.id,
   departure_direction: "west",
@@ -258,7 +259,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "west"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: north_room.id,
   departure_direction: "east",
@@ -268,7 +269,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # south room southeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: southeast_room.id,
   departure_direction: "east",
@@ -277,7 +278,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "east"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: south_room.id,
   departure_direction: "west",
@@ -287,7 +288,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # south room southwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: southwest_room.id,
   departure_direction: "west",
@@ -296,7 +297,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "west"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: south_room.id,
   departure_direction: "east",
@@ -306,7 +307,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # east room northeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: northeast_room.id,
   departure_direction: "north",
@@ -315,7 +316,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "north"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: east_room.id,
   departure_direction: "south",
@@ -325,7 +326,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # east room southeast room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: southeast_room.id,
   departure_direction: "south",
@@ -334,7 +335,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "south"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: east_room.id,
   departure_direction: "north",
@@ -344,7 +345,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # west room northwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: northwest_room.id,
   departure_direction: "north",
@@ -353,7 +354,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "north"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: west_room.id,
   departure_direction: "south",
@@ -363,7 +364,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # west room southwest room links
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: southwest_room.id,
   departure_direction: "south",
@@ -372,7 +373,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "south"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: west_room.id,
   departure_direction: "north",
@@ -382,7 +383,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
 })
 
 # Portals
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: northeast_room.id,
   departure_direction: "into a shimmering portal",
@@ -391,7 +392,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "a shimmering portal"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: northwest_room.id,
   departure_direction: "into a glimmering portal",
@@ -400,7 +401,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "a glimmering portal"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: southwest_room.id,
   departure_direction: "into a glimmering portal",
@@ -409,7 +410,7 @@ Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
   text: "a glimmering portal"
 })
 
-Mud.Repo.insert!(%Mud.Engine.Model.LinkModel{
+Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: southwest_room.id,
   departure_direction: "into a shimmering portal",
@@ -425,10 +426,6 @@ alias Mud.Engine.CreateObjectRequest
 Mud.Engine.create_object(%CreateObjectRequest{
   key: "rock",
   is_scenery: false,
-  location: %CreateObjectRequest.Location{
-    reference: north_room.id,
-    on_ground: true
-  },
   description: %CreateObjectRequest.Description{
     glance_description: "a flat rounded rock",
     look_description:
@@ -439,10 +436,6 @@ Mud.Engine.create_object(%CreateObjectRequest{
 Mud.Engine.create_object(%CreateObjectRequest{
   key: "rock",
   is_scenery: false,
-  location: %CreateObjectRequest.Location{
-    reference: north_room.id,
-    on_ground: true
-  },
   description: %CreateObjectRequest.Description{
     glance_description: "a rough round rock",
     look_description:
@@ -453,10 +446,6 @@ Mud.Engine.create_object(%CreateObjectRequest{
 Mud.Engine.create_object(%CreateObjectRequest{
   key: "branch",
   is_scenery: false,
-  location: %CreateObjectRequest.Location{
-    reference: north_room.id,
-    on_ground: true
-  },
   description: %CreateObjectRequest.Description{
     glance_description: "a leafy branch",
     look_description:
@@ -486,14 +475,10 @@ Mud.Engine.create_object(%CreateObjectRequest{
 Mud.Engine.create_object(%CreateObjectRequest{
   key: "bench",
   is_scenery: true,
-  location: %CreateObjectRequest.Location{
-    reference: center_room.id,
-    on_ground: true
-  },
   description: %CreateObjectRequest.Description{
     glance_description: "a worn wooden bench",
     look_description:
-      "The stury wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+      "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
   },
   scenery: %CreateObjectRequest.Scenery{
     hidden: false

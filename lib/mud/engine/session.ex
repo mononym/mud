@@ -4,7 +4,6 @@ defmodule Mud.Engine.Session do
   import Ecto.Query, warn: false
   require Logger
   alias Mud.Engine.CharacterSessionData
-  alias Mud.Engine.Component.{Character, Output}
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -121,8 +120,8 @@ defmodule Mud.Engine.Session do
 
     # Set character to active
     state.character_id
-    |> Mud.Engine.Component.Character.get_by_id!()
-    |> Mud.Engine.Component.Character.update(%{active: true})
+    |> Mud.Engine.Model.Character.get_by_id!()
+    |> Mud.Engine.Model.Character.update(%{active: true})
 
     # Start inactivity timer
     state = update_timeout(state, @character_inactivity_timeout_warning)
@@ -367,8 +366,6 @@ defmodule Mud.Engine.Session do
   defp send_input_for_processing(input, state) do
     session_pid = self()
 
-    IO.inspect(input, label: "send_input_for_processing")
-
     # send stuff off to task
     task =
       Task.async(fn ->
@@ -380,10 +377,8 @@ defmodule Mud.Engine.Session do
           })
         end
 
-        IO.inspect(input)
-
         execution_context =
-          Mud.Engine.Command.executev2(%Mud.Engine.CommandContext{
+          Mud.Engine.Command.executev2(%Mud.Engine.Command.ExecutionContext{
             id: input.id,
             character_id: input.character_id,
             raw_input: input.text,
