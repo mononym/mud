@@ -8,7 +8,7 @@ defmodule Mud.Engine.Util do
   def output(who, text, table_data \\ nil) do
     %Mud.Engine.Output{
       id: UUID.uuid4(),
-      character_id: who,
+      to: who,
       text: text,
       table_data: table_data
     }

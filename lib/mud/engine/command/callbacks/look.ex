@@ -69,13 +69,23 @@ defmodule Mud.Engine.Command.Look do
       num_exact_matches == 1 and which_target == 0 ->
         match = List.first(matches.exact_matches)
 
-        ExecutionContext.success_with_output(context, match.look_description, "info")
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          match.look_description,
+          "info"
+        )
 
       # happy path where there are matches, and chosen index is in range
       num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
         match = Enum.at(matches.exact_matches, which_target - 1)
 
-        ExecutionContext.success_with_output(context, match.look_description, "info")
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          match.look_description,
+          "info"
+        )
 
       # unhappy path where there are multiple matches
       num_exact_matches > 1 and which_target == 0 ->
@@ -85,13 +95,23 @@ defmodule Mud.Engine.Command.Look do
       num_partial_matches == 1 and which_target == 0 ->
         match = List.first(matches.partial_matches)
 
-        ExecutionContext.success_with_output(context, match.look_description, "info")
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          match.look_description,
+          "info"
+        )
 
       # happy path where there are matches, and chosen index is in range
       num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
         match = Enum.at(matches.partial_matches, which_target - 1)
 
-        ExecutionContext.success_with_output(context, match.look_description, "info")
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          match.look_description,
+          "info"
+        )
 
       # unhappy path where there are multiple matches
       num_partial_matches > 1 and which_target == 0 ->
@@ -101,7 +121,7 @@ defmodule Mud.Engine.Command.Look do
       true ->
         error_msg = "{{warning}}Could not find what you were looking for.{{/warning}}"
 
-        ExecutionContext.success_with_output(context, error_msg, "error")
+        ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
     end
   end
 
@@ -117,6 +137,6 @@ defmodule Mud.Engine.Command.Look do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many matches. Please be more specific."
 
-    ExecutionContext.success_with_output(context, error_msg, "error")
+    ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
   end
 end

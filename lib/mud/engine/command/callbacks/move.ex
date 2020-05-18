@@ -98,15 +98,11 @@ defmodule Mud.Engine.Command.Move do
 
         maybe_move(context, match.match)
 
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
-
       # happy path where there are matches, and chosen index is in range
       num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
         match = Enum.at(matches.exact_matches, which_target - 1)
 
         maybe_move(context, match.match)
-
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
 
       # unhappy path where there are multiple matches
       num_exact_matches > 1 and which_target == 0 ->
@@ -118,15 +114,11 @@ defmodule Mud.Engine.Command.Move do
 
         maybe_move(context, match.match)
 
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
-
       # happy path where there are matches, and chosen index is in range
       num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
         match = Enum.at(matches.partial_matches, which_target - 1)
 
         maybe_move(context, match.match)
-
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
 
       # unhappy path where there are multiple matches
       num_partial_matches > 1 and which_target == 0 ->
@@ -136,7 +128,7 @@ defmodule Mud.Engine.Command.Move do
       true ->
         error_msg = "{{warning}}You cannot travel in that direction.{{/warning}}"
 
-        ExecutionContext.success_with_output(context, error_msg, "error")
+        ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
     end
   end
 
@@ -151,7 +143,7 @@ defmodule Mud.Engine.Command.Move do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many exits. Please be more specific."
 
-    ExecutionContext.success_with_output(context, error_msg, "error")
+    ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
   end
 
   defp maybe_move(context, link) do
@@ -162,7 +154,7 @@ defmodule Mud.Engine.Command.Move do
     else
       error_msg = "You must be standing before you can move."
 
-      ExecutionContext.success_with_output(context, error_msg, "error")
+      ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
     end
   end
 
@@ -172,22 +164,15 @@ defmodule Mud.Engine.Command.Move do
 
     # Perform look logic for character
     context_with_look_command =
-      append_message(
+      ExecutionContext.add_output(
         context,
-        %Mud.Engine.Output{
-          id: UUID.uuid4(),
-          character_id: context.character_id,
-          text: Area.describe_look(link.to_id, context.character)
-        }
+        context.character_id,
+        Area.describe_look(link.to_id, context.character)
       )
 
     # List all the characters that need to be informed of a move
     characters_by_area =
-      Character.list_active_in_areas([link.to_id, link.from_id])
-      # Filter out "self"
-      |> Enum.filter(fn char ->
-        char.id != character.id
-      end)
+      Character.list_others_active_in_areas(character, [link.to_id, link.from_id])
       # Group by location
       |> Enum.group_by(fn char ->
         char.area_id
@@ -195,40 +180,25 @@ defmodule Mud.Engine.Command.Move do
 
     # Send messages to everyone in room that the character just left
     context_with_some_messages =
-      add_message_for_all_characters(
+      ExecutionContext.add_output(
         context_with_look_command,
-        "{{info}}#{character.name} left the area heading #{link.departure_direction}.{{/info}}",
-        characters_by_area[link.from_id] || []
+        characters_by_area[link.from_id] || [],
+        "#{character.name} left the area heading #{link.departure_direction}.",
+        "info"
       )
 
     # Send messages to everyone in room that the character is arriving in
     context_with_all_messages =
-      add_message_for_all_characters(
+      ExecutionContext.add_output(
         context_with_some_messages,
-        "{{info}}#{character.name} has entered the area from #{link.arrival_direction}.{{info}}",
-        characters_by_area[link.to_id] || []
+        characters_by_area[link.from_id] || [],
+        "#{character.name} has entered the area from #{link.arrival_direction}.",
+        "info"
       )
 
     context_with_all_messages
     |> Util.clear_continuation_from_context()
     |> set_success()
-  end
-
-  defp add_message_for_all_characters(context, text, characters) do
-    Enum.reduce(
-      characters,
-      context,
-      fn char, ctx ->
-        append_message(
-          ctx,
-          %Mud.Engine.Output{
-            id: UUID.uuid4(),
-            character_id: char.id,
-            text: text
-          }
-        )
-      end
-    )
   end
 
   defp normalize_direction(direction) do

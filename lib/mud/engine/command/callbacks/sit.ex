@@ -40,16 +40,7 @@ defmodule Mud.Engine.Command.Sit do
         which_target
       )
     else
-      help_docs = Mud.Engine.Util.get_module_docs(__MODULE__)
-
-      context
-      |> append_message(
-        output(
-          context.character_id,
-          "{{help_docs}}#{help_docs}{{/help_docs}}"
-        )
-      )
-      |> set_success()
+      make_character_sit(context)
     end
   end
 
@@ -69,15 +60,11 @@ defmodule Mud.Engine.Command.Sit do
 
         make_character_sit(context, match.match)
 
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
-
       # happy path where there are matches, and chosen index is in range
       num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
         match = Enum.at(matches.exact_matches, which_target - 1)
 
         make_character_sit(context, match.match)
-
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
 
       # unhappy path where there are multiple matches
       num_exact_matches > 1 and which_target == 0 ->
@@ -89,15 +76,11 @@ defmodule Mud.Engine.Command.Sit do
 
         make_character_sit(context, match.match)
 
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
-
       # happy path where there are matches, and chosen index is in range
       num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
         match = Enum.at(matches.partial_matches, which_target - 1)
 
         make_character_sit(context, match.match)
-
-      # ExecutionContext.success_with_output(context, match.look_description, "info")
 
       # unhappy path where there are multiple matches
       num_partial_matches > 1 and which_target == 0 ->
@@ -107,7 +90,7 @@ defmodule Mud.Engine.Command.Sit do
       true ->
         error_msg = "{{warning}}You want to sit on what?{{/warning}}"
 
-        ExecutionContext.success_with_output(context, error_msg, "error")
+        ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
     end
   end
 
@@ -122,52 +105,79 @@ defmodule Mud.Engine.Command.Sit do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many matches. Please be more specific."
 
-    ExecutionContext.success_with_output(context, error_msg, "error")
+    ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
   end
 
-  @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t()) ::
+  @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t() | nil) ::
           ExecutionContext.t()
-  defp make_character_sit(context, furniture_object) do
+  defp make_character_sit(context, furniture_object \\ nil) do
     char = context.character
 
     cond do
-      furniture_object.is_furniture and char.position != "sitting" ->
+      char.position == Character.sitting() ->
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          "You are already sitting down!",
+          "error"
+        )
+
+      furniture_object == nil ->
         update = %{
-          position: "sitting",
-          relative_position: "on",
-          relative_object: furniture_object.id
+          position: Character.sitting(),
+          relative_position: "",
+          relative_item_id: nil
         }
 
         Character.update(context.character, update)
 
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{info}}You sit down on #{furniture_object.glance_description}{{/info}}"
-          )
-        )
-        |> set_success()
+        others =
+          Character.list_others_active_in_areas(context.character, context.character.area_id)
 
-      char.position == "sitting" ->
         context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{error}}You are already sitting down!{{/error}}"
-          )
+        |> ExecutionContext.add_output(
+          others,
+          "#{context.character.name} sits down.",
+          "info"
         )
-        |> set_success()
+        |> ExecutionContext.success_with_output(
+          context.character.id,
+          "You sit down.",
+          "info"
+        )
+
+      furniture_object != nil and furniture_object.is_furniture and
+          char.position != Character.sitting() ->
+        update = %{
+          position: Character.sitting(),
+          relative_position: "on",
+          relative_item_id: furniture_object.id
+        }
+
+        Character.update(context.character, update)
+
+        others =
+          Character.list_others_active_in_areas(context.character, context.character.area_id)
+
+        context
+        |> ExecutionContext.add_output(
+          others,
+          "#{context.character.name} sits down on #{furniture_object.glance_description}.",
+          "info"
+        )
+        |> ExecutionContext.success_with_output(
+          context.character.id,
+          "You sit down on #{furniture_object.glance_description}.",
+          "info"
+        )
 
       true ->
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{warning}}Unfortunately, #{furniture_object.glance_description} can not be sat on.{{/warning}}"
-          )
+        ExecutionContext.success_with_output(
+          context,
+          context.character.id,
+          "Unfortunately, #{furniture_object.glance_description} can not be sat on.",
+          "error"
         )
-        |> set_success()
     end
   end
 end

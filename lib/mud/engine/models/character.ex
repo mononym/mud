@@ -4,7 +4,7 @@ defmodule Mud.Engine.Model.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.Model.{Item}
+  alias Mud.Engine.Model.{Area, Character, Item}
 
   require Logger
 
@@ -50,10 +50,10 @@ defmodule Mud.Engine.Model.Character do
     field(:relative_position, :string)
 
     # the thing the Character is relative to
-    belongs_to(:relative_item, Mud.Engine.Model.Item, type: :binary_id)
+    belongs_to(:relative_item, Item, type: :binary_id)
 
     # The Object where the
-    belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
+    belongs_to(:area, Area, type: :binary_id)
 
     #
     # Player related stuff
@@ -132,7 +132,7 @@ defmodule Mud.Engine.Model.Character do
   """
   @spec create(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    area = Mud.Engine.Model.Area.list_all() |> Enum.random()
+    area = Area.list_all() |> Enum.random()
 
     Logger.debug(inspect(area))
     Logger.debug(inspect(attrs))
@@ -283,6 +283,31 @@ defmodule Mud.Engine.Model.Character do
     |> Repo.all()
   end
 
+  @doc """
+  Returns the list of characters that are both active and in the same area as the provided character.
+
+  ## Examples
+
+      iex> list_others_active_in_areas(42)
+      [%Character{}, ...]
+
+      iex> list_others_active_in_areas([42, 24])
+      [%Character{}, ...]
+
+  """
+  @spec list_others_active_in_areas(Character.t(), String.t() | [String.t()]) :: [%__MODULE__{}]
+  def list_others_active_in_areas(character, area_ids) do
+    area_ids = List.wrap(area_ids)
+
+    base_query()
+    |> where(
+      [char],
+      char.active == true and char.area_id in ^area_ids and
+        char.id != ^character.id
+    )
+    |> Repo.all()
+  end
+
   @spec get_by_name(String.t()) :: %__MODULE__{} | nil
   def get_by_name(name) do
     Repo.get_by(__MODULE__, name: name)
@@ -355,6 +380,17 @@ defmodule Mud.Engine.Model.Character do
   def delete(character) do
     Repo.delete(character)
   end
+
+  @spec standing :: <<_::64>>
+  def standing, do: "standing"
+
+  def sitting, do: "sitting"
+
+  def kneeling, do: "kneeling"
+
+  def crouching, do: "crouching"
+
+  def prone, do: "prone"
 
   defp base_query do
     from(character in __MODULE__)

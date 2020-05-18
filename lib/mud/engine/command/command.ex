@@ -432,12 +432,11 @@ defmodule Mud.Engine.Command do
 
         :error ->
           context
-          |> ExecutionContext.append_message(%Mud.Engine.Output{
-            id: UUID.uuid4(),
-            character_id: context.character_id,
-            text:
-              "{{warning}}Selection not recognized. Executing input as is instead.{{/warning}}"
-          })
+          |> ExecutionContext.add_output(
+            context.character_id,
+            "Selection not recognized. Executing input as is instead.",
+            "warning"
+          )
           |> ExecutionContext.clear_continuation()
           |> do_execute()
       end
@@ -457,12 +456,11 @@ defmodule Mud.Engine.Command do
       {:error, :no_match} ->
         context =
           context
-          |> ExecutionContext.append_message(%Mud.Engine.Output{
-            id: UUID.uuid4(),
-            character_id: context.character_id,
-            text: "{{error}}No matching commands were found. Please try again.{{/error}}"
-          })
-          |> ExecutionContext.set_success()
+          |> ExecutionContext.success_with_output(
+            context.character_id,
+            "No matching commands were found. Please try again.",
+            "error"
+          )
 
         process_messages(context)
     end
@@ -478,6 +476,8 @@ defmodule Mud.Engine.Command do
   end
 
   defp process_messages(context) do
+    Logger.debug(inspect(context))
+
     if context.success do
       Enum.each(context.messages, fn message ->
         Mud.Engine.Session.cast_message(message)

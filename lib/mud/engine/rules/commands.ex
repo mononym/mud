@@ -37,7 +37,8 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_move_command(),
       define_sit_command(),
-      define_quit_command()
+      define_quit_command(),
+      define_stand_command()
     ])
   end
 
@@ -74,6 +75,18 @@ defmodule Mud.Engine.Rules.Commands do
           key: :target,
           greedy: true,
           transformer: &join_input_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_stand_command do
+    %Command{
+      callback_module: Command.Stand,
+      segments: [
+        %Segment{
+          match_strings: ["stand"],
+          key: :stand
         }
       ]
     }

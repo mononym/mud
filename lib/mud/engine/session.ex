@@ -51,8 +51,14 @@ defmodule Mud.Engine.Session do
   #
   #
 
+  @spec cast_message(Mud.Engine.Output.t()) :: :ok
   def cast_message(message) do
-    GenServer.cast(via(message.character_id), message)
+    to = List.wrap(message.to)
+
+    Enum.each(to, fn dest ->
+      msg = %{message | to: dest}
+      GenServer.cast(via(dest), msg)
+    end)
   end
 
   @doc """
@@ -277,7 +283,7 @@ defmodule Mud.Engine.Session do
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :warning}) do
     GenServer.cast(self(), %Mud.Engine.Output{
       id: UUID.uuid4(),
-      character_id: state.character_id,
+      to: state.character_id,
       text:
         "{{warning}}***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****{{/warning}}"
     })
@@ -290,14 +296,14 @@ defmodule Mud.Engine.Session do
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :final}) do
     GenServer.cast(self(), %Mud.Engine.Output{
       id: UUID.uuid4(),
-      character_id: state.character_id,
+      to: state.character_id,
       text:
         "{{error}}***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****{{/error}}"
     })
 
     GenServer.cast(self(), %Mud.Engine.Input{
       id: UUID.uuid4(),
-      character_id: state.character_id,
+      to: state.character_id,
       text: "quit",
       type: :silent
     })
@@ -374,7 +380,7 @@ defmodule Mud.Engine.Session do
         if input.type == :normal do
           GenServer.cast(session_pid, %Mud.Engine.Output{
             id: input.id,
-            character_id: input.character_id,
+            to: input.to,
             text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
           })
         end
@@ -382,7 +388,7 @@ defmodule Mud.Engine.Session do
         execution_context =
           Mud.Engine.Command.executev2(%Mud.Engine.Command.ExecutionContext{
             id: input.id,
-            character_id: input.character_id,
+            character_id: input.to,
             input: input.text,
             continuation_data: state.continuation_data,
             is_continuation: state.is_continuation,

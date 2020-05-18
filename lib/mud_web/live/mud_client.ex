@@ -155,7 +155,7 @@ defmodule MudWeb.MudClientLive do
   end
 
   defp send_command(character_id, text) do
-    %Mud.Engine.Input{id: UUID.uuid4(), character_id: character_id, text: text}
+    %Mud.Engine.Input{id: UUID.uuid4(), to: character_id, text: text}
     |> Mud.Engine.Session.cast_message()
   end
 end

@@ -5,6 +5,8 @@ defmodule Mud.Engine.Command.ExecutionContext do
   populate required data.
   """
 
+  alias Mud.Engine.Util
+
   @type character() :: Mud.Engine.Model.Character.t()
   @type character_id() :: String.t()
   @type command() :: Mud.Engine.Command.t()
@@ -230,17 +232,39 @@ defmodule Mud.Engine.Command.ExecutionContext do
   """
   @spec success_with_output(
           context,
+          String.t() | [String.t()],
           String.t(),
-          String.t()
+          String.t() | nil
         ) :: context
-  def success_with_output(context, message, tag) do
+  def success_with_output(context, to, message, tag \\ nil) do
     context
-    |> Mud.Engine.Command.ExecutionContext.append_message(
-      Mud.Engine.Util.output(
-        context.character_id,
+    |> add_output(to, message, tag)
+    |> set_success()
+  end
+
+  @doc """
+  Mark an execution process as successful, while adding a message to it in the process.
+  """
+  @spec add_output(
+          context,
+          String.t() | [String.t()],
+          String.t(),
+          String.t() | nil
+        ) :: context
+  def add_output(context, to, message, tag \\ nil) do
+    msg =
+      if tag != nil do
         "{{#{tag}}}#{message}{{/#{tag}}}"
+      else
+        message
+      end
+
+    context
+    |> append_message(
+      Util.output(
+        List.wrap(to),
+        msg
       )
     )
-    |> set_success()
   end
 end
