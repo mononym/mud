@@ -12,8 +12,12 @@ defmodule MudWeb.CharacterController do
   end
 
   def new(conn, _params) do
-    changeset = Character.changeset(%Character{}, %{})
-    render(conn, "new.html", changeset: changeset)
+    conn
+    |> put_layout("liveview_client_page.html")
+    |> live_render(
+      MudWeb.CharacterCreationWizardLive,
+      session: %{"player" => conn.assigns.player}
+    )
   end
 
   def create(conn, %{"character" => character_params}) do
@@ -43,10 +47,8 @@ defmodule MudWeb.CharacterController do
   end
 
   def edit(conn, %{"id" => character_id}) do
-    conn
-    |> put_session(:character_id, character_id)
-    |> put_layout("liveview_client_page.html")
-    |> live_render(MudWeb.CharacterCreationWizardLive, session: %{"character_id" => character_id})
+    character = Character.get_by_id!(character_id)
+    render(conn, "edit.html", character: character)
   end
 
   def play(conn, %{"character" => character_id}) do

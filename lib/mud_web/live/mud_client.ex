@@ -41,7 +41,6 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_event("typing", _value, socket) do
-    # Presence.update_presence(self(), topic(chat.id), user.id, %{typing: true})
     {:noreply, socket}
   end
 
@@ -50,18 +49,8 @@ defmodule MudWeb.MudClientLive do
         _value,
         socket
       ) do
-    # message = Chats.change_message(message, %{content: value})
-    # Presence.update_presence(self(), topic(chat.id), user.id, %{typing: false})
     {:noreply, socket}
   end
-
-  # def handle_event("input_update", event, socket) do
-  #   Logger.debug("input update event received: #{inspect(event)}")
-
-  #   # assigns = process_hotkey(event, socket.assigns)
-
-  #   {:noreply, socket}
-  # end
 
   def handle_event("hotkey", event, socket) do
     Logger.debug("hotkey event received: #{inspect(event)}")
@@ -83,12 +72,6 @@ defmodule MudWeb.MudClientLive do
 
     {:noreply, assign(socket, messages: [output.text | socket.assigns.messages])}
   end
-
-  # defp process_hotkey(%{"code" => "Enter"}, assigns) do
-  #   send_command(assigns.character_id, assigns.input)
-
-  #   %{assigns | input: ""}
-  # end
 
   defp process_hotkey(%{"code" => "Numpad9", "ctrlKey" => true}, assigns) do
     send_command(assigns.character_id, "northeast")

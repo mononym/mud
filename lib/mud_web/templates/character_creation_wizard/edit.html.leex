@@ -1,33 +1,21 @@
 <div name="editor" class="w-screen h-screen flex flex-col overflow-hidden max-h-screen items-center justify-center" phx-window-keyup="hotkey">
-  <%= if @character_created do %>
+  <%= if @state.character_created do %>
     <select id="race" name="races" disabled>
-        <option value="<%= @character.race %>"><%= @character.race %></option>
+        <option value="<%= @state.character.race %>"><%= @state.character.race %></option>
     </select>
   <% else %>
-    <%= if @race_accepted do %>
-      <%= form_for @character_creation_form_changeset, "#", [phx_submit: :create_character], fn _f -> %>
-        <label>Hair Color</label>
-        <select name="hair_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-          <%= for hair_color <- @selected_race.hair_colors do %>
-            <option><%= hair_color %></option>
-          <% end %>
-        </select>
-        <label>Eye Color</label>
-        <select name="eye_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-          <%= for eye_color <- @selected_race.eye_colors do %>
-            <option><%= eye_color %></option>
-          <% end %>
-        </select>
-        <label>Skin Tone</label>
-        <select name="skin_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-          <%= for skin_color <- @selected_race.skin_colors do %>
-            <option><%= skin_color %></option>
-          <% end %>
-        </select>
-        <%= submit "Start your adventure!", phx_disable_with: "Creating your character...", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
-      <% end %>
-    <% else %>
-      <div class="container flex flex-row py-2">
+    <%= cond do %>
+      <% not @state.name_chosen -> %>
+        <%= f = form_for @state.changeset, "#", [as: :data, phx_submit: :choose_name] %>
+          <div class="form-group">
+            <%= label f, :name %>
+            <%= text_input f, :name, placeholder: "Choose a name" %>
+            <%= error_tag f, :name %>
+          </div>
+          <%= submit "Choose Name", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+        </form>
+      <% not @state.race_chosen -> %>
+        <div class="container flex flex-row py-2">
 
         <button phx-click="previous_race" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l">Previous</button>
 
@@ -36,8 +24,8 @@
           </div>
           <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
             <div class="mb-8">
-              <div class="text-gray-900 font-bold text-xl mb-2"><%= @selected_race.name %></div>
-              <p class="text-gray-700 text-base"><%= @selected_race.description %></p>
+              <div class="text-gray-900 font-bold text-xl mb-2"><%= @state.selected_race.name %></div>
+              <p class="text-gray-700 text-base"><%= @state.selected_race.description %></p>
             </div>
           </div>
         </div>
@@ -45,10 +33,32 @@
         <button phx-click="next_race" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r">Next</button>
       </div>
       <div class="flex flex-row justify-center items-center py-2">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" phx-click="accept_race">
-          Click Here or Press Enter to select <%= @selected_race.name %>
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" phx-click="choose_race">
+          Click Here or Press Enter to select <%= @state.selected_race.name %>
         </button>
       </div>
+      <% true -> %>
+        <%= form_for @state.changeset, "#", [phx_submit: :choose_features], fn _f -> %>
+          <label>Hair Color</label>
+          <select name="hair_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+            <%= for hair_color <- @state.selected_race.hair_colors do %>
+              <option><%= hair_color %></option>
+            <% end %>
+          </select>
+          <label>Eye Color</label>
+          <select name="eye_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+            <%= for eye_color <- @state.selected_race.eye_colors do %>
+              <option><%= eye_color %></option>
+            <% end %>
+          </select>
+          <label>Skin Tone</label>
+          <select name="skin_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+            <%= for skin_color <- @state.selected_race.skin_colors do %>
+              <option><%= skin_color %></option>
+            <% end %>
+          </select>
+          <%= submit "Start your adventure!", phx_disable_with: "Creating your character...", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
+        <% end %>
     <% end %>
   <% end %>
 </div>

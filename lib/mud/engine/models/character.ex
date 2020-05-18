@@ -95,26 +95,27 @@ defmodule Mud.Engine.Model.Character do
     ])
     |> validate_required([
       :active,
-      :agility,
-      :area_id,
-      :charisma,
-      :constitution,
-      :dexterity,
-      :eye_color,
-      :hair_color,
-      :intelligence,
+      # :agility,
+      # :area_id,
+      # :charisma,
+      # :constitution,
+      # :dexterity,
+      # :eye_color,
+      # :hair_color,
+      # :intelligence,
       :name,
       :player_id,
-      :position,
-      :race,
-      :reflexes,
-      :skin_color,
-      :stamina,
-      :strength,
-      :wisdom
+      :position
+      # :race,
+      # :reflexes,
+      # :skin_color,
+      # :stamina,
+      # :strength,
+      # :wisdom
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
+    |> unsafe_validate_unique(:name, Mud.Repo)
     |> unique_constraint(:name)
   end
 
@@ -143,6 +144,10 @@ defmodule Mud.Engine.Model.Character do
     |> changeset(Map.put(attrs, "area_id", area.id))
     |> Repo.insert()
   end
+
+  def change(character), do: Ecto.Changeset.change(character)
+
+  def new, do: %__MODULE__{}
 
   @doc """
   Describes a character in brief.
@@ -362,6 +367,27 @@ defmodule Mud.Engine.Model.Character do
     character
     |> changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Updates a character.
+
+  Raises `Ecto.NoResultsError` if the Character does not exist.
+
+  ## Examples
+
+      iex> update!(character, %{field: new_value})
+      %Character{}
+
+      iex> update!(character, %{field: bad_value})
+      ** (Ecto.NoResultsError)
+
+  """
+  @spec update!(character :: __MODULE__.t(), attributes :: map()) :: __MODULE__.t()
+  def update!(character, attrs \\ %{}) do
+    character
+    |> changeset(attrs)
+    |> Repo.update!()
   end
 
   @doc """
