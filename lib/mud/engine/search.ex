@@ -5,6 +5,7 @@ defmodule Mud.Engine.Search do
 
   alias Mud.Engine.Model.{Character, Item, Link}
   import Mud.Engine.Util
+  require Logger
 
   defmodule Match do
     @enforce_keys [:match_string, :glance_description, :look_description, :match]
@@ -20,32 +21,34 @@ defmodule Mud.Engine.Search do
     defstruct exact_matches: [], partial_matches: []
   end
 
-  def find_matches_in_area(input, area_id, looking_character_id) do
-    item_matches = find_item_matches_in_area(input, area_id, looking_character_id)
-    char_matches = find_character_matches_in_area(input, area_id, looking_character_id)
-    link_matches = find_link_matches_in_area(input, area_id, looking_character_id)
+  def find_matches_in_area(area_id, input, looking_character) do
+    item_matches = find_items_in_area(area_id, input, looking_character)
+    char_matches = find_characters_in_area(area_id, input, looking_character)
+    link_matches = find_obvious_exits_in_area(area_id, input, looking_character)
 
-    merge_search_results(item_matches ++ char_matches ++ link_matches)
+    merged = merge_search_results([item_matches, char_matches, link_matches])
+    Logger.debug(inspect(merged))
+    merged
   end
 
-  defp find_link_matches_in_area(input, area_id, looking_character_id) do
+  def find_obvious_exits_in_area(area_id, input, looking_character) do
     area_id
-    |> Link.list_in_area()
-    |> links_to_match(looking_character_id)
+    |> Link.list_obvious_exits_in_area()
+    |> links_to_match(looking_character)
     |> build_search_results(input)
   end
 
-  defp find_character_matches_in_area(input, area_id, looking_character_id) do
+  def find_characters_in_area(area_id, input, looking_character) do
     area_id
     |> Character.list_in_area()
-    |> characters_to_match(looking_character_id)
+    |> characters_to_match(looking_character)
     |> build_search_results(input)
   end
 
-  defp find_item_matches_in_area(input, area_id, looking_character_id) do
+  def find_items_in_area(area_id, input, looking_character) do
     area_id
     |> Item.list_in_area()
-    |> items_to_match(looking_character_id)
+    |> items_to_match(looking_character)
     |> build_search_results(input)
   end
 
@@ -56,7 +59,7 @@ defmodule Mud.Engine.Search do
       type = type_of_match(input, search_regex, match.match_string)
 
       if type != :nomatch do
-        Map.put(result, type, [match | result[type]])
+        Map.put(result, type, [match | Map.get(result, type)])
       else
         result
       end
@@ -77,46 +80,46 @@ defmodule Mud.Engine.Search do
   defp type_of_match(input, search_regex, match_string) do
     cond do
       String.equivalent?(match_string, input) ->
-        :exact
+        :exact_matches
 
       Regex.match?(search_regex, match_string) ->
-        :partial
+        :partial_matches
 
       true ->
         :nomatch
     end
   end
 
-  defp links_to_match(links, looking_character_id) do
+  defp links_to_match(links, looking_character) do
     Enum.map(links, fn link ->
       %Match{
         match_string: String.downcase(link.text),
         glance_description: link.text,
-        look_description: Link.describe_look(link, looking_character_id),
+        look_description: Link.describe_look(link, looking_character),
         match: link
       }
     end)
   end
 
-  defp characters_to_match(characters, looking_character_id) do
+  defp characters_to_match(characters, looking_character) do
     Enum.map(characters, fn character ->
       %Match{
         match_string: String.downcase(character.name),
-        glance_description: Character.describe_glance(character, looking_character_id),
-        look_description: Character.describe_look(character, looking_character_id),
+        glance_description: Character.describe_glance(character, looking_character),
+        look_description: Character.describe_look(character, looking_character),
         match: character
       }
     end)
   end
 
-  defp items_to_match(items, looking_character_id) do
+  defp items_to_match(items, looking_character) do
     Enum.map(items, fn item ->
-      desc = Item.describe_glance(item, looking_character_id)
+      desc = Item.describe_glance(item, looking_character)
 
       %Match{
         match_string: String.downcase(desc),
         glance_description: desc,
-        look_description: Item.describe_look(item, looking_character_id),
+        look_description: Item.describe_look(item, looking_character),
         match: item
       }
     end)

@@ -19,46 +19,45 @@ defmodule Mud.Engine.Command.Move do
     - south
   """
   alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Model.{Character, Area}
+  alias Mud.Engine.Search
+  alias Mud.Engine.Util
 
   use Mud.Engine.Command.Callback
 
-  require Logger
-
-  import Mud.Engine.Util
-
   @impl true
   def continue(%ExecutionContext{} = context) do
-    attempt_move_by_id(context.input, context)
+    attempt_move(context.input.match, context)
   end
 
   @impl true
   def execute(%ExecutionContext{} = context) do
-    segments = context.command.segments
+    segment = context.command.segments
+
+    which_target =
+      if segment[:number] != nil do
+        min(1, segment[:number][:input])
+      else
+        0
+      end
 
     cond do
-      List.first(segments.input) not in ["go", "move"] ->
+      segment.input not in ["go", "move"] ->
         direction =
-          List.first(segments.input)
+          segment.input
           |> normalize_direction()
 
-        attempt_move(direction, context)
+        attempt_move(direction, context, which_target)
 
-      get_in(segments.children, [:exit]) != nil ->
-        attempt_move(Enum.join(segments.children.exit.input, " "), context)
-
-      List.first(segments.input) not in ["go", "move"] ->
-        direction =
-          List.first(segments.input)
-          |> normalize_direction()
-
-        attempt_move(direction, context)
+      get_in(segment, [:exit, :input]) != nil ->
+        attempt_move(get_in(segment, [:exit, :input]), context, which_target)
 
       true ->
-        help_docs = Mud.Engine.Util.get_module_docs(__MODULE__)
+        help_docs = Util.get_module_docs(__MODULE__)
 
         context
         |> append_message(
-          output(
+          Util.output(
             context.character_id,
             "{{help_docs}}#{help_docs}{{/help_docs}}"
           )
@@ -67,15 +66,13 @@ defmodule Mud.Engine.Command.Move do
     end
   end
 
-  defp attempt_move_by_id(link_id, context) do
-    link = Mud.Engine.Model.Link.get!(link_id)
-
-    if link.from_id == context.character.physical_status.location_id do
-      do_move(context, link)
+  defp attempt_move(link, context) do
+    if link.from_id == context.character.area_id do
+      maybe_move(context, link)
     else
       context
       |> append_message(
-        output(
+        Util.output(
           context.character_id,
           "{{error}}Unfortunately, your desired direction of travel is no longer possible.{{/error}}"
         )
@@ -84,60 +81,94 @@ defmodule Mud.Engine.Command.Move do
     end
   end
 
-  defp attempt_move(direction, context) do
-    Mud.Engine.Model.Link.list_obvious_exits_in_area(context.character.area_id)
-    |> Enum.filter(&(&1.direction == direction))
-    |> case do
-      [] ->
-        append_message(
-          context,
-          %Mud.Engine.Output{
-            id: context.id,
-            character_id: context.character_id,
-            text: "{{error}}You cannot travel in that direction.{{/error}}"
-          }
-        )
+  defp attempt_move(direction, context, which_target) do
+    matches =
+      Search.find_obvious_exits_in_area(context.character.area_id, direction, context.character)
 
-      [link] ->
-        do_move(context, link)
+    num_exact_matches = length(matches.exact_matches)
+    num_partial_matches = length(matches.partial_matches)
 
-      # links here like object
-      list_of_links when length(list_of_links) < 10 ->
-        Logger.debug("Several Links found")
-        obvious_directions = Enum.map(list_of_links, & &1.text)
-        link_ids = Enum.map(list_of_links, & &1.id)
+    # NOTE: The 'duplicate' logic here is intentional. DO NOT REFACTOR UNLESS YOU ARE SURE OF WHAT YOU ARE DOING!
+    #
+    # Desired behaviour is that if there are exact matches, they should be handled as if there were no partial matches.
+    cond do
+      # happy path with a single match with no index chosen
+      num_exact_matches == 1 and which_target == 0 ->
+        match = List.first(matches.exact_matches)
 
-        error =
-          "{{warning}}Multiple matching exits were found. Please enter the number associated with the exit you wish to use.{{/warning}}"
+        maybe_move(context, match.match)
 
-        multiple_match_error(
-          context,
-          obvious_directions,
-          link_ids,
-          error,
-          __MODULE__
-        )
+      # ExecutionContext.success_with_output(context, match.look_description, "info")
 
-      _many ->
-        Logger.debug("Many Links found")
+      # happy path where there are matches, and chosen index is in range
+      num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
+        match = Enum.at(matches.exact_matches, which_target - 1)
 
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{error}}Which Exit?{{/error}}"
-          )
-        )
-        |> set_success()
+        maybe_move(context, match.match)
+
+      # ExecutionContext.success_with_output(context, match.look_description, "info")
+
+      # unhappy path where there are multiple matches
+      num_exact_matches > 1 and which_target == 0 ->
+        handle_multiple_matches(context, matches.exact_matches)
+
+      # happy path with a single match with no index chosen
+      num_partial_matches == 1 and which_target == 0 ->
+        match = List.first(matches.partial_matches)
+
+        maybe_move(context, match.match)
+
+      # ExecutionContext.success_with_output(context, match.look_description, "info")
+
+      # happy path where there are matches, and chosen index is in range
+      num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
+        match = Enum.at(matches.partial_matches, which_target - 1)
+
+        maybe_move(context, match.match)
+
+      # ExecutionContext.success_with_output(context, match.look_description, "info")
+
+      # unhappy path where there are multiple matches
+      num_partial_matches > 1 and which_target == 0 ->
+        handle_multiple_matches(context, matches.partial_matches)
+
+      # unhappy path where there are multiple matches or no matches at all
+      true ->
+        error_msg = "{{warning}}You cannot travel in that direction.{{/warning}}"
+
+        ExecutionContext.success_with_output(context, error_msg, "error")
     end
   end
 
-  defp do_move(context, link) do
+  defp handle_multiple_matches(context, matches) when length(matches) < 10 do
+    descriptions = Enum.map(matches, & &1.glance_description)
+
+    error_msg = "{{warning}}Which exit?{{/warning}}"
+
+    Util.multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
+  end
+
+  defp handle_multiple_matches(context, _matches) do
+    error_msg = "Found too many exits. Please be more specific."
+
+    ExecutionContext.success_with_output(context, error_msg, "error")
+  end
+
+  defp maybe_move(context, link) do
+    char = context.character
+
+    if char.position == "standing" do
+      move(context, link)
+    else
+      error_msg = "You must be standing before you can move."
+
+      ExecutionContext.success_with_output(context, error_msg, "error")
+    end
+  end
+
+  defp move(context, link) do
     # Move the character in the database
-    {:ok, character} =
-      context.character_id
-      |> Mud.Engine.Model.Character.get_by_id!()
-      |> Mud.Engine.Model.Character.update(%{area_id: link.to_id})
+    {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
 
     # Perform look logic for character
     context_with_look_command =
@@ -146,13 +177,13 @@ defmodule Mud.Engine.Command.Move do
         %Mud.Engine.Output{
           id: UUID.uuid4(),
           character_id: context.character_id,
-          text: Mud.Engine.Command.Look.build_area_description(link.to_id, context.character_id)
+          text: Area.describe_look(link.to_id, context.character)
         }
       )
 
     # List all the characters that need to be informed of a move
     characters_by_area =
-      Mud.Engine.Model.Character.list_active_in_areas([link.to_id, link.from_id])
+      Character.list_active_in_areas([link.to_id, link.from_id])
       # Filter out "self"
       |> Enum.filter(fn char ->
         char.id != character.id
@@ -167,7 +198,7 @@ defmodule Mud.Engine.Command.Move do
       add_message_for_all_characters(
         context_with_look_command,
         "{{info}}#{character.name} left the area heading #{link.departure_direction}.{{/info}}",
-        characters_by_area[link.from_id]
+        characters_by_area[link.from_id] || []
       )
 
     # Send messages to everyone in room that the character is arriving in
@@ -175,11 +206,11 @@ defmodule Mud.Engine.Command.Move do
       add_message_for_all_characters(
         context_with_some_messages,
         "{{info}}#{character.name} has entered the area from #{link.arrival_direction}.{{info}}",
-        characters_by_area[link.to_id]
+        characters_by_area[link.to_id] || []
       )
 
     context_with_all_messages
-    |> Mud.Engine.Util.clear_continuation_from_context()
+    |> Util.clear_continuation_from_context()
     |> set_success()
   end
 

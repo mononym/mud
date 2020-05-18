@@ -68,8 +68,8 @@ defmodule Mud.Engine.Model.Link do
       [%__MODULE__{}, ...]
 
   """
-  @spec list_obvious_exits(area_id :: String.t()) :: [__MODULE__.t()]
-  def list_obvious_exits(area_id) do
+  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [__MODULE__.t()]
+  def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
         where: link.from_id == ^area_id and link.type == ^"obvious"
@@ -82,17 +82,17 @@ defmodule Mud.Engine.Model.Link do
 
   ## Examples
 
-      iex> list_obvious_exits_in_area("valid area id", "valid direction")
+      iex> list_in_area("valid area id", "valid direction")
       [%__MODULE__{}]
 
-      iex> list_obvious_exits_in_area("valid area id", "invalid direction")
+      iex> list_in_area("valid area id", "invalid direction")
       []
 
   """
-  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [
+  @spec list_in_area(area_id :: String.t()) :: [
           __MODULE__.t()
         ]
-  def list_obvious_exits_in_area(area_id) do
+  def list_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
         where: link.from_id == ^area_id
@@ -173,66 +173,11 @@ defmodule Mud.Engine.Model.Link do
     Repo.get!(__MODULE__, link_id)
   end
 
-  def list_obvious_exits_by_exact_description_in_area(description, area_id) do
-    description = String.downcase(description)
-
-    Repo.all(
-      from(link in __MODULE__,
-        where:
-          link.type == "obvious" and link.text == ^description and
-            link.from_id == ^area_id
-      )
-    )
-  end
-
-  def list_obvious_exits_by_partial_description_in_area(description, area_id) do
-    search_string =
-      description
-      |> String.downcase()
-      |> make_search_string()
-
-    Repo.all(
-      from(link in __MODULE__,
-        where:
-          link.type == "obvious" and like(link.text, ^search_string) and
-            link.from_id == ^area_id
-      )
-    )
-  end
-
-  @spec find_all_in_area(binary, binary, binary) :: [__MODULE__.t()]
-  def find_all_in_area(area_id, type, direction) do
-    search_string = make_search_string(direction)
-
-    list =
-      Repo.all(
-        from(link in __MODULE__,
-          where:
-            link.type == ^type and like(link.text, ^search_string) and
-              link.from_id == ^area_id
-        )
-      )
-
-    if Enum.any?(list, &(&1.text == direction)) do
-      List.wrap(Enum.find(list, nil, &(&1.text == direction)))
-    else
-      list
-    end
-  end
-
-  def describe_glance(link, _looking_character_id) do
+  def describe_glance(link, _looking_character) do
     link.text
   end
 
-  def describe_look(link, _looking_character_id) do
-    area = Area.get_area!(link.to_id)
-
-    area.description
-  end
-
-  # TODO: put in check here for cardinal directions, and up, and down, and so on, so the search string is exact and not a wildcard
-
-  defp make_search_string(direction) do
-    "%" <> Enum.join(String.split(direction), "% %") <> "%"
+  def describe_look(link, looking_character) do
+    Area.describe_look(link.to_id, looking_character)
   end
 end

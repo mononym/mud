@@ -131,7 +131,7 @@ defmodule Mud.Engine.Session do
 
   def handle_cast(%Mud.Engine.Output{} = output, state) do
     Logger.debug("#{inspect(output)}")
-    Logger.debug("#{inspect(state.subscribers)}")
+    Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
     output = %{output | text: Mud.Engine.Output.transform_for_web(output)}
 
@@ -155,7 +155,7 @@ defmodule Mud.Engine.Session do
   @impl true
   def handle_cast(%Mud.Engine.Input{} = input, state) do
     Logger.debug("#{inspect(input)}", label: "handle_cast")
-    Logger.debug("#{inspect(state)}", label: "handle_cast")
+    # Logger.debug("#{inspect(state)}", label: "handle_cast")
     state = update_timeout(state, @character_inactivity_timeout_warning)
 
     cond do

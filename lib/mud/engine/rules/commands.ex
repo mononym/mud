@@ -108,12 +108,20 @@ defmodule Mud.Engine.Rules.Commands do
             "go",
             "move"
           ],
-          key: :move
+          key: :move,
+          transformer: &join_input_with_space_downcase/1
         },
         %Segment{
+          key: :number,
+          match_strings: [~r/\d/],
           must_follow: [:move],
+          transformer: &single_string_to_int/1
+        },
+        %Segment{
+          must_follow: [:move, :number],
           match_strings: [],
-          key: :exit
+          key: :exit,
+          transformer: &join_input_with_space_downcase/1
         }
       ]
     }

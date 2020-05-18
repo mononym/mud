@@ -461,6 +461,7 @@ Mud.Engine.Model.Item.create(%{
 Mud.Engine.Model.Item.create(%{
   key: "bench",
   is_scenery: true,
+  is_furniture: true,
   area_id: center_room.id,
   glance_description: "a worn wooden bench",
   look_description:

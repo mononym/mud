@@ -4,6 +4,7 @@ defmodule Mud.Engine.Model.Character do
   import Ecto.Query
 
   alias Mud.Repo
+  alias Mud.Engine.Model.{Item}
 
   require Logger
 
@@ -180,6 +181,24 @@ defmodule Mud.Engine.Model.Character do
     describe_glance(character, looking_character)
   end
 
+  def describe_room_glance(character, _looking_character) do
+    position_string =
+      cond do
+        character.relative_item_id != nil ->
+          desc = Item.describe_glance(character.relative_item_id, character)
+
+          " who is #{character.position} #{character.relative_position} #{desc}"
+
+        character.position != "standing" ->
+          " who is #{character.position}"
+
+        true ->
+          ""
+      end
+
+    character.name ++ position_string
+  end
+
   @spec list_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
   def list_by_case_insensitive_prefix_in_area(partial_name, character_id) do
     base_query()
@@ -305,17 +324,17 @@ defmodule Mud.Engine.Model.Character do
 
   ## Examples
 
-      iex> update(area, %{field: new_value})
+      iex> update(character, %{field: new_value})
       {:ok, %__MODULE__{}}
 
-      iex> update(area, %{field: bad_value})
+      iex> update(character, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update(area :: __MODULE__.t(), attributes :: map()) ::
+  @spec update(character :: __MODULE__.t(), attributes :: map()) ::
           {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
-  def update(area, attrs \\ %{}) do
-    area
+  def update(character, attrs \\ %{}) do
+    character
     |> changeset(attrs)
     |> Repo.update()
   end

@@ -81,6 +81,6 @@ defmodule Mud.Engine.Util do
 
     replaced_input = String.replace(input, ~r/\s+/, middle_group)
 
-    Regex.compile!("^" <> replaced_input <> optional_group)
+    Regex.compile!("^(.*?\\s+)?" <> replaced_input <> optional_group)
   end
 end
