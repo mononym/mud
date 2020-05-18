@@ -1,7 +1,7 @@
 defmodule Mud.Engine.Command do
   defstruct callback_module: nil,
-            segments: [],
-            raw_input: ""
+            segments: nil,
+            input: ""
 
   alias Mud.Engine.Rules.Commands
   alias Mud.Engine.Command.Segment
@@ -22,7 +22,7 @@ defmodule Mud.Engine.Command do
               # The current root segment being processed
               current_root_segment: [],
               populated_segments: [],
-              raw_input: nil,
+              input: nil,
               potential_combinations: []
   end
 
@@ -34,7 +34,7 @@ defmodule Mud.Engine.Command do
   def string_to_command(input) do
     split_input = String.split(input)
     # Populate the initial state for the processing
-    state = %State{raw_input: input, remaining_input_chunks: split_input}
+    state = %State{input: input, remaining_input_chunks: split_input}
 
     # The command is assumed to be the first distinct set of characters provided.
     # It could be a shortened version of the command such as 'loo' or it could be the entire thing such as 'move west'.
@@ -43,42 +43,46 @@ defmodule Mud.Engine.Command do
     # Attempt to turn the command string into a command object
     case Commands.find_command(command_string) do
       {:ok, command} ->
-        Logger.debug("command found")
-
         # If a Command was found, attempt to build a single set of Segments which accurately describes the structure of
         # the passed-in command string.
         case populate_segments(command, state) do
           # There were either no matches or too many matches, both of which get returned as an empty list
           [] ->
-            Logger.debug("could not populate segments")
             {:error, :no_match}
 
           # A single, hopefully correct, combination was found.
           [matched_combination] ->
-            Logger.debug("successfully populated segments: #{inspect(matched_combination)}")
-
             [last_segment | rest_of_segments] = Enum.reverse(matched_combination)
 
             segments_tree = build_ast(last_segment, rest_of_segments)
 
             # Command is returned with the Segment map populated for easy parsing/processing by Command logic.
-            {:ok, %{command | raw_input: input, segments: segments_tree}}
+            {:ok, %{command | input: input, segments: segments_tree}}
         end
 
       error ->
-        Logger.debug("command not found")
         error
     end
   end
 
   defp build_ast(ast_node, []) do
-    ast_node
+    maybe_transform_ast_node_input(ast_node)
   end
 
   defp build_ast(ast_node, [segment | rest_of_segments]) do
+    ast_node = maybe_transform_ast_node_input(ast_node)
+
     new_ast_node = %{segment | children: Map.put(segment.children, ast_node.key, ast_node)}
 
     build_ast(new_ast_node, rest_of_segments)
+  end
+
+  defp maybe_transform_ast_node_input(ast_node) do
+    if is_function(ast_node.transformer) do
+      %{ast_node | input: ast_node.transformer.(ast_node.input)}
+    else
+      ast_node
+    end
   end
 
   # Given a Command struct, and an initial state, attempts to build potential matching Segment combinations.
@@ -88,21 +92,15 @@ defmodule Mud.Engine.Command do
     potential_combinations =
       enumerate_potential_combinations(command.segments, length(state.remaining_input_chunks))
 
-    Logger.debug("Potential combinations: #{inspect(potential_combinations)}")
-
     # Reverse everything so lists are in expected order, rather than the efficient order for building lists
     normalized_combinations = normalize_combinations(potential_combinations)
     state = %{state | potential_combinations: normalized_combinations}
-
-    Logger.debug("Normalized combinations: #{inspect(potential_combinations)}")
 
     match_combinations(state)
   end
 
   defp match_combinations(state) do
     Enum.reduce(state.potential_combinations, [], fn combination, matches ->
-      Logger.debug("Checking potential combination: #{inspect(combination)}")
-
       case v2(%{state | segments_to_process: combination}) do
         {:ok, combo} ->
           [normalize_combination(combo) | matches]
@@ -244,8 +242,6 @@ defmodule Mud.Engine.Command do
 
   # TODO: Clean this up. It's embarrassing.
   defp v2(state) do
-    Logger.debug("Start of v2")
-
     with true <- safe_to_process(state),
          [segment | segments] <- state.segments_to_process,
          [input | rest] <- state.remaining_input_chunks,
@@ -366,23 +362,8 @@ defmodule Mud.Engine.Command do
   end
 
   defp update_input(segment, input) do
-    input =
-      if is_function(segment.transformer) do
-        segment.transformer(input)
-      else
-        input
-      end
-
     %{segment | input: [input | segment.input]}
   end
-
-  # defp update_allowance(segment) do
-  #   if segment.max_allowed == :infinite do
-  #     segment
-  #   else
-  #     %{segment | max_allowed: segment.max_allowed - 1}
-  #   end
-  # end
 
   defp normalize_input_prefix(input, segment) do
     if segment.prefix != nil do
@@ -399,31 +380,22 @@ defmodule Mud.Engine.Command do
   defp input_and_segment_match(_input, nil), do: {:error, :no_match}
 
   defp input_and_segment_match(input, segment) do
-    Logger.debug("Checking input (#{input}) against segment: #{inspect(segment)}")
-
     if any_strings_match?(segment.match_strings, input) do
-      Logger.debug("input matched segment")
       true
     else
-      Logger.debug("input did not match segment")
       {:error, :no_match}
     end
   end
 
   defp safe_to_process(state) do
-    Logger.debug("Checking if it is safe to process input")
-
     cond do
       Enum.empty?(state.segments_to_process) and Enum.empty?(state.remaining_input_chunks) ->
-        Logger.debug("Both state and remaining input chunks are empty. There is a match.")
         {:match, state}
 
       not Enum.empty?(state.segments_to_process) and not Enum.empty?(state.remaining_input_chunks) ->
-        Logger.debug("No more segments but the input is not empty. Safe to continue processing.")
         true
 
       true ->
-        Logger.debug("Not safe to process.")
         {:error, :unsafe_to_process}
     end
   end
@@ -444,18 +416,19 @@ defmodule Mud.Engine.Command do
 
   def executev2(context = %ExecutionContext{}) do
     if context.is_continuation == true and context.continuation_type == :numeric do
-      case Integer.parse(context.raw_input) do
+      case Integer.parse(context.input) do
         {integer, _} ->
+          continuation_module = context.continuation_module
+
           context =
             context
-            |> Map.put(:raw_input, context.continuation_data[integer])
-            |> ExecutionContext.clear_continuation_data()
-            |> ExecutionContext.clear_continuation_module()
-            |> ExecutionContext.set_is_continuation(false)
+            |> ExecutionContext.set_input(context.continuation_data[integer])
+            |> ExecutionContext.set_command(ExecutionContext.get_continuation_command(context))
+            |> ExecutionContext.clear_continuation()
 
-          {:ok, context} = transaction(context, &context.continuation_module.continue/1)
+          {:ok, context} = transaction(context, &continuation_module.continue/1)
 
-          context
+          process_messages(context)
 
         :error ->
           context
@@ -463,39 +436,27 @@ defmodule Mud.Engine.Command do
             id: UUID.uuid4(),
             character_id: context.character_id,
             text:
-              "{{warning}}Selection not recognized. Executing input as command instead.{{/warning}}"
+              "{{warning}}Selection not recognized. Executing input as is instead.{{/warning}}"
           })
-          |> ExecutionContext.clear_continuation_data()
-          |> ExecutionContext.clear_continuation_module()
-          |> ExecutionContext.set_is_continuation(false)
+          |> ExecutionContext.clear_continuation()
           |> do_execute()
       end
     else
-      context
-      |> ExecutionContext.clear_continuation_data()
-      |> ExecutionContext.clear_continuation_module()
-      |> ExecutionContext.set_is_continuation(false)
-      |> do_execute()
+      do_execute(context)
     end
   end
 
   defp do_execute(context) do
-    case string_to_command(context.raw_input) do
+    case string_to_command(context.input) do
       {:ok, command} ->
-        Logger.debug("turned string into a command")
         context = Map.put(context, :command, command)
         {:ok, context} = transaction(context, &command.callback_module.execute/1)
 
         process_messages(context)
 
       {:error, :no_match} ->
-        Logger.debug("no matching command found")
-
         context =
           context
-          |> ExecutionContext.clear_continuation_data()
-          |> ExecutionContext.clear_continuation_module()
-          |> ExecutionContext.set_is_continuation(false)
           |> ExecutionContext.append_message(%Mud.Engine.Output{
             id: UUID.uuid4(),
             character_id: context.character_id,
@@ -510,13 +471,9 @@ defmodule Mud.Engine.Command do
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
       character = Mud.Engine.Model.Character.get_by_id!(context.character_id)
-      context = %{context | character: character}
+      context = ExecutionContext.set_character(context, character)
 
-      if context.is_continuation do
-        function.(context)
-      else
-        function.(context)
-      end
+      function.(context)
     end)
   end
 

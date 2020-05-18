@@ -27,8 +27,6 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
       add(:player_id, references(:players, on_delete: :nothing, type: :binary_id))
 
       add(:area_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
-
-      add(:relative_area_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
     end
 
     create(index(:characters, [:active]))
@@ -47,7 +45,6 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
     create(index(:characters, [:hair_color]))
     create(index(:characters, [:skin_color]))
     create(index(:characters, [:area_id]))
-    create(index(:characters, [:relative_area_id]))
     create(unique_index(:characters, [:name]))
     execute("CREATE INDEX name_tgm_idx ON characters USING GIN (name gin_trgm_ops)")
   end

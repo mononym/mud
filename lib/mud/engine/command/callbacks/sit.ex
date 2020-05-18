@@ -15,8 +15,7 @@ defmodule Mud.Engine.Command.Sit do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Component.{Character, Object}
-  alias Mud.Repo
+  alias Mud.Engine.Model.{Character, Item}
 
   require Logger
 
@@ -26,73 +25,82 @@ defmodule Mud.Engine.Command.Sit do
   def execute(%ExecutionContext{} = context) do
     segments = context.command.segments
 
-    cond do
-      get_in(segments, [:sit, :position, :target]) != nil or
-          get_in(segments, [:sit, :target]) != nil ->
-        target =
-          get_in(segments, [:sit, :position, :target]) ||
-            get_in(segments, [:sit, :target])
+    if segments[:target] != nil do
+      which_target = min(0, segments[:number][:input] || [0]) |> List.first()
 
-        sit_on_target(
-          context,
-          Enum.join(target.input, " "),
-          context.character.physical_status.location_id
+      sit_on_target(
+        context,
+        segments[:target][:input],
+        context.character.area_id,
+        which_target
+      )
+    else
+      help_docs = Mud.Engine.Util.get_module_docs(__MODULE__)
+
+      context
+      |> append_message(
+        output(
+          context.character_id,
+          "{{help_docs}}#{help_docs}{{/help_docs}}"
         )
-
-      true ->
-        help_docs = Mud.Util.get_module_docs(__MODULE__)
-
-        context
-        |> append_message(
-          output(
-            context.character_id,
-            "{{help_docs}}#{help_docs}{{/help_docs}}"
-          )
-        )
-        |> set_success()
+      )
+      |> set_success()
     end
   end
 
-  def sit_on_target(context, target, area_id) do
-    case sit_on_target_using_exact_description(context, target, area_id) do
-      {:ok, context} ->
-        context
+  def sit_on_target(context, input, area_id, which_target) do
+    furniture = Item.list_furniture_in_area(area_id)
 
-      {:error, :nomatch} ->
-        case sit_on_target_using_partial_description(context, target, area_id) do
-          {:ok, context} ->
-            context
+    exact_input = Enum.join(input, " ")
 
-          {:error, :nomatch} ->
-            :ok
-        end
+    exact_matches =
+      Enum.filter(furniture, fn thing ->
+        description = describe_thing(thing, context.character)
+        exact_input == description
+      end)
+
+    case length(exact_matches) do
+      0 ->
+        sit_on_target_using_partial_description(context, input, furniture, which_target)
+
+      1 ->
+        make_character_sit(context, List.first(exact_matches))
+
+      _more ->
+        handle_multiple_matches(context, exact_matches)
     end
   end
 
-  defp sit_on_target_using_exact_description(context, target, area_id) do
-    case Object.list_furniture_by_exact_glance_description_in_area(target, area_id) do
-      [match] ->
-        make_character_sit(context, match)
+  defp handle_multiple_matches(context, exact_matches) when length(exact_matches) < 10 do
+    descriptions =
+      Enum.map(exact_matches, fn match -> describe_thing(match, context.character) end)
 
-      _matches ->
-        {:error, :nomatch}
-    end
+    error_msg = "{{warning}}Please choose where to sit.{{/warning}}"
+
+    multiple_match_error(context, descriptions, exact_matches, error_msg, __MODULE__)
+  end
+
+  defp handle_multiple_matches(context, _exact_matches) do
+    error_msg = "Found too many matches. Please be more specific."
+
+    ExecutionContext.success_with_output(context, error_msg, "error")
+  end
+
+  defp describe_thing(item = %Item{}, looking_character = %Character{}) do
+    Item.describe_glance(item, looking_character)
   end
 
   @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t()) ::
           {:ok, ExecutionContext.t()} | {:error, :nomatch}
   defp make_character_sit(context, furniture_object) do
     if furniture_object.furniture.is_furniture do
-      physical_status = context.character.physical_status
-
       update = %{
         position: "sitting",
         relative_position: "on",
         relative_object: furniture_object.id
       }
 
-      Character.changeset(physical_status, update)
-      |> Repo.update!()
+      Character.update(context.character, update)
 
       context =
         context
@@ -120,40 +128,36 @@ defmodule Mud.Engine.Command.Sit do
     end
   end
 
-  defp sit_on_target_using_partial_description(context, target, area_id) do
-    case Object.list_furniture_by_partial_glance_description_in_area(target, area_id) do
-      [] ->
-        {:error, :nomatch}
+  defp sit_on_target_using_partial_description(context, input, furniture, which_target) do
+    regex = input_to_fuzzy_regex(input)
 
-      [match] ->
-        make_character_sit(context, match)
+    partial_matches =
+      Enum.filter(furniture, fn thing ->
+        description = describe_thing(thing, context.character)
+        Regex.match?(regex, description)
+      end)
 
-      matches when length(matches) < 10 ->
-        descriptions = Enum.map(matches, & &1.description.glance_description)
-        objects = Enum.map(matches, & &1.id)
+    num_matches = length(partial_matches)
 
-        error =
-          "{{warning}}Multiple matching pieces of furniture were found. Please enter the number associated with the furniture you wish to sit on.{{/warning}}"
+    cond do
+      num_matches == 0 or which_target > num_matches ->
+        error_msg = "{{warning}}Could not find anything to sit on.{{/warning}}"
 
-        context =
-          context
-          |> multiple_match_error(descriptions, objects, error, __MODULE__)
-          |> set_success()
+        ExecutionContext.success_with_output(context, error_msg, "error")
 
-        {:ok, context}
+      num_matches == 1 ->
+        description = describe_thing(List.first(partial_matches), context.character)
 
-      _matched ->
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{warning}}You want to sit where? There are too many options!{{/warning}}"
-            )
-          )
-          |> set_success()
+        ExecutionContext.success_with_output(context, description, "info")
 
-        {:ok, context}
+      which_target > 0 and which_target <= num_matches ->
+        thing = Enum.at(furniture, which_target - 1)
+        description = describe_thing(thing, context.character)
+
+        ExecutionContext.success_with_output(context, description, "info")
+
+      true ->
+        handle_multiple_matches(context, partial_matches)
     end
   end
 end

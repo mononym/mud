@@ -11,6 +11,7 @@ defmodule Mud.Engine.Command.Quit do
     {:ok, character} =
       context.character_id
       |> Mud.Engine.Model.Character.get_by_id!()
+      |> IO.inspect()
       |> Mud.Engine.Model.Character.update(%{active: false})
 
     characters = Mud.Engine.Model.Character.list_active_in_areas(character.area_id)

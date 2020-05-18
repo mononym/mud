@@ -4,6 +4,8 @@ defmodule MudWeb.CharacterController do
   alias Mud.Engine.Model.{Area, Character}
   alias Mud.Engine.Session
 
+  require Logger
+
   def index(conn, _params) do
     characters = Character.list_all()
     render(conn, "index.html", characters: characters)

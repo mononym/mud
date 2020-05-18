@@ -11,6 +11,7 @@ defmodule Mud.Engine.Model.Link do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Model.{Area}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
@@ -19,12 +20,12 @@ defmodule Mud.Engine.Model.Link do
     field(:text, :string)
     field(:type, :string)
 
-    belongs_to(:from, Mud.Engine.Model.Area,
+    belongs_to(:from, Area,
       type: :binary_id,
       foreign_key: :from_id
     )
 
-    belongs_to(:to, Mud.Engine.Model.Area,
+    belongs_to(:to, Area,
       type: :binary_id,
       foreign_key: :to_id
     )
@@ -81,21 +82,20 @@ defmodule Mud.Engine.Model.Link do
 
   ## Examples
 
-      iex> find_obvious_exit_in_area("valid area id", "valid direction")
+      iex> list_obvious_exits_in_area("valid area id", "valid direction")
       [%__MODULE__{}]
 
-      iex> find_obvious_exit_in_area("valid area id", "invalid direction")
+      iex> list_obvious_exits_in_area("valid area id", "invalid direction")
       []
 
   """
-  @spec find_obvious_exit_in_area(area_id :: String.t(), direction :: String.t()) :: [
+  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [
           __MODULE__.t()
         ]
-  def find_obvious_exit_in_area(area_id, direction) do
-    # TODO: This is probably broken
+  def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
-        where: link.from_id == ^area_id and link.type == ^"obvious" and link.to_id == ^direction
+        where: link.from_id == ^area_id
       )
     )
   end
@@ -218,6 +218,16 @@ defmodule Mud.Engine.Model.Link do
     else
       list
     end
+  end
+
+  def describe_glance(link, _looking_character_id) do
+    link.text
+  end
+
+  def describe_look(link, _looking_character_id) do
+    area = Area.get_area!(link.to_id)
+
+    area.description
   end
 
   # TODO: put in check here for cardinal directions, and up, and down, and so on, so the search string is exact and not a wildcard

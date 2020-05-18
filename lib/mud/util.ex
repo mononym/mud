@@ -27,13 +27,6 @@ defmodule Mud.Util do
     |> Enum.join("; ")
   end
 
-  def get_module_docs(module) do
-    module
-    |> Code.fetch_docs()
-    |> elem(4)
-    |> Map.get("en")
-  end
-
   def validate_json(changeset, field, options \\ []) do
     validate_change(changeset, field, fn _field, json_string ->
       case Jason.decode(json_string) do
@@ -46,14 +39,6 @@ defmodule Mud.Util do
   def exjson_validator_errors_to_changeset_errors(field, errors) do
     Enum.map(errors, fn {error, path} ->
       {field, {"#{path}: #{error}", []}}
-    end)
-  end
-
-  def list_to_index_map(list) do
-    list
-    |> Stream.with_index(1)
-    |> Enum.reduce(%{}, fn {thing, index}, map ->
-      Map.put(map, index, thing)
     end)
   end
 end

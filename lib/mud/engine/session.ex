@@ -232,7 +232,9 @@ defmodule Mud.Engine.Session do
 
     Map.values(updated_subscribers)
     |> Enum.each(fn subscriber ->
-      GenServer.cast(subscriber.pid, zip_output(state.text_buffer))
+      if length(state.text_buffer) > 0 do
+        GenServer.cast(subscriber.pid, zip_output(state.text_buffer))
+      end
     end)
 
     state =
@@ -381,7 +383,7 @@ defmodule Mud.Engine.Session do
           Mud.Engine.Command.executev2(%Mud.Engine.Command.ExecutionContext{
             id: input.id,
             character_id: input.character_id,
-            raw_input: input.text,
+            input: input.text,
             continuation_data: state.continuation_data,
             is_continuation: state.is_continuation,
             continuation_module: state.continuation_module,

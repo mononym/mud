@@ -28,7 +28,7 @@ defmodule Mud.Engine.Command.Move do
 
   @impl true
   def continue(%ExecutionContext{} = context) do
-    attempt_move_by_id(context.raw_input, context)
+    attempt_move_by_id(context.input, context)
   end
 
   @impl true
@@ -54,7 +54,7 @@ defmodule Mud.Engine.Command.Move do
         attempt_move(direction, context)
 
       true ->
-        help_docs = Mud.Util.get_module_docs(__MODULE__)
+        help_docs = Mud.Engine.Util.get_module_docs(__MODULE__)
 
         context
         |> append_message(
@@ -85,10 +85,9 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp attempt_move(direction, context) do
-    case Mud.Engine.Model.Link.find_obvious_exit_in_area(
-           context.character.area_id,
-           direction
-         ) do
+    Mud.Engine.Model.Link.list_obvious_exits_in_area(context.character.area_id)
+    |> Enum.filter(&(&1.direction == direction))
+    |> case do
       [] ->
         append_message(
           context,

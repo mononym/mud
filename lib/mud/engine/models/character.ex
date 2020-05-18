@@ -5,6 +5,8 @@ defmodule Mud.Engine.Model.Character do
 
   alias Mud.Repo
 
+  require Logger
+
   ##
   ##
   # Defining the data object
@@ -20,20 +22,20 @@ defmodule Mud.Engine.Model.Character do
     field(:active, :boolean, default: false)
 
     # Attributes
-    field(:strength, :integer, default: 10)
-    field(:stamina, :integer, default: 10)
+    field(:agility, :integer, default: 10)
+    field(:charisma, :integer, default: 10)
     field(:constitution, :integer, default: 10)
     field(:dexterity, :integer, default: 10)
-    field(:agility, :integer, default: 10)
-    field(:reflexes, :integer, default: 10)
     field(:intelligence, :integer, default: 10)
+    field(:reflexes, :integer, default: 10)
+    field(:stamina, :integer, default: 10)
+    field(:strength, :integer, default: 10)
     field(:wisdom, :integer, default: 10)
-    field(:charisma, :integer, default: 10)
 
     # Physical Features
-    field(:race, :string, default: "Human")
     field(:eye_color, :string, default: "Brown")
     field(:hair_color, :string, default: "Brown")
+    field(:race, :string, default: "Human")
     field(:skin_color, :string, default: "Brown")
 
     #
@@ -48,7 +50,6 @@ defmodule Mud.Engine.Model.Character do
 
     # the thing the Character is relative to
     belongs_to(:relative_item, Mud.Engine.Model.Item, type: :binary_id)
-    belongs_to(:relative_character, Mud.Engine.Model.Character, type: :binary_id)
 
     # The Object where the
     belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
@@ -69,8 +70,48 @@ defmodule Mud.Engine.Model.Character do
   @doc false
   def changeset(character, attrs) do
     character
-    |> cast(attrs, [:active, :name, :player_id])
-    |> validate_required([:active, :name, :player_id])
+    |> cast(attrs, [
+      :active,
+      :agility,
+      :area_id,
+      :charisma,
+      :constitution,
+      :dexterity,
+      :eye_color,
+      :hair_color,
+      :intelligence,
+      :name,
+      :player_id,
+      :position,
+      :race,
+      :reflexes,
+      :relative_item_id,
+      :relative_position,
+      :skin_color,
+      :stamina,
+      :strength,
+      :wisdom
+    ])
+    |> validate_required([
+      :active,
+      :agility,
+      :area_id,
+      :charisma,
+      :constitution,
+      :dexterity,
+      :eye_color,
+      :hair_color,
+      :intelligence,
+      :name,
+      :player_id,
+      :position,
+      :race,
+      :reflexes,
+      :skin_color,
+      :stamina,
+      :strength,
+      :wisdom
+    ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
     |> unique_constraint(:name)
@@ -90,36 +131,53 @@ defmodule Mud.Engine.Model.Character do
   """
   @spec create(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
+    area = Mud.Engine.Model.Area.list_all() |> Enum.random()
+
+    Logger.debug(inspect(area))
+    Logger.debug(inspect(attrs))
+
+    # TODO: Figure out where to create characters and how to present the options.
+    # This random selection is just for prototype.
     %__MODULE__{}
-    |> changeset(attrs)
+    |> changeset(Map.put(attrs, "area_id", area.id))
     |> Repo.insert()
   end
 
   @doc """
-  Describes a character.
+  Describes a character in brief.
 
   ## Examples
 
-      iex> describe_character(character)
+      iex> describe_glance(character)
       "awesome description"
 
   """
-  @spec describe_character(Character.t(), Character.t()) :: String.t()
-  def describe_character(character, _character_doing_the_looking) do
-    character_physical_features = character.physical_features
-
+  @spec describe_glance(Character.t(), Character.t()) :: String.t()
+  def describe_glance(character, _character_doing_the_looking) do
     a_or_an =
-      if Regex.match?(~r/^[aeiouAEIOU]/, character_physical_features.race) do
+      if Regex.match?(~r/^[aeiouAEIOU]/, character.race) do
         "an"
       else
         "a"
       end
 
-    "#{character.name} is #{a_or_an} #{character_physical_features.race}. They have #{
-      character_physical_features.hair_color
-    } hair, #{character_physical_features.eye_color} eyes, and #{
-      character_physical_features.skin_color
-    } skin."
+    "#{character.name} is #{a_or_an} #{character.race}. They have #{character.hair_color} hair, #{
+      character.eye_color
+    } eyes, and #{character.skin_color} skin."
+  end
+
+  @doc """
+  Describes a character in detail.
+
+  ## Examples
+
+      iex> describe_look(character)
+      "awesome description"
+
+  """
+  @spec describe_look(Character.t(), Character.t()) :: String.t()
+  def describe_look(character, looking_character) do
+    describe_glance(character, looking_character)
   end
 
   @spec list_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
@@ -181,7 +239,7 @@ defmodule Mud.Engine.Model.Character do
   @spec list_in_area(String.t()) :: [%__MODULE__{}]
   def list_in_area(area_id) do
     base_query()
-    |> where([physical_status: physical_status], physical_status.area_id == ^area_id)
+    |> where([character], character.area_id == ^area_id)
     |> Repo.all()
   end
 
@@ -197,11 +255,12 @@ defmodule Mud.Engine.Model.Character do
       [%Character{}, ...]
 
   """
-  @spec list_active_in_areas([String.t()]) :: [%__MODULE__{}]
+  @spec list_active_in_areas(String.t() | [String.t()]) :: [%__MODULE__{}]
   def list_active_in_areas(area_ids) do
+    area_ids = List.wrap(area_ids)
+
     base_query()
-    |> where([character: character], character.active == true)
-    |> where([physical_status: physical_status], physical_status.area_id in ^area_ids)
+    |> where([character], character.active == true and character.area_id in ^area_ids)
     |> Repo.all()
   end
 
@@ -237,8 +296,7 @@ defmodule Mud.Engine.Model.Character do
   @spec list_by_name_in_area(String.t(), String.t()) :: [%__MODULE__{}]
   def list_by_name_in_area(name, area_id) do
     base_query()
-    |> where([physical_status: physical_status], physical_status.area_id == ^area_id)
-    |> where([character: character], character.name == ^name)
+    |> where([character], character.name == ^name and character.area_id == ^area_id)
     |> Repo.all()
   end
 
@@ -280,19 +338,6 @@ defmodule Mud.Engine.Model.Character do
   end
 
   defp base_query do
-    from(
-      character in __MODULE__,
-      join: attributes in assoc(character, :attributes),
-      as: :attributes,
-      join: physical_features in assoc(character, :physical_features),
-      as: :physical_features,
-      join: physical_status in assoc(character, :physical_status),
-      as: :physical_status,
-      preload: [
-        attributes: attributes,
-        physical_features: physical_features,
-        physical_status: physical_status
-      ]
-    )
+    from(character in __MODULE__)
   end
 end

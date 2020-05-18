@@ -1,7 +1,7 @@
 <div name="editor" class="w-screen h-screen flex flex-col overflow-hidden max-h-screen items-center justify-center" phx-window-keyup="hotkey">
   <%= if @character_created do %>
     <select id="race" name="races" disabled>
-        <option value="<%= @character.physical_features.race %>"><%= @character.physical_features.race %></option>
+        <option value="<%= @character.race %>"><%= @character.race %></option>
     </select>
   <% else %>
     <%= if @race_accepted do %>

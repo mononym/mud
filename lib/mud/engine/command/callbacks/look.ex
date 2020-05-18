@@ -2,6 +2,8 @@ defmodule Mud.Engine.Command.Look do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Model.{Area, Character, Link, Item}
+  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Search
   import Mud.Engine.Util
 
   require Logger
@@ -12,56 +14,9 @@ defmodule Mud.Engine.Command.Look do
               data: nil
   end
 
-  defmodule Match do
-    @enforce_keys [:glance, :look]
-    defstruct glance: nil,
-              look: nil
-  end
-
-  @exact_match_order [:character, :object, :exit]
-  @partial_match_order [:character, :object, :exit]
-
-  # @prepositions [
-  #   "above",
-  #   "across",
-  #   "across from",
-  #   "after",
-  #   "against",
-  #   "along",
-  #   "alongside",
-  #   "among",
-  #   "at",
-  #   "behind",
-  #   "beside",
-  #   "between",
-  #   "beyond",
-  #   "by",
-  #   "except",
-  #   "except for",
-  #   "for",
-  #   "following",
-  #   "from",
-  #   "in",
-  #   "including",
-  #   "inside",
-  #   "into",
-  #   "next to",
-  #   "on",
-  #   "ontop",
-  #   "ontop of",
-  #   "out",
-  #   "over",
-  #   "through",
-  #   "towards",
-  #   "under",
-  #   "underneath",
-  #   "up",
-  #   "upon"
-  # ]
-
   @impl true
   def continue(context) do
-    description = attempt_look_by_match(context.raw_input, context.character)
+    description = describe_thing(context.input, context.character)
 
     context
     |> append_message(
@@ -75,278 +30,85 @@ defmodule Mud.Engine.Command.Look do
 
   @impl true
   def execute(context) do
-    segments = context.command.segments
+    segment = context.command.segments
 
-    cond do
-      # Accept either 'look at sword' or 'look sword' or 'look at 2 sword' or 'look 2 sword'
-      (get_in(segments, [:number, :at, :target]) != nil and
-         get_in(segments, [:number, :at, :target, :path]) ==
-           nil) or
-        (get_in(segments, [:at, :target]) != nil and
-           get_in(segments, [:at, :target, :path]) == nil) or
-        (get_in(segments, [:number, :target]) != nil and
-           get_in(segments, [:number, :target, :path]) == nil) or
-          (get_in(segments, [:target]) != nil and
-             get_in(segments, [:target, :path]) == nil) ->
-        segment =
-          get_in(segments, [:number, :at, :target]) ||
-            get_in(segments, [:at, :target]) ||
-            get_in(segments, [:target]) ||
-            get_in(segments, [:number, :target])
+    if segment[:target] != nil do
+      which_target =
+        if segment[:number] != nil do
+          min(1, List.first(segment[:number][:input]))
+        else
+          1
+        end
 
-        which_target =
-          if Map.has_key?(segments, :number) do
-            min(1, List.first(segments.number.input))
-          else
-            0
-          end
+      look_at_target(context, segment[:target][:input], which_target)
+    else
+      description =
+        describe_thing(
+          Area.get_area!(context.character.area_id),
+          context.character
+        )
 
-        look_at_target(context, Enum.join(segment.input, " "), which_target)
-
-      # Accept 'look', default fallback for now, will need expanding as logic expands
-      true ->
-        description =
-          describe_thing(
-            Area.get_area!(context.character.area_id),
-            context.character
-          )
-
-        context
-        |> append_message(output(context.character_id, description))
-        |> set_success()
+      context
+      |> append_message(output(context.character_id, description))
+      |> set_success()
     end
-  end
-
-  @spec attempt_look_by_match(
-          match :: Object.t() | Link.t() | Character.t(),
-          character :: Character.t()
-        ) :: String.t()
-  defp attempt_look_by_match(match, character) do
-    describe_thing(match, character)
   end
 
   defp look_at_target(context, input, which_target) do
-    Logger.debug("look_at_target")
+    matches = Search.find_matches_in_area(input, context.character.area_id, context.character)
+    num_exact_matches = length(matches.exact_matches)
+    num_partial_matches = length(matches.partial_matches)
 
-    # gather all the items
-    items = Item.list_in_area(context.character.area_id)
-    characters = Character.list_in_area(context.character.area_id)
-    everything = items ++ characters
-    # describe all of them
-    descriptions = Enum.map(fn thing -> describe_thing(thing, context.character) end)
-    # check for exact matches
-    exact_matches = Enum.filter(descriptions, & &1 == input)
+    # NOTE: The 'duplicate' logic here is intentional. DO NOT REFACTOR UNLESS YOU KNOW WHAT YOU ARE DOING!
+    #
+    # Desired behaviour is that if there are exact matches, they should be handled as if there were no partial matches.
+    cond do
+      # success/happy path is where the chosen target is not above the number of matches
+      num_exact_matches > 0 and which_target <= num_exact_matches ->
+        match = Enum.at(matches.exact_matches, which_target - 1)
 
-    if not Enum.empty?(exact_matches) do
-      
-    end
-    # check for partial matches
+        ExecutionContext.success_with_output(context, match.look_description, "info")
 
-    case look_at_exact_matches(context, input) do
-      {:ok, context} ->
-        Logger.debug("exact match found")
-        context
+      # failure/unhappy path is where there are exact matches, but chosen index is higher than allowed
+      num_exact_matches > 0 and which_target > num_exact_matches ->
+        handle_multiple_matches(context, matches.exact_matches)
 
-      {:error, :no_match} ->
-        Logger.debug("no exact match found")
+      # success/happy path is where the chosen target is not above the number of matches
+      num_partial_matches > 0 and which_target <= num_partial_matches ->
+        match = Enum.at(matches.partial_matches, which_target - 1)
 
-        case look_at_partial_matches(context, input, which_target) do
-          {:ok, context} ->
-            Logger.debug("partial match found")
-            context
+        ExecutionContext.success_with_output(context, match.look_description, "info")
 
-          {:error, _} ->
-            Logger.debug("no partial match found")
-
-            context
-            |> append_message(
-              output(
-                context.character_id,
-                "{{error}}Could not find what you were looking for. Please try again.{{/error}}"
-              )
-            )
-            |> set_success(true)
-        end
+      # failure/unhappy path is where there are partial matches, but chosen index is higher than allowed
+      num_partial_matches > 0 and which_target > num_partial_matches ->
+        handle_multiple_matches(context, matches.partial_matches)
     end
   end
 
-  defp look_at_exact_matches(context, input) do
-    Logger.debug("look_at_exact_matches")
+  defp handle_multiple_matches(context, matches) when length(matches) < 10 do
+    descriptions = Enum.map(matches, & &1.glance_description)
 
-    Enum.find_value(@exact_match_order, {:error, :no_match}, fn exact_match_type ->
-      case find_exact_match(exact_match_type, context, input) do
-        {:ok, context} ->
-          {:ok, context}
+    error_msg =
+      "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
 
-        _ ->
-          Logger.debug("No exact match found")
-
-          {:error, :no_match}
-      end
-    end)
+    multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
   end
 
-  defp find_exact_match(:character, context, input) do
-    case Character.list_by_name_in_area(input, context.character.area_id) do
-      [character] = [%Character{}] ->
-        description = describe_thing(character, context.character)
+  defp handle_multiple_matches(context, _matches) do
+    error_msg = "Found too many matches. Please be more specific."
 
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{info}}#{description}{{/info}}"
-            )
-          )
-          |> set_success(true)
-
-        {:ok, context}
-
-      _ ->
-        {:error, :no_match}
-    end
+    ExecutionContext.success_with_output(context, error_msg, "error")
   end
 
-  defp find_exact_match(:exit, context, input) do
-    case Link.list_obvious_exits_by_exact_description_in_area(
-           input,
-           context.character.area_id
-         ) do
-      [link] ->
-        room_description = describe_thing(link, context.character)
-
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              room_description
-            )
-          )
-          |> set_success()
-
-        {:ok, context}
-
-      [] ->
-        {:error, :no_match}
-
-      links when length(links) <= 10 and length(links) > 1 ->
-        directions = Enum.map(links, & &1.text)
-
-        error =
-          "{{warning}}Multiple matching exits were found. Please enter the number associated with the Exit you wish to `look` at.{{/warning}}"
-
-        context = multiple_match_error(context, directions, links, error, __MODULE__)
-
-        {:ok, context}
-
-      _many ->
-        {:error, :no_match}
-    end
-  end
-
-  defp find_exact_match(:object, context, input) do
-    case Item.list_in_area(context.character.area_id) do
-      [object] ->
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{info}}#{object.description.look_description}.{{/info}}"
-            )
-          )
-          |> set_success()
-
-        {:ok, context}
-
-      _ ->
-        {:error, :no_match}
-    end
-  end
-
-  defp look_at_partial_matches(context, input, which_target) do
-    potential_matches =
-      @partial_match_order
-      |> Enum.map(fn partial_match_type ->
-        find_partial_match(partial_match_type, context, input)
-      end)
-      |> List.flatten()
-
-    case potential_matches do
-      [match] ->
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{info}}#{match.look}{{/info}}"
-            )
-          )
-          |> set_success(true)
-
-        {:ok, context}
-
-      matches when length(matches) > 1 and which_target > 0 and which_target <= length(matches) ->
-        match = Enum.at(matches, which_target)
-
-        context =
-          context
-          |> append_message(
-            output(
-              context.character_id,
-              "{{info}}#{match.look}{{/info}}"
-            )
-          )
-          |> set_success(true)
-
-        {:ok, context}
-
-      matches when length(matches) <= 9 and length(matches) > 1 ->
-        glance_descriptions = Enum.map(matches, & &1.glance)
-
-        error =
-          "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
-
-        context = multiple_match_error(context, glance_descriptions, matches, error, __MODULE__)
-
-        {:ok, context}
-
-      _many_or_none ->
-        {:error, :no_match}
-    end
-  end
-
-  # Eventually this will need to bring back a character and do something more complex.
-  # For the look it would need to actually build the look for the character.
-  defp find_partial_match(:character, context, input) do
-    Character.list_by_case_insensitive_prefix_in_area(input, context.character.id)
-    |> Enum.map(fn name ->
-      %Match{glance: name, look: name}
-    end)
-  end
-
-  defp find_partial_match(:exit, context, input) do
-    Link.list_obvious_exits_by_partial_description_in_area(input, context.character.area_id)
-    |> Enum.map(&%Match{glance: &1.text, look: &1.text})
-  end
-
-  defp find_partial_match(:object, context, input) do
-    Object.list_by_partial_glance_description_in_area(input, context.character.area_id)
-    |> Enum.map(
-      &%Match{glance: &1.description.glance_description, look: &1.description.look_description}
-    )
-  end
-
+  # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
   @spec build_area_description(String.t(), String.t()) :: String.t()
   def build_area_description(area_id, character_id) do
     area = Mud.Engine.Model.Area.get_area!(area_id)
 
     build_area_name(area)
     |> build_area_desc(area)
-    |> maybe_build_things_of_interest(area)
-    |> maybe_build_on_ground(area)
+    |> maybe_build_things_of_interest(area, character_id)
+    |> maybe_build_on_ground(area, character_id)
     |> maybe_build_hostiles(area)
     |> maybe_build_denizens(area)
     |> maybe_build_also_present(area, character_id)
@@ -371,15 +133,12 @@ defmodule Mud.Engine.Command.Look do
     text
   end
 
-  defp maybe_build_things_of_interest(text, area) do
+  defp maybe_build_things_of_interest(text, area, looking_character_id) do
     things_of_interest =
-      Object.list_in_area(area.id)
-      |> Stream.filter(& &1.is_scenery)
-      |> Stream.filter(fn obj ->
-        obj.scenery == nil or obj.scenery.hidden != true
-      end)
-      |> Stream.map(fn object ->
-        object.description.glance_description
+      area.id
+      |> Item.list_visible_scenery_in_area()
+      |> Stream.map(fn item ->
+        describe_thing(item, looking_character_id)
       end)
       |> Enum.sort()
       |> Enum.join(", ")
@@ -392,12 +151,12 @@ defmodule Mud.Engine.Command.Look do
     end
   end
 
-  defp maybe_build_on_ground(text, area) do
+  defp maybe_build_on_ground(text, area, looking_character_id) do
     on_ground =
-      Object.list_in_area(area.id)
+      Item.list_in_area(area.id)
       |> Stream.filter(&(!&1.is_scenery))
-      |> Stream.map(fn object ->
-        object.description.glance_description
+      |> Stream.map(fn item ->
+        describe_thing(item, looking_character_id)
       end)
       |> Enum.sort()
       |> Enum.join(", ")
@@ -452,15 +211,29 @@ defmodule Mud.Engine.Command.Look do
     |> Enum.join(", ")
   end
 
-  defp describe_thing(character = %Character{}, looking_character = %Character{}) do
-    Character.describe_character(character, looking_character)
+  defp describe_thing(item, looking_character, lod \\ :glance)
+
+  defp describe_thing(item = %Item{}, looking_character_id, :look) do
+    Item.describe_look(item, looking_character_id)
   end
 
-  defp describe_thing(link = %Link{}, looking_character = %Character{}) do
-    build_area_description(link.to_id, looking_character.id)
+  defp describe_thing(item = %Item{}, looking_character_id, :glance) do
+    Item.describe_glance(item, looking_character_id)
   end
 
-  defp describe_thing(link = %Area{}, looking_character = %Character{}) do
-    build_area_description(link.to_id, looking_character.id)
+  defp describe_thing(character = %Character{}, looking_character_id, :look) do
+    Character.describe_look(character, looking_character_id)
+  end
+
+  defp describe_thing(character = %Character{}, looking_character_id, :glance) do
+    Character.describe_glance(character, looking_character_id)
+  end
+
+  defp describe_thing(link = %Link{}, looking_character_id, _) do
+    build_area_description(link.to_id, looking_character_id)
+  end
+
+  defp describe_thing(area = %Area{}, looking_character_id, _) do
+    build_area_description(area.id, looking_character_id)
   end
 end

@@ -6,17 +6,15 @@ defmodule MudWeb.CharacterCreationWizardLive do
   require Logger
 
   def mount(_params, session, socket) do
-    Logger.debug("session data: #{inspect(session)}")
     character = Character.get_by_id!(session["character_id"])
-    Logger.debug("character: #{inspect(character)}")
 
     races =
       Mud.Engine.Rules.PlayerRaces.list_races()
       |> Enum.reduce(%{}, fn race, map -> Map.put(map, race.name, race) end)
 
     selected_race =
-      if character.physical_features.race != nil do
-        races[character.physical_features.race]
+      if character.race != nil do
+        races[character.race]
       else
         races
         |> Enum.random()
@@ -44,17 +42,16 @@ defmodule MudWeb.CharacterCreationWizardLive do
   def handle_event("create_character", form_data, socket) do
     Logger.debug("create_character event received: #{inspect(form_data)}")
 
-    assoc_data = %{
-      character_id: socket.assigns.character.id,
+    attributes = %{
       race: socket.assigns.selected_race.name,
       eye_color: form_data["eye_color"],
       hair_color: form_data["hair_color"],
-      skin_color: form_data["skin_color"]
+      skin_color: form_data["skin_color"],
+      character_created: true
     }
 
     socket.assigns.character
-    |> Character.changeset(%{character_created: true})
-    |> Ecto.Changeset.put_assoc(:physical_features, assoc_data)
+    |> Character.changeset(attributes)
     |> Character.update()
 
     {:noreply, redirect(socket, to: "/play/#{socket.assigns.character.id}")}
