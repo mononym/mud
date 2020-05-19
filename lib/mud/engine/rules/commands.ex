@@ -37,6 +37,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_move_command(),
       define_sit_command(),
+      define_kneel_command(),
       define_quit_command(),
       define_stand_command()
     ])
@@ -51,6 +52,30 @@ defmodule Mud.Engine.Rules.Commands do
             "quit"
           ],
           key: :quit
+        }
+      ]
+    }
+  end
+
+  defp define_kneel_command do
+    %Command{
+      callback_module: Command.Kneel,
+      segments: [
+        %Segment{
+          match_strings: ["kneel"],
+          key: :kneel
+        },
+        %Segment{
+          must_follow: [:kneel],
+          match_strings: ["on"],
+          key: :position
+        },
+        %Segment{
+          must_follow: [:position, :kneel],
+          match_strings: [],
+          key: :target,
+          greedy: true,
+          transformer: &join_input_with_space_downcase/1
         }
       ]
     }

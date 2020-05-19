@@ -247,11 +247,13 @@ defmodule Mud.Engine.Command.ExecutionContext do
   """
   @spec add_output(
           context,
-          String.t() | [String.t()],
+          String.t() | [String.t()] | Character.t() | [Character.t()],
           String.t(),
           String.t() | nil
         ) :: context
   def add_output(context, to, message, tag \\ nil) do
+    to = maybe_transform_to(List.wrap(to))
+
     msg =
       if tag != nil do
         "{{#{tag}}}#{message}{{/#{tag}}}"
@@ -262,9 +264,19 @@ defmodule Mud.Engine.Command.ExecutionContext do
     context
     |> append_message(
       Util.output(
-        List.wrap(to),
+        to,
         msg
       )
     )
+  end
+
+  defp maybe_transform_to(to) do
+    Enum.map(to, fn dest ->
+      if is_map(dest) do
+        dest.id
+      else
+        dest
+      end
+    end)
   end
 end

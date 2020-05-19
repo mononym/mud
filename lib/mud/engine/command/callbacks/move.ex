@@ -149,7 +149,7 @@ defmodule Mud.Engine.Command.Move do
   defp maybe_move(context, link) do
     char = context.character
 
-    if char.position == "standing" do
+    if char.position == Character.standing() do
       move(context, link)
     else
       error_msg = "You must be standing before you can move."
@@ -191,7 +191,7 @@ defmodule Mud.Engine.Command.Move do
     context_with_all_messages =
       ExecutionContext.add_output(
         context_with_some_messages,
-        characters_by_area[link.from_id] || [],
+        characters_by_area[link.to_id] || [],
         "#{character.name} has entered the area from #{link.arrival_direction}.",
         "info"
       )

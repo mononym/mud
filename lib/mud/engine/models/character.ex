@@ -190,7 +190,7 @@ defmodule Mud.Engine.Model.Character do
     position_string =
       cond do
         character.relative_item_id != nil ->
-          desc = Item.describe_glance(character.relative_item_id, character)
+          desc = Item.describe_glance(Item.get!(character.relative_item_id), character)
 
           " who is #{character.position} #{character.relative_position} #{desc}"
 
@@ -201,7 +201,7 @@ defmodule Mud.Engine.Model.Character do
           ""
       end
 
-    character.name ++ position_string
+    character.name <> position_string
   end
 
   @spec list_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
