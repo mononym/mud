@@ -10,6 +10,7 @@ defmodule Mud.Engine.Command.Look do
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Search
   alias Mud.Engine.Util
+  alias Mud.Engine.Message
 
   require Logger
 
@@ -24,40 +25,47 @@ defmodule Mud.Engine.Command.Look do
     description = context.input.look_description
 
     context
-    |> append_message(
-      Util.output(
+    |> ExecutionContext.append_message(
+      Message.new_output(
         context.character_id,
         "{{info}}#{description}{{/info}}"
       )
     )
-    |> set_success()
+    |> ExecutionContext.set_success()
   end
 
   @impl true
   def execute(context) do
-    segment = context.command.segments
+    ast = context.command.ast
 
-    if segment[:target] != nil do
+    if ast[:target] != nil do
       which_target =
-        if segment[:number] != nil do
-          min(1, List.first(segment[:number][:input]))
+        if ast[:number] != nil do
+          min(1, List.first(ast[:number][:input]))
         else
           0
         end
 
-      look_at_target(context, segment[:target][:input], which_target)
+      look_at_target(context, ast[:target][:input], which_target)
     else
       description = Area.describe_look(context.character.area_id, context.character)
 
       context
-      |> append_message(Util.output(context.character_id, description))
-      |> set_success()
+      |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
+      |> ExecutionContext.set_success()
     end
   end
 
   @spec look_at_target(ExecutionContext.t(), String.t(), integer) :: ExecutionContext.t()
   defp look_at_target(context, input, which_target) do
-    matches = Search.find_matches_in_area(context.character.area_id, input, context.character)
+    matches =
+      Search.find_matches_in_area(
+        [:item, :character, :link],
+        context.character.area_id,
+        input,
+        context.character
+      )
+
     num_exact_matches = length(matches.exact_matches)
     num_partial_matches = length(matches.partial_matches)
 
@@ -69,23 +77,29 @@ defmodule Mud.Engine.Command.Look do
       num_exact_matches == 1 and which_target == 0 ->
         match = List.first(matches.exact_matches)
 
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          match.look_description,
-          "info"
+          Message.new_output(
+            context.character.id,
+            match.look_description,
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       # happy path where there are matches, and chosen index is in range
       num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
         match = Enum.at(matches.exact_matches, which_target - 1)
 
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          match.look_description,
-          "info"
+          Message.new_output(
+            context.character.id,
+            match.look_description,
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       # unhappy path where there are multiple matches
       num_exact_matches > 1 and which_target == 0 ->
@@ -95,23 +109,29 @@ defmodule Mud.Engine.Command.Look do
       num_partial_matches == 1 and which_target == 0 ->
         match = List.first(matches.partial_matches)
 
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          match.look_description,
-          "info"
+          Message.new_output(
+            context.character.id,
+            match.look_description,
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       # happy path where there are matches, and chosen index is in range
       num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
         match = Enum.at(matches.partial_matches, which_target - 1)
 
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          match.look_description,
-          "info"
+          Message.new_output(
+            context.character.id,
+            match.look_description,
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       # unhappy path where there are multiple matches
       num_partial_matches > 1 and which_target == 0 ->
@@ -119,9 +139,13 @@ defmodule Mud.Engine.Command.Look do
 
       # unhappy path where there are multiple matches or no matches at all
       true ->
-        error_msg = "{{warning}}Could not find what you were looking for.{{/warning}}"
+        error_msg = "Could not find what you were looking for."
 
-        ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
+        ExecutionContext.append_message(
+          context,
+          Message.new_output(context.character.id, error_msg, "error")
+        )
+        |> ExecutionContext.set_success()
     end
   end
 
@@ -129,7 +153,7 @@ defmodule Mud.Engine.Command.Look do
     descriptions = Enum.map(matches, & &1.glance_description)
 
     error_msg =
-      "{{warning}}Multiple matches were found. Please enter the number associated with the thing you wish to `look` at.{{/warning}}"
+      "Multiple matches were found. Please enter the number associated with the thing you wish to `look` at."
 
     Util.multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
   end
@@ -137,6 +161,10 @@ defmodule Mud.Engine.Command.Look do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many matches. Please be more specific."
 
-    ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
+    ExecutionContext.append_message(
+      context,
+      Message.new_output(context.character.id, error_msg, "error")
+    )
+    |> ExecutionContext.set_success()
   end
 end

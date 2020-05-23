@@ -5,7 +5,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
   populate required data.
   """
 
-  alias Mud.Engine.Util
+  alias Mud.Engine.Message
 
   @type character() :: Mud.Engine.Model.Character.t()
   @type character_id() :: String.t()
@@ -17,50 +17,61 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @type error_message() :: String.t()
   @type input() :: String.t() | map()
   @type is_continuation() :: boolean()
-  @type message() :: Mud.Engine.Input.t() | Mud.Engine.Output.t()
+  @type message() :: Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()
   @type messages() :: [message()]
   @type success() :: boolean()
   @type terminate_session() :: boolean()
   @type context() :: __MODULE__.t()
 
-  @enforce_keys [:id, :character_id, :input]
-  defstruct [
-    # The ID of the input which triggered this execution of the verb logic
-    :id,
+  use TypedStruct
+
+  typedstruct do
+    # The ID of the input which triggered this execution
+    field(:id, String.t())
     # The populated Command struct
-    :command,
-    # ID for the Character that the command is being processed for.
-    :character_id,
+    field(:command, Mud.Engine.Command.t())
+
     # The Character that the command is being processed for. Will be populated immediatly before execution, in the
     # transaction.
-    :character,
-    # Generic data container for commands
-    {:data, %{}},
+    field(:character, Mud.Engine.Model.Character.t())
+
+    # Id of the character the command is being processed for.
+    field(:character_id, String.t())
+
     # Messages to be sent upon successful execution of logic.
-    {:messages, []},
+    field(:messages, [Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()], default: [])
+
     # The raw text input before any processing.
-    :input,
+    field(:input, String.t(), required: true)
+
     # Whether or not the execution was successful. Will be nil if execution has not been performed.
-    :success,
+    field(:success, boolean())
+
     # If success is false, the message will be populated with the reason why.
-    :error_message,
+    field(:error_message, String.t())
+
     # A special flag that can be returned by any command which signals the character session to close.
-    {:terminate_session, false},
+    field(:terminate_session, boolean(), default: false)
+
     # The command that was processed the first time around.
-    {:continuation_command, nil},
+    field(:continuation_command, Mud.Engine.Command.t())
+
     # Data which is preserved between the initial/continuing calls of a single command. Can be used to carry
     # information over such as the objects that are being selected from. For example, if the 'look' command returns a
     # list of 5 items, the exact item to be looked at should be preserved between commands so that if the player enters
     # '1' the command can be applied correctly.
-    {:continuation_data, %{}},
+    field(:continuation_data, map(), default: %{})
+
     # Flag whether or not this is a continuation of a previous command execution.
-    {:is_continuation, false},
+    field(:is_continuation, boolean(), default: false)
+
     # The callback module to call on continuation.
-    :continuation_module,
+    field(:continuation_module, module())
+
     # The type of continuiation it is, such as numeric. Meaning a number being entered continues while anything else is
     # executed as is instead while the continuation data is dropped.
-    :continuation_type
-  ]
+    field(:continuation_type, atom())
+  end
 
   @doc """
   Append a message to the list of messages which will be sent after the command has been executed
@@ -68,6 +79,21 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @spec append_message(context, message) :: context
   def append_message(%__MODULE__{} = context, message) do
     %{context | messages: [message | context.messages]}
+  end
+
+  @doc """
+  Append a message to the list of messages which will be sent after the command has been executed
+  """
+  @spec append_output(context, String.t() | [String.t()], String.t(), String.t()) :: context
+  def append_output(%__MODULE__{} = context, to, message, tag) do
+    msg =
+      Message.new_output(
+        to,
+        message,
+        tag
+      )
+
+    append_message(context, msg)
   end
 
   @doc """
@@ -91,7 +117,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
   """
   @spec clear_continuation_data(context) :: context
   def clear_continuation_data(%__MODULE__{} = context) do
-    %{context | continuation_data: nil}
+    %{context | continuation_data: %{}}
   end
 
   @doc """
@@ -220,63 +246,10 @@ defmodule Mud.Engine.Command.ExecutionContext do
   def clear_continuation(%__MODULE__{} = context) do
     %{
       context
-      | continuation_data: nil,
+      | continuation_data: %{},
         continuation_module: nil,
         continuation_type: nil,
         is_continuation: false
     }
-  end
-
-  @doc """
-  Mark an execution process as successful, while adding a message to it in the process.
-  """
-  @spec success_with_output(
-          context,
-          String.t() | [String.t()],
-          String.t(),
-          String.t() | nil
-        ) :: context
-  def success_with_output(context, to, message, tag \\ nil) do
-    context
-    |> add_output(to, message, tag)
-    |> set_success()
-  end
-
-  @doc """
-  Mark an execution process as successful, while adding a message to it in the process.
-  """
-  @spec add_output(
-          context,
-          String.t() | [String.t()] | Character.t() | [Character.t()],
-          String.t(),
-          String.t() | nil
-        ) :: context
-  def add_output(context, to, message, tag \\ nil) do
-    to = maybe_transform_to(List.wrap(to))
-
-    msg =
-      if tag != nil do
-        "{{#{tag}}}#{message}{{/#{tag}}}"
-      else
-        message
-      end
-
-    context
-    |> append_message(
-      Util.output(
-        to,
-        msg
-      )
-    )
-  end
-
-  defp maybe_transform_to(to) do
-    Enum.map(to, fn dest ->
-      if is_map(dest) do
-        dest.id
-      else
-        dest
-      end
-    end)
   end
 end

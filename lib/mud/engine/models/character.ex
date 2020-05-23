@@ -194,7 +194,7 @@ defmodule Mud.Engine.Model.Character do
 
           " who is #{character.position} #{character.relative_position} #{desc}"
 
-        character.position != "standing" ->
+        character.position != standing() ->
           " who is #{character.position}"
 
         true ->

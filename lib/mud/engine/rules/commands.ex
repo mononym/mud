@@ -4,7 +4,10 @@ defmodule Mud.Engine.Rules.Commands do
   """
 
   alias Mud.Engine.{Command}
-  alias Mud.Engine.Command.Segment
+  alias Mud.Engine.Command.Part
+  alias Mud.Engine.Command.Definition
+  alias Mud.Engine.Command.Definition.Part
+  alias Mud.Engine.Util
 
   ##
   # API
@@ -13,14 +16,34 @@ defmodule Mud.Engine.Rules.Commands do
   @doc """
   Given a string as input, try to find a Command which it matches.
   """
+  @spec find_command_definition(String.t()) :: {:ok, Definition.t()} | {:error, :no_match}
+  def find_command_definition(input) do
+    case Enum.find(list_all_command_definitions(), fn command ->
+           command_part = List.first(command.parts)
+
+           Enum.any?(command_part.matches, fn match_string ->
+             Util.check_equiv(match_string, input)
+           end)
+         end) do
+      definition = %Definition{} ->
+        {:ok, definition}
+
+      nil ->
+        {:error, :no_match}
+    end
+  end
+
+  @doc """
+  Given a string as input, try to find a Command which it matches.
+  """
   @spec find_command(String.t()) :: {:ok, Command.t()} | {:error, :no_match}
   def find_command(input) do
     case Enum.find(list_all_command_definitions(), fn command ->
-           command_segment = List.first(command.segments)
-           Enum.any?(command_segment.match_strings, fn string -> string == input end)
+           command_part = List.first(command.parts)
+           Enum.any?(command_part.matches, fn string -> string == input end)
          end) do
-      command = %Command{} ->
-        {:ok, command}
+      definition = %Definition{} ->
+        {:ok, definition}
 
       nil ->
         {:error, :no_match}
@@ -38,91 +61,117 @@ defmodule Mud.Engine.Rules.Commands do
       define_move_command(),
       define_sit_command(),
       define_kneel_command(),
+      define_kick_command(),
       define_quit_command(),
       define_stand_command()
     ])
   end
 
   defp define_quit_command do
-    %Command{
+    %Definition{
       callback_module: Command.Quit,
-      segments: [
-        %Segment{
-          match_strings: [
+      parts: [
+        %Part{
+          matches: [
             "quit"
           ],
-          key: :quit
+          key: :quit,
+          transformer: &Enum.join/1
         }
       ]
     }
   end
 
   defp define_kneel_command do
-    %Command{
+    %Definition{
       callback_module: Command.Kneel,
-      segments: [
-        %Segment{
-          match_strings: ["kneel"],
-          key: :kneel
+      parts: [
+        %Part{
+          matches: ["kneel"],
+          key: :kneel,
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           must_follow: [:kneel],
-          match_strings: ["on"],
-          key: :position
+          matches: ["on"],
+          key: :position,
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           must_follow: [:position, :kneel],
-          match_strings: [],
+          matches: [~r/.*/],
           key: :target,
           greedy: true,
-          transformer: &join_input_with_space_downcase/1
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_kick_command do
+    %Definition{
+      callback_module: Command.Kick,
+      parts: [
+        %Part{
+          matches: ["kick"],
+          key: :kick,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:kick],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
         }
       ]
     }
   end
 
   defp define_sit_command do
-    %Command{
+    %Definition{
       callback_module: Command.Sit,
-      segments: [
-        %Segment{
-          match_strings: ["sit"],
-          key: :sit
+      parts: [
+        %Part{
+          matches: ["sit"],
+          key: :sit,
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           must_follow: [:sit],
-          match_strings: ["on"],
-          key: :position
+          matches: ["on"],
+          key: :position,
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           must_follow: [:position, :sit],
-          match_strings: [],
+          matches: [~r/.*/],
           key: :target,
-          greedy: true,
-          transformer: &join_input_with_space_downcase/1
+          transformer: &join_with_space_downcase/1
         }
       ]
     }
   end
 
   defp define_stand_command do
-    %Command{
+    %Definition{
       callback_module: Command.Stand,
-      segments: [
-        %Segment{
-          match_strings: ["stand"],
-          key: :stand
+      parts: [
+        %Part{
+          matches: ["stand"],
+          key: :stand,
+          transformer: &Enum.join/1
         }
       ]
     }
   end
 
   defp define_move_command do
-    %Command{
+    %Definition{
       callback_module: Command.Move,
-      segments: [
-        %Segment{
-          match_strings: [
+      parts: [
+        %Part{
+          matches: [
             "n",
             "north",
             "s",
@@ -147,102 +196,113 @@ defmodule Mud.Engine.Rules.Commands do
             "move"
           ],
           key: :move,
-          transformer: &join_input_with_space_downcase/1
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           key: :number,
-          match_strings: [~r/\d/],
+          matches: [~r/\d/],
           must_follow: [:move],
-          transformer: &single_string_to_int/1
+          transformer: &string_to_int/1
         },
-        %Segment{
+        %Part{
           must_follow: [:move, :number],
-          match_strings: [],
+          matches: [~r/.*/],
           key: :exit,
-          transformer: &join_input_with_space_downcase/1
+          transformer: &join_with_space_downcase/1
         }
       ]
     }
   end
 
   defp define_say_command do
-    %Command{
+    %Definition{
       callback_module: Command.Placeholder,
-      segments: [
-        %Segment{
-          match_strings: ["say"],
-          key: :say
+      parts: [
+        %Part{
+          matches: ["say"],
+          key: :say,
+          transformer: &Enum.join/1
         },
-        %Segment{
-          match_strings: ["to"],
+        %Part{
+          matches: ["to"],
           key: :to,
-          must_follow: [:say, :switch]
-        },
-        %Segment{
           must_follow: [:say, :switch],
-          prefix: "@",
-          key: :at
+          transformer: &Enum.join/1
         },
-        %Segment{
+        %Part{
           must_follow: [:to],
-          key: :character
+          matches: [~r/^\@[a-zA-Z]+/],
+          key: :character,
+          transformer: &trim_at/1
         },
-        %Segment{
-          must_follow: [:say, :at, :character],
-          match_strings: ["slowly"],
-          prefix: "/",
-          key: :switch
+        %Part{
+          must_follow: [:say, :character],
+          matches: ["/slowly"],
+          key: :switch,
+          transformer: &trim_slash/1
         },
-        %Segment{
-          must_follow: [:character, :say, :switch, :at],
+        %Part{
+          must_follow: [:character, :say, :switch],
+          matches: [~r/.*/],
           key: :words,
           greedy: true,
-          transformer: &join_input_with_space_downcase/1
+          drop_whitespace: false,
+          transformer: &Enum.join/1
         }
       ]
     }
   end
 
   defp define_look_command do
-    %Command{
+    %Definition{
       callback_module: Command.Look,
-      segments: [
-        %Segment{
-          match_strings: ["l", "look"],
-          key: :look
+      parts: [
+        %Part{
+          matches: ["l", "look"],
+          key: :look,
+          transformer: &join_with_space_downcase/1
         },
-        %Segment{
-          match_strings: ["loving", "shy"],
-          prefix: "/",
+        %Part{
+          matches: ["/loving", "/shy"],
           key: :switch,
-          must_follow: [:look]
+          must_follow: [:look],
+          transformer: &trim_slash/1
         },
-        %Segment{
-          match_strings: ["at"],
+        %Part{
+          matches: ["at"],
           key: :at,
-          must_follow: [:look, :switch]
+          must_follow: [:look, :switch],
+          transformer: &join_with_space_downcase/1
         },
-        %Segment{
+        %Part{
           key: :number,
-          match_strings: [~r/\d/],
+          matches: [~r/\d/],
           must_follow: [:at, :look, :switch],
-          transformer: &single_string_to_int/1
+          transformer: &string_to_int/1
         },
-        %Segment{
+        %Part{
           key: :target,
           must_follow: [:at, :look, :switch, :number],
-          greedy: true,
-          transformer: &join_input_with_space_downcase/1
+          matches: [~r/.*/],
+          transformer: &join_with_space_downcase/1
         }
       ]
     }
   end
 
-  defp join_input_with_space_downcase(input) do
+  defp trim_at([input]) do
+    String.trim_leading(input, "@")
+  end
+
+  defp trim_slash([input]) do
+    String.trim_leading(input, "/")
+  end
+
+  defp join_with_space_downcase(input) do
     Enum.join(input, " ") |> String.downcase()
   end
 
-  defp single_string_to_int([input]) do
+  defp string_to_int([input]) do
     String.to_integer(input)
   end
 end

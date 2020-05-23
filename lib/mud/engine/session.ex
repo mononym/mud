@@ -51,7 +51,7 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  @spec cast_message(Mud.Engine.Output.t()) :: :ok
+  @spec cast_message(Mud.Engine.Message.Output.t()) :: :ok
   def cast_message(message) do
     to = List.wrap(message.to)
 
@@ -135,11 +135,11 @@ defmodule Mud.Engine.Session do
     {:ok, state}
   end
 
-  def handle_cast(%Mud.Engine.Output{} = output, state) do
+  def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
     Logger.debug("#{inspect(output)}")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
-    output = %{output | text: Mud.Engine.Output.transform_for_web(output)}
+    output = %{output | text: Mud.Engine.Message.Output.transform_for_web(output)}
 
     state = update_buffer(state, output)
 
@@ -159,7 +159,7 @@ defmodule Mud.Engine.Session do
   end
 
   @impl true
-  def handle_cast(%Mud.Engine.Input{} = input, state) do
+  def handle_cast(%Mud.Engine.Message.Input{} = input, state) do
     Logger.debug("#{inspect(input)}", label: "handle_cast")
     # Logger.debug("#{inspect(state)}", label: "handle_cast")
     state = update_timeout(state, @character_inactivity_timeout_warning)
@@ -281,7 +281,7 @@ defmodule Mud.Engine.Session do
 
   @impl true
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :warning}) do
-    GenServer.cast(self(), %Mud.Engine.Output{
+    GenServer.cast(self(), %Mud.Engine.Message.Output{
       id: UUID.uuid4(),
       to: state.character_id,
       text:
@@ -294,14 +294,14 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :final}) do
-    GenServer.cast(self(), %Mud.Engine.Output{
+    GenServer.cast(self(), %Mud.Engine.Message.Output{
       id: UUID.uuid4(),
       to: state.character_id,
       text:
         "{{error}}***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****{{/error}}"
     })
 
-    GenServer.cast(self(), %Mud.Engine.Input{
+    GenServer.cast(self(), %Mud.Engine.Message.Input{
       id: UUID.uuid4(),
       to: state.character_id,
       text: "quit",
@@ -378,7 +378,7 @@ defmodule Mud.Engine.Session do
     task =
       Task.async(fn ->
         if input.type == :normal do
-          GenServer.cast(session_pid, %Mud.Engine.Output{
+          GenServer.cast(session_pid, %Mud.Engine.Message.Output{
             id: input.id,
             to: input.to,
             text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
@@ -386,7 +386,7 @@ defmodule Mud.Engine.Session do
         end
 
         execution_context =
-          Mud.Engine.Command.executev2(%Mud.Engine.Command.ExecutionContext{
+          Mud.Engine.Command.execute(%Mud.Engine.Command.ExecutionContext{
             id: input.id,
             character_id: input.to,
             input: input.text,

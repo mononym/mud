@@ -13,42 +13,51 @@ defmodule Mud.Engine.Search do
               glance_description: nil,
               look_description: nil,
               match: nil
+
+    @type t() :: %__MODULE__{
+            match_string: String.t(),
+            glance_description: String.t(),
+            look_description: String.t(),
+            match: Character.t() | Item.t() | Link.t()
+          }
   end
 
   defmodule SearchResults do
     @moduledoc false
 
     defstruct exact_matches: [], partial_matches: []
+
+    @type t() :: %__MODULE__{
+            exact_matches: [Mud.Engine.Search.Match.t()],
+            partial_matches: [Mud.Engine.Search.Match.t()]
+          }
   end
 
-  def find_matches_in_area(area_id, input, looking_character) do
-    item_matches = find_items_in_area(area_id, input, looking_character)
-    char_matches = find_characters_in_area(area_id, input, looking_character)
-    link_matches = find_obvious_exits_in_area(area_id, input, looking_character)
-
-    merged = merge_search_results([item_matches, char_matches, link_matches])
-    Logger.debug(inspect(merged))
-    merged
+  @spec find_matches_in_area([atom()], String.t(), String.t(), Character.t()) :: SearchResults.t()
+  def find_matches_in_area(target_types, area_id, input, looking_character) do
+    target_types
+    |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
+    |> merge_search_results()
   end
 
-  def find_obvious_exits_in_area(area_id, input, looking_character) do
-    area_id
-    |> Link.list_obvious_exits_in_area()
-    |> links_to_match(looking_character)
-    |> build_search_results(input)
-  end
-
-  def find_characters_in_area(area_id, input, looking_character) do
+  defp find_matches(:character, area_id, input, looking_character) do
     area_id
     |> Character.list_in_area()
     |> characters_to_match(looking_character)
     |> build_search_results(input)
   end
 
-  def find_items_in_area(area_id, input, looking_character) do
+  defp find_matches(:item, area_id, input, looking_character) do
     area_id
     |> Item.list_in_area()
     |> items_to_match(looking_character)
+    |> build_search_results(input)
+  end
+
+  defp find_matches(:link, area_id, input, looking_character) do
+    area_id
+    |> Link.list_obvious_exits_in_area()
+    |> links_to_match(looking_character)
     |> build_search_results(input)
   end
 

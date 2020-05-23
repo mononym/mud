@@ -4,15 +4,8 @@ defmodule Mud.Engine.Util do
   """
 
   import Mud.Engine.Command.ExecutionContext
-
-  def output(who, text, table_data \\ nil) do
-    %Mud.Engine.Output{
-      id: UUID.uuid4(),
-      to: who,
-      text: text,
-      table_data: table_data
-    }
-  end
+  alias Mud.Engine.Message
+  alias Mud.Engine.Model.{Area, Character, Link, Item}
 
   def clear_continuation_from_context(context) do
     context
@@ -33,9 +26,10 @@ defmodule Mud.Engine.Util do
 
     context
     |> append_message(
-      output(
+      Message.new_output(
         context.character_id,
         error_message,
+        "error",
         keys
       )
     )
@@ -82,5 +76,22 @@ defmodule Mud.Engine.Util do
     replaced_input = String.replace(input, ~r/\s+/, middle_group)
 
     Regex.compile!("^(.*?\\s+)?" <> replaced_input <> optional_group)
+  end
+
+  def refresh_thing(%Item{id: id}), do: Item.get!(id)
+  def refresh_thing(%Character{id: id}), do: Character.get_by_id!(id)
+  def refresh_thing(%Link{id: id}), do: Link.get!(id)
+  def refresh_thing(%Area{id: id}), do: Area.get_area!(id)
+
+  @doc """
+  Given a param which is either a string, for equivalancy check, or a Regex see if it matches the passed in string.
+  """
+  @spec check_equiv(String.t() | Regex.t(), String.t()) :: boolean
+  def check_equiv(maybe_regex, string) do
+    if Regex.regex?(maybe_regex) do
+      Regex.match?(maybe_regex, string)
+    else
+      String.equivalent?(maybe_regex, string)
+    end
   end
 end

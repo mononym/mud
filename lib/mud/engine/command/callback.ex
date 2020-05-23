@@ -14,16 +14,14 @@ defmodule Mud.Engine.Command.Callback do
     quote location: :keep do
       @behaviour Mud.Engine.Command.Callback
 
-      import Mud.Engine.Command.ExecutionContext
-
-      @doc false
-      def type(), do: "basic"
-
       @doc false
       def continue(_context), do: raise("Callback continue/1 not implemented for #{__MODULE__}")
 
+      @doc false
+      def execute(_context), do: raise("Callback execute/1 not implemented for #{__MODULE__}")
+
       defoverridable continue: 1,
-                     type: 0
+                     execute: 1
     end
   end
 
@@ -43,16 +41,6 @@ defmodule Mud.Engine.Command.Callback do
   next input to continue execution.
   """
   @callback continue(context) :: context
-
-  @doc """
-  The type of command it is.
-
-  Current types are: basic, combat
-  """
-  @callback type() :: String.t()
-
-  @typedoc "An error message."
-  @type error :: term
 
   @typedoc "An execution context providing the required information to execute a command."
   @type context :: %Mud.Engine.Command.ExecutionContext{}

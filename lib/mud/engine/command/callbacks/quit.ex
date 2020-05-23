@@ -1,10 +1,13 @@
 defmodule Mud.Engine.Command.Quit do
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Message
+
   def execute(context) do
     context
     |> do_ingame_stuff()
-    |> terminate_session()
+    |> ExecutionContext.terminate_session()
   end
 
   def do_ingame_stuff(context) do
@@ -17,15 +20,20 @@ defmodule Mud.Engine.Command.Quit do
       Mud.Engine.Model.Character.list_others_active_in_areas(character, character.area_id)
 
     context
-    |> Mud.Engine.Command.ExecutionContext.add_output(
-      character.id,
-      "Thank you for playing! Come back soon!",
-      "warning"
+    |> ExecutionContext.append_message(
+      Message.new_output(
+        character.id,
+        "Thank you for playing! Come back soon!",
+        "warning"
+      )
     )
-    |> Mud.Engine.Command.ExecutionContext.success_with_output(
-      characters,
-      "#{character.name} just left.",
-      "info"
+    |> ExecutionContext.append_message(
+      Message.new_output(
+        characters,
+        "#{character.name} just left.",
+        "info"
+      )
     )
+    |> ExecutionContext.set_success()
   end
 end

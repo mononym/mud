@@ -17,6 +17,7 @@ defmodule Mud.Engine.Command.Kneel do
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Model.{Character}
   alias Mud.Engine.Search
+  alias Mud.Engine.Message
 
   require Logger
 
@@ -29,14 +30,14 @@ defmodule Mud.Engine.Command.Kneel do
 
   @impl true
   def execute(%ExecutionContext{} = context) do
-    segments = context.command.segments
+    ast = context.command.ast
 
-    if segments[:target] != nil do
-      which_target = min(0, segments[:number][:input] || 0)
+    if ast[:target] != nil do
+      which_target = min(0, ast[:number][:input] || 0)
 
       kneel_on_target(
         context,
-        segments[:target][:input],
+        ast[:target][:input],
         which_target
       )
     else
@@ -45,7 +46,8 @@ defmodule Mud.Engine.Command.Kneel do
   end
 
   def kneel_on_target(context, input, which_target) do
-    matches = Search.find_matches_in_area(context.character.area_id, input, context.character)
+    matches =
+      Search.find_matches_in_area([:item], context.character.area_id, input, context.character)
 
     num_exact_matches = length(matches.exact_matches)
     num_partial_matches = length(matches.partial_matches)
@@ -88,9 +90,13 @@ defmodule Mud.Engine.Command.Kneel do
 
       # unhappy path where there are no matches at all
       true ->
-        error_msg = "{{warning}}You want to kneel on what?{{/warning}}"
+        error_msg = "You want to kneel on what?"
 
-        ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
+        ExecutionContext.append_message(
+          context,
+          Message.new_output(context.character.id, error_msg, "error")
+        )
+        |> ExecutionContext.set_success()
     end
   end
 
@@ -105,7 +111,11 @@ defmodule Mud.Engine.Command.Kneel do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many matches. Please be more specific."
 
-    ExecutionContext.success_with_output(context, context.character.id, error_msg, "error")
+    ExecutionContext.append_message(
+      context,
+      Message.new_output(context.character.id, error_msg, "error")
+    )
+    |> ExecutionContext.set_success()
   end
 
   @spec make_character_kneel(
@@ -118,12 +128,15 @@ defmodule Mud.Engine.Command.Kneel do
 
     cond do
       char.position == Character.kneeling() ->
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          "You are already kneeling!",
-          "error"
+          Message.new_output(
+            context.character.id,
+            "You are already kneeling!",
+            "error"
+          )
         )
+        |> ExecutionContext.set_success()
 
       furniture_object == nil ->
         update = %{
@@ -138,16 +151,21 @@ defmodule Mud.Engine.Command.Kneel do
           Character.list_others_active_in_areas(context.character, context.character.area_id)
 
         context
-        |> ExecutionContext.add_output(
-          others,
-          "#{context.character.name} kneels down.",
-          "info"
+        |> ExecutionContext.append_message(
+          Message.new_output(
+            others,
+            "#{context.character.name} kneels down.",
+            "info"
+          )
         )
-        |> ExecutionContext.success_with_output(
-          context.character.id,
-          "You kneel down.",
-          "info"
+        |> ExecutionContext.append_message(
+          Message.new_output(
+            context.character.id,
+            "You kneel down.",
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       furniture_object != nil and furniture_object.is_furniture and
           char.position != Character.kneeling() ->
@@ -163,24 +181,32 @@ defmodule Mud.Engine.Command.Kneel do
           Character.list_others_active_in_areas(context.character, context.character.area_id)
 
         context
-        |> ExecutionContext.add_output(
-          others,
-          "#{context.character.name} kneels down on #{furniture_object.glance_description}.",
-          "info"
+        |> ExecutionContext.append_message(
+          Message.new_output(
+            others,
+            "#{context.character.name} kneels down on #{furniture_object.glance_description}.",
+            "info"
+          )
         )
-        |> ExecutionContext.success_with_output(
-          context.character.id,
-          "You kneel down on #{furniture_object.glance_description}.",
-          "info"
+        |> ExecutionContext.append_message(
+          Message.new_output(
+            context.character.id,
+            "You kneel down on #{furniture_object.glance_description}.",
+            "info"
+          )
         )
+        |> ExecutionContext.set_success()
 
       true ->
-        ExecutionContext.success_with_output(
+        ExecutionContext.append_message(
           context,
-          context.character.id,
-          "Unfortunately, #{furniture_object.glance_description} can not be knelt on.",
-          "error"
+          Message.new_output(
+            context.character.id,
+            "Unfortunately, #{furniture_object.glance_description} can not be knelt on.",
+            "error"
+          )
         )
+        |> ExecutionContext.set_success()
     end
   end
 end

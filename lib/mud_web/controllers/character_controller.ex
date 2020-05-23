@@ -58,7 +58,7 @@ defmodule MudWeb.CharacterController do
       Session.start(character.player_id, character_id)
 
       # Send a silent look command
-      Session.cast_message(%Mud.Engine.Input{
+      Session.cast_message(%Mud.Engine.Message.Input{
         id: UUID.uuid4(),
         to: character_id,
         text: "look",

@@ -67,7 +67,7 @@ defmodule MudWeb.MudClientLive do
     {:noreply, socket}
   end
 
-  def handle_cast(%Mud.Engine.Output{} = output, socket) do
+  def handle_cast(%Mud.Engine.Message.Output{} = output, socket) do
     Logger.debug("Received output : #{inspect(output)}")
 
     {:noreply, assign(socket, messages: [output.text | socket.assigns.messages])}
@@ -138,7 +138,7 @@ defmodule MudWeb.MudClientLive do
   end
 
   defp send_command(character_id, text) do
-    %Mud.Engine.Input{id: UUID.uuid4(), to: character_id, text: text}
+    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text}
     |> Mud.Engine.Session.cast_message()
   end
 end

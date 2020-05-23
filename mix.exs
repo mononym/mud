@@ -59,6 +59,7 @@ defmodule Mud.MixProject do
       {:redix, "~> 0.10"},
       {:surface, "~> 0.1.0-alpha.1"},
       {:telemetry, "~> 0.4"},
+      {:typed_struct, "~> 0.1.4"},
       {:uber_multi, github: "mononym/uber_multi"},
       {:uuid, "~> 1.1.8"}
     ]
