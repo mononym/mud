@@ -56,13 +56,14 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp list_all_command_definitions do
     MapSet.new([
-      define_look_command(),
-      define_say_command(),
-      define_move_command(),
-      define_sit_command(),
-      define_kneel_command(),
       define_kick_command(),
+      define_kneel_command(),
+      define_look_command(),
+      define_move_command(),
+      define_put_command(),
       define_quit_command(),
+      define_say_command(),
+      define_sit_command(),
       define_stand_command()
     ])
   end
@@ -102,6 +103,37 @@ defmodule Mud.Engine.Rules.Commands do
           matches: [~r/.*/],
           key: :target,
           greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_put_command do
+    %Definition{
+      callback_module: Command.Put,
+      parts: [
+        %Part{
+          matches: ["put"],
+          key: :put,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:put],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["in"],
+          key: :path,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:path],
+          matches: [~r/.*/],
+          key: :place,
           transformer: &join_with_space_downcase/1
         }
       ]

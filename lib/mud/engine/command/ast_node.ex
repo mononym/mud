@@ -21,16 +21,16 @@ defmodule Mud.Engine.Command.AstNode do
   @behaviour Access
 
   @impl Access
-  def fetch(segment, key) do
-    keys = Map.keys(segment)
+  def fetch(node, key) do
+    keys = Map.keys(node)
 
     if key in keys do
-      Map.fetch(segment, key)
+      Map.fetch(node, key)
     else
-      child_keys = Map.keys(segment.children || %{})
+      child_keys = Map.keys(node.children)
 
       if key in child_keys do
-        val = segment.children[key]
+        val = node.children[key]
         {:ok, val}
       else
         :error

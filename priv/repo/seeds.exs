@@ -427,7 +427,16 @@ Mud.Engine.Model.Item.create(%{
   area_id: north_room.id,
   glance_description: "a flat rounded rock",
   look_description:
-    "This rock has been worn down over time by water into a smooth, flat round shape."
+    "This rock has been worn down over time by water into a smooth, flat round shape.",
+  is_container: false,
+  container_closeable: false,
+  container_closed: false,
+  container_lockable: false,
+  container_locked: false,
+  container_length: 0,
+  container_width: 0,
+  container_height: 0,
+  container_capacity: 0
 })
 
 Mud.Engine.Model.Item.create(%{
@@ -436,7 +445,16 @@ Mud.Engine.Model.Item.create(%{
   area_id: north_room.id,
   glance_description: "a rough round rock",
   look_description:
-    "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+    "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
+  is_container: false,
+  container_closeable: false,
+  container_closed: false,
+  container_lockable: false,
+  container_locked: false,
+  container_length: 0,
+  container_width: 0,
+  container_height: 0,
+  container_capacity: 0
 })
 
 Mud.Engine.Model.Item.create(%{
@@ -445,7 +463,16 @@ Mud.Engine.Model.Item.create(%{
   area_id: north_room.id,
   glance_description: "a leafy branch",
   look_description:
-    "The leafy branch has only recently been removed from its tree, the leaves not yet wilted."
+    "The leafy branch has only recently been removed from its tree, the leaves not yet wilted.",
+  is_container: false,
+  container_closeable: false,
+  container_closed: false,
+  container_lockable: false,
+  container_locked: false,
+  container_length: 0,
+  container_width: 0,
+  container_height: 0,
+  container_capacity: 0
 })
 
 Mud.Engine.Model.Item.create(%{
@@ -455,7 +482,16 @@ Mud.Engine.Model.Item.create(%{
   glance_description: "a massive fountain",
   look_description:
     "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself.",
-  is_hidden: true
+  is_hidden: true,
+  is_container: false,
+  container_closeable: false,
+  container_closed: false,
+  container_lockable: false,
+  container_locked: false,
+  container_length: 0,
+  container_width: 0,
+  container_height: 0,
+  container_capacity: 0
 })
 
 Mud.Engine.Model.Item.create(%{
@@ -465,5 +501,31 @@ Mud.Engine.Model.Item.create(%{
   area_id: center_room.id,
   glance_description: "a worn wooden bench",
   look_description:
-    "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+    "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker.",
+  is_container: false,
+  container_closeable: false,
+  container_closed: false,
+  container_lockable: false,
+  container_locked: false,
+  container_length: 0,
+  container_width: 0,
+  container_height: 0,
+  container_capacity: 0
+})
+
+Mud.Engine.Model.Item.create(%{
+  key: "chest",
+  area_id: center_room.id,
+  glance_description: "a simple wooden chest",
+  look_description:
+    "The chest is big enough to fit an average human, and is bolted to the ground.",
+  is_container: true,
+  closeable: true,
+  closed: true,
+  lockable: true,
+  locked: true,
+  length: 100,
+  width: 75,
+  height: 75,
+  capacity: 1000
 })

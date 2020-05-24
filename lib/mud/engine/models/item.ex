@@ -13,59 +13,83 @@ defmodule Mud.Engine.Model.Item do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
-    # What sorts of roles the item can take on, and it can take on more than one.
-    # A chest might also serve as a seat, for example
-    field(:is_furniture, :boolean, default: false)
-    field(:is_scenery, :boolean, default: false)
-    field(:is_container, :boolean, default: false)
-
-    # The state of the item
-    field(:is_hidden, :boolean, default: false)
-    field(:count, :integer, default: 1)
-
-    # How to describe the item
-    field(:glance_description, :string, default: "item")
-    field(:look_description, :string, default: "item")
-
-    # belongs_to(:container, __MODULE__,
-    #   type: :binary_id,
-    #   foreign_key: :container_id
-    # )
-
-    belongs_to(:area, Mud.Engine.Model.Area,
-      type: :binary_id,
-      foreign_key: :area_id
-    )
+    ##
+    #
+    # Common Fields
+    #
+    ##
 
     belongs_to(:character, Mud.Engine.Model.Character,
       type: :binary_id,
       foreign_key: :character_id
     )
+
+    belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
+
+    timestamps()
+
+    # What sorts of roles the item can take on, and it can take on more than one.
+    # A chest might also serve as a seat, for example
+    field(:is_furniture, :boolean, default: false)
+    field(:is_scenery, :boolean, default: false)
+
+    # The state of the item
+    field(:is_hidden, :boolean, default: false)
+
+    # How to describe the item
+    field(:glance_description, :string, default: "item")
+    field(:look_description, :string, default: "item")
+    # belongs_to(:container, Mud.Engine.Model.Item.Container, type: :binary_id)
+
+    # has_one(:container_component, __MODULE__.Container)
+
+    ##
+    #
+    # Container Component
+    #
+    ##
+
+    field(:is_container, :boolean, default: false)
+    field(:container_closeable, :boolean, default: false)
+    field(:container_closed, :boolean, default: false)
+    field(:container_lockable, :boolean, default: false)
+    field(:container_locked, :boolean, default: false)
+    field(:container_length, :integer, default: 0)
+    field(:container_width, :integer, default: 0)
+    field(:container_height, :integer, default: 0)
+    field(:container_capacity, :integer, default: 0)
+
+    has_many(:container_items, __MODULE__, foreign_key: :container_id)
+    belongs_to(:container, __MODULE__, type: :binary_id)
   end
 
   @doc false
   def changeset(item, attrs) do
     item
+    |> change()
     |> cast(attrs, [
       :area_id,
-      # :container_id,
       :character_id,
       :is_hidden,
       :is_furniture,
       :is_scenery,
       :glance_description,
       :look_description,
-      :count
+      :container_id,
+      :is_container,
+      :container_closeable,
+      :container_closed,
+      :container_lockable,
+      :container_locked,
+      :container_length,
+      :container_width,
+      :container_height,
+      :container_capacity
     ])
     |> validate_required([
-      :is_hidden,
-      :is_furniture,
-      :is_scenery,
       :glance_description,
-      :look_description,
-      :count
+      :look_description
     ])
-    |> foreign_key_constraint(:container_id)
     |> foreign_key_constraint(:character_id)
     |> foreign_key_constraint(:area_id)
   end

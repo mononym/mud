@@ -8,6 +8,8 @@ defmodule Mud.Repo.Migrations.CreatePlayerSettings do
       add(:player_id, references(:players, type: :binary_id, on_delete: :delete_all),
         primary_key: true
       )
+
+      timestamps()
     end
 
     create(unique_index(:player_settings, [:player_id]))

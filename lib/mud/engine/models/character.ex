@@ -16,6 +16,7 @@ defmodule Mud.Engine.Model.Character do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
+      timestamps()
     # Naming and Titles
     field(:name, :string)
 

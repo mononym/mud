@@ -73,7 +73,12 @@ defmodule Mud.Engine.Util do
     optional_group = ".*?"
     middle_group = optional_group <> "\\s+"
 
-    replaced_input = String.replace(input, ~r/\s+/, middle_group)
+    replaced_input =
+      if String.contains?(input, " ") do
+        String.replace(input, ~r/\s+/, middle_group)
+      else
+        input
+      end
 
     Regex.compile!("^(.*?\\s+)?" <> replaced_input <> optional_group)
   end

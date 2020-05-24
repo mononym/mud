@@ -33,7 +33,8 @@ defmodule Mud.Engine.Search do
           }
   end
 
-  @spec find_matches_in_area([atom()], String.t(), String.t(), Character.t()) :: SearchResults.t()
+  @spec find_matches_in_area([:character | :item | :link], String.t(), String.t(), Character.t()) ::
+          SearchResults.t()
   def find_matches_in_area(target_types, area_id, input, looking_character) do
     target_types
     |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)

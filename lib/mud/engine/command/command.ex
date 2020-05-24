@@ -235,7 +235,7 @@ defmodule Mud.Engine.Command do
         build_ast(rest_of_input, parts, current_part, node, ast)
         # current node not greedy
       else
-        # listing potential children which ALSO match the input
+        # listing potential children
         potential_children = list_children(current_part, parts)
 
         transformed_input =
@@ -323,27 +323,32 @@ defmodule Mud.Engine.Command do
       end
 
     current_matches = any_matches?(current_part.matches, next_input)
+    potential_children = list_children(current_part, parts)
 
-    if current_matches do
-      node = %{current_ast | input: [next_input | current_ast.input]}
+    transformed_input =
+      current_ast.input
+      |> current_part.transformer.()
 
-      build_ast(rest_of_input, parts, current_part, node, ast)
-    else
-      potential_children = list_children(current_part, parts)
+    current_ast = %{current_ast | input: transformed_input}
 
-      transformed_input =
-        current_ast.input
-        |> current_part.transformer.()
+    child_asts =
+      Enum.flat_map(potential_children, fn child ->
+        build_ast(all_input, parts, child, nil, [current_ast | ast])
+      end)
 
-      current_ast = %{current_ast | input: transformed_input}
+    child_matches = length(child_asts) > 0
 
-      if length(potential_children) > 0 do
-        Enum.flat_map(potential_children, fn child ->
-          build_ast(all_input, parts, child, nil, [current_ast | ast])
-        end)
-      else
+    cond do
+      child_matches ->
+        child_asts
+
+      current_matches ->
+        node = %{current_ast | input: [next_input | current_ast.input]}
+
+        build_ast(rest_of_input, parts, current_part, node, ast)
+
+      true ->
         []
-      end
     end
   end
 
