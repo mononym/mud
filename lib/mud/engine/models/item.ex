@@ -100,6 +100,12 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.insert!()
   end
 
+  def update!(item, attrs) do
+    item
+    |> changeset(attrs)
+    |> Repo.update!()
+  end
+
   @spec get!(id :: binary) :: __MODULE__.t()
   def get!(id) when is_binary(id) do
     from(

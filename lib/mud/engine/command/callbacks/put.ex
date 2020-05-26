@@ -13,106 +13,127 @@ defmodule Mud.Engine.Command.Put do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Model.{Character}
   alias Mud.Engine.Search
-  alias Mud.Engine.Message
+  alias Mud.Engine.Model.Item
 
   require Logger
-
-  import Mud.Engine.Util
 
   @impl true
   def execute(%ExecutionContext{} = context) do
     ast = context.command.ast
 
-    Logger.debug(inspect(ast))
-
-    %{partial_matches: [%{match: thing}]} =
-      Search.find_matches_in_area(
+    thing_search_results =
+      Search.find_matches_in_area_v2(
         [:item],
         context.character.area_id,
         ast[:thing][:input],
         context.character
       )
 
-    Logger.debug(inspect(thing))
-
-    context =
-      if thing.is_container do
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          thing.glance_description <> " is a container",
-          "info"
-        )
-      else
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          thing.glance_description <> " is not a container",
-          "info"
-        )
-      end
-
-    %{partial_matches: [%{match: place}]} =
-      Search.find_matches_in_area(
+    place_search_results =
+      Search.find_matches_in_area_v2(
         [:item],
         context.character.area_id,
         ast[:thing][:path][:place][:input],
         context.character
       )
 
-    Logger.debug(inspect(place))
-    Logger.debug(inspect(place))
+    Logger.debug(inspect(thing_search_results))
+    Logger.debug(inspect(place_search_results))
 
-    if place.is_container do
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        place.glance_description <> " is a container",
-        "info"
-      )
-      |> ExecutionContext.set_success()
+    with {:ok, thing_matches} <- thing_search_results,
+         {:ok, place_matches} <- place_search_results,
+         num_things <- length(thing_matches),
+         num_places <- length(place_matches) do
+      cond do
+        num_things == 1 and num_places == 1 ->
+          thing = List.first(thing_matches).match
+          place = List.first(place_matches).match
+
+          Logger.debug(inspect(thing))
+          Logger.debug(inspect(place))
+
+          context =
+            if thing.is_container do
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                thing.glance_description <> " is a container",
+                "info"
+              )
+            else
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                thing.glance_description <> " is not a container",
+                "info"
+              )
+            end
+
+          Logger.debug(inspect(context))
+
+          cond do
+            place.is_container and place.container_closed ->
+              Logger.debug(inspect("closed"))
+
+              msg =
+                if place.container_locked do
+                  " is closed and locked"
+                else
+                  " is closed"
+                end
+
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                place.glance_description <> msg,
+                "info"
+              )
+              |> ExecutionContext.set_success()
+
+            place.is_container ->
+              Logger.debug(inspect("open"))
+
+              Item.update!(thing, %{area_id: nil, container_id: place.id})
+
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                thing.glance_description <> " is now inside " <> place.glance_description,
+                "info"
+              )
+              |> ExecutionContext.set_success()
+
+            not place.is_container ->
+              Logger.debug(inspect("not"))
+
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                place.glance_description <> " is not a container",
+                "info"
+              )
+              |> ExecutionContext.set_success()
+          end
+
+        true ->
+          ExecutionContext.append_output(
+            context,
+            context.character.id,
+            "I SAID GOOD DAY SIR!",
+            "warning"
+          )
+          |> ExecutionContext.set_success()
+      end
     else
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        place.glance_description <> " is not a container",
-        "info"
-      )
-      |> ExecutionContext.set_success()
-    end
-  end
-
-  defp check_matches(matches, which_target) do
-    # if single object
-
-    num_matches = length(matches)
-
-    cond do
-      # happy path with a single match with no index chosen
-      num_matches == 1 and which_target == 0 ->
-        match = List.first(matches)
-
-        {:ok, match}
-
-      # happy path where there are multiple matches, and chosen index is in range
-      num_matches > 0 and which_target > 0 and which_target <= num_matches ->
-        match = Enum.at(matches, which_target - 1)
-
-        {:ok, match}
-
-      # unhappy path where there are multiple matches and no preselected choice
-      num_matches > 1 and which_target == 0 ->
-        {:error, {:multiple_matches, matches}}
-
-      # unhappy path where there are multiple matches but chosen index is out of range
-      num_matches > 0 and which_target > num_matches ->
-        {:error, :out_of_range}
-
-      # unhappy path where there are no matches
-      num_matches == 0 ->
-        {:error, :no_match}
+      _err ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "I SAID GOOD DAY TO YOU, SIR!",
+          "warning"
+        )
+        |> ExecutionContext.set_success()
     end
   end
 end

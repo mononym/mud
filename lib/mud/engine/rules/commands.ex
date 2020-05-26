@@ -9,6 +9,8 @@ defmodule Mud.Engine.Rules.Commands do
   alias Mud.Engine.Command.Definition.Part
   alias Mud.Engine.Util
 
+  require Logger
+
   ##
   # API
   ##
@@ -61,6 +63,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_look_command(),
       define_move_command(),
       define_put_command(),
+      define_remove_command(),
       define_quit_command(),
       define_say_command(),
       define_sit_command(),
@@ -132,6 +135,37 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:path],
+          matches: [~r/.*/],
+          key: :place,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_remove_command do
+    %Definition{
+      callback_module: Command.Remove,
+      parts: [
+        %Part{
+          matches: ["remove"],
+          key: :remove,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:remove],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["from"],
+          key: :from,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:from],
           matches: [~r/.*/],
           key: :place,
           transformer: &join_with_space_downcase/1
@@ -307,6 +341,12 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &join_with_space_downcase/1
         },
         %Part{
+          matches: ["in"],
+          key: :in,
+          must_follow: [:look],
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
           key: :number,
           matches: [~r/\d/],
           must_follow: [:at, :look, :switch],
@@ -314,7 +354,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           key: :target,
-          must_follow: [:at, :look, :switch, :number],
+          must_follow: [:at, :look, :switch, :number, :in],
           matches: [~r/.*/],
           transformer: &join_with_space_downcase/1
         }
@@ -331,6 +371,7 @@ defmodule Mud.Engine.Rules.Commands do
   end
 
   defp join_with_space_downcase(input) do
+    Logger.debug(inspect(input))
     Enum.join(input, " ") |> String.downcase()
   end
 

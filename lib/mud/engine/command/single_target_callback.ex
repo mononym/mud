@@ -7,38 +7,34 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
   """
 
   alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Model.Character
   alias Mud.Engine.Message
   alias Mud.Engine.Search
   alias Mud.Engine.Util
 
-  @spec find_match(Mud.Engine.Command.ExecutionContext.t(), [atom()]) ::
-          {:error, {:multiple_matches, [Mud.Engine.Search.Match.t()]} | :no_match | :out_of_range}
-          | {:ok, any}
-  def find_match(context = %ExecutionContext{}, target_types) do
-    ast = context.command.ast
+  # @spec find_match(Mud.Engine.Command.ExecutionContext.t(), [atom()]) ::
+  #         {:error, {:multiple_matches, [Mud.Engine.Search.Match.t()]} | :no_match | :out_of_range}
+  #         | {:ok, any}
+  # def find_match(context = %ExecutionContext{}, target_types) do
+  @spec find_match(integer, String.t(), Character.t(), [:character | :item | :link]) ::
+          {:error, :no_match | :out_of_range | {:multiple_matches, [map]}} | {:ok, any}
+  def find_match(which_target, input, looking_character, target_types) do
+    matches =
+      Search.find_matches_in_area(
+        target_types,
+        looking_character.area_id,
+        input,
+        looking_character
+      )
 
-    if ast[:target] != nil do
-      which_target = min(0, ast[:number][:input] || 0)
+    check_matches(matches.exact_matches, which_target)
 
-      matches =
-        Search.find_matches_in_area(
-          target_types,
-          context.character.area_id,
-          ast[:target][:input],
-          context.character
-        )
+    case check_matches(matches.exact_matches, which_target) do
+      {:error, :no_match} ->
+        check_matches(matches.partial_matches, which_target)
 
-      check_matches(matches.exact_matches, which_target)
-
-      case check_matches(matches.exact_matches, which_target) do
-        {:error, :no_match} ->
-          check_matches(matches.partial_matches, which_target)
-
-        result ->
-          result
-      end
-    else
-      {:ok, nil}
+      result ->
+        result
     end
   end
 
