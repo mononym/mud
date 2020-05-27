@@ -12,29 +12,28 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
   alias Mud.Engine.Search
   alias Mud.Engine.Util
 
-  # @spec find_match(Mud.Engine.Command.ExecutionContext.t(), [atom()]) ::
-  #         {:error, {:multiple_matches, [Mud.Engine.Search.Match.t()]} | :no_match | :out_of_range}
-  #         | {:ok, any}
-  # def find_match(context = %ExecutionContext{}, target_types) do
-  @spec find_match(integer, String.t(), Character.t(), [:character | :item | :link]) ::
-          {:error, :no_match | :out_of_range | {:multiple_matches, [map]}} | {:ok, any}
+  @spec find_match(integer(), String.t(), Character.t(), [:character | :item | :link]) ::
+          {:error, :no_match | :out_of_range | {:multiple_matches, [Mud.Engine.Search.Match.t()]}}
+          | {:ok, Mud.Engine.Search.Match.t()}
   def find_match(which_target, input, looking_character, target_types) do
-    matches =
-      Search.find_matches_in_area(
+    result =
+      Search.find_matches_in_area_v2(
         target_types,
         looking_character.area_id,
         input,
-        looking_character
+        looking_character,
+        which_target
       )
 
-    check_matches(matches.exact_matches, which_target)
+    case result do
+      {:ok, [match]} ->
+        {:ok, match}
 
-    case check_matches(matches.exact_matches, which_target) do
-      {:error, :no_match} ->
-        check_matches(matches.partial_matches, which_target)
+      {:ok, matches} ->
+        {:error, {:multiple_matches, matches}}
 
-      result ->
-        result
+      error ->
+        error
     end
   end
 
@@ -64,38 +63,5 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
       Message.new_output(context.character.id, too_many_matches_err, "error")
     )
     |> ExecutionContext.set_success()
-  end
-
-  # @spec check_matches([Search.Match.t()], integer()) ::
-  #         {:ok, Mud.Engine.Search.Match.t()}
-  #         | {:error, :multiple_matches, :no_match, :out_of_range}
-  defp check_matches(matches, which_target) do
-    num_matches = length(matches)
-
-    cond do
-      # happy path with a single match with no index chosen
-      num_matches == 1 and which_target == 0 ->
-        match = List.first(matches)
-
-        {:ok, match}
-
-      # happy path where there are multiple matches, and chosen index is in range
-      num_matches > 0 and which_target > 0 and which_target <= num_matches ->
-        match = Enum.at(matches, which_target - 1)
-
-        {:ok, match}
-
-      # unhappy path where there are multiple matches and no preselected choice
-      num_matches > 1 and which_target == 0 ->
-        {:error, {:multiple_matches, matches}}
-
-      # unhappy path where there are multiple matches but chosen index is out of range
-      num_matches > 0 and which_target > num_matches ->
-        {:error, :out_of_range}
-
-      # unhappy path where there are no matches
-      num_matches == 0 ->
-        {:error, :no_match}
-    end
   end
 end

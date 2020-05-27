@@ -40,8 +40,8 @@ defmodule Mud.Engine.Search do
           Character.t(),
           integer()
         ) ::
-          {:ok, [Match.t()]} | {:error | :out_of_range | :no_match}
-  def find_matches_in_area_v2(target_types, area_id, input, looking_character, which_target \\ 0) do
+          {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
+  def find_matches_in_area_v2(target_types, area_id, input, looking_character, which_target) do
     target_types
     |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
     |> merge_search_results()
@@ -73,11 +73,7 @@ defmodule Mud.Engine.Search do
           |> Enum.at(which_target - 1)
           |> List.wrap()
 
-        {:ok, match}
-
-      # unhappy path where there are multiple matches and no preselected choice
-      # num_matches > 1 and which_target == 0 ->
-      #   {:ok, matches}
+        {:ok, [match]}
 
       # unhappy path where there are multiple matches but chosen index is out of range
       num_matches > 0 and which_target > num_matches ->

@@ -22,7 +22,7 @@ defmodule Mud.Repo.Migrations.CreateItems do
 
       add(:is_container, :boolean, default: false)
       add(:container_closeable, :boolean, default: false)
-      add(:container_closed, :boolean, default: false)
+      add(:container_open, :boolean, default: false)
       add(:container_lockable, :boolean, default: false)
       add(:container_locked, :boolean, default: false)
       add(:container_length, :integer, default: 0)
@@ -43,7 +43,7 @@ defmodule Mud.Repo.Migrations.CreateItems do
 
     create(index(:items, [:is_container]))
     create(index(:items, [:container_closeable]))
-    create(index(:items, [:container_closed]))
+    create(index(:items, [:container_open]))
     create(index(:items, [:container_lockable]))
     create(index(:items, [:container_locked]))
     create(index(:items, [:container_length]))

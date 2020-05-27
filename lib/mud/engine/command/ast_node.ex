@@ -18,6 +18,21 @@ defmodule Mud.Engine.Command.AstNode do
     field(:generations, integer(), default: 0)
   end
 
+  def find(node, potential_paths) do
+    result =
+      Enum.find(potential_paths, fn path ->
+        get_in(node, path) != nil
+      end)
+
+    case result do
+      nil ->
+        nil
+
+      path ->
+        get_in(node, path)
+    end
+  end
+
   @behaviour Access
 
   @impl Access

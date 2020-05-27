@@ -33,7 +33,8 @@ defmodule Mud.Engine.Command.Store do
         [:item],
         context.character.area_id,
         ast[:thing][:input],
-        context.character
+        context.character,
+        0
       )
 
     place_search_results =
@@ -41,7 +42,8 @@ defmodule Mud.Engine.Command.Store do
         [:item],
         context.character.area_id,
         ast[:thing][:path][:place][:input],
-        context.character
+        context.character,
+        0
       )
 
     with {:ok, thing_matches} <- thing_search_results,
@@ -54,7 +56,7 @@ defmodule Mud.Engine.Command.Store do
           place = List.first(place_matches).match
 
           cond do
-            place.is_container and place.container_closed ->
+            place.is_container and place.container_open ->
               msg =
                 if place.container_locked do
                   " is closed and locked"

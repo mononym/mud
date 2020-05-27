@@ -51,7 +51,7 @@ defmodule Mud.Engine.Model.Item do
 
     field(:is_container, :boolean, default: false)
     field(:container_closeable, :boolean, default: false)
-    field(:container_closed, :boolean, default: false)
+    field(:container_open, :boolean, default: true)
     field(:container_lockable, :boolean, default: false)
     field(:container_locked, :boolean, default: false)
     field(:container_length, :integer, default: 0)
@@ -78,7 +78,7 @@ defmodule Mud.Engine.Model.Item do
       :container_id,
       :is_container,
       :container_closeable,
-      :container_closed,
+      :container_open,
       :container_lockable,
       :container_locked,
       :container_length,
@@ -104,6 +104,12 @@ defmodule Mud.Engine.Model.Item do
     item
     |> changeset(attrs)
     |> Repo.update!()
+  end
+
+  def update(item, attrs) do
+    item
+    |> changeset(attrs)
+    |> Repo.update()
   end
 
   @spec get!(id :: binary) :: __MODULE__.t()

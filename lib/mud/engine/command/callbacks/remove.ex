@@ -20,24 +20,38 @@ defmodule Mud.Engine.Command.Remove do
   require Logger
 
   defmodule ContinuationData do
-    defstruct type: nil,
-              thing: nil,
-              place: nil
+    use TypedStruct
+
+    typedstruct do
+      field(:type, atom(), required: true)
+      field(:thing, Mud.Engine.Search.Match.t(), required: true)
+      field(:place, Mud.Engine.Search.Match.t(), required: true)
+    end
   end
 
   @impl true
-  def continue(context) do
+  def continue(%ExecutionContext{} = context) do
     {input, continuation_data} = context.input
 
     integer = String.to_integer(input)
     match = continuation_data[continuation_data.type][integer]
 
-    case continuation_data.type do
-      :thing ->
-        remove_thing_from_place(context, match, continuation_data.place)
+    if context.character.area_id == match.match.area_id do
+      case continuation_data.type do
+        :thing ->
+          remove_thing_from_place(context, match, continuation_data.place)
 
-      :place ->
-        find_thing(context, match)
+        :place ->
+          find_thing(context, match)
+      end
+    else
+      ExecutionContext.append_output(
+        context,
+        context.character.id,
+        "The #{context.input.glance_description} is no longer present.",
+        "error"
+      )
+      |> ExecutionContext.set_success()
     end
   end
 
@@ -173,7 +187,8 @@ defmodule Mud.Engine.Command.Remove do
         target_types(),
         character.area_id,
         input,
-        character
+        character,
+        0
       )
 
     num_results = length(results)
@@ -210,6 +225,11 @@ defmodule Mud.Engine.Command.Remove do
     end
   end
 
+  @spec remove_thing_from_place(
+          Mud.Engine.Command.ExecutionContext.t(),
+          Mud.Engine.Search.Match.t(),
+          Mud.Engine.Search.Match.t()
+        ) :: Mud.Engine.Command.ExecutionContext.t()
   defp remove_thing_from_place(context, thing, place) do
     Item.update!(thing.match, %{area_id: context.character.area_id, container_id: nil})
 

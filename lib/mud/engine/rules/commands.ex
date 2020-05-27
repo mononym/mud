@@ -60,14 +60,16 @@ defmodule Mud.Engine.Rules.Commands do
     MapSet.new([
       define_kick_command(),
       define_kneel_command(),
+      define_lock_command(),
       define_look_command(),
       define_move_command(),
       define_put_command(),
-      define_remove_command(),
       define_quit_command(),
+      define_remove_command(),
       define_say_command(),
       define_sit_command(),
-      define_stand_command()
+      define_stand_command(),
+      define_unlock_command()
     ])
   end
 
@@ -103,6 +105,46 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:position, :kneel],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_lock_command do
+    %Definition{
+      callback_module: Command.Lock,
+      parts: [
+        %Part{
+          matches: ["lock"],
+          key: :lock,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:lock],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_unlock_command do
+    %Definition{
+      callback_module: Command.Unlock,
+      parts: [
+        %Part{
+          matches: ["unlock"],
+          key: :unlock,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:unlock],
           matches: [~r/.*/],
           key: :target,
           greedy: true,
