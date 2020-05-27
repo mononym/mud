@@ -114,10 +114,10 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp define_put_command do
     %Definition{
-      callback_module: Command.Put,
+      callback_module: Command.Store,
       parts: [
         %Part{
-          matches: ["put"],
+          matches: ["store"],
           key: :put,
           transformer: &Enum.join/1
         },

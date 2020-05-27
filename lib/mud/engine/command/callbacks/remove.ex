@@ -11,6 +11,7 @@ defmodule Mud.Engine.Command.Remove do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Model.Item
+  alias Mud.Engine.Model.Character
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Util
   alias Mud.Engine.Search
@@ -28,26 +29,15 @@ defmodule Mud.Engine.Command.Remove do
   def continue(context) do
     {input, continuation_data} = context.input
 
-    case Integer.parse(input) do
-      {integer, _} ->
-        match = continuation_data[continuation_data.type][integer]
+    integer = String.to_integer(input)
+    match = continuation_data[continuation_data.type][integer]
 
-        case continuation_data.type do
-          :thing ->
-            remove_thing_from_place(context, match, continuation_data.place)
+    case continuation_data.type do
+      :thing ->
+        remove_thing_from_place(context, match, continuation_data.place)
 
-          :place ->
-            find_thing(context, match)
-        end
-
-      :error ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Invalid selection. Please try removing the item again.",
-          "error"
-        )
-        |> ExecutionContext.set_success()
+      :place ->
+        find_thing(context, match)
     end
   end
 
@@ -58,8 +48,6 @@ defmodule Mud.Engine.Command.Remove do
   @impl true
   def execute(context) do
     ast = context.command.ast
-
-    Logger.debug(inspect(ast))
 
     if is_valid_ast?(ast) do
       case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
@@ -225,11 +213,21 @@ defmodule Mud.Engine.Command.Remove do
   defp remove_thing_from_place(context, thing, place) do
     Item.update!(thing.match, %{area_id: context.character.area_id, container_id: nil})
 
-    ExecutionContext.append_output(
-      context,
+    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+
+    context
+    |> ExecutionContext.append_output(
+      others,
+      "{{character}}#{context.character.name}{{/character}} just removed {{item}}#{
+        thing.glance_description
+      }{{/item}} from {{item}}#{place.glance_description}{{/item}} and placed it on the ground.",
+      "info"
+    )
+    |> ExecutionContext.append_output(
       context.character.id,
-      thing.glance_description <>
-        " has been removed from inside " <> place.glance_description,
+      "{{item}}#{thing.glance_description}{{/item}} has been removed from inside {{item}}#{
+        place.glance_description
+      }{{/item}}.",
       "info"
     )
     |> ExecutionContext.set_success()
