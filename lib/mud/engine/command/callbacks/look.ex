@@ -36,9 +36,6 @@ defmodule Mud.Engine.Command.Look do
         get_in(context.command.ast, [:in, :target, :input]) ||
         get_in(context.command.ast, [:at, :target, :input])
 
-    Logger.debug(inspect(context.command.ast))
-    Logger.debug(inspect(input))
-
     if input == nil do
       description = Area.describe_look(context.character.area_id, context.character)
 
