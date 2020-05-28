@@ -1,13 +1,13 @@
-defmodule Mud.Engine.Command.Unlock do
+defmodule Mud.Engine.Command.Close do
   @moduledoc """
-  The UNLOCK command allows the Character to lock something such as a door or a chest.
+  The CLOSE command allows the Character to close something such as a door or a chest.
 
   Syntax:
-    - unlock <target>
+    - close <target>
 
   Examples:
-    - unlock backpack
-    - unlock door
+    - close backpack
+    - close door
   """
 
   alias Mud.Engine.Util
@@ -58,15 +58,15 @@ defmodule Mud.Engine.Command.Unlock do
         SingleTargetCallback.handle_multiple_matches(
           context,
           matches,
-          "Which of these did you intend to unlock?",
-          "You can't possibly unlock all of those at once. Please be more specific."
+          "Which of these did you intend to close?",
+          "You can't possibly close all of those at once. Please be more specific."
         )
 
       {:error, type} ->
         error_msg =
           case type do
             :no_match ->
-              "Could not find anything to unlock. Perhaps it's for the best."
+              "Could not find anything to close. Perhaps it's for the best."
 
             :out_of_range ->
               "Nope! Nice try though. You need to choose one of the provided options."
@@ -87,8 +87,8 @@ defmodule Mud.Engine.Command.Unlock do
     item = match.match
 
     cond do
-      item.container_locked ->
-        Item.update!(item, %{container_locked: false})
+      item.is_container and item.container_open ->
+        Item.update!(item, %{container_open: false})
 
         others =
           Character.list_others_active_in_areas(context.character, context.character.area_id)
@@ -96,30 +96,30 @@ defmodule Mud.Engine.Command.Unlock do
         context
         |> ExecutionContext.append_output(
           others,
-          "#{context.character.name} unlocked #{match.glance_description}.",
+          "#{context.character.name} closed #{match.glance_description}.",
           "info"
         )
         |> ExecutionContext.append_output(
           context.character.id,
-          String.capitalize("#{match.glance_description} is now unlocked."),
+          String.capitalize("#{match.glance_description} is now closed."),
           "info"
         )
         |> ExecutionContext.set_success()
 
-      item.container_lockable and not item.container_locked ->
+      item.is_container and not item.container_open ->
         ExecutionContext.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.glance_description} is already unlocked."),
+          String.capitalize("#{match.glance_description} is already closed."),
           "error"
         )
         |> ExecutionContext.set_success()
 
-      not item.container_lockable ->
+      not item.is_container ->
         ExecutionContext.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.glance_description} is not lockable."),
+          String.capitalize("#{match.glance_description} cannot be closed."),
           "error"
         )
         |> ExecutionContext.set_success()

@@ -96,7 +96,7 @@ defmodule Mud.Engine.Command.Lock do
         context
         |> ExecutionContext.append_output(
           others,
-          "#{context.character.name} locked #{item.name}.",
+          "#{context.character.name} locked #{match.look_description}.",
           "info"
         )
         |> ExecutionContext.append_output(
