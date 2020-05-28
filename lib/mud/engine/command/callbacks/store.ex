@@ -56,7 +56,7 @@ defmodule Mud.Engine.Command.Store do
           place = List.first(place_matches).match
 
           cond do
-            place.is_container and place.container_open ->
+            place.is_container and not place.container_open ->
               msg =
                 if place.container_locked do
                   " is closed and locked"
@@ -72,7 +72,7 @@ defmodule Mud.Engine.Command.Store do
               )
               |> ExecutionContext.set_success()
 
-            place.is_container ->
+            place.is_container and place.container_open ->
               Item.update!(thing, %{area_id: nil, container_id: place.id})
 
               others =

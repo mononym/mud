@@ -103,37 +103,64 @@ defmodule Mud.Engine.Command.Look do
       get_in(ast, [:in]) != nil ->
         thing = match.match
 
-        if thing.is_container do
-          # get things in container and look at them
-          thing = Mud.Repo.preload(thing, :container_items)
+        cond do
+          thing.is_container and thing.container_open ->
+            # get things in container and look at them
+            thing = Mud.Repo.preload(thing, :container_items)
 
-          items_description =
-            Stream.map(thing.container_items, fn item ->
-              Item.describe_glance(item, context.character)
-            end)
-            |> Enum.join(", ")
+            items_description =
+              Stream.map(thing.container_items, fn item ->
+                Item.describe_glance(item, context.character)
+              end)
+              |> Enum.join("{{/item}}, {{item}}")
 
-          container_desc = String.capitalize(match.glance_description)
+            container_desc = String.capitalize(match.glance_description)
 
-          ExecutionContext.append_message(
-            context,
-            Message.new_output(
-              context.character.id,
-              container_desc <> " contains: " <> items_description,
-              "info"
+            if length(thing.container_items) > 0 do
+              ExecutionContext.append_message(
+                context,
+                Message.new_output(
+                  context.character.id,
+                  "{{item}}#{container_desc}{{/item}} contains: {{item}}#{items_description}{{/item}}.",
+                  "info"
+                )
+              )
+              |> ExecutionContext.set_success()
+            else
+              ExecutionContext.append_message(
+                context,
+                Message.new_output(
+                  context.character.id,
+                  "{{item}}#{container_desc}{{/item}} is empty.",
+                  "info"
+                )
+              )
+              |> ExecutionContext.set_success()
+            end
+
+          thing.is_container and not thing.container_open ->
+            ExecutionContext.append_message(
+              context,
+              Message.new_output(
+                context.character.id,
+                String.capitalize(
+                  "{{item}}#{match.glance_description}{{/item}} must be opened first."
+                ),
+                "info"
+              )
             )
-          )
-          |> ExecutionContext.set_success()
-        else
-          ExecutionContext.append_message(
-            context,
-            Message.new_output(
-              context.character.id,
-              "You cannot look inside " <> match.glance_description,
-              "info"
+            |> ExecutionContext.set_success()
+
+          not thing.is_container ->
+            ExecutionContext.append_message(
+              context,
+              Message.new_output(
+                context.character.id,
+                "You cannot look inside {{item}}#{match.glance_description}{{/item}}.",
+                "info"
+              )
             )
-          )
-          |> ExecutionContext.set_success()
+            |> ExecutionContext.set_success()
         end
 
       true ->
@@ -147,10 +174,6 @@ defmodule Mud.Engine.Command.Look do
         )
         |> ExecutionContext.set_success()
     end
-
-    # if we are looking in the target, check to see if container
-    # if container, look at all the items in it
-    # if not container, error message
   end
 
   defp target_types(), do: [:character, :item, :link]

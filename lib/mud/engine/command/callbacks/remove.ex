@@ -66,7 +66,28 @@ defmodule Mud.Engine.Command.Remove do
     if is_valid_ast?(ast) do
       case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
         {:ok, place} ->
-          find_thing(context, place)
+          cond do
+            place.match.is_container and place.match.container_open ->
+              find_thing(context, place)
+
+            place.match.is_container and not place.match.container_open ->
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                "{{item}}#{place.glance_description}{{/item}} must be opened first.",
+                "error"
+              )
+              |> ExecutionContext.set_success()
+
+            not place.match.is_container ->
+              ExecutionContext.append_output(
+                context,
+                context.character.id,
+                "{{item}}#{place.glance_description}{{/item}} is not a container.",
+                "error"
+              )
+              |> ExecutionContext.set_success()
+          end
 
         {:multiple, matches} ->
           indexed_places =
@@ -231,26 +252,38 @@ defmodule Mud.Engine.Command.Remove do
           Mud.Engine.Search.Match.t()
         ) :: Mud.Engine.Command.ExecutionContext.t()
   defp remove_thing_from_place(context, thing, place) do
-    Item.update!(thing.match, %{area_id: context.character.area_id, container_id: nil})
+    item = place.match
 
-    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+    if item.is_container and item.container_is_open do
+      Item.update!(thing.match, %{area_id: context.character.area_id, container_id: nil})
 
-    context
-    |> ExecutionContext.append_output(
-      others,
-      "{{character}}#{context.character.name}{{/character}} just removed {{item}}#{
-        thing.glance_description
-      }{{/item}} from {{item}}#{place.glance_description}{{/item}} and placed it on the ground.",
-      "info"
-    )
-    |> ExecutionContext.append_output(
-      context.character.id,
-      "{{item}}#{thing.glance_description}{{/item}} has been removed from inside {{item}}#{
-        place.glance_description
-      }{{/item}}.",
-      "info"
-    )
-    |> ExecutionContext.set_success()
+      others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+
+      context
+      |> ExecutionContext.append_output(
+        others,
+        "{{character}}#{context.character.name}{{/character}} just removed {{item}}#{
+          thing.glance_description
+        }{{/item}} from {{item}}#{place.glance_description}{{/item}} and placed it on the ground.",
+        "info"
+      )
+      |> ExecutionContext.append_output(
+        context.character.id,
+        "{{item}}#{thing.glance_description}{{/item}} has been removed from inside {{item}}#{
+          place.glance_description
+        }{{/item}}.",
+        "info"
+      )
+      |> ExecutionContext.set_success()
+    else
+      ExecutionContext.append_output(
+        context,
+        context.character.id,
+        "{{item}}#{place.glance_description}{{/item}} must be opened first.",
+        "error"
+      )
+      |> ExecutionContext.set_success()
+    end
   end
 
   defp target_types(), do: [:item]
