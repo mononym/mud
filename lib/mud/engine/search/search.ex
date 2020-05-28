@@ -33,7 +33,74 @@ defmodule Mud.Engine.Search do
           }
   end
 
-  @spec find_matches_in_area([atom()], String.t(), String.t(), Character.t()) :: SearchResults.t()
+  @spec find_matches_in_area_v2(
+          [:character | :item | :link],
+          String.t(),
+          String.t(),
+          Character.t(),
+          integer()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
+  def find_matches_in_area_v2(target_types, area_id, input, looking_character, which_target) do
+    target_types
+    |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
+    |> merge_search_results()
+    |> check_search_results(which_target)
+  end
+
+  defp check_search_results(results, which_target) do
+    case check_matches(results.exact_matches, which_target) do
+      {:error, :no_match} ->
+        check_matches(results.partial_matches, which_target)
+
+      result ->
+        result
+    end
+  end
+
+  defp check_matches(matches, which_target) do
+    num_matches = length(matches)
+
+    cond do
+      # happy path with matches with no index chosen
+      num_matches >= 1 and which_target == 0 ->
+        {:ok, matches}
+
+      # happy path where there are multiple matches, and chosen index is in range
+      num_matches > 0 and which_target > 0 and which_target <= num_matches ->
+        match =
+          matches
+          |> Enum.at(which_target - 1)
+          |> List.wrap()
+
+        {:ok, [match]}
+
+      # unhappy path where there are multiple matches but chosen index is out of range
+      num_matches > 0 and which_target > num_matches ->
+        {:error, :out_of_range}
+
+      # unhappy path where there are no matches
+      num_matches == 0 ->
+        {:error, :no_match}
+    end
+  end
+
+  @spec generate_matches(
+          [Character.t() | Item.t() | Link.t()],
+          String.t(),
+          Character.t(),
+          integer()
+        ) ::
+          {:ok, [Match.t()]} | {:error | :out_of_range | :no_match}
+  def generate_matches(things, input, looking_character, which_target \\ 0) do
+    things
+    |> things_to_match(looking_character)
+    |> build_search_results(input)
+    |> check_search_results(which_target)
+  end
+
+  @spec find_matches_in_area([:character | :item | :link], String.t(), String.t(), Character.t()) ::
+          SearchResults.t()
   def find_matches_in_area(target_types, area_id, input, looking_character) do
     target_types
     |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
@@ -43,21 +110,21 @@ defmodule Mud.Engine.Search do
   defp find_matches(:character, area_id, input, looking_character) do
     area_id
     |> Character.list_in_area()
-    |> characters_to_match(looking_character)
+    |> things_to_match(looking_character)
     |> build_search_results(input)
   end
 
   defp find_matches(:item, area_id, input, looking_character) do
     area_id
     |> Item.list_in_area()
-    |> items_to_match(looking_character)
+    |> things_to_match(looking_character)
     |> build_search_results(input)
   end
 
   defp find_matches(:link, area_id, input, looking_character) do
     area_id
     |> Link.list_obvious_exits_in_area()
-    |> links_to_match(looking_character)
+    |> things_to_match(looking_character)
     |> build_search_results(input)
   end
 
@@ -99,7 +166,7 @@ defmodule Mud.Engine.Search do
     end
   end
 
-  defp links_to_match(links, looking_character) do
+  defp things_to_match(links = [%Link{} | _], looking_character) do
     Enum.map(links, fn link ->
       %Match{
         match_string: String.downcase(link.text),
@@ -110,7 +177,7 @@ defmodule Mud.Engine.Search do
     end)
   end
 
-  defp characters_to_match(characters, looking_character) do
+  defp things_to_match(characters = [%Character{} | _], looking_character) do
     Enum.map(characters, fn character ->
       %Match{
         match_string: String.downcase(character.name),
@@ -121,7 +188,7 @@ defmodule Mud.Engine.Search do
     end)
   end
 
-  defp items_to_match(items, looking_character) do
+  defp things_to_match(items = [%Item{} | _], looking_character) do
     Enum.map(items, fn item ->
       desc = Item.describe_glance(item, looking_character)
 

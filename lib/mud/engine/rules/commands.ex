@@ -9,6 +9,8 @@ defmodule Mud.Engine.Rules.Commands do
   alias Mud.Engine.Command.Definition.Part
   alias Mud.Engine.Util
 
+  require Logger
+
   ##
   # API
   ##
@@ -56,14 +58,20 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp list_all_command_definitions do
     MapSet.new([
-      define_look_command(),
-      define_say_command(),
-      define_move_command(),
-      define_sit_command(),
-      define_kneel_command(),
+      define_close_command(),
       define_kick_command(),
+      define_kneel_command(),
+      define_lock_command(),
+      define_look_command(),
+      define_move_command(),
+      define_open_command(),
+      define_put_command(),
       define_quit_command(),
-      define_stand_command()
+      define_remove_command(),
+      define_say_command(),
+      define_sit_command(),
+      define_stand_command(),
+      define_unlock_command()
     ])
   end
 
@@ -102,6 +110,168 @@ defmodule Mud.Engine.Rules.Commands do
           matches: [~r/.*/],
           key: :target,
           greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_open_command do
+    %Definition{
+      callback_module: Command.Open,
+      parts: [
+        %Part{
+          matches: ["open"],
+          key: :open,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:open],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_close_command do
+    %Definition{
+      callback_module: Command.Close,
+      parts: [
+        %Part{
+          matches: ["close"],
+          key: :close,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:close],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_lock_command do
+    %Definition{
+      callback_module: Command.Lock,
+      parts: [
+        %Part{
+          matches: ["lock"],
+          key: :lock,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:lock],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_lock_command do
+    %Definition{
+      callback_module: Command.Lock,
+      parts: [
+        %Part{
+          matches: ["lock"],
+          key: :lock,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:lock],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_unlock_command do
+    %Definition{
+      callback_module: Command.Unlock,
+      parts: [
+        %Part{
+          matches: ["unlock"],
+          key: :unlock,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:unlock],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_put_command do
+    %Definition{
+      callback_module: Command.Store,
+      parts: [
+        %Part{
+          matches: ["store"],
+          key: :put,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:put],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["in"],
+          key: :path,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:path],
+          matches: [~r/.*/],
+          key: :place,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_remove_command do
+    %Definition{
+      callback_module: Command.Remove,
+      parts: [
+        %Part{
+          matches: ["remove"],
+          key: :remove,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:remove],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["from"],
+          key: :from,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:from],
+          matches: [~r/.*/],
+          key: :place,
           transformer: &join_with_space_downcase/1
         }
       ]
@@ -275,6 +445,12 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &join_with_space_downcase/1
         },
         %Part{
+          matches: ["in"],
+          key: :in,
+          must_follow: [:look],
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
           key: :number,
           matches: [~r/\d/],
           must_follow: [:at, :look, :switch],
@@ -282,7 +458,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           key: :target,
-          must_follow: [:at, :look, :switch, :number],
+          must_follow: [:at, :look, :switch, :number, :in],
           matches: [~r/.*/],
           transformer: &join_with_space_downcase/1
         }
@@ -299,6 +475,7 @@ defmodule Mud.Engine.Rules.Commands do
   end
 
   defp join_with_space_downcase(input) do
+    Logger.debug(inspect(input))
     Enum.join(input, " ") |> String.downcase()
   end
 

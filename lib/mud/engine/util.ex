@@ -17,12 +17,25 @@ defmodule Mud.Engine.Util do
   @spec multiple_match_error(
           command_context :: CommandContext.t(),
           keys :: [String.t()],
-          values :: [any()],
+          values :: [any()] | any,
           error_message :: String.t(),
-          continuation_module :: module()
+          continuation_module :: module(),
+          continuation_type :: atom
         ) :: CommandContext.t()
-  def multiple_match_error(context, keys, values, error_message, continuation_module) do
-    indexed_values = list_to_index_map(values)
+  def multiple_match_error(
+        context,
+        keys,
+        values,
+        error_message,
+        continuation_module,
+        continuation_type \\ :numeric
+      ) do
+    values =
+      if is_list(values) do
+        list_to_index_map(values)
+      else
+        values
+      end
 
     context
     |> append_message(
@@ -34,9 +47,9 @@ defmodule Mud.Engine.Util do
       )
     )
     |> set_is_continuation(true)
-    |> set_continuation_data(indexed_values)
+    |> set_continuation_data(values)
     |> set_continuation_module(continuation_module)
-    |> set_continuation_type(:numeric)
+    |> set_continuation_type(continuation_type)
     |> set_success()
   end
 
@@ -73,7 +86,12 @@ defmodule Mud.Engine.Util do
     optional_group = ".*?"
     middle_group = optional_group <> "\\s+"
 
-    replaced_input = String.replace(input, ~r/\s+/, middle_group)
+    replaced_input =
+      if String.contains?(input, " ") do
+        String.replace(input, ~r/\s+/, middle_group)
+      else
+        input
+      end
 
     Regex.compile!("^(.*?\\s+)?" <> replaced_input <> optional_group)
   end

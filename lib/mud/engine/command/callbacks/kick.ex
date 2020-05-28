@@ -32,7 +32,12 @@ defmodule Mud.Engine.Command.Kick do
 
   @impl true
   def execute(context) do
-    case SingleTargetCallback.find_match(context, target_types()) do
+    case SingleTargetCallback.find_match(
+           0,
+           context.command.ast[:target],
+           context.character,
+           target_types()
+         ) do
       {:ok, nil} ->
         ExecutionContext.append_output(
           context,

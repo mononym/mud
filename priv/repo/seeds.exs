@@ -467,3 +467,20 @@ Mud.Engine.Model.Item.create(%{
   look_description:
     "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
 })
+
+Mud.Engine.Model.Item.create(%{
+  key: "chest",
+  area_id: center_room.id,
+  glance_description: "a simple wooden chest",
+  look_description:
+    "The chest is big enough to fit an average human, and is bolted to the ground.",
+  is_container: true,
+  container_closeable: true,
+  container_closed: true,
+  container_lockable: true,
+  container_locked: true,
+  container_length: 100,
+  container_width: 75,
+  container_height: 75,
+  container_capacity: 1000
+})

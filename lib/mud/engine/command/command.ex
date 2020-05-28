@@ -69,41 +69,50 @@ defmodule Mud.Engine.Command do
   Given a populated `Mud.Engine.Command.ExecutionContext` struct, execute the command logic.
   """
   def execute(context = %ExecutionContext{}) do
-    if context.is_continuation == true and context.continuation_type == :numeric do
-      case Integer.parse(context.input) do
-        {integer, _} ->
-          continuation_module = context.continuation_module
+    cond do
+      context.is_continuation == true and context.continuation_type == :numeric ->
+        case Integer.parse(context.input) do
+          {integer, _} ->
+            do_continue(context, context.continuation_data[integer])
 
-          context =
+          :error ->
             context
-            |> ExecutionContext.set_input(context.continuation_data[integer])
-            |> ExecutionContext.set_command(ExecutionContext.get_continuation_command(context))
-            |> ExecutionContext.clear_continuation()
-
-          {:ok, context} = transaction(context, &continuation_module.continue/1)
-
-          process_messages(context)
-
-        :error ->
-          context
-          |> ExecutionContext.append_message(
-            Message.new_output(
-              context.character_id,
-              "Selection not recognized. Executing input as is instead.",
-              "warning"
+            |> ExecutionContext.append_message(
+              Message.new_output(
+                context.character_id,
+                "Selection not recognized. Executing input as is instead.",
+                "warning"
+              )
             )
-          )
-          |> ExecutionContext.clear_continuation()
-          |> do_execute()
-      end
-    else
-      do_execute(context)
+            |> ExecutionContext.clear_continuation()
+            |> do_execute()
+        end
+
+      context.is_continuation == true and context.continuation_type == :custom ->
+        do_continue(context, {context.input, context.continuation_data})
+
+      true ->
+        do_execute(context)
     end
   end
 
   ##
   # Private Methods
   ##
+
+  defp do_continue(context, continuation_data) do
+    continuation_module = context.continuation_module
+
+    context =
+      context
+      |> ExecutionContext.set_input(continuation_data)
+      |> ExecutionContext.set_command(ExecutionContext.get_continuation_command(context))
+      |> ExecutionContext.clear_continuation()
+
+    {:ok, context} = transaction(context, &continuation_module.continue/1)
+
+    process_messages(context)
+  end
 
   @spec do_execute(Mud.Engine.Command.ExecutionContext.t()) ::
           Mud.Engine.Command.ExecutionContext.t()
@@ -235,7 +244,7 @@ defmodule Mud.Engine.Command do
         build_ast(rest_of_input, parts, current_part, node, ast)
         # current node not greedy
       else
-        # listing potential children which ALSO match the input
+        # listing potential children
         potential_children = list_children(current_part, parts)
 
         transformed_input =
@@ -322,28 +331,40 @@ defmodule Mud.Engine.Command do
         all_input
       end
 
+    Logger.debug(inspect(current_ast))
+    Logger.debug(inspect([next_input | rest_of_input]))
+
     current_matches = any_matches?(current_part.matches, next_input)
+    potential_children = list_children(current_part, parts)
 
-    if current_matches do
-      node = %{current_ast | input: [next_input | current_ast.input]}
+    transformed_input =
+      current_ast.input
+      |> current_part.transformer.()
 
-      build_ast(rest_of_input, parts, current_part, node, ast)
-    else
-      potential_children = list_children(current_part, parts)
+    updated_current_ast = %{current_ast | input: transformed_input}
 
-      transformed_input =
-        current_ast.input
-        |> current_part.transformer.()
+    child_asts =
+      Enum.flat_map(potential_children, fn child ->
+        build_ast(all_input, parts, child, nil, [updated_current_ast | ast])
+      end)
 
-      current_ast = %{current_ast | input: transformed_input}
+    child_matches = length(child_asts) > 0
 
-      if length(potential_children) > 0 do
-        Enum.flat_map(potential_children, fn child ->
-          build_ast(all_input, parts, child, nil, [current_ast | ast])
-        end)
-      else
+    cond do
+      child_matches ->
+        child_asts
+
+      current_matches ->
+        l = [next_input | current_ast.input]
+        Logger.debug(inspect(current_ast.input))
+        Logger.debug(inspect(next_input))
+        Logger.debug(inspect(l))
+        node = %{current_ast | input: [next_input | current_ast.input]}
+
+        build_ast(rest_of_input, parts, current_part, node, ast)
+
+      true ->
         []
-      end
     end
   end
 

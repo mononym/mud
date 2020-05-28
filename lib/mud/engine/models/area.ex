@@ -13,6 +13,8 @@ defmodule Mud.Engine.Model.Area do
     has_many(:items, Item)
     has_many(:to_links, Link, foreign_key: :to_id)
     has_many(:from_links, Link, foreign_key: :from_id)
+
+    timestamps()
   end
 
   @doc """

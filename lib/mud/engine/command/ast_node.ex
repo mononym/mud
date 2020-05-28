@@ -18,19 +18,34 @@ defmodule Mud.Engine.Command.AstNode do
     field(:generations, integer(), default: 0)
   end
 
+  def find(node, potential_paths) do
+    result =
+      Enum.find(potential_paths, fn path ->
+        get_in(node, path) != nil
+      end)
+
+    case result do
+      nil ->
+        nil
+
+      path ->
+        get_in(node, path)
+    end
+  end
+
   @behaviour Access
 
   @impl Access
-  def fetch(segment, key) do
-    keys = Map.keys(segment)
+  def fetch(node, key) do
+    keys = Map.keys(node)
 
     if key in keys do
-      Map.fetch(segment, key)
+      Map.fetch(node, key)
     else
-      child_keys = Map.keys(segment.children || %{})
+      child_keys = Map.keys(node.children)
 
       if key in child_keys do
-        val = segment.children[key]
+        val = node.children[key]
         {:ok, val}
       else
         :error

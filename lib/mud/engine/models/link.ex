@@ -29,6 +29,8 @@ defmodule Mud.Engine.Model.Link do
       type: :binary_id,
       foreign_key: :to_id
     )
+
+      timestamps()
   end
 
   @doc false
