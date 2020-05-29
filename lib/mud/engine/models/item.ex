@@ -19,19 +19,9 @@ defmodule Mud.Engine.Model.Item do
     #
     ##
 
-    belongs_to(:character, Mud.Engine.Model.Character,
-      type: :binary_id,
-      foreign_key: :character_id
-    )
-
     belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
 
     timestamps()
-
-    # What sorts of roles the item can take on, and it can take on more than one.
-    # A chest might also serve as a seat, for example
-    field(:is_furniture, :boolean, default: false)
-    field(:is_scenery, :boolean, default: false)
 
     # The state of the item
     field(:is_hidden, :boolean, default: false)
@@ -39,9 +29,6 @@ defmodule Mud.Engine.Model.Item do
     # How to describe the item
     field(:glance_description, :string, default: "item")
     field(:look_description, :string, default: "item")
-    # belongs_to(:container, Mud.Engine.Model.Item.Container, type: :binary_id)
-
-    # has_one(:container_component, __MODULE__.Container)
 
     ##
     #
@@ -61,6 +48,33 @@ defmodule Mud.Engine.Model.Item do
 
     has_many(:container_items, __MODULE__, foreign_key: :container_id)
     belongs_to(:container, __MODULE__, type: :binary_id)
+
+    ##
+    #
+    # Furniture Component
+    #
+    ##
+
+    field(:is_furniture, :boolean, default: false)
+
+    ##
+    #
+    # Scenery Component
+    #
+    ##
+
+    field(:is_scenery, :boolean, default: false)
+
+    ##
+    #
+    # Wearable Component
+    #
+    ##
+
+    field(:is_wearable, :boolean, default: false)
+    field(:wearable_is_worn, :boolean, default: false)
+    field(:wearable_location, :string)
+    belongs_to(:wearable_worn_by, Mud.Engine.Model.Character, type: :binary_id)
   end
 
   @doc false
@@ -69,7 +83,6 @@ defmodule Mud.Engine.Model.Item do
     |> change()
     |> cast(attrs, [
       :area_id,
-      :character_id,
       :is_hidden,
       :is_furniture,
       :is_scenery,
@@ -84,7 +97,11 @@ defmodule Mud.Engine.Model.Item do
       :container_length,
       :container_width,
       :container_height,
-      :container_capacity
+      :container_capacity,
+      :is_wearable,
+      :wearable_is_worn,
+      :wearable_location,
+      :wearable_worn_by_id
     ])
     |> validate_required([
       :glance_description,

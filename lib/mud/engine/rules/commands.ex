@@ -71,7 +71,8 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_sit_command(),
       define_stand_command(),
-      define_unlock_command()
+      define_unlock_command(),
+      define_wear_command()
     ])
   end
 
@@ -156,17 +157,17 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_lock_command do
+  defp define_wear_command do
     %Definition{
-      callback_module: Command.Lock,
+      callback_module: Command.Wear,
       parts: [
         %Part{
-          matches: ["lock"],
-          key: :lock,
+          matches: ["wear"],
+          key: :wear,
           transformer: &Enum.join/1
         },
         %Part{
-          must_follow: [:lock],
+          must_follow: [:wear],
           matches: [~r/.*/],
           key: :target,
           greedy: true,
@@ -257,7 +258,7 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:remove],
+          must_follow: [:remove, :my],
           matches: [~r/.*/],
           key: :thing,
           transformer: &join_with_space_downcase/1
@@ -266,6 +267,12 @@ defmodule Mud.Engine.Rules.Commands do
           must_follow: [:thing],
           matches: ["from"],
           key: :from,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:remove],
+          matches: ["my"],
+          key: :my,
           transformer: &List.first/1
         },
         %Part{

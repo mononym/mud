@@ -213,6 +213,7 @@ defmodule Mud.Engine.Command do
 
     transformed_input =
       current_ast.input
+      |> Enum.reverse()
       |> current_part.transformer.()
 
     current_ast = %{current_ast | input: transformed_input}
@@ -249,6 +250,7 @@ defmodule Mud.Engine.Command do
 
         transformed_input =
           node.input
+          |> Enum.reverse()
           |> current_part.transformer.()
 
         node = %{node | input: transformed_input}
@@ -297,6 +299,7 @@ defmodule Mud.Engine.Command do
 
         transformed_input =
           node.input
+          |> Enum.reverse()
           |> current_part.transformer.()
 
         node = %{node | input: transformed_input}
@@ -339,6 +342,7 @@ defmodule Mud.Engine.Command do
 
     transformed_input =
       current_ast.input
+      |> Enum.reverse()
       |> current_part.transformer.()
 
     updated_current_ast = %{current_ast | input: transformed_input}

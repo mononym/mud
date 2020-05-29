@@ -484,3 +484,26 @@ Mud.Engine.Model.Item.create(%{
   container_height: 75,
   container_capacity: 1000
 })
+
+Mud.Engine.Model.Item.create(%{
+  key: "backpack",
+  area_id: center_room.id,
+  glance_description: "a ragged leather backpack",
+  look_description: "The backpack has clearly seen better days.",
+  is_container: true,
+  container_closeable: true,
+  container_length: 100,
+  container_width: 75,
+  container_height: 75,
+  container_capacity: 1000,
+  is_wearable: true,
+  wearable_location: "back"
+})
+
+Mud.Engine.Model.Item.create(%{
+  key: "rock",
+  area_id: center_room.id,
+  glance_description: "a rough round rock",
+  look_description:
+    "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+})

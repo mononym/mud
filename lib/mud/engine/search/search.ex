@@ -91,7 +91,7 @@ defmodule Mud.Engine.Search do
           Character.t(),
           integer()
         ) ::
-          {:ok, [Match.t()]} | {:error | :out_of_range | :no_match}
+          {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
   def generate_matches(things, input, looking_character, which_target \\ 0) do
     things
     |> things_to_match(looking_character)
@@ -131,8 +131,11 @@ defmodule Mud.Engine.Search do
   # Performs the sorting of the possible matches, dumping those that don't match
   defp build_search_results(matches, input) do
     Enum.reduce(matches, %SearchResults{}, fn match, result ->
+      Logger.debug(inspect(input))
       search_regex = input_to_fuzzy_regex(input)
+      Logger.debug(inspect(search_regex))
       type = type_of_match(input, search_regex, match.match_string)
+      Logger.debug(inspect(type))
 
       if type != :nomatch do
         Map.put(result, type, [match | Map.get(result, type)])
@@ -154,6 +157,8 @@ defmodule Mud.Engine.Search do
 
   # Determines what category/type of match the item/character/link is with the given input
   defp type_of_match(input, search_regex, match_string) do
+    Logger.debug(inspect({input, match_string}))
+
     cond do
       String.equivalent?(match_string, input) ->
         :exact_matches
@@ -200,4 +205,6 @@ defmodule Mud.Engine.Search do
       }
     end)
   end
+
+  defp things_to_match([], _), do: []
 end

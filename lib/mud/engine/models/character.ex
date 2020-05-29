@@ -16,7 +16,8 @@ defmodule Mud.Engine.Model.Character do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
-      timestamps()
+    has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
+    timestamps()
     # Naming and Titles
     field(:name, :string)
 

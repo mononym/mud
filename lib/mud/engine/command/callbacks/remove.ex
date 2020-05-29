@@ -16,6 +16,7 @@ defmodule Mud.Engine.Command.Remove do
   alias Mud.Engine.Util
   alias Mud.Engine.Search
   alias Mud.Repo
+  alias Mud.Engine.Command.SingleTargetCallback
 
   require Logger
 
@@ -56,73 +57,194 @@ defmodule Mud.Engine.Command.Remove do
   end
 
   defp is_valid_ast?(ast) do
-    ast[:thing] != nil and ast[:thing][:from][:place] != nil
+    ast[:thing][:from][:place] != nil
   end
 
   @impl true
   def execute(context) do
     ast = context.command.ast
 
-    if is_valid_ast?(ast) do
-      case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
-        {:ok, place} ->
-          cond do
-            place.match.is_container and place.match.container_open ->
-              find_thing(context, place)
+    cond do
+      # Take something from a container and put it on the ground
+      ast[:thing][:from][:place] != nil ->
+        remove_item_from_container(context)
 
-            place.match.is_container and not place.match.container_open ->
-              ExecutionContext.append_output(
-                context,
-                context.character.id,
-                "{{item}}#{place.glance_description}{{/item}} must be opened first.",
-                "error"
-              )
-              |> ExecutionContext.set_success()
+      # Remove something that is worn
+      ast[:my][:thing] != nil or ast[:thing] != nil ->
+        remove_worn_item(context)
+    end
 
-            not place.match.is_container ->
-              ExecutionContext.append_output(
-                context,
-                context.character.id,
-                "{{item}}#{place.glance_description}{{/item}} is not a container.",
-                "error"
-              )
-              |> ExecutionContext.set_success()
-          end
+    # if is_valid_ast?(ast) do
+    #   case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
+    #     {:ok, place} ->
+    #       cond do
+    #         place.match.is_container and place.match.container_open ->
+    #           find_thing(context, place)
 
-        {:multiple, matches} ->
-          indexed_places =
-            Enum.map(matches, & &1.match)
-            |> Util.list_to_index_map()
+    #         place.match.is_container and not place.match.container_open ->
+    #           ExecutionContext.append_output(
+    #             context,
+    #             context.character.id,
+    #             "{{item}}#{place.glance_description}{{/item}} must be opened first.",
+    #             "error"
+    #           )
+    #           |> ExecutionContext.set_success()
 
-          cont_data = %ContinuationData{place: indexed_places, type: :place}
+    #         not place.match.is_container ->
+    #           ExecutionContext.append_output(
+    #             context,
+    #             context.character.id,
+    #             "{{item}}#{place.glance_description}{{/item}} is not a container.",
+    #             "error"
+    #           )
+    #           |> ExecutionContext.set_success()
+    #       end
 
-          handle_multiple_matches(
-            context,
-            matches,
-            cont_data,
-            "Which container did you mean?",
-            "There were too many places to choose from. Please be more specific."
-          )
+    #     {:multiple, matches} ->
+    #       indexed_places =
+    #         Enum.map(matches, & &1.match)
+    #         |> Util.list_to_index_map()
 
-        {:error, :no_match} ->
-          ExecutionContext.append_output(
-            context,
-            context.character.id,
-            "Could not find any matching containers to remove anything from.",
-            "error"
-          )
-          |> ExecutionContext.set_success()
-      end
-    else
-      help_docs = Util.get_module_docs(__MODULE__)
+    #       cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        help_docs,
-        "help_docs"
-      )
-      |> ExecutionContext.set_success()
+    #       handle_multiple_matches(
+    #         context,
+    #         matches,
+    #         cont_data,
+    #         "Which container did you mean?",
+    #         "There were too many places to choose from. Please be more specific."
+    #       )
+
+    #     {:error, :no_match} ->
+    #       ExecutionContext.append_output(
+    #         context,
+    #         context.character.id,
+    #         "Could not find any matching containers to remove anything from.",
+    #         "error"
+    #       )
+    #       |> ExecutionContext.set_success()
+    #   end
+    # else
+    #   help_docs = Util.get_module_docs(__MODULE__)
+
+    #   ExecutionContext.append_output(
+    #     context,
+    #     context.character.id,
+    #     help_docs,
+    #     "help_docs"
+    #   )
+    #   |> ExecutionContext.set_success()
+    # end
+  end
+
+  defp remove_worn_item(context) do
+    ast = context.command.ast
+    input = ast[:thing][:input] || ast[:my][:thing][:input]
+
+    character = Repo.preload(context.character, :worn_items)
+    worn_items = character.worn_items
+
+    matches = Search.generate_matches(worn_items, input, context.character)
+
+    case matches do
+      {:ok, [match]} ->
+        remove_single_worn_item(context, match)
+
+      {:ok, matches} when is_list(matches) ->
+        SingleTargetCallback.handle_multiple_matches(
+          context,
+          matches,
+          "What would you like to remove?",
+          "You can't remove all that!"
+        )
+
+      _error ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          String.capitalize("Could find nothing to remove."),
+          "warning"
+        )
+        |> ExecutionContext.set_success()
+    end
+  end
+
+  defp remove_single_worn_item(context, match) do
+    Item.update!(match.match, %{
+      area_id: context.character.area_id,
+      wearable_worn_by_id: nil,
+      wearable_is_worn: false
+    })
+
+    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+
+    context
+    |> ExecutionContext.append_output(
+      others,
+      "{{character}}#{context.character.name}{{/character}} removed {{item}}#{
+        match.glance_description
+      }{{/item}} from their {{bodypart}}#{match.glance_description}{{/bodypart}} and placed it on the ground.",
+      "info"
+    )
+    |> ExecutionContext.append_output(
+      context.character.id,
+      String.capitalize("{{item}}#{match.glance_description}{{/item}} is now on the ground."),
+      "info"
+    )
+    |> ExecutionContext.set_success()
+  end
+
+  defp remove_item_from_container(context) do
+    ast = context.command.ast
+
+    case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
+      {:ok, place} ->
+        cond do
+          place.match.is_container and place.match.container_open ->
+            find_thing(context, place)
+
+          place.match.is_container and not place.match.container_open ->
+            ExecutionContext.append_output(
+              context,
+              context.character.id,
+              "{{item}}#{place.glance_description}{{/item}} must be opened first.",
+              "error"
+            )
+            |> ExecutionContext.set_success()
+
+          not place.match.is_container ->
+            ExecutionContext.append_output(
+              context,
+              context.character.id,
+              "{{item}}#{place.glance_description}{{/item}} is not a container.",
+              "error"
+            )
+            |> ExecutionContext.set_success()
+        end
+
+      {:multiple, matches} ->
+        indexed_places =
+          Enum.map(matches, & &1.match)
+          |> Util.list_to_index_map()
+
+        cont_data = %ContinuationData{place: indexed_places, type: :place}
+
+        handle_multiple_matches(
+          context,
+          matches,
+          cont_data,
+          "Which container did you mean?",
+          "There were too many places to choose from. Please be more specific."
+        )
+
+      {:error, :no_match} ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "Could not find any matching containers to remove anything from.",
+          "error"
+        )
+        |> ExecutionContext.set_success()
     end
   end
 

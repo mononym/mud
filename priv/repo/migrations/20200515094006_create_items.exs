@@ -12,7 +12,6 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:look_description, :string)
 
       add(:area_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
-      add(:character_id, references(:characters, on_delete: :nilify_all, type: :binary_id))
 
       ##
       #
@@ -29,6 +28,17 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:container_width, :integer, default: 0)
       add(:container_height, :integer, default: 0)
       add(:container_capacity, :integer, default: 0)
+
+      ##
+      #
+      # Wearable Component
+      #
+      ##
+
+      add(:is_wearable, :boolean, default: false)
+      add(:wearable_is_worn, :boolean, default: false)
+      add(:wearable_location, :citext)
+      add(:wearable_worn_by_id, references(:characters, on_delete: :nilify_all, type: :binary_id))
     end
 
     create(index(:items, [:is_furniture]))
@@ -49,6 +59,16 @@ defmodule Mud.Repo.Migrations.CreateItems do
     create(index(:items, [:container_length]))
     create(index(:items, [:container_width]))
     create(index(:items, [:container_height]))
-    create(index(:items, [:container_capacity]))
+
+    ##
+    #
+    # Wearable Component
+    #
+    ##
+
+    create(index(:items, [:is_wearable]))
+    create(index(:items, [:wearable_is_worn]))
+    create(index(:items, [:wearable_location]))
+    create(index(:items, [:wearable_worn_by_id]))
   end
 end
