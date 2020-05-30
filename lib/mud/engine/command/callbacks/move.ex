@@ -19,7 +19,7 @@ defmodule Mud.Engine.Command.Move do
     - south
   """
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Model.{Character, Area}
+  alias Mud.Engine.{Character, Area}
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Message

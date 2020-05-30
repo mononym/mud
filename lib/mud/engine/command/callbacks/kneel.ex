@@ -15,7 +15,7 @@ defmodule Mud.Engine.Command.Kneel do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Model.{Character}
+  alias Mud.Engine.{Character}
   alias Mud.Engine.Search
   alias Mud.Engine.Message
 

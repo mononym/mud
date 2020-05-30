@@ -19,12 +19,12 @@ defmodule Mud.Account.Settings do
     timestamps()
   end
 
-  @spec changeset(__MODULE__.t() | Ecto.Changeset.t()) :: Ecto.Changeset.t()
+  @spec changeset(%Mud.Account.Settings{} | Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def changeset(profile) do
     change(profile)
   end
 
-  @spec update(__MODULE__.t() | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
+  @spec update(%Mud.Account.Settings{} | Ecto.Changeset.t(), map) :: Ecto.Changeset.t()
   def update(profile, attrs) do
     profile
     |> cast(attrs, [:developer_feature_on])

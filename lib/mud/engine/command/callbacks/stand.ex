@@ -12,7 +12,7 @@ defmodule Mud.Engine.Command.Stand do
 
   alias Mud.Engine.Message
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Model.{Character, Item}
+  alias Mud.Engine.{Character, Item}
 
   require Logger
 

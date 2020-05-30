@@ -146,7 +146,7 @@ defmodule Mud.Engine.Command do
 
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
-      character = Mud.Engine.Model.Character.get_by_id!(context.character_id)
+      character = Mud.Engine.Character.get_by_id!(context.character_id)
       context = ExecutionContext.set_character(context, character)
 
       function.(context)

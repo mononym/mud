@@ -1,7 +1,7 @@
 defmodule MudWeb.CharacterController do
   use MudWeb, :controller
 
-  alias Mud.Engine.Model.{Area, Character}
+  alias Mud.Engine.{Area, Character}
   alias Mud.Engine.Session
 
   require Logger

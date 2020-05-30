@@ -16,7 +16,7 @@ defmodule MudWeb.Client.InputForm do
     |> validate_required([:text])
   end
 
-  @spec update(__MODULE__.t(), map) :: Ecto.Changeset.t()
+  @spec update(%__MODULE__{}, map) :: Ecto.Changeset.t()
   def update(input = %__MODULE__{}, params) do
     input
     |> cast(params, [:text])

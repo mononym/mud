@@ -5,7 +5,7 @@ defmodule Mud.Engine.Util do
 
   import Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Message
-  alias Mud.Engine.Model.{Area, Character, Link, Item}
+  alias Mud.Engine.{Area, Character, Link, Item}
 
   def clear_continuation_from_context(context) do
     context
@@ -94,6 +94,26 @@ defmodule Mud.Engine.Util do
       end
 
     Regex.compile!("^(.*?\\s+)?" <> replaced_input <> optional_group)
+  end
+
+  @doc """
+  Given a string, checks if it starts with a vowel and returns the string with the appropriate prefix.
+  """
+  @spec prefix_with_a_or_an(String.t()) :: String.t()
+  def prefix_with_a_or_an(string) do
+    a_or_an(string) <> " " <> string
+  end
+
+  @doc """
+  Given a string, checks if it starts with a vowel and returns the appropriate prefix.
+  """
+  @spec a_or_an(String.t()) :: String.t()
+  def a_or_an(string) do
+    if String.starts_with?(string, ["a", "A", "e", "E", "i", "I", "o", "O", "u", "U"]) do
+      "an"
+    else
+      "a"
+    end
   end
 
   def refresh_thing(%Item{id: id}), do: Item.get!(id)

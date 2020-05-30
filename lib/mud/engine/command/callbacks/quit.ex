@@ -13,11 +13,11 @@ defmodule Mud.Engine.Command.Quit do
   def do_ingame_stuff(context) do
     {:ok, character} =
       context.character_id
-      |> Mud.Engine.Model.Character.get_by_id!()
-      |> Mud.Engine.Model.Character.update(%{active: false})
+      |> Mud.Engine.Character.get_by_id!()
+      |> Mud.Engine.Character.update(%{active: false})
 
     characters =
-      Mud.Engine.Model.Character.list_others_active_in_areas(character, character.area_id)
+      Mud.Engine.Character.list_others_active_in_areas(character, character.area_id)
 
     context
     |> ExecutionContext.append_message(

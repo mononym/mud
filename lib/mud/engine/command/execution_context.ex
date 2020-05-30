@@ -7,7 +7,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
 
   alias Mud.Engine.Message
 
-  @type character() :: Mud.Engine.Model.Character.t()
+  @type character() :: Mud.Engine.Character.t()
   @type character_id() :: String.t()
   @type command() :: Mud.Engine.Command.t()
   @type continuation_command() :: command()
@@ -33,7 +33,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
 
     # The Character that the command is being processed for. Will be populated immediatly before execution, in the
     # transaction.
-    field(:character, Mud.Engine.Model.Character.t())
+    field(:character, Mud.Engine.Character.t())
 
     # Id of the character the command is being processed for.
     field(:character_id, String.t())

@@ -3,7 +3,7 @@ defmodule Mud.Engine.Search do
   Utilities to help with searching during autocomplete.
   """
 
-  alias Mud.Engine.Model.{Character, Item, Link}
+  alias Mud.Engine.{Character, Item, Link}
   import Mud.Engine.Util
   require Logger
 

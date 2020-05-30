@@ -6,8 +6,8 @@ defmodule Mud.Engine.Command.Look do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Model.Area
-  alias Mud.Engine.Model.Item
+  alias Mud.Engine.Area
+  alias Mud.Engine.Item
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Util
   alias Mud.Engine.Message

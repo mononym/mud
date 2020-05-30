@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Model.Link do
+defmodule Mud.Engine.Link do
   @moduledoc """
   Links provide a lot of flexibility in how areas are connected.
 
@@ -11,7 +11,7 @@ defmodule Mud.Engine.Model.Link do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.Model.{Area}
+  alias Mud.Engine.{Area}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
@@ -56,7 +56,7 @@ defmodule Mud.Engine.Model.Link do
       [%__MODULE__{}, ...]
 
   """
-  @spec lists() :: [__MODULE__.t()]
+  @spec lists() :: [%__MODULE__{}]
   def lists do
     Repo.all(__MODULE__)
   end
@@ -70,7 +70,7 @@ defmodule Mud.Engine.Model.Link do
       [%__MODULE__{}, ...]
 
   """
-  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [__MODULE__.t()]
+  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [%__MODULE__{}]
   def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
@@ -92,7 +92,7 @@ defmodule Mud.Engine.Model.Link do
 
   """
   @spec list_in_area(area_id :: String.t()) :: [
-          __MODULE__.t()
+          %__MODULE__{}
         ]
   def list_in_area(area_id) do
     Repo.all(
@@ -114,7 +114,7 @@ defmodule Mud.Engine.Model.Link do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec create(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
     %__MODULE__{}
     |> __MODULE__.changeset(attrs)
@@ -133,8 +133,8 @@ defmodule Mud.Engine.Model.Link do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update(area :: __MODULE__.t(), attributes :: map()) ::
-          {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec update(area :: %__MODULE__{}, attributes :: map()) ::
+          {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(%__MODULE__{} = link, attrs) do
     link
     |> __MODULE__.changeset(attrs)
@@ -153,7 +153,7 @@ defmodule Mud.Engine.Model.Link do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete(area :: __MODULE__.t()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec delete(area :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def delete(%__MODULE__{} = link) do
     Repo.delete(link)
   end
@@ -170,7 +170,7 @@ defmodule Mud.Engine.Model.Link do
       %Ecto.NoResultsError{}
 
   """
-  @spec get!(link_id :: String.t()) :: __MODULE__.t() | Ecto.NoResultsError.t()
+  @spec get!(link_id :: String.t()) :: %__MODULE__{} | Ecto.NoResultsError.t()
   def get!(link_id) do
     Repo.get!(__MODULE__, link_id)
   end

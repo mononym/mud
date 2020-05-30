@@ -1,10 +1,11 @@
-defmodule Mud.Engine.Model.Character do
+defmodule Mud.Engine.Character do
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.Model.{Area, Character, Item}
+  alias Mud.Engine.{Area, Character, Item}
+  alias Mud.Engine.Util
 
   require Logger
 
@@ -133,7 +134,7 @@ defmodule Mud.Engine.Model.Character do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec create(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
     area = Area.list_all() |> Enum.random()
 
@@ -160,7 +161,7 @@ defmodule Mud.Engine.Model.Character do
       "awesome description"
 
   """
-  @spec describe_glance(Character.t(), Character.t()) :: String.t()
+  @spec describe_glance(%Character{}, %Character{}) :: String.t()
   def describe_glance(character, _character_doing_the_looking) do
     a_or_an =
       if Regex.match?(~r/^[aeiouAEIOU]/, character.race) do
@@ -183,9 +184,22 @@ defmodule Mud.Engine.Model.Character do
       "awesome description"
 
   """
-  @spec describe_look(Character.t(), Character.t()) :: String.t()
+  @spec describe_look(%Character{}, %Character{}) :: String.t()
   def describe_look(character, looking_character) do
-    describe_glance(character, looking_character)
+    # Woodsman Khandrish Aratar of Zoulren, an Elf.
+    # Of average height, they have blue eyes and brown hair.
+    # They are wearing a rugged leather backpack.
+    character = Repo.preload(character, :worn_items)
+
+    worn_items =
+      character.worn_items
+      |> Item.describe_glance(looking_character)
+      |> Enum.join("{{/item}}, {{item}}")
+
+    worn_items_string = "{{item}}" <> worn_items <> "{{/item}}"
+
+    "{{character}}#{character.name}{{/character}}, #{Util.prefix_with_a_or_an(character.race)}.\n" <>
+      "They are wearing #{worn_items_string}"
   end
 
   def describe_room_glance(character, _looking_character) do
@@ -225,7 +239,7 @@ defmodule Mud.Engine.Model.Character do
       [%Character{}, ...]
 
   """
-  @spec list_all :: [__MODULE__.t()]
+  @spec list_all :: [%__MODULE__{}]
   def list_all do
     Repo.all(__MODULE__)
   end
@@ -302,7 +316,7 @@ defmodule Mud.Engine.Model.Character do
       [%Character{}, ...]
 
   """
-  @spec list_others_active_in_areas(Character.t(), String.t() | [String.t()]) :: [%__MODULE__{}]
+  @spec list_others_active_in_areas(%Character{}, String.t() | [String.t()]) :: [%__MODULE__{}]
   def list_others_active_in_areas(character, area_ids) do
     area_ids = List.wrap(area_ids)
 
@@ -363,8 +377,8 @@ defmodule Mud.Engine.Model.Character do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update(character :: __MODULE__.t(), attributes :: map()) ::
-          {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec update(character :: %__MODULE__{}, attributes :: map()) ::
+          {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(character, attrs \\ %{}) do
     character
     |> changeset(attrs)
@@ -385,7 +399,7 @@ defmodule Mud.Engine.Model.Character do
       ** (Ecto.NoResultsError)
 
   """
-  @spec update!(character :: __MODULE__.t(), attributes :: map()) :: __MODULE__.t()
+  @spec update!(character :: %__MODULE__{}, attributes :: map()) :: %__MODULE__{}
   def update!(character, attrs \\ %{}) do
     character
     |> changeset(attrs)
@@ -404,7 +418,7 @@ defmodule Mud.Engine.Model.Character do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete(character :: __MODULE__.t()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec delete(character :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def delete(character) do
     Repo.delete(character)
   end

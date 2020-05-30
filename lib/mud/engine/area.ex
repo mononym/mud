@@ -1,8 +1,8 @@
-defmodule Mud.Engine.Model.Area do
+defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.Model.{Character, Link, Item}
+  alias Mud.Engine.{Character, Link, Item}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
@@ -26,7 +26,7 @@ defmodule Mud.Engine.Model.Area do
       [%__MODULE__{}, ...]
 
   """
-  @spec list_all() :: [__MODULE__.t()]
+  @spec list_all() :: [%__MODULE__{}]
   def list_all do
     Repo.all(__MODULE__)
   end
@@ -45,7 +45,7 @@ defmodule Mud.Engine.Model.Area do
       ** (Ecto.NoResultsError)
 
   """
-  @spec get_area!(id :: String.t()) :: __MODULE__.t()
+  @spec get_area!(id :: String.t()) :: %__MODULE__{}
   def get_area!(id), do: Repo.get!(__MODULE__, id)
 
   @doc """
@@ -60,7 +60,7 @@ defmodule Mud.Engine.Model.Area do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec create_area(attributes :: map()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec create_area(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create_area(attrs \\ %{}) do
     %__MODULE__{}
     |> changeset(attrs)
@@ -79,8 +79,8 @@ defmodule Mud.Engine.Model.Area do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update_area(area :: __MODULE__.t(), attributes :: map()) ::
-          {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec update_area(area :: %__MODULE__{}, attributes :: map()) ::
+          {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update_area(area, attrs) do
     area
     |> changeset(attrs)
@@ -99,7 +99,7 @@ defmodule Mud.Engine.Model.Area do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete_area(area :: __MODULE__.t()) :: {:ok, __MODULE__.t()} | {:error, %Ecto.Changeset{}}
+  @spec delete_area(area :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def delete_area(area) do
     Repo.delete(area)
   end
@@ -109,7 +109,7 @@ defmodule Mud.Engine.Model.Area do
   #
 
   @doc false
-  @spec changeset(area :: __MODULE__.t(), attributes :: map()) :: %Ecto.Changeset{}
+  @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
   defp changeset(area, attrs) do
     area
     |> cast(attrs, [:name, :description])
@@ -206,7 +206,7 @@ defmodule Mud.Engine.Model.Area do
   end
 
   defp build_obvious_exits_string(area_id) do
-    Mud.Engine.Model.Link.list_obvious_exits_in_area(area_id)
+    Mud.Engine.Link.list_obvious_exits_in_area(area_id)
     |> Enum.map(fn link ->
       link.text
     end)
@@ -216,7 +216,7 @@ defmodule Mud.Engine.Model.Area do
 
   # Character list should not contain the character the look is being performed for
   defp build_player_characters_string(area_id, looking_character) do
-    Mud.Engine.Model.Character.list_active_in_areas(area_id)
+    Mud.Engine.Character.list_active_in_areas(area_id)
     # filter out self
     |> Enum.filter(fn char ->
       char.id != looking_character.id

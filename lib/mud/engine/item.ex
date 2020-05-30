@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Model.Item do
+defmodule Mud.Engine.Item do
   @moduledoc """
   An Item is the building block of almost everything in the world.
 
@@ -19,7 +19,7 @@ defmodule Mud.Engine.Model.Item do
     #
     ##
 
-    belongs_to(:area, Mud.Engine.Model.Area, type: :binary_id)
+    belongs_to(:area, Mud.Engine.Area, type: :binary_id)
 
     timestamps()
 
@@ -74,7 +74,7 @@ defmodule Mud.Engine.Model.Item do
     field(:is_wearable, :boolean, default: false)
     field(:wearable_is_worn, :boolean, default: false)
     field(:wearable_location, :string)
-    belongs_to(:wearable_worn_by, Mud.Engine.Model.Character, type: :binary_id)
+    belongs_to(:wearable_worn_by, Mud.Engine.Character, type: :binary_id)
   end
 
   @doc false
@@ -129,7 +129,7 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.update()
   end
 
-  @spec get!(id :: binary) :: __MODULE__.t()
+  @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
       item in __MODULE__,
@@ -138,7 +138,7 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.one!()
   end
 
-  @spec get(id :: binary) :: nil | __MODULE__.t()
+  @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
     from(
       item in __MODULE__,
@@ -147,7 +147,7 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.one()
   end
 
-  @spec list_in_area(id) :: [__MODULE__.t()]
+  @spec list_in_area(id) :: [%__MODULE__{}]
   def list_in_area(area_id) do
     from(
       item in __MODULE__,
@@ -156,7 +156,7 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.all()
   end
 
-  @spec list_furniture_in_area(id) :: [__MODULE__.t()]
+  @spec list_furniture_in_area(id) :: [%__MODULE__{}]
   def list_furniture_in_area(area_id) do
     from(
       item in __MODULE__,
@@ -165,7 +165,7 @@ defmodule Mud.Engine.Model.Item do
     |> Repo.all()
   end
 
-  @spec list_visible_scenery_in_area(id) :: [__MODULE__.t()]
+  @spec list_visible_scenery_in_area(id) :: [%__MODULE__{}]
   def list_visible_scenery_in_area(area_id) do
     from(
       item in __MODULE__,

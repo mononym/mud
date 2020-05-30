@@ -25,7 +25,7 @@ defmodule Mud.Account.Player do
     |> validate()
   end
 
-  @spec update(Mud.Account.Player.t(), map) :: Ecto.Changeset.t()
+  @spec update(%Mud.Account.Player{}, map) :: Ecto.Changeset.t()
   def update(player = %__MODULE__{}, params) do
     player
     |> cast(params, [:status, :tos_accepted])

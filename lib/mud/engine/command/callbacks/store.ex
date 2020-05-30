@@ -12,8 +12,8 @@ defmodule Mud.Engine.Command.Store do
 
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Search
-  alias Mud.Engine.Model.Character
-  alias Mud.Engine.Model.Item
+  alias Mud.Engine.Character
+  alias Mud.Engine.Item
   alias Mud.Engine.Util
 
   require Logger

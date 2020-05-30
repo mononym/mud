@@ -12,7 +12,7 @@ defmodule Mud.Engine.Command.Wear do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Command.SingleTargetCallback
-  alias Mud.Engine.Model.{Character, Item}
+  alias Mud.Engine.{Character, Item}
 
   require Logger
 

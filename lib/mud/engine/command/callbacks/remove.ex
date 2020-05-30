@@ -10,8 +10,8 @@ defmodule Mud.Engine.Command.Remove do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Model.Item
-  alias Mud.Engine.Model.Character
+  alias Mud.Engine.Item
+  alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Util
   alias Mud.Engine.Search
@@ -21,7 +21,7 @@ defmodule Mud.Engine.Command.Remove do
   require Logger
 
   defmodule ContinuationData do
-    use TypedStruct
+    use TypedStruct                 
 
     typedstruct do
       field(:type, atom(), required: true)
@@ -54,10 +54,6 @@ defmodule Mud.Engine.Command.Remove do
       )
       |> ExecutionContext.set_success()
     end
-  end
-
-  defp is_valid_ast?(ast) do
-    ast[:thing][:from][:place] != nil
   end
 
   @impl true

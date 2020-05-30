@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 
 # Room insertions
-alias Mud.Engine.Model.{Area, Link}
+alias Mud.Engine.{Area, Link}
 
 center_room =
   Mud.Repo.insert!(%Area{
@@ -421,7 +421,7 @@ Mud.Repo.insert!(%Link{
 
 # Object insertions
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "rock",
   is_scenery: false,
   area_id: north_room.id,
@@ -430,7 +430,7 @@ Mud.Engine.Model.Item.create(%{
     "This rock has been worn down over time by water into a smooth, flat round shape."
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "rock",
   is_scenery: false,
   area_id: north_room.id,
@@ -439,7 +439,7 @@ Mud.Engine.Model.Item.create(%{
     "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "branch",
   is_scenery: false,
   area_id: north_room.id,
@@ -448,7 +448,7 @@ Mud.Engine.Model.Item.create(%{
     "The leafy branch has only recently been removed from its tree, the leaves not yet wilted."
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "fountain",
   is_scenery: true,
   area_id: center_room.id,
@@ -458,7 +458,7 @@ Mud.Engine.Model.Item.create(%{
   is_hidden: true
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "bench",
   is_scenery: true,
   is_furniture: true,
@@ -468,7 +468,7 @@ Mud.Engine.Model.Item.create(%{
     "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "chest",
   area_id: center_room.id,
   glance_description: "a simple wooden chest",
@@ -485,7 +485,7 @@ Mud.Engine.Model.Item.create(%{
   container_capacity: 1000
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "backpack",
   area_id: center_room.id,
   glance_description: "a ragged leather backpack",
@@ -500,7 +500,7 @@ Mud.Engine.Model.Item.create(%{
   wearable_location: "back"
 })
 
-Mud.Engine.Model.Item.create(%{
+Mud.Engine.Item.create(%{
   key: "rock",
   area_id: center_room.id,
   glance_description: "a rough round rock",

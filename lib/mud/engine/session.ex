@@ -126,8 +126,8 @@ defmodule Mud.Engine.Session do
 
     # Set character to active
     state.character_id
-    |> Mud.Engine.Model.Character.get_by_id!()
-    |> Mud.Engine.Model.Character.update(%{active: true})
+    |> Mud.Engine.Character.get_by_id!()
+    |> Mud.Engine.Character.update(%{active: true})
 
     # Start inactivity timer
     state = update_timeout(state, @character_inactivity_timeout_warning)
