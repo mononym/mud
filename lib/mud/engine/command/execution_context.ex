@@ -84,7 +84,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @doc """
   Append a message to the list of messages which will be sent after the command has been executed
   """
-  @spec append_output(context, String.t() | [String.t()], String.t(), String.t()) :: context
+  @spec append_output(context :: %__MODULE__{}, to :: String.t() | [String.t()], message :: String.t(), tag :: String.t()) :: context
   def append_output(%__MODULE__{} = context, to, message, tag) do
     msg =
       Message.new_output(

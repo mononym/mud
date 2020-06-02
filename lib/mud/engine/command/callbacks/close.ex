@@ -10,6 +10,8 @@ defmodule Mud.Engine.Command.Close do
     - close door
   """
 
+  alias Mud.Repo
+  alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Command.SingleTargetCallback
@@ -25,7 +27,7 @@ defmodule Mud.Engine.Command.Close do
   def continue(context) do
     target = Util.refresh_thing(context.input.match)
 
-    if context.character.area_id == target.area_id do
+    if context.character.area_id == target.area_id or context.character.id == target.worn_by_id do
       do_thing_to_match(context, %{context.input | match: target})
     else
       ExecutionContext.append_output(
@@ -40,45 +42,67 @@ defmodule Mud.Engine.Command.Close do
 
   @impl true
   def execute(context) do
-    which_target = min(0, context.command.ast[:number][:input] || 0)
+    {input, which_target} = extract_input_and_target(context.command.ast)
 
     result =
-      SingleTargetCallback.find_match(
-        which_target,
-        context.command.ast[:target][:input],
+      Search.find_matches_in_area_v2(
+        target_types(),
+        context.character.area_id,
+        input,
         context.character,
-        target_types()
+        which_target
       )
 
+    multi_error = "Which of these did you intend to close?"
+    too_many = "You can't possibly close all of those at once. Please be more specific."
+
     case result do
-      {:ok, match} ->
+      {:ok, [match]} ->
         do_thing_to_match(context, match)
 
-      {:error, {:multiple_matches, matches}} ->
-        SingleTargetCallback.handle_multiple_matches(
-          context,
-          matches,
-          "Which of these did you intend to close?",
-          "You can't possibly close all of those at once. Please be more specific."
-        )
-
-      {:error, type} ->
-        error_msg =
-          case type do
-            :no_match ->
-              "Could not find anything to close. Perhaps it's for the best."
-
-            :out_of_range ->
-              "Nope! Nice try though. You need to choose one of the provided options."
-          end
-
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          error_msg,
-          "error"
-        )
+      {:ok, matches} ->
+        SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
         |> ExecutionContext.set_success()
+
+      {:error, _} ->
+        character = Repo.preload(context.character, :worn_items)
+        worn_items = character.worn_items
+
+        case Search.generate_matches(worn_items, input, context.character, which_target) do
+          {:ok, [match]} ->
+            do_thing_to_match(context, match)
+
+          {:ok, matches} ->
+            SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
+            |> ExecutionContext.set_success()
+        end
+    end
+  end
+
+  @spec extract_input_and_target(%Mud.Engine.Command.AstNode{}) :: {String.t(), integer()}
+  defp extract_input_and_target(ast) do
+    cond do
+      ast.generations == 3 ->
+        target = ast[:my][:number][:input]
+        input = ast[:my][:number][:target][:input]
+
+        {input, target}
+
+      ast.generations == 2 and ast[:number] != nil ->
+        target = ast[:number][:input]
+        input = ast[:number][:target][:input]
+
+        {input, target}
+
+      ast.generations == 2 ->
+        input = ast[:number][:target][:input]
+
+        {input, 0}
+
+      true ->
+        input = ast[:target][:input]
+
+        {input, 0}
     end
   end
 

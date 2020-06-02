@@ -43,7 +43,12 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
   def find_matches_in_area_v2(target_types, area_id, input, looking_character, which_target) do
     target_types
-    |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
+    |> Stream.map(fn type -> find_matches(type, area_id) end)
+    |> Enum.map(fn matches ->
+      matches
+      |> things_to_match(looking_character)
+      |> build_search_results(input)
+    end)
     |> merge_search_results()
     |> check_search_results(which_target)
   end
@@ -103,39 +108,35 @@ defmodule Mud.Engine.Search do
           SearchResults.t()
   def find_matches_in_area(target_types, area_id, input, looking_character) do
     target_types
-    |> Enum.map(fn type -> find_matches(type, area_id, input, looking_character) end)
+    |> Stream.map(fn type -> find_matches(type, area_id) end)
+    |> Enum.map(fn matches ->
+      matches
+      |> things_to_match(looking_character)
+      |> build_search_results(input)
+    end)
     |> merge_search_results()
   end
 
-  defp find_matches(:character, area_id, input, looking_character) do
+  defp find_matches(:character, area_id) do
     area_id
     |> Character.list_in_area()
-    |> things_to_match(looking_character)
-    |> build_search_results(input)
   end
 
-  defp find_matches(:item, area_id, input, looking_character) do
+  defp find_matches(:item, area_id) do
     area_id
     |> Item.list_in_area()
-    |> things_to_match(looking_character)
-    |> build_search_results(input)
   end
 
-  defp find_matches(:link, area_id, input, looking_character) do
+  defp find_matches(:link, area_id) do
     area_id
     |> Link.list_obvious_exits_in_area()
-    |> things_to_match(looking_character)
-    |> build_search_results(input)
   end
 
   # Performs the sorting of the possible matches, dumping those that don't match
   defp build_search_results(matches, input) do
     Enum.reduce(matches, %SearchResults{}, fn match, result ->
-      Logger.debug(inspect(input))
       search_regex = input_to_fuzzy_regex(input)
-      Logger.debug(inspect(search_regex))
       type = type_of_match(input, search_regex, match.match_string)
-      Logger.debug(inspect(type))
 
       if type != :nomatch do
         Map.put(result, type, [match | Map.get(result, type)])

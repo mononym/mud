@@ -11,10 +11,14 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
 
-## Learn more
+## Up and Running
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+You will need:
+  * Postgresql
+  * Redis
+  * Elixir
+  * NPM
+  * A `mud` user in the Postgresql database, see config.
+  * The migrations run
+  * Generate a cloak key for the environment variable CLOAK_KEY: `32 |> :crypto.strong_rand_bytes() |> Base.encode64()`
+  * Generate assets: ``

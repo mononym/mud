@@ -38,15 +38,6 @@ defmodule Mud.Engine.Command.Kick do
            context.character,
            target_types()
          ) do
-      {:ok, nil} ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Kicking oneself is no way to solve problems.",
-          "info"
-        )
-        |> ExecutionContext.set_success()
-
       {:ok, match} ->
         do_thing_to_match(context, match.match)
 

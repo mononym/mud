@@ -21,7 +21,7 @@ defmodule Mud.Engine.Command.Remove do
   require Logger
 
   defmodule ContinuationData do
-    use TypedStruct                 
+    use TypedStruct
 
     typedstruct do
       field(:type, atom(), required: true)
@@ -49,7 +49,7 @@ defmodule Mud.Engine.Command.Remove do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        "The #{context.input.glance_description} is no longer present.",
+        "{{item}}#{String.capitalize(context.input.glance_description)}{{/item}} is no longer present.",
         "error"
       )
       |> ExecutionContext.set_success()
@@ -69,68 +69,6 @@ defmodule Mud.Engine.Command.Remove do
       ast[:my][:thing] != nil or ast[:thing] != nil ->
         remove_worn_item(context)
     end
-
-    # if is_valid_ast?(ast) do
-    #   case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
-    #     {:ok, place} ->
-    #       cond do
-    #         place.match.is_container and place.match.container_open ->
-    #           find_thing(context, place)
-
-    #         place.match.is_container and not place.match.container_open ->
-    #           ExecutionContext.append_output(
-    #             context,
-    #             context.character.id,
-    #             "{{item}}#{place.glance_description}{{/item}} must be opened first.",
-    #             "error"
-    #           )
-    #           |> ExecutionContext.set_success()
-
-    #         not place.match.is_container ->
-    #           ExecutionContext.append_output(
-    #             context,
-    #             context.character.id,
-    #             "{{item}}#{place.glance_description}{{/item}} is not a container.",
-    #             "error"
-    #           )
-    #           |> ExecutionContext.set_success()
-    #       end
-
-    #     {:multiple, matches} ->
-    #       indexed_places =
-    #         Enum.map(matches, & &1.match)
-    #         |> Util.list_to_index_map()
-
-    #       cont_data = %ContinuationData{place: indexed_places, type: :place}
-
-    #       handle_multiple_matches(
-    #         context,
-    #         matches,
-    #         cont_data,
-    #         "Which container did you mean?",
-    #         "There were too many places to choose from. Please be more specific."
-    #       )
-
-    #     {:error, :no_match} ->
-    #       ExecutionContext.append_output(
-    #         context,
-    #         context.character.id,
-    #         "Could not find any matching containers to remove anything from.",
-    #         "error"
-    #       )
-    #       |> ExecutionContext.set_success()
-    #   end
-    # else
-    #   help_docs = Util.get_module_docs(__MODULE__)
-
-    #   ExecutionContext.append_output(
-    #     context,
-    #     context.character.id,
-    #     help_docs,
-    #     "help_docs"
-    #   )
-    #   |> ExecutionContext.set_success()
-    # end
   end
 
   defp remove_worn_item(context) do
@@ -262,7 +200,7 @@ defmodule Mud.Engine.Command.Remove do
           context,
           matches,
           cont_data,
-          "What did you want to remove from from #{place.glance_description}?",
+          "What did you want to remove from from {{item}}#{place.glance_description}{{/item}}?",
           "There were too many things to choose from. Please be more specific."
         )
 
@@ -270,7 +208,7 @@ defmodule Mud.Engine.Command.Remove do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "Could not find any matching thing to remove from #{place.glance_description}.",
+          "Could not find any matching thing to remove from {{item}}#{place.glance_description}{{/item}}.",
           "help_docs"
         )
         |> ExecutionContext.set_success()
@@ -372,7 +310,7 @@ defmodule Mud.Engine.Command.Remove do
   defp remove_thing_from_place(context, thing, place) do
     item = place.match
 
-    if item.is_container and item.container_is_open do
+    if item.is_container and item.container_open do
       Item.update!(thing.match, %{area_id: context.character.area_id, container_id: nil})
 
       others = Character.list_others_active_in_areas(context.character, context.character.area_id)

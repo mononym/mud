@@ -193,7 +193,7 @@ defmodule Mud.Engine.Character do
 
     worn_items =
       character.worn_items
-      |> Item.describe_glance(looking_character)
+      |> Stream.map(fn item -> Item.describe_glance(item, looking_character) end)
       |> Enum.join("{{/item}}, {{item}}")
 
     worn_items_string = "{{item}}" <> worn_items <> "{{/item}}"

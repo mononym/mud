@@ -41,7 +41,7 @@ defmodule Mud.Engine.Area do
       iex> get_area!("123")
       %__MODULE__{}
 
-      iex> get_area!("456")
+      iex> get_area!("456")w
       ** (Ecto.NoResultsError)
 
   """

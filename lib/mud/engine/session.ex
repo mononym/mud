@@ -51,7 +51,7 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  @spec cast_message(Mud.Engine.Message.Output.t()) :: :ok
+  @spec cast_message(%Mud.Engine.Message.Output{} | %Mud.Engine.Message.Input{}) :: :ok
   def cast_message(message) do
     to = List.wrap(message.to)
 

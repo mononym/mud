@@ -30,7 +30,7 @@ defmodule Mud.Engine.Command.Wear do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        "The #{context.input.glance_description} is no longer present.",
+        "The {{item}}#{context.input.glance_description}{{/item}} is no longer present.",
         "error"
       )
       |> ExecutionContext.set_success()

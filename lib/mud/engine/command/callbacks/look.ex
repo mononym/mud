@@ -7,6 +7,7 @@ defmodule Mud.Engine.Command.Look do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Area
+  alias Mud.Engine.Search
   alias Mud.Engine.Item
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Util
@@ -58,11 +59,20 @@ defmodule Mud.Engine.Command.Look do
             0
         end
 
-      case SingleTargetCallback.find_match(which_target, input, context.character, target_types()) do
-        {:ok, match} ->
+      result =
+        Search.find_matches_in_area_v2(
+          target_types(),
+          context.character.area_id,
+          input,
+          context.character,
+          which_target
+        )
+
+      case result do
+        {:ok, [match]} ->
           do_thing_to_match(context, match, which_target)
 
-        {:error, {:multiple_matches, matches}} ->
+        {:ok, matches} ->
           SingleTargetCallback.handle_multiple_matches(
             context,
             matches,
@@ -70,20 +80,11 @@ defmodule Mud.Engine.Command.Look do
             "Please be more specific."
           )
 
-        {:error, type} ->
-          error_msg =
-            case type do
-              :no_match ->
-                "Could not find anything to look at."
-
-              :out_of_range ->
-                "It's...it's gone! It's just not there! Maybe try again?"
-            end
-
+        _error ->
           ExecutionContext.append_output(
             context,
             context.character.id,
-            error_msg,
+            "Could not find anything to look at.",
             "error"
           )
           |> ExecutionContext.set_success()

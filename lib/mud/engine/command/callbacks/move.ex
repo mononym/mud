@@ -83,60 +83,30 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp attempt_move(direction, context, which_target) do
-    matches =
-      Search.find_matches_in_area(
+    result =
+      Search.find_matches_in_area_v2(
         [:link],
         context.character.area_id,
         direction,
-        context.character
+        context.character,
+        which_target
       )
 
-    num_exact_matches = length(matches.exact_matches)
-    num_partial_matches = length(matches.partial_matches)
-
-    # NOTE: The 'duplicate' logic here is intentional. DO NOT REFACTOR UNLESS YOU ARE SURE OF WHAT YOU ARE DOING!
-    #
-    # Desired behaviour is that if there are exact matches, they should be handled as if there were no partial matches.
-    cond do
-      # happy path with a single match with no index chosen
-      num_exact_matches == 1 and which_target == 0 ->
-        match = List.first(matches.exact_matches)
-
+    case result do
+      {:ok, [match]} ->
         maybe_move(context, match.match)
 
-      # happy path where there are matches, and chosen index is in range
-      num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
-        match = Enum.at(matches.exact_matches, which_target - 1)
+      {:ok, matches} ->
+        handle_multiple_matches(context, matches)
 
-        maybe_move(context, match.match)
-
-      # unhappy path where there are multiple matches
-      num_exact_matches > 1 and which_target == 0 ->
-        handle_multiple_matches(context, matches.exact_matches)
-
-      # happy path with a single match with no index chosen
-      num_partial_matches == 1 and which_target == 0 ->
-        match = List.first(matches.partial_matches)
-
-        maybe_move(context, match.match)
-
-      # happy path where there are matches, and chosen index is in range
-      num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
-        match = Enum.at(matches.partial_matches, which_target - 1)
-
-        maybe_move(context, match.match)
-
-      # unhappy path where there are multiple matches
-      num_partial_matches > 1 and which_target == 0 ->
-        handle_multiple_matches(context, matches.partial_matches)
-
-      # unhappy path where there are multiple matches or no matches at all
-      true ->
-        error_msg = "You cannot travel in that direction."
-
+      _error ->
         ExecutionContext.append_message(
           context,
-          Message.new_output(context.character.id, error_msg, "error")
+          Message.new_output(
+            context.character.id,
+            "You cannot travel in that direction.",
+            "error"
+          )
         )
         |> ExecutionContext.set_success()
     end
