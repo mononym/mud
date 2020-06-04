@@ -18,6 +18,8 @@ defmodule Mud.Engine.Character do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
     has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
+    has_many(:held_items, Item, foreign_key: :holdable_held_by_id)
+
     timestamps()
     # Naming and Titles
     field(:name, :string)
@@ -42,6 +44,9 @@ defmodule Mud.Engine.Character do
     field(:race, :string, default: "Human")
     field(:skin_color, :string, default: "Brown")
 
+    # Which hand is the primary hand
+    field(:handedness, :string, default: "right")
+
     #
     # Physical Status
     #
@@ -63,6 +68,16 @@ defmodule Mud.Engine.Character do
     #
 
     belongs_to(:player, Mud.Account.Player, type: :binary_id)
+
+    #
+    # Settings
+    #
+
+    field(:auto_open_containers, :boolean, default: false)
+    field(:auto_close_containers, :boolean, default: false)
+    field(:auto_unlock_containers, :boolean, default: false)
+    field(:auto_lock_containers, :boolean, default: false)
+
   end
 
   ##
@@ -94,27 +109,14 @@ defmodule Mud.Engine.Character do
       :skin_color,
       :stamina,
       :strength,
-      :wisdom
+      :wisdom,
+      :handedness
     ])
     |> validate_required([
       :active,
-      # :agility,
-      # :area_id,
-      # :charisma,
-      # :constitution,
-      # :dexterity,
-      # :eye_color,
-      # :hair_color,
-      # :intelligence,
       :name,
       :player_id,
       :position
-      # :race,
-      # :reflexes,
-      # :skin_color,
-      # :stamina,
-      # :strength,
-      # :wisdom
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])

@@ -59,6 +59,7 @@ defmodule Mud.Engine.Rules.Commands do
   defp list_all_command_definitions do
     MapSet.new([
       define_close_command(),
+      define_get_command(),
       define_kick_command(),
       define_kneel_command(),
       define_lock_command(),
@@ -71,6 +72,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_sit_command(),
       define_stand_command(),
+      define_store_command(),
       define_unlock_command(),
       define_wear_command()
     ])
@@ -168,6 +170,106 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
+  defp define_get_command do
+    %Definition{
+      callback_module: Command.Get,
+      parts: [
+        %Part{
+          matches: ["get"],
+          key: :get,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:get, :in, :my],
+          matches: [~r/\d/],
+          key: :number,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:get],
+          matches: [~r/.*/],
+          key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["in"],
+          key: :in,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:in],
+          matches: ["my"],
+          key: :my,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:in, :my],
+          matches: [~r/.*/],
+          key: :place,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_put_command do
+    %Definition{
+      callback_module: Command.Put,
+      parts: [
+        %Part{
+          matches: ["put"],
+          key: :put,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:put],
+          matches: [~r/\d/],
+          key: :which_thing,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:put, :which_thing],
+          matches: [~r/.*/],
+          key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["in"],
+          key: :in,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:in],
+          matches: ["my"],
+          key: :my,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:in, :my],
+          matches: [~r/\d/],
+          key: :which_place,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:in, :my, :which_place],
+          matches: [~r/.*/],
+          key: :place,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
   defp define_wear_command do
     %Definition{
       callback_module: Command.Wear,
@@ -228,7 +330,7 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_put_command do
+  defp define_store_command do
     %Definition{
       callback_module: Command.Store,
       parts: [

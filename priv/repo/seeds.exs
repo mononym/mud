@@ -427,7 +427,8 @@ Mud.Engine.Item.create(%{
   area_id: north_room.id,
   glance_description: "a flat rounded rock",
   look_description:
-    "This rock has been worn down over time by water into a smooth, flat round shape."
+    "This rock has been worn down over time by water into a smooth, flat round shape.",
+  is_holdable: true
 })
 
 Mud.Engine.Item.create(%{
@@ -436,7 +437,8 @@ Mud.Engine.Item.create(%{
   area_id: north_room.id,
   glance_description: "a rough round rock",
   look_description:
-    "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+    "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
+  is_holdable: true
 })
 
 Mud.Engine.Item.create(%{
@@ -445,7 +447,8 @@ Mud.Engine.Item.create(%{
   area_id: north_room.id,
   glance_description: "a leafy branch",
   look_description:
-    "The leafy branch has only recently been removed from its tree, the leaves not yet wilted."
+    "The leafy branch has only recently been removed from its tree, the leaves not yet wilted.",
+  is_holdable: true
 })
 
 Mud.Engine.Item.create(%{
@@ -482,7 +485,8 @@ Mud.Engine.Item.create(%{
   container_length: 100,
   container_width: 75,
   container_height: 75,
-  container_capacity: 1000
+  container_capacity: 1000,
+  is_holdable: true
 })
 
 Mud.Engine.Item.create(%{
@@ -497,7 +501,8 @@ Mud.Engine.Item.create(%{
   container_height: 75,
   container_capacity: 1000,
   is_wearable: true,
-  wearable_location: "back"
+  wearable_location: "back",
+  is_holdable: true
 })
 
 Mud.Engine.Item.create(%{
@@ -505,5 +510,6 @@ Mud.Engine.Item.create(%{
   area_id: center_room.id,
   glance_description: "a rough round rock",
   look_description:
-    "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+    "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
+  is_holdable: true
 })

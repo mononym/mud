@@ -75,6 +75,17 @@ defmodule Mud.Engine.Item do
     field(:wearable_is_worn, :boolean, default: false)
     field(:wearable_location, :string)
     belongs_to(:wearable_worn_by, Mud.Engine.Character, type: :binary_id)
+
+    ##
+    #
+    # Holdable Component
+    #
+    ##
+
+    field(:is_holdable, :boolean, default: false)
+    field(:holdable_is_held, :boolean, default: false)
+    field(:holdable_hand, :string)
+    belongs_to(:holdable_held_by, Mud.Engine.Character, type: :binary_id)
   end
 
   @doc false
@@ -101,11 +112,11 @@ defmodule Mud.Engine.Item do
       :is_wearable,
       :wearable_is_worn,
       :wearable_location,
-      :wearable_worn_by_id
-    ])
-    |> validate_required([
-      :glance_description,
-      :look_description
+      :wearable_worn_by_id,
+      :is_holdable,
+      :holdable_is_held,
+      :holdable_hand,
+      :holdable_held_by_id
     ])
     |> foreign_key_constraint(:character_id)
     |> foreign_key_constraint(:area_id)

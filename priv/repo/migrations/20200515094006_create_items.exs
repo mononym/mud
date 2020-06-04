@@ -39,6 +39,17 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:wearable_is_worn, :boolean, default: false)
       add(:wearable_location, :citext)
       add(:wearable_worn_by_id, references(:characters, on_delete: :nilify_all, type: :binary_id))
+
+      ##
+      #
+      # Holdable Component
+      #
+      ##
+
+      add(:is_holdable, :boolean, default: false)
+      add(:holdable_is_held, :boolean, default: false)
+      add(:holdable_hand, :citext)
+      add(:holdable_held_by_id, references(:characters, on_delete: :nilify_all, type: :binary_id))
     end
 
     create(index(:items, [:is_furniture]))
@@ -70,5 +81,16 @@ defmodule Mud.Repo.Migrations.CreateItems do
     create(index(:items, [:wearable_is_worn]))
     create(index(:items, [:wearable_location]))
     create(index(:items, [:wearable_worn_by_id]))
+
+    ##
+    #
+    # Holdable Component
+    #
+    ##
+
+    create(index(:items, [:is_holdable]))
+    create(index(:items, [:holdable_is_held]))
+    create(index(:items, [:holdable_hand]))
+    create(index(:items, [:holdable_held_by_id]))
   end
 end
