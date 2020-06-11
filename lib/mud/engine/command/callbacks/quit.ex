@@ -4,6 +4,10 @@ defmodule Mud.Engine.Command.Quit do
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Message
 
+  def build_ast(ast_nodes) do
+    List.first(ast_nodes)
+  end
+
   def execute(context) do
     context
     |> do_ingame_stuff()
@@ -16,8 +20,7 @@ defmodule Mud.Engine.Command.Quit do
       |> Mud.Engine.Character.get_by_id!()
       |> Mud.Engine.Character.update(%{active: false})
 
-    characters =
-      Mud.Engine.Character.list_others_active_in_areas(character, character.area_id)
+    characters = Mud.Engine.Character.list_others_active_in_areas(character, character.area_id)
 
     context
     |> ExecutionContext.append_message(

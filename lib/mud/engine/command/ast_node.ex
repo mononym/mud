@@ -1,6 +1,7 @@
-defmodule Mud.Engine.Command.AstNode do
+defmodule Mud.Engine.Command.AbstractAstNode do
   @moduledoc """
-  The data structure which holds the processed command input.
+  The data structure which holds the processed command input as an intermediate step bebtween raw input and the final.
+  ast.
   """
 
   use TypedStruct

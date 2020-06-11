@@ -26,6 +26,10 @@ defmodule Mud.Engine.Command.Move do
 
   use Mud.Engine.Command.Callback
 
+  def build_ast(ast_nodes) do
+    List.first(ast_nodes)
+  end
+
   @impl true
   def continue(%ExecutionContext{} = context) do
     attempt_move(context.input.match, context)

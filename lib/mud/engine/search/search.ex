@@ -90,6 +90,9 @@ defmodule Mud.Engine.Search do
     end
   end
 
+  @doc """
+  Given a list of characters/items/links and a string to check against, generate a set of matches or return an error.
+  """
   @spec generate_matches(
           [Character.t() | Item.t() | Link.t()],
           String.t(),

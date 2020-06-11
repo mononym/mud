@@ -180,34 +180,47 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:get, :in, :my],
+          must_follow: [:get],
+          matches: ["my"],
+          key: :thing_personal,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:get, :thing_personal],
           matches: [~r/\d/],
-          key: :number,
+          key: :thing_number,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:get],
+          must_follow: [:thing_number, :get, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         },
         %Part{
-          must_follow: [:thing],
+          must_follow: [:place, :thing],
           matches: ["in"],
-          key: :in,
+          key: :place_where,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:in],
+          must_follow: [:place_where],
           matches: ["my"],
-          key: :my,
+          key: :place_personal,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:in, :my],
+          must_follow: [:place_personal, :place_where],
+          matches: [~r/\d/],
+          key: :place_number,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:place_number, :place_where, :place_personal],
           matches: [~r/.*/],
           key: :place,
           greedy: true,
@@ -215,6 +228,53 @@ defmodule Mud.Engine.Rules.Commands do
         }
       ]
     }
+  end
+
+  defp define_altget_command do
+    # %Definition{
+    #   callback_module: Command.Get,
+    #   parts: [
+    #     %Part{
+    #       matches: ["get"],
+    #       key: :get,
+    #       transformer: &List.first/1
+    #     },
+    #     %Part{
+    #       must_follow: [:get, :in, :my],
+    #       matches: [~r/\d/],
+    #       key: :number,
+    #       transformer: &string_to_int/1
+    #     },
+    #     %Part{
+    #       must_follow: [:get],
+    #       matches: [~r/.*/],
+    #       key: :thing,
+    #       greedy: true,
+    #       transformer: &join_with_space_downcase/1
+    #     },
+    #     %Part{
+    #       must_follow: [:thing],
+    #       matches: ["in"],
+    #       key: :in,
+    #       greedy: true,
+    #       transformer: &List.first/1
+    #     },
+    #     %Part{
+    #       must_follow: [:in],
+    #       matches: ["my"],
+    #       key: :my,
+    #       greedy: true,
+    #       transformer: &List.first/1
+    #     },
+    #     %Part{
+    #       must_follow: [:in, :my],
+    #       matches: [~r/.*/],
+    #       key: :place,
+    #       greedy: true,
+    #       transformer: &join_with_space_downcase/1
+    #     }
+    #   ]
+    # }
   end
 
   defp define_put_command do
@@ -228,39 +288,46 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:put],
+          matches: ["my"],
+          key: :thing_personal,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:put, :thing_where, :thing_personal],
           matches: [~r/\d/],
-          key: :which_thing,
+          key: :thing_number,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:put, :which_thing],
+          must_follow: [:thing_number, :put, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         },
         %Part{
-          must_follow: [:thing],
+          must_follow: [:place, :thing],
           matches: ["in"],
-          key: :in,
+          key: :place_where,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:in],
+          must_follow: [:place_where],
           matches: ["my"],
-          key: :my,
+          key: :place_personal,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:in, :my],
+          must_follow: [:place_personal, :place_where],
           matches: [~r/\d/],
-          key: :which_place,
+          key: :place_number,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:in, :my, :which_place],
+          must_follow: [:place_number, :place_where, :place_personal],
           matches: [~r/.*/],
           key: :place,
           greedy: true,
@@ -489,15 +556,15 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &Enum.join/1
         },
         %Part{
-          key: :number,
+          key: :which,
           matches: [~r/\d/],
           must_follow: [:move],
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:move, :number],
+          must_follow: [:move, :which],
           matches: [~r/.*/],
-          key: :exit,
+          key: :thing,
           transformer: &join_with_space_downcase/1
         }
       ]
@@ -553,33 +620,57 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &join_with_space_downcase/1
         },
         %Part{
-          matches: ["/loving", "/shy"],
-          key: :switch,
           must_follow: [:look],
-          transformer: &trim_slash/1
+          matches: ["at", "in"],
+          key: :thing_where,
+          greedy: true,
+          transformer: &List.first/1
         },
         %Part{
-          matches: ["at"],
-          key: :at,
-          must_follow: [:look, :switch],
-          transformer: &join_with_space_downcase/1
+          must_follow: [:thing_where, :look],
+          matches: ["my"],
+          key: :thing_personal,
+          greedy: true,
+          transformer: &List.first/1
         },
         %Part{
-          matches: ["in"],
-          key: :in,
-          must_follow: [:look],
-          transformer: &join_with_space_downcase/1
-        },
-        %Part{
-          key: :number,
+          must_follow: [:look, :thing_where, :thing_personal],
           matches: [~r/\d/],
-          must_follow: [:at, :look, :switch],
+          key: :thing_number,
           transformer: &string_to_int/1
         },
         %Part{
-          key: :target,
-          must_follow: [:at, :look, :switch, :number, :in],
+          must_follow: [:thing_number, :look, :thing_personal, :thing_where],
           matches: [~r/.*/],
+          key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:place, :thing],
+          matches: ["in"],
+          key: :place_where,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place_where],
+          matches: ["my"],
+          key: :place_personal,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place_personal, :place_where],
+          matches: [~r/\d/],
+          key: :place_number,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:place_number, :place_where, :place_personal],
+          matches: [~r/.*/],
+          key: :place,
+          greedy: true,
           transformer: &join_with_space_downcase/1
         }
       ]

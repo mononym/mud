@@ -8,9 +8,13 @@ defmodule Mud.Engine.Command.Look do
 
   alias Mud.Engine.Area
   alias Mud.Engine.Search
+  alias Mud.Engine.Character
   alias Mud.Engine.Item
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Util
+  alias Mud.Engine.Command.AstUtil
+  alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
+  alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Message
   alias Mud.Engine.Command.SingleTargetCallback
 
@@ -22,55 +26,61 @@ defmodule Mud.Engine.Command.Look do
               data: nil
   end
 
+  def build_ast(ast_nodes) do
+    AstUtil.build_tap_ast(ast_nodes)
+  end
+
   @impl true
   def continue(context) do
     match = Util.refresh_thing(context.input.match)
-    do_thing_to_match(context, match)
+    look_in_or_at(context, match)
   end
 
   @impl true
   def execute(context) do
     Logger.debug(inspect(context.command.ast))
 
-    input =
-      get_in(context.command.ast, [:target, :input]) ||
-        get_in(context.command.ast, [:in, :target, :input]) ||
-        get_in(context.command.ast, [:at, :target, :input])
+    ast = context.command.ast
 
-    if input == nil do
-      description = Area.describe_look(context.character.area_id, context.character)
+    case ast do
+      %TAP{thing: nil} ->
+        description = Area.describe_look(context.character.area_id, context.character)
 
-      context
-      |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
-      |> ExecutionContext.set_success()
-    else
-      which_target =
-        cond do
-          context.command.ast[:number] != nil ->
-            min(1, List.first(context.command.ast[:number][:input]))
+        context
+        |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
+        |> ExecutionContext.set_success()
 
-          context.command.ast[:at][:number] != nil ->
-            min(1, List.first(context.command.ast[:at][:number][:input]))
+      %TAP{place: nil, thing: %Thing{personal: false}} ->
+        look_area_then_worn(context)
 
-          context.command.ast[:in][:number] != nil ->
-            min(1, List.first(context.command.ast[:in][:number][:input]))
+      %TAP{place: nil, thing: %Thing{personal: true}} ->
+        look_worn(context)
 
-          true ->
-            0
-        end
+      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
+        look_worn(context)
 
+      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}}
+      when not place and not thing ->
+        look_area_then_worn(context)
+    end
+  end
+
+  defp look_area_then_worn(context) do
+    ast = context.command.ast
+
+    if is_nil(ast.place) do
       result =
         Search.find_matches_in_area_v2(
           target_types(),
           context.character.area_id,
-          input,
+          ast.thing.input,
           context.character,
-          which_target
+          ast.thing.which
         )
 
       case result do
         {:ok, [match]} ->
-          do_thing_to_match(context, match, which_target)
+          look_in_or_at(context, match)
 
         {:ok, matches} ->
           SingleTargetCallback.handle_multiple_matches(
@@ -81,24 +91,118 @@ defmodule Mud.Engine.Command.Look do
           )
 
         _error ->
-          ExecutionContext.append_output(
-            context,
-            context.character.id,
-            "Could not find anything to look at.",
-            "error"
-          )
-          |> ExecutionContext.set_success()
+          look_worn(context)
+      end
+    else
+      items = Item.list_in_area(context.character.area_id)
+
+      case follow_path(context, ast.place, items) do
+        {:ok, items} ->
+          look_items(context, items)
+
+        {:error, _error} ->
+          look_worn(context)
+
+        result ->
+          result
       end
     end
   end
 
-  @spec do_thing_to_match(ExecutionContext.t(), Mud.Engine.Search.Match.t(), integer) ::
+  # May or may not have place specified
+  defp look_worn(context) do
+    ast = context.command.ast
+
+    held_items = Character.list_held_items(context.character)
+    worn_items = Character.list_worn_items(context.character)
+    all_personal_items = held_items ++ worn_items
+
+    if is_nil(ast.place) do
+      look_items(context, all_personal_items)
+    else
+      case follow_path(context, ast.place, all_personal_items) do
+        {:ok, items} ->
+          look_items(context, items)
+
+        {:error, _error} ->
+          ExecutionContext.append_output(
+            context,
+            context.character.id,
+            "Could not find what you were looking for.",
+            "error"
+          )
+          |> ExecutionContext.set_success()
+
+        result ->
+          result
+      end
+    end
+  end
+
+  defp look_items(context, items) do
+    ast = context.command.ast
+
+    case Search.generate_matches(items, ast.thing.input, context.character, ast.thing.which) do
+      {:ok, [match]} ->
+        look_in_or_at(context, match)
+
+      {:ok, matches} ->
+        SingleTargetCallback.handle_multiple_matches(
+          context,
+          matches,
+          "What were you trying to look at?",
+          "Please be more specific."
+        )
+
+      _error ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "Could not find what you were looking for.",
+          "error"
+        )
+        |> ExecutionContext.set_success()
+    end
+  end
+
+  # given a place, which may or may not have nested children, and a set of items to test against, dig through the stack
+  # to see if there is a match.
+  defp follow_path(context, place, items) do
+    ast = context.command.ast
+
+    case Search.generate_matches(items, place.input, context.character, ast.place.which) do
+      {:ok, [match]} ->
+        if is_nil(place.path) do
+          {:ok, list_relative_items(place.where, match.match)}
+        else
+          items = list_relative_items(place.where, match.match)
+          follow_path(context, place.path, items)
+        end
+
+      {:ok, matches} ->
+        SingleTargetCallback.handle_multiple_matches(
+          context,
+          matches,
+          "Which of these containers did you mean?",
+          "Please be more specific."
+        )
+
+      error ->
+        error
+    end
+  end
+
+  defp list_relative_items("in", item) do
+    Item.list_contained_items(item.id)
+  end
+
+  @spec look_in_or_at(ExecutionContext.t(), Mud.Engine.Search.Match.t()) ::
           ExecutionContext.t()
-  defp do_thing_to_match(context, match, _which_target \\ 0) do
+  defp look_in_or_at(context, match) do
     ast = context.command.ast
 
     cond do
-      get_in(ast, [:in]) != nil ->
+      ast.thing.where == "in" ->
         thing = match.match
 
         cond do

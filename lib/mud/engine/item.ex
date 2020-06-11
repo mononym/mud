@@ -185,6 +185,38 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
+  def list_contained_items(container_id) do
+    from(
+      item in __MODULE__,
+      where: item.container_id == ^container_id
+    )
+    |> Repo.all()
+  end
+
+  def list_worn_containers(character_id) do
+    from(
+      item in __MODULE__,
+      where: item.wearable_worn_by_id == ^character_id and item.is_container == true
+    )
+    |> Repo.all()
+  end
+
+  def list_worn_by(character_id) do
+    from(
+      item in __MODULE__,
+      where: item.wearable_worn_by_id == ^character_id
+    )
+    |> Repo.all()
+  end
+
+  def list_held_by(character_id) do
+    from(
+      item in __MODULE__,
+      where: item.holdable_held_by_id == ^character_id
+    )
+    |> Repo.all()
+  end
+
   def describe_look(item, _looking_character) do
     item.look_description
   end

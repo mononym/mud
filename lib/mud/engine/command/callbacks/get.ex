@@ -18,6 +18,8 @@ defmodule Mud.Engine.Command.Get do
   alias Mud.Engine.Util
   alias Mud.Engine.Search
   alias Mud.Repo
+  alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
+  alias Mud.Engine.Command.AstNode.{Thing, Place}
 
   require Logger
 
@@ -57,45 +59,83 @@ defmodule Mud.Engine.Command.Get do
   # end
   # end
 
+  @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.ThingAndPlace.t()
+  def build_ast(ast_nodes) do
+    Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
+  end
+
   @impl true
   def execute(context) do
-    # No reason to go further if hands are full. Check them first.
-    character = Repo.preload(context.character, :held_items)
-    Logger.debug(inspect(character.held_items))
+    # Make sure command was given with additional input, if not give help docs
+    if context.command.ast.thing != nil do
+      character = Repo.preload(context.character, :held_items)
+      context = %{context | character: character}
 
-    context = %{context | character: character}
+      # No reason to go further if hands are full. Check them first.
+      if length(character.held_items) == 2 do
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "Your hands are full. Empty them first.",
+          "error"
+        )
+        |> ExecutionContext.set_success()
+      else
+        case context.command.ast do
+          # get thing from any container on character
+          %TAP{place: nil, thing: %Thing{personal: true}} ->
+            get_item_in_worn_container(context)
 
-    if length(character.held_items) == 2 do
+          # get thing on ground, fallback to worn container
+          %TAP{place: nil, thing: %Thing{personal: false}} ->
+            get_item_from_ground_or_worn_container(context)
+
+          # get thing from container on ground, fallback to worn containers
+          %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
+            get_item_in_area_container_or_worn_container(context)
+
+          # get thing from container on character
+          %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
+            get_item_in_worn_container(context)
+        end
+      end
+    else
+      # get help docs if get command was entered without additional input
       ExecutionContext.append_output(
         context,
         context.character.id,
-        "Your hands are full. Empty them first.",
-        "error"
+        Util.get_module_docs(__MODULE__),
+        "docs"
       )
       |> ExecutionContext.set_success()
-    else
-      ast = context.command.ast
+    end
+  end
 
-      cond do
-        # Take something from a container on the ground
-        ast[:thing][:in][:place] != nil ->
-          get_item_in_area_container(context)
+  defp get_item_in_area_container_or_worn_container(context) do
+    case get_item_in_area_container(context) do
+      {:error, _} ->
+        get_item_in_worn_container(context)
 
-        # Take something from a worn container
-        ast[:thing][:in][:my][:place] != nil ->
-          get_item_in_worn_container(context)
+      result ->
+        result
+    end
+  end
 
-        # Assume the item is on the ground
-        true ->
-          get_item_from_ground(context)
-      end
+  defp get_item_from_ground_or_worn_container(context) do
+    case get_item_from_ground(context) do
+      {:error, _} ->
+        get_item_in_worn_container(context)
+
+      result ->
+        result
     end
   end
 
   defp get_item_from_ground(context) do
     ast = context.command.ast
-    which_target = min(0, ast[:number][:input] || 0)
-    input = ast[:number][:thing][:input] || ast[:thing][:input]
+    which_target = ast.thing.which
+    input = ast.thing.input
 
     result =
       Search.find_matches_in_area_v2(
@@ -160,14 +200,8 @@ defmodule Mud.Engine.Command.Get do
           "There were too many things to choose from. Please be more specific."
         )
 
-      {:error, _} ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Could not find what you were looking for.",
-          "error"
-        )
-        |> ExecutionContext.set_success()
+      error ->
+        error
     end
   end
 
@@ -193,16 +227,87 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
+  defp held_containers(items) do
+    Enum.filter(items, & &1.is_container)
+  end
+
   defp get_item_in_worn_container(context) do
-    character = Repo.preload(context.character, :worn_items)
+    worn_containers = Character.list_worn_containers(context.character)
+    all_containers = held_containers(context.character.held_items) ++ worn_containers
+    ast = context.command.ast
 
-    worn_containers = Enum.filter(character.worn_items, & &1.is_container)
+    cond do
+      # character is wearing at least one container and the container has been specified
+      not is_nil(ast.place) and length(all_containers) > 0 ->
+        case Search.generate_matches(
+               all_containers,
+               ast.place.input,
+               context.character,
+               ast.place.which
+             ) do
+          # single worn container matched
+          {:ok, [match]} ->
+            check_worn_container(context, match.match)
 
-    case worn_containers do
-      [container] ->
-        check_worn_container(context, container)
+          # multiple worn containers matched
+          {:ok, matches} ->
+            indexed_places =
+              Enum.map(matches, & &1.match)
+              |> Util.list_to_index_map()
 
-      [] ->
+            cont_data = %ContinuationData{place: indexed_places, type: :place}
+
+            handle_multiple_items(
+              context,
+              matches,
+              cont_data,
+              "Which container should be searched?",
+              "There were too many places to choose from. Please be more specific."
+            )
+
+          # no worn containers matches
+          {:error, :no_match} ->
+            ExecutionContext.append_output(
+              context,
+              context.character.id,
+              "Could not find that container.",
+              "error"
+            )
+            |> ExecutionContext.set_success()
+        end
+
+      # character is wearing exactly one container and the container has not been specified
+      is_nil(ast.place) and length(all_containers) == 1 ->
+        check_worn_container(context, List.first(all_containers))
+
+      # character is wearing multiple containers and the container has not been specified
+      is_nil(ast.place) and length(all_containers) > 1 ->
+        indexed_places =
+          Enum.map(all_containers, & &1.match)
+          |> Util.list_to_index_map()
+
+        cont_data = %ContinuationData{place: indexed_places, type: :place}
+
+        handle_multiple_items(
+          context,
+          all_containers,
+          cont_data,
+          "Which container should be searched?",
+          "There were too many places to choose from. Please be more specific."
+        )
+
+      # character is not wearing any containers and no container has been specified
+      not is_nil(ast.place) and length(all_containers) == 0 ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "Could not find that item.",
+          "error"
+        )
+        |> ExecutionContext.set_success()
+
+      # character is not wearing any containers and container has been specified
+      is_nil(ast.place) and length(all_containers) == 0 ->
         ExecutionContext.append_output(
           context,
           context.character.id,
@@ -210,24 +315,10 @@ defmodule Mud.Engine.Command.Get do
           "error"
         )
         |> ExecutionContext.set_success()
-
-      multiple_items ->
-        indexed_places =
-          Enum.map(multiple_items, & &1.match)
-          |> Util.list_to_index_map()
-
-        cont_data = %ContinuationData{place: indexed_places, type: :place}
-
-        handle_multiple_items(
-          context,
-          multiple_items,
-          cont_data,
-          "Which container did you mean?",
-          "There were too many places to choose from. Please be more specific."
-        )
     end
   end
 
+  @spec check_worn_container(ExecutionContext.t(), Item.t()) :: ExecutionContext.t()
   defp check_worn_container(context, item) do
     character = context.character
 
@@ -235,7 +326,14 @@ defmodule Mud.Engine.Command.Get do
       item.container_open or
         (not item.container_open and not item.container_locked and character.auto_open_containers) or
           (item.container_locked and character.auto_unlock_containers) ->
-        find_thing(context, item)
+        match = %Search.Match{
+          match_string: "",
+          match: item,
+          glance_description: Item.describe_glance(item, context.character),
+          look_description: Item.describe_look(item, context.character)
+        }
+
+        find_thing(context, match)
 
       item.container_locked and not character.auto_unlock_containers and
           not character.auto_open_containers ->
@@ -271,10 +369,21 @@ defmodule Mud.Engine.Command.Get do
     character = context.character
     ast = context.command.ast
 
+    Logger.debug(inspect(ast))
+
+    result =
+      Search.find_matches_in_area_v2(
+        target_types(),
+        character.area_id,
+        ast.place.input,
+        character,
+        0
+      )
+
     # look for container in area
-    case find_place_in_area(ast[:thing][:from][:place][:input], context.character) do
+    case result do
       # single match
-      {:ok, place} ->
+      {:ok, [place]} ->
         item = place.match
 
         cond do
@@ -304,7 +413,7 @@ defmodule Mud.Engine.Command.Get do
             |> ExecutionContext.set_success()
         end
 
-      {:multiple, matches} ->
+      {:ok, matches} ->
         indexed_places =
           Enum.map(matches, & &1.match)
           |> Util.list_to_index_map()
@@ -319,15 +428,16 @@ defmodule Mud.Engine.Command.Get do
           "There were too many places to choose from. Please be more specific."
         )
 
-      {:error, :no_match} ->
-        get_item_in_worn_container(context)
+      error ->
+        error
     end
   end
 
+  @spec find_thing(ExecutionContext.t(), Search.Match.t()) :: ExecutionContext.t()
   defp find_thing(context, place) do
     ast = context.command.ast
 
-    case find_thing_in_place(place, ast[:thing][:input], context.character) do
+    case find_thing_in_place(place, ast.thing.input, context.character) do
       {:ok, thing} ->
         get_thing_in_place(context, thing, place)
 
@@ -342,15 +452,15 @@ defmodule Mud.Engine.Command.Get do
           context,
           matches,
           cont_data,
-          "What did you want to get from from {{item}}#{place.glance_description}{{/item}}?",
-          "There were too many things to choose from. Please be more specific."
+          "What did you want to get from {{item}}#{place.glance_description}{{/item}}?",
+          "There were too many items to choose from. Please be more specific."
         )
 
       {:error, :no_match} ->
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "Could not find any matching thing to get from {{item}}#{place.glance_description}{{/item}}.",
+          "Could not find any matching item to get from {{item}}#{place.glance_description}{{/item}}.",
           "help_docs"
         )
         |> ExecutionContext.set_success()
@@ -400,47 +510,23 @@ defmodule Mud.Engine.Command.Get do
     |> ExecutionContext.set_success()
   end
 
-  defp find_place_in_area(input, character) do
-    {:ok, results} =
-      Search.find_matches_in_area_v2(
-        target_types(),
-        character.area_id,
-        input,
-        character,
-        0
-      )
-
-    num_results = length(results)
-
-    cond do
-      num_results == 1 ->
-        {:ok, List.first(results)}
-
-      num_results == 0 ->
-        {:error, :no_match}
-
-      true ->
-        {:multiple, results}
-    end
-  end
-
+  @spec find_thing_in_place(Search.Match.t(), String.t(), Character.t()) ::
+          {:ok, Search.Match.t()}
+          | {:multiple, [Search.Match.t()]}
+          | {:error, :no_match | :out_of_range}
   defp find_thing_in_place(place, input, character) do
     place = Repo.preload(place.match, :container_items)
     items = place.container_items
 
-    {:ok, thing_search_results} = Search.generate_matches(items, input, character)
+    case Search.generate_matches(items, input, character) do
+      {:ok, [result]} ->
+        {:ok, result}
 
-    num_results = length(thing_search_results)
+      {:ok, multiple} ->
+        {:multiple, multiple}
 
-    cond do
-      num_results == 1 ->
-        {:ok, List.first(thing_search_results)}
-
-      num_results == 0 ->
-        {:error, :no_match}
-
-      true ->
-        {:multiple, thing_search_results}
+      error ->
+        error
     end
   end
 
@@ -470,16 +556,17 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp do_get_thing_in_place(thing, place, character) do
-    item = place.match
+    item = thing.match
+    container = place.match
+
+    Item.update!(item, %{
+      hand: which_hand(character),
+      holdable_held_by_id: character.id,
+      container_id: nil
+    })
 
     cond do
-      item.container_open ->
-        Item.update!(item, %{
-          hand: which_hand(character),
-          holdable_held_by_id: character.id,
-          container_id: nil
-        })
-
+      container.container_open ->
         {"You get {{item}}#{thing.glance_description}{{/item}} from inside {{item}}#{
            place.glance_description
          }{{/item}}.",
@@ -487,35 +574,70 @@ defmodule Mud.Engine.Command.Get do
            place.glance_description
          }{{/item}}."}
 
-      not item.container_open and not item.container_locked and character.auto_open_containers ->
-        Item.update!(item, %{
-          hand: which_hand(character),
-          holdable_held_by_id: character.id,
-          container_id: nil
-        })
+      not container.container_open and not container.container_locked and
+          character.auto_open_containers ->
+        if character.auto_close_containers do
+          {"You open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
+             thing.glance_description
+           }{{/item}} from inside.",
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
+             thing.glance_description
+           }{{/item}} from inside."}
+        else
+          Item.update!(container, %{
+            container_open: true
+          })
 
-        {"You open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-           place.glance_description
-         }{{/item}} from inside.",
-         "{{character}}#{character.name}{{/character}} opens {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-           place.glance_description
-         }{{/item}} from inside."}
+          {"You open {{item}}#{place.glance_description}{{/item}} and get {{item}}#{
+             thing.glance_description
+           }{{/item}} from inside.",
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.glance_description}{{/item}} and gets {{item}}#{
+             thing.glance_description
+           }{{/item}} from inside."}
+        end
 
-      item.container_locked and character.auto_unlock_containers ->
-        Item.update!(item, %{
-          hand: which_hand(character),
-          holdable_held_by_id: character.id,
-          container_id: nil
-        })
+      container.container_locked and character.auto_unlock_containers ->
+        close = character.auto_close_containers
+        lock = character.auto_lock_containers
 
-        {"You unlock and open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-           place.glance_description
-         }{{/item}} from inside it, locking it once more.",
-         "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-           place.glance_description
-         }{{/item}} a moment before opening it just long enough to get {{item}}#{
-           place.glance_description
-         }{{/item}} from inside, fiddling with it once more as it is closed."}
+        cond do
+          close and lock ->
+            {"You unlock and open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
+               thing.glance_description
+             }{{/item}} from inside it, securing it once more.",
+             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
+               place.glance_description
+             }{{/item}} a moment before opening it just long enough to get {{item}}#{
+               thing.glance_description
+             }{{/item}} from inside, fiddling with it again once it is closed."}
+
+          close ->
+            Item.update!(container, %{
+              container_locked: false
+            })
+
+            {"You unlock and open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
+               thing.glance_description
+             }{{/item}} from inside it.",
+             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
+               place.glance_description
+             }{{/item}} a moment before opening it just long enough to get {{item}}#{
+               thing.glance_description
+             }{{/item}} from inside."}
+
+          true ->
+            Item.update!(container, %{
+              container_locked: false,
+              container_open: true
+            })
+
+            {"You unlock and open {{item}}#{place.glance_description}{{/item}}, getting {{item}}#{
+               thing.glance_description
+             }{{/item}} from inside it.",
+             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
+               place.glance_description
+             }{{/item}} a moment before opening it to get {{item}}#{thing.glance_description}{{/item}} from inside."}
+        end
     end
   end
 

@@ -4,6 +4,7 @@ defmodule Mud.Engine.Util do
   """
 
   import Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Message
   alias Mud.Engine.{Area, Character, Link, Item}
 
@@ -131,5 +132,51 @@ defmodule Mud.Engine.Util do
     else
       String.equivalent?(maybe_regex, string)
     end
+  end
+
+  @spec handle_multiple_items(
+          Mud.Engine.Command.ExecutionContext.t(),
+          [Mud.Engine.Search.Match.t()],
+          ContinuationData.t(),
+          String.t(),
+          String.t()
+        ) ::
+          Mud.Engine.Command.ExecutionContext.t()
+  def handle_multiple_items(
+        context,
+        lines,
+        continuation_data,
+        multiple_items_err,
+        _too_many_items_err
+      )
+      when length(lines) < 10 do
+    multiple_match_error(
+      context,
+      lines,
+      continuation_data,
+      multiple_items_err,
+      context.command.callback_module
+    )
+  end
+
+  def handle_multiple_items(
+        context,
+        _items,
+        _continuation_data,
+        _multiple_items_err,
+        too_many_items_err
+      ) do
+    ExecutionContext.append_output(
+      context,
+      context.character.id,
+      too_many_items_err,
+      "error"
+    )
+    |> ExecutionContext.set_success()
+  end
+
+  def follow_path do
+    # given a container, recursively follow the path until the last container is found and return it
+    # This will involve generating matches and finding
   end
 end

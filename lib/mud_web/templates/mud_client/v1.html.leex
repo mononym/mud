@@ -7,6 +7,6 @@
     <% end %>
   </div>
   <%= form_for @input, "#", [phx_change: :typing, phx_submit: :submit_input], fn _f -> %>
-      <%= text_input :input, :content, id: @input.changes[:id], value: @input.changes[:content], phx_hook: "Input", phx_blur: "stop_typing", placeholder: "Enter Commands Here...", class: "min-w-full rounded-lg resize-y flex-shrink" %>
+      <%= text_input :input, :content, id: @input.changes[:id], value: @input.changes[:content], phx_hook: "Input", phx_blur: "stop_typing", placeholder: "Enter Commands Here...", class: "min-w-full rounded-lg resize-y flex-shrink", autocomplete: "off" %>
     <% end %>
 </div>

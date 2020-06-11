@@ -83,7 +83,6 @@ defmodule Mud.Engine.Command.Lock do
     end
   end
 
-  @spec extract_input_and_target(%Mud.Engine.Command.AstNode{}) :: {String.t(), integer()}
   defp extract_input_and_target(ast) do
     cond do
       ast.generations == 3 ->

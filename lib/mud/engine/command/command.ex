@@ -8,13 +8,13 @@ defmodule Mud.Engine.Command do
   typedstruct do
     field(:input, String.t(), required: true)
 
-    field(:ast, Mud.Engine.Command.AstNode, default: nil)
+    field(:ast, Mud.Engine.Command.AbstractAstNode, default: nil)
 
     field(:callback_module, module())
   end
 
   alias Mud.Engine.Rules.Commands
-  alias Mud.Engine.Command.AstNode
+  alias Mud.Engine.Command.AbstractAstNode
   alias Mud.Engine.Command.Definition.Part
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Message
@@ -38,20 +38,22 @@ defmodule Mud.Engine.Command do
         parts = Map.new(definition.parts, fn part -> {part.key, part} end)
         Logger.debug("definition: #{inspect(definition)}")
 
-        case build_ast(split_input, {List.first(definition.parts), parts}) do
-          possible_ast_list when possible_ast_list != [] ->
-            Logger.debug("possible_ast_list: #{inspect(possible_ast_list)}")
-            # Sort longest to shortest and grab longest match
-            ast =
-              possible_ast_list
-              |> Enum.sort(fn x, y -> y.generations <= x.generations end)
+        case build_abstract_ast(split_input, {List.first(definition.parts), parts}) do
+          abstract_asts when abstract_asts != [] ->
+            Logger.debug("possible_ast_list: #{inspect(abstract_asts)}")
+
+            abstract_ast =
+              abstract_asts
+              |> Enum.sort(&(&1 <= &2))
               |> List.first()
+
+            Logger.debug("chosen ast: #{inspect(abstract_ast)}")
 
             {:ok,
              %__MODULE__{
                input: input,
                callback_module: definition.callback_module,
-               ast: ast
+               ast: definition.callback_module.build_ast(abstract_ast)
              }}
 
           [] ->
@@ -163,50 +165,34 @@ defmodule Mud.Engine.Command do
     context
   end
 
-  @spec normalize_ast(Mud.Engine.Command.AstNode.t(), [Mud.Engine.Command.AstNode.t()]) ::
-          Mud.Engine.Command.AstNode.t()
-  defp normalize_ast(ast_node, []) do
-    ast_node
-  end
-
-  defp normalize_ast(ast_node, [node | rest_of_nodes]) do
-    new_ast_node = %{
-      node
-      | children: Map.put(node.children, ast_node.key, ast_node),
-        generations: ast_node.generations + 1
-    }
-
-    normalize_ast(new_ast_node, rest_of_nodes)
-  end
-
-  @spec build_ast(
+  @spec build_abstract_ast(
           [String.t()],
           %{atom() => Part.t()} | {Part.t(), %{atom() => Part.t()}},
           Part.t() | nil,
-          AstNode.t() | nil,
-          [
-            AstNode.t()
-          ]
-        ) ::
-          [AstNode.t()] | []
-  defp build_ast(split_input, parts, current_part \\ nil, current_ast \\ nil, ast \\ [])
+          AbstractAstNode.t() | nil,
+          [AbstractAstNode.t()]
+        ) :: [AbstractAstNode.t()] | []
+  defp build_abstract_ast(split_input, parts, current_part \\ nil, current_ast \\ nil, ast \\ [])
 
   # No input to process but no ast nodes have been built.
-  defp build_ast([], _parts, _current_part, nil, []) do
+  defp build_abstract_ast([], _parts, _current_part, nil, []) do
     []
   end
 
   # HAPPY PATH
   # All input has been processed and no dangling ast node
-  defp build_ast([], _parts, _current_part, nil, [last_node | rest]) do
+  # defp build_abstract_ast([], _parts, _current_part, nil, [last_node | rest]) do
+  defp build_abstract_ast([], _parts, _current_part, nil, ast_nodes) do
     Logger.debug("All input has been processed and no dangling ast node")
+    Logger.debug(inspect(ast_nodes))
 
-    normalize_ast(last_node, rest)
-    |> List.wrap()
+    [Enum.reverse(ast_nodes)]
+
+    # normalize_ast(last_node, rest)
   end
 
   # All input has been processed but a dangling ast node needs to be put into the tree
-  defp build_ast([], parts, current_part, current_ast, ast) do
+  defp build_abstract_ast([], parts, current_part, current_ast, ast) do
     Logger.debug(
       "All input has been processed but a dangling ast node needs to be put into the tree"
     )
@@ -218,11 +204,11 @@ defmodule Mud.Engine.Command do
 
     current_ast = %{current_ast | input: transformed_input}
 
-    build_ast([], parts, current_part, nil, [current_ast | ast])
+    build_abstract_ast([], parts, current_part, nil, [current_ast | ast])
   end
 
   # Not all input has been processed but there are no more possibilities for matching
-  defp build_ast(input, _parts, nil, nil, ast)
+  defp build_abstract_ast(input, _parts, nil, nil, ast)
        when length(ast) > 0 and length(input) > 0 do
     Logger.debug(
       "Not all input has been processed but there are no more possibilities for matching"
@@ -232,17 +218,17 @@ defmodule Mud.Engine.Command do
   end
 
   # very first iteration
-  defp build_ast([next_input | rest_of_input], {current_part, parts}, nil, nil, ast = []) do
+  defp build_abstract_ast([next_input | rest_of_input], {current_part, parts}, nil, nil, ast = []) do
     Logger.debug("very first iteration")
     current_matches = any_matches?(current_part.matches, next_input)
 
     # if current node matches
     if current_matches do
-      node = %AstNode{key: current_part.key, input: [next_input]}
+      node = %AbstractAstNode{key: current_part.key, input: [next_input]}
 
       # if current node greedy
       if current_part.greedy do
-        build_ast(rest_of_input, parts, current_part, node, ast)
+        build_abstract_ast(rest_of_input, parts, current_part, node, ast)
         # current node not greedy
       else
         # listing potential children
@@ -257,13 +243,18 @@ defmodule Mud.Engine.Command do
 
         # There are potential children
         if length(potential_children) > 0 do
-          Enum.flat_map(potential_children, fn child ->
-            build_ast(rest_of_input, parts, child, nil, [node | ast])
-          end)
+          r =
+            Enum.flat_map(potential_children, fn child ->
+              build_abstract_ast(rest_of_input, parts, child, nil, [node | ast])
+            end)
+
+          Logger.debug(inspect(r))
+
+          r
 
           # no potential children
         else
-          build_ast(rest_of_input, parts, nil, nil, [node | ast])
+          build_abstract_ast(rest_of_input, parts, nil, nil, [node | ast])
         end
       end
     else
@@ -272,7 +263,7 @@ defmodule Mud.Engine.Command do
   end
 
   # Iterating through children the first time
-  defp build_ast(all_input, parts, current_part, nil, ast) do
+  defp build_abstract_ast(all_input, parts, current_part, nil, ast) do
     Logger.debug("Iterating through children the first time")
     Logger.debug(inspect({all_input, parts, current_part, nil, ast}))
     # if is whitespace and should be dropped, do it and update values so rest of algorithm works
@@ -289,10 +280,10 @@ defmodule Mud.Engine.Command do
     Logger.debug(inspect(current_matches))
 
     if current_matches do
-      node = %AstNode{key: current_part.key, input: [next_input]}
+      node = %AbstractAstNode{key: current_part.key, input: [next_input]}
 
       if current_part.greedy do
-        build_ast(rest_of_input, parts, current_part, node, ast)
+        build_abstract_ast(rest_of_input, parts, current_part, node, ast)
       else
         # matching_children = list_matches(next_input, current_part, parts)
         potential_children = list_children(current_part, parts)
@@ -306,7 +297,7 @@ defmodule Mud.Engine.Command do
 
         if length(potential_children) > 0 do
           Enum.flat_map(potential_children, fn child ->
-            build_ast(rest_of_input, parts, child, nil, [node | ast])
+            build_abstract_ast(rest_of_input, parts, child, nil, [node | ast])
           end)
         else
           []
@@ -318,7 +309,7 @@ defmodule Mud.Engine.Command do
   end
 
   # Iterating through a greedy child more than once
-  defp build_ast(
+  defp build_abstract_ast(
          all_input,
          parts,
          current_part,
@@ -349,7 +340,7 @@ defmodule Mud.Engine.Command do
 
     child_asts =
       Enum.flat_map(potential_children, fn child ->
-        build_ast(all_input, parts, child, nil, [updated_current_ast | ast])
+        build_abstract_ast(all_input, parts, child, nil, [updated_current_ast | ast])
       end)
 
     child_matches = length(child_asts) > 0
@@ -365,7 +356,7 @@ defmodule Mud.Engine.Command do
         Logger.debug(inspect(l))
         node = %{current_ast | input: [next_input | current_ast.input]}
 
-        build_ast(rest_of_input, parts, current_part, node, ast)
+        build_abstract_ast(rest_of_input, parts, current_part, node, ast)
 
       true ->
         []

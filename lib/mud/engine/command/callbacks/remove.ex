@@ -49,7 +49,7 @@ defmodule Mud.Engine.Command.Remove do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        "{{item}}#{String.capitalize(context.input.glance_description)}{{/item}} is no longer present.",
+        "{{item}}#{String.capitalize(match.glance_description)}{{/item}} is no longer present.",
         "error"
       )
       |> ExecutionContext.set_success()

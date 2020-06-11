@@ -77,7 +77,6 @@ defmodule Mud.Engine.Character do
     field(:auto_close_containers, :boolean, default: false)
     field(:auto_unlock_containers, :boolean, default: false)
     field(:auto_lock_containers, :boolean, default: false)
-
   end
 
   ##
@@ -230,6 +229,18 @@ defmodule Mud.Engine.Character do
       character.id == ^character_id and like(character.name, ^"#{partial_name}%")
     )
     |> Repo.all()
+  end
+
+  def list_worn_containers(character) do
+    Item.list_worn_containers(character.id)
+  end
+
+  def list_held_items(character) do
+    Item.list_held_by(character.id)
+  end
+
+  def list_worn_items(character) do
+    Item.list_worn_by(character.id)
   end
 
   @doc """
