@@ -217,11 +217,11 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
-  def describe_look(item, _looking_character) do
+  def describe_look(item, _looking_character \\ nil) do
     item.look_description
   end
 
-  def describe_glance(item, _looking_character) do
+  def describe_glance(item, _looking_character \\ nil) do
     item.glance_description
   end
 end

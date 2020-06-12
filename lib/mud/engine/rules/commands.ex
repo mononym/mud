@@ -73,6 +73,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_sit_command(),
       define_stand_command(),
       define_store_command(),
+      define_swap_command(),
       define_unlock_command(),
       define_wear_command()
     ])
@@ -230,53 +231,6 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_altget_command do
-    # %Definition{
-    #   callback_module: Command.Get,
-    #   parts: [
-    #     %Part{
-    #       matches: ["get"],
-    #       key: :get,
-    #       transformer: &List.first/1
-    #     },
-    #     %Part{
-    #       must_follow: [:get, :in, :my],
-    #       matches: [~r/\d/],
-    #       key: :number,
-    #       transformer: &string_to_int/1
-    #     },
-    #     %Part{
-    #       must_follow: [:get],
-    #       matches: [~r/.*/],
-    #       key: :thing,
-    #       greedy: true,
-    #       transformer: &join_with_space_downcase/1
-    #     },
-    #     %Part{
-    #       must_follow: [:thing],
-    #       matches: ["in"],
-    #       key: :in,
-    #       greedy: true,
-    #       transformer: &List.first/1
-    #     },
-    #     %Part{
-    #       must_follow: [:in],
-    #       matches: ["my"],
-    #       key: :my,
-    #       greedy: true,
-    #       transformer: &List.first/1
-    #     },
-    #     %Part{
-    #       must_follow: [:in, :my],
-    #       matches: [~r/.*/],
-    #       key: :place,
-    #       greedy: true,
-    #       transformer: &join_with_space_downcase/1
-    #     }
-    #   ]
-    # }
-  end
-
   defp define_put_command do
     %Definition{
       callback_module: Command.Put,
@@ -352,6 +306,19 @@ defmodule Mud.Engine.Rules.Commands do
           key: :target,
           greedy: true,
           transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_swap_command do
+    %Definition{
+      callback_module: Command.Swap,
+      parts: [
+        %Part{
+          matches: ["swap"],
+          key: :swap,
+          transformer: &Enum.join/1
         }
       ]
     }

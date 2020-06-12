@@ -31,6 +31,38 @@ defmodule Mud.Engine.Command.AstUtil do
     end
   end
 
+  def build_one_thing_ast([node | ast_nodes]) do
+    Logger.debug(inspect([node | ast_nodes]))
+    {thing, []} = populate_thing(%AstNode.Thing{}, ast_nodes)
+
+    case thing.input do
+      nil ->
+        %AstNode.OneThing{
+          command: node.input
+        }
+
+      _ ->
+        %AstNode.OneThing{
+          command: node.input,
+          thing: thing
+        }
+    end
+  end
+
+  @doc """
+  Given a list of `Mud.Engine.Command.AstNode` structs, turn them into a populated
+  `Mud.Engine.Command.AstNode.CommandInput{} struct.
+  """
+  @spec build_command_input_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.CommandInput.t()
+  def build_command_input_ast([command]) do
+    %AstNode.CommandInput{command: command.input}
+  end
+
+  def build_command_input_ast([command, input]) do
+    %AstNode.CommandInput{command: command.input, input: input.input}
+  end
+
   @doc """
   Given a list of `Mud.Engine.Command.AstNode` structs, turn them into a populated
   `Mud.Engine.Command.AstNode.ThingAndPlace{} struct.
