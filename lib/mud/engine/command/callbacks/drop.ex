@@ -1,28 +1,30 @@
-defmodule Mud.Engine.Command.Wear do
+defmodule Mud.Engine.Command.Drop do
   @moduledoc """
-  The WEAR command allows the Character to put on things like rings, backpacks, armour, clothing, etc...
+  The DROP command allows a character to drop a held item onto the ground.
 
-  The item to be worn must be held.
+  An optional number, which selects which item in case of a multiple match conflict, may be provided.
 
   Syntax:
-    - wear <target>
+    - drop <which> <item>
 
   Examples:
-    - wear backpack
+    - drop sword
+    - drop pink uni
+    - drop 2 appl
   """
 
+  use Mud.Engine.Command.Callback
+
+  alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Search
   alias Mud.Engine.{Character, Item}
 
   require Logger
 
-  @behaviour Mud.Engine.Command.Callback
-
   @impl true
   def continue(context) do
-    wear_thing(context, context.input)
+    drop_thing(context, context.input)
   end
 
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
@@ -62,14 +64,15 @@ defmodule Mud.Engine.Command.Wear do
 
         case matches do
           {:ok, [match]} ->
-            wear_thing(context, match)
+            drop_thing(context, match)
 
           {:ok, matches} when length(matches) > 1 ->
             Util.handle_multiple_items(
               context,
               Enum.map(matches, & &1.glance_description),
               matches,
-              "Which thing did you wish to wear?"
+              "Which thing did you wish to drop?",
+              ""
             )
 
           _ ->
@@ -85,45 +88,33 @@ defmodule Mud.Engine.Command.Wear do
     end
   end
 
-  @spec wear_thing(ExecutionContext.t(), Mud.Engine.Match.t()) :: ExecutionContext.t()
-  defp wear_thing(context, match) do
-    item = match.match
+  defp drop_thing(context, match) do
+    Item.update!(match.match, %{
+      holdable_held_by_id: nil,
+      holdable_hand: nil,
+      area_id: context.character.area_id
+    })
 
-    if item.is_wearable do
-      Item.update!(item, %{
-        wearable_worn_by_id: context.character.id,
-        wearable_is_worn: true,
-        holdable_held_by_id: nil,
-        holdable_is_held: false,
-        holdable_hand: nil
-      })
+    other_msg =
+      "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
+        match.glance_description
+      }{{/item}} on the ground."
 
-      others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+    self_msg = "You drop {{item}}#{match.glance_description}{{/item}} on the ground."
 
-      context
-      |> ExecutionContext.append_output(
-        others,
-        "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
-          match.glance_description
-        }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
-        "info"
-      )
-      |> ExecutionContext.append_output(
-        context.character.id,
-        "You put {{item}}#{match.glance_description}{{/item}} on your {{bodypart}}#{
-          item.wearable_location
-        }{{/bodypart}}.",
-        "info"
-      )
-      |> ExecutionContext.set_success()
-    else
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        String.capitalize("{{item}}#{match.glance_description}{{/item}} cannot be worn."),
-        "error"
-      )
-      |> ExecutionContext.set_success()
-    end
+    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+
+    context
+    |> ExecutionContext.append_output(
+      others,
+      other_msg,
+      "info"
+    )
+    |> ExecutionContext.append_output(
+      context.character.id,
+      self_msg,
+      "info"
+    )
+    |> ExecutionContext.set_success()
   end
 end

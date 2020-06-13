@@ -33,32 +33,6 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
-  # @impl true
-  # def continue(%ExecutionContext{} = context) do
-  # {input, continuation_data} = context.input
-
-  # integer = String.to_integer(input)
-  # match = continuation_data[continuation_data.type][integer]
-
-  # if context.character.area_id == match.match.area_id do
-  #   case continuation_data.type do
-  #     :thing ->
-  #       get_thing_in_place(context, match, continuation_data.place)
-
-  #     :place ->
-  #       find_thing(context, match)
-  #   end
-  # else
-  #   ExecutionContext.append_output(
-  #     context,
-  #     context.character.id,
-  #     "{{item}}#{String.capitalize(context.input.glance_description)}{{/item}} is no longer present.",
-  #     "error"
-  #   )
-  #   |> ExecutionContext.set_success()
-  # end
-  # end
-
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.ThingAndPlace.t()
   def build_ast(ast_nodes) do
@@ -146,6 +120,8 @@ defmodule Mud.Engine.Command.Get do
         which_target
       )
 
+    Logger.debug(inspect(result))
+
     case result do
       {:ok, [thing]} ->
         if thing.match.is_holdable do
@@ -185,20 +161,14 @@ defmodule Mud.Engine.Command.Get do
           |> ExecutionContext.set_success()
         end
 
-      {:ok, things} ->
-        indexed_things =
-          Enum.map(things, & &1.match)
-          |> Util.list_to_index_map()
-
-        cont_data = %ContinuationData{thing: indexed_things, type: :thing}
-
-        handle_multiple_items(
+      {:ok, _things} ->
+        ExecutionContext.append_output(
           context,
-          things,
-          cont_data,
-          "Which thing did you mean?",
-          "There were too many things to choose from. Please be more specific."
+          context.character.id,
+          "Multiple potential items found, please be more specific.",
+          "error"
         )
+        |> ExecutionContext.set_success()
 
       error ->
         error
@@ -250,20 +220,14 @@ defmodule Mud.Engine.Command.Get do
             check_worn_container(context, match.match)
 
           # multiple worn containers matched
-          {:ok, matches} ->
-            indexed_places =
-              Enum.map(matches, & &1.match)
-              |> Util.list_to_index_map()
-
-            cont_data = %ContinuationData{place: indexed_places, type: :place}
-
-            handle_multiple_items(
+          {:ok, _matches} ->
+            ExecutionContext.append_output(
               context,
-              matches,
-              cont_data,
-              "Which container should be searched?",
-              "There were too many places to choose from. Please be more specific."
+              context.character.id,
+              "Multiple potential containers found, please be more specific.",
+              "error"
             )
+            |> ExecutionContext.set_success()
 
           # no worn containers matches
           {:error, :no_match} ->
@@ -281,20 +245,9 @@ defmodule Mud.Engine.Command.Get do
         check_worn_container(context, List.first(all_containers))
 
       # character is wearing multiple containers and the container has not been specified
+      # just check first one for now, all this logic will need to change at some point
       is_nil(ast.place) and length(all_containers) > 1 ->
-        indexed_places =
-          Enum.map(all_containers, & &1.match)
-          |> Util.list_to_index_map()
-
-        cont_data = %ContinuationData{place: indexed_places, type: :place}
-
-        handle_multiple_items(
-          context,
-          all_containers,
-          cont_data,
-          "Which container should be searched?",
-          "There were too many places to choose from. Please be more specific."
-        )
+        check_worn_container(context, List.first(all_containers))
 
       # character is not wearing any containers and no container has been specified
       not is_nil(ast.place) and length(all_containers) == 0 ->
@@ -413,20 +366,14 @@ defmodule Mud.Engine.Command.Get do
             |> ExecutionContext.set_success()
         end
 
-      {:ok, matches} ->
-        indexed_places =
-          Enum.map(matches, & &1.match)
-          |> Util.list_to_index_map()
-
-        cont_data = %ContinuationData{place: indexed_places, type: :place}
-
-        handle_multiple_items(
+      {:ok, _matches} ->
+        ExecutionContext.append_output(
           context,
-          matches,
-          cont_data,
-          "Which container did you mean?",
-          "There were too many places to choose from. Please be more specific."
+          context.character.id,
+          "Multiple potential containers found, please be more specific.",
+          "error"
         )
+        |> ExecutionContext.set_success()
 
       error ->
         error
@@ -441,20 +388,14 @@ defmodule Mud.Engine.Command.Get do
       {:ok, thing} ->
         get_thing_in_place(context, thing, place)
 
-      {:multiple, matches} ->
-        indexed_things =
-          Enum.map(matches, & &1.match)
-          |> Util.list_to_index_map()
-
-        cont_data = %ContinuationData{thing: indexed_things, type: :thing, place: place}
-
-        handle_multiple_items(
+      {:multiple, _matches} ->
+        ExecutionContext.append_output(
           context,
-          matches,
-          cont_data,
-          "What did you want to get from {{item}}#{place.glance_description}{{/item}}?",
-          "There were too many items to choose from. Please be more specific."
+          context.character.id,
+          "Multiple potential matches found inside {{item}}#{place.glance_description}{{/item}}, please be more specific.",
+          "error"
         )
+        |> ExecutionContext.set_success()
 
       {:error, :no_match} ->
         ExecutionContext.append_output(
@@ -465,49 +406,6 @@ defmodule Mud.Engine.Command.Get do
         )
         |> ExecutionContext.set_success()
     end
-  end
-
-  @spec handle_multiple_items(
-          Mud.Engine.Command.ExecutionContext.t(),
-          [Mud.Engine.Search.Match.t()],
-          ContinuationData.t(),
-          String.t(),
-          String.t()
-        ) ::
-          Mud.Engine.Command.ExecutionContext.t()
-  defp handle_multiple_items(
-         context,
-         items,
-         continuation_data,
-         multiple_items_err,
-         _too_many_items_err
-       )
-       when length(items) < 10 do
-    descriptions = Enum.map(items, fn item -> Item.describe_glance(item, context.character) end)
-
-    Util.multiple_match_error(
-      context,
-      descriptions,
-      continuation_data,
-      multiple_items_err,
-      context.command.callback_module
-    )
-  end
-
-  defp handle_multiple_items(
-         context,
-         _items,
-         _continuation_data,
-         _multiple_items_err,
-         too_many_items_err
-       ) do
-    ExecutionContext.append_output(
-      context,
-      context.character.id,
-      too_many_items_err,
-      "error"
-    )
-    |> ExecutionContext.set_success()
   end
 
   @spec find_thing_in_place(Search.Match.t(), String.t(), Character.t()) ::

@@ -59,6 +59,7 @@ defmodule Mud.Engine.Rules.Commands do
   defp list_all_command_definitions do
     MapSet.new([
       define_close_command(),
+      define_drop_command(),
       define_get_command(),
       define_kick_command(),
       define_kneel_command(),
@@ -190,11 +191,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:get, :thing_personal],
           matches: [~r/\d/],
-          key: :thing_number,
+          key: :thing_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:thing_number, :get, :thing_personal],
+          must_follow: [:thing_which, :get, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
@@ -217,11 +218,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:place_personal, :place_where],
           matches: [~r/\d/],
-          key: :place_number,
+          key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:place_number, :place_where, :place_personal],
+          must_follow: [:place_which, :place_where, :place_personal],
           matches: [~r/.*/],
           key: :place,
           greedy: true,
@@ -303,7 +304,27 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:wear],
           matches: [~r/.*/],
-          key: :target,
+          key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_drop_command do
+    %Definition{
+      callback_module: Command.Drop,
+      parts: [
+        %Part{
+          matches: ["drop"],
+          key: :drop,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:drop],
+          matches: [~r/.*/],
+          key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         }
@@ -405,27 +426,9 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:remove, :my],
+          must_follow: [:remove],
           matches: [~r/.*/],
           key: :thing,
-          transformer: &join_with_space_downcase/1
-        },
-        %Part{
-          must_follow: [:thing],
-          matches: ["from"],
-          key: :from,
-          transformer: &List.first/1
-        },
-        %Part{
-          must_follow: [:remove],
-          matches: ["my"],
-          key: :my,
-          transformer: &List.first/1
-        },
-        %Part{
-          must_follow: [:from],
-          matches: [~r/.*/],
-          key: :place,
           transformer: &join_with_space_downcase/1
         }
       ]

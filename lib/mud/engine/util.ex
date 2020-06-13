@@ -134,6 +134,14 @@ defmodule Mud.Engine.Util do
     end
   end
 
+  def handle_multiple_items(
+        context,
+        lines,
+        continuation_data,
+        multiple_items_err,
+        too_many_items_err \\ ""
+      )
+
   @spec handle_multiple_items(
           Mud.Engine.Command.ExecutionContext.t(),
           [Mud.Engine.Search.Match.t()],

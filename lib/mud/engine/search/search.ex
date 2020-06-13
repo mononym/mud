@@ -78,7 +78,7 @@ defmodule Mud.Engine.Search do
           |> Enum.at(which_target - 1)
           |> List.wrap()
 
-        {:ok, [match]}
+        {:ok, match}
 
       # unhappy path where there are multiple matches but chosen index is out of range
       num_matches > 0 and which_target > num_matches ->

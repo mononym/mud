@@ -436,6 +436,28 @@ defmodule Mud.Engine.Character do
     Repo.delete(character)
   end
 
+  @doc """
+  Given a character and a list of items that they currently hold in their hands, return the hand to put an item into.
+
+  In the case of a single held item the hand returned is the opposite one. If there are no held items the character's
+  handedness will be used instead.
+  """
+  @spec which_hand(%Mud.Engine.Character{}, [Item.t()]) :: String.t()
+  def which_hand(character, held_items) when length(held_items) < 2 do
+    case held_items do
+      [item] ->
+        if item.holdable_hand == "left" do
+          "right"
+        else
+          "left"
+        end
+
+      _items ->
+        # character.handedness
+        "right"
+    end
+  end
+
   @spec standing :: <<_::64>>
   def standing, do: "standing"
 

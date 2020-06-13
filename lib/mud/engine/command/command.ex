@@ -75,7 +75,13 @@ defmodule Mud.Engine.Command do
       context.is_continuation == true and context.continuation_type == :numeric ->
         case Integer.parse(context.input) do
           {integer, _} ->
-            do_continue(context, context.continuation_data[integer])
+            if not is_struct(context.continuation_data) do
+              do_continue(context, context.continuation_data[integer])
+            else
+              cd = context.continuation_data
+              cd = %{cd | cd.type => Map.get(cd, cd.type)[integer]}
+              do_continue(context, cd)
+            end
 
           :error ->
             context
