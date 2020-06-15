@@ -114,7 +114,7 @@ defmodule Mud.Engine.Command.Close do
         Item.update!(item, %{container_open: false})
 
         others =
-          Character.list_others_active_in_areas(context.character, context.character.area_id)
+          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
         |> ExecutionContext.append_output(

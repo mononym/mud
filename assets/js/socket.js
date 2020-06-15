@@ -41,52 +41,93 @@ Hooks.Input = {
     }
 }
 
+const toggleMenu = command => {
+    menu.style.display = command === "show" ? "block" : "none";
+};
+
+const setPosition = ({ top, left }) => {
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    toggleMenu('show');
+};
+
+Hooks.CharacterInventoryWindow = {
+    mounted() {
+        // this.el.addEventListener("click", e => {
+        //     if (menuVisible) toggleMenu("hide");
+        // });
+
+        // this.el.addEventListener("contextmenu", e => {
+        //     e.preventDefault();
+        // });
+
+        // const origin = {
+        //     left: e.pageX,
+        //     top: e.pageY
+        // };
+        // setPosition(origin);
+        // return false;
+    }
+
+}
+
 let storyWindowScrolledToBottom = true;
 let storywindow;
 
-Hooks.Story = {
-    mounted() {
-        storywindow = this.el
+// Hooks.Story = {
+//     mounted() {
+//         storywindow = this.el
 
-        // let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
-        // let channel = socket.channel("character:" + character_id, {})
+//         // let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
+//         // let channel = socket.channel("character:" + character_id, {})
 
-        // channel.join()
-        //     .receive("ok", ({ messages }) => console.log("successfully joined", messages))
-        //     .receive("error", ({ reason }) => console.log("failed join", reason))
-        //     .receive("timeout", () => console.log("Networking issue. Still waiting..."))
+//         // channel.join()
+//         //     .receive("ok", ({ messages }) => console.log("successfully joined", messages))
+//         //     .receive("error", ({ reason }) => console.log("failed join", reason))
+//         //     .receive("timeout", () => console.log("Networking issue. Still waiting..."))
 
-        // let prompt = document.querySelector("#prompt")
-        // prompt.focus()
+//         // let prompt = document.querySelector("#prompt")
+//         // prompt.focus()
 
-        // "listen" for the [Enter] keypress event to send a message:
-        // prompt.addEventListener('keydown', function (event) {
-        //     if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
-        //         event.stopPropagation()
-        //         event.preventDefault()
+//         // "listen" for the [Enter] keypress event to send a message:
+//         // prompt.addEventListener('keydown', function (event) {
+//         //     if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
+//         //         event.stopPropagation()
+//         //         event.preventDefault()
 
-        //         channel.push("input", prompt.value)
+//         //         channel.push("input", prompt.value)
 
-        //         prompt.value = '';         // reset the message input field for next message.
-        //     }
-        // });
-    },
+//         //         prompt.value = '';         // reset the message input field for next message.
+//         //     }
+//         // });
+//     },
 
-    beforeUpdate() {
-        storyWindowScrolledToBottom = storywindow.scrollHeight - storywindow.clientHeight <= storywindow.scrollTop + 1;
-    },
+//     beforeUpdate() {
+//         storyWindowScrolledToBottom = storywindow.scrollHeight - storywindow.clientHeight <= storywindow.scrollTop + 1;
+//     },
 
-    updated() {
-        if (storyWindowScrolledToBottom)
-            storywindow.scrollTop = storywindow.scrollHeight - storywindow.clientHeight;
-    }
-}
+//     updated() {
+//         if (storyWindowScrolledToBottom)
+//             storywindow.scrollTop = storywindow.scrollHeight - storywindow.clientHeight;
+//     }
+// }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
-let liveSocket = new LiveSocket("/live", Socket, { params: { _csrf_token: csrfToken }, hooks: Hooks });
+let liveSocket = new LiveSocket("/live", Socket, {
+    params: { _csrf_token: csrfToken },
+    metadata: {
+        click: (e, el) => {
+            return {
+                clientX: e.clientX,
+                clientY: e.clientY
+            }
+        }
+    },
+    hooks: Hooks
+});
 liveSocket.connect()
 
-// let socket = new Socket("/socket", { params: { token: window.userToken } })
+let socket = new Socket("/socket", { params: { token: window.userToken } })
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,

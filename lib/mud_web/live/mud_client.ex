@@ -1,6 +1,8 @@
 defmodule MudWeb.MudClientLive do
   use Phoenix.LiveView
 
+  alias Mud.Engine
+
   require Logger
 
   defmodule Input do
@@ -16,17 +18,24 @@ defmodule MudWeb.MudClientLive do
   def mount(_params, session, socket) do
     send(self(), :post_mount)
 
+    Logger.debug("start init data")
+    client_data = Engine.init_client_data(session["character_id"])
+    Logger.debug("finish init data")
+
     {:ok,
      assign(socket,
        character_id: session["character_id"],
        input: Input.new(),
-       messages: []
+       messages: [],
+       client_data: client_data
      ), temporary_assigns: [messages: []]}
   end
 
   def render(assigns) do
-    Logger.debug("Rendering MudClient")
-    MudWeb.MudClientView.render("v1.html", assigns)
+    Logger.debug("Starting Rendering MudClient")
+    r = MudWeb.MudClientView.render("v1.html", assigns)
+    Logger.debug("Finished Rendering MudClient")
+    r
   end
 
   def handle_event("submit_input", %{"input" => %{"content" => ""}}, socket) do
@@ -36,6 +45,7 @@ defmodule MudWeb.MudClientLive do
   def handle_event("submit_input", %{"input" => %{"content" => input}}, socket) do
     Logger.debug("Handling input event: #{inspect(input)}")
     send_command(socket.assigns.character_id, input)
+    Logger.debug("Sent input")
 
     {:noreply, assign(socket, input: Input.new())}
   end

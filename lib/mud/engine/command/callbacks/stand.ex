@@ -29,7 +29,7 @@ defmodule Mud.Engine.Command.Stand do
 
       desc = from_description(context.character)
 
-      others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+      others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
       context
       |> ExecutionContext.append_message(

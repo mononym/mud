@@ -86,7 +86,7 @@ defmodule Mud.Engine.Command.Kick do
       case match do
         character = %Character{} ->
           others =
-            Character.list_others_active_in_areas(context.character, context.character.area_id)
+            Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
           context
           |> ExecutionContext.append_output(
@@ -103,7 +103,7 @@ defmodule Mud.Engine.Command.Kick do
 
         _item = %Item{} ->
           others =
-            Character.list_others_active_in_areas(context.character, context.character.area_id)
+            Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
           context
           |> ExecutionContext.append_output(

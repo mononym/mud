@@ -1,12 +1,51 @@
 <%= tag :meta, name: "character_id", content: @character_id %>
 
-<div name="client" class="w-screen h-screen flex flex-col overflow-hidden max-h-screen" phx-window-keyup="hotkey">
-  <div id="story" phx-hook="Story" phx-update="append" class="min-w-full flex flex-col flex-1 overflow-y-scroll p-2 font-extrabold font-story">
-    <%= for message <- @messages do %>
-      <%= raw(message) %>
-    <% end %>
+<div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
+  <div class="w-1/5 flex flex-col">
+    <div class="flex flex-1 border-4"><p>asjdhakjsdkjhd</p></div>
+    <div class="flex flex-col flex-1 border-4">
+      <ul class="flex">
+        <li class="flex-1 mr-2">
+          <a class="text-center block border border-blue-500 rounded py-2 px-4 bg-blue-500 hover:bg-blue-700 text-white" href="#">Inventory</a>
+        </li>
+        <li class="flex-1 mr-2">
+          <a class="text-center block border border-white rounded hover:border-gray-200 text-blue-500 hover:bg-gray-200 py-2 px-4" href="#">Skills</a>
+        </li>
+        <li class="text-center flex-1">
+          <a class="block py-2 px-4 text-gray-400 cursor-not-allowed" href="#">Settings</a>
+        </li>
+      </ul>
+      <div class="flex flex-1 bg-gray-600 p-2">
+        <%= live_component @socket, MudWeb.Live.Component.CharacterInventory, id: :character_inventory, inventory: @client_data.inventory %>
+      </div>
+    </div>
   </div>
-  <%= form_for @input, "#", [phx_change: :typing, phx_submit: :submit_input], fn _f -> %>
-      <%= text_input :input, :content, id: @input.changes[:id], value: @input.changes[:content], phx_hook: "Input", phx_blur: "stop_typing", placeholder: "Enter Commands Here...", class: "min-w-full rounded-lg resize-y flex-shrink", autocomplete: "off" %>
-    <% end %>
+  <div class="w-3/5 flex flex-col">
+    <div id="story" phx-hook="Story" phx-update="append" class="border-4 border-r-0 min-w-full flex-1 flex flex-col overflow-y-scroll p-2 font-extrabold font-story">
+      <%= for message <- @messages do %>
+        <%= raw(message) %>
+      <% end %>
+    </div>
+    <div class="h-8 flex flex-col">
+      <%= form_for @input, "#", [phx_submit: :submit_input, class: "flex flex-col flex-1"], fn _f -> %>
+        <%= text_input :input, :content, phx_hook: "Input", phx_blur: "stop_typing", placeholder: "Enter Commands Here...", class: "min-w-full rounded-lg resize-y min-h-full", autocomplete: "off" %>
+      <% end %>
+    </div>
+  </div>
+  <div class="w-1/5 flex flex-col">
+    <div class="flex flex-1 border-4"><p>asjdhakjsdkjhd</p></div>
+    <div class="flex flex-1 border-4">
+      <ul class="flex flex-1">
+        <li class="flex flex-1 mr-2">
+          <a class="text-center block border border-blue-500 rounded py-2 px-4 bg-blue-500 hover:bg-blue-700 text-white" href="#">Active Item</a>
+        </li>
+        <li class="flex flex-1 mr-2">
+          <a class="text-center block border border-white rounded hover:border-gray-200 text-blue-500 hover:bg-gray-200 py-2 px-4" href="#">Nav Item</a>
+        </li>
+        <li class="flex flex-1">
+          <a class="block text-center py-2 px-4 text-gray-400 cursor-not-allowed" href="#">Disabled Item</a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>

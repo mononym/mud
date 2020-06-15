@@ -1,0 +1,14 @@
+<div id="character_inventory_window" phx-hook="CharacterInventoryWindow" class="min-w-full min-h-full flex flex-col">
+  <div class="flex flex-col">
+    <div phx-click="toggle_containers" phx-target="<%= @myself %>" class="cursor-pointer select-none">
+      <i class="fas fa-<%= if @containers_expanded do "minus" else "plus" end %>-circle"></i> Containers
+    </div>
+    <%= if @containers_expanded do %>
+    <div>
+    <% else %>
+    <div hidden>
+    <% end %>
+      <%= recurse_inventory_items(@inventory.worn_containers, @inventory.item_child_index, @myself) %>
+    </div>
+  </div>
+</div>

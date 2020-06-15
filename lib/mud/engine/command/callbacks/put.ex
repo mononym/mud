@@ -239,7 +239,7 @@ defmodule Mud.Engine.Command.Put do
     character = context.character
 
     {self_msg, others_msg} = do_put_item_in_container(item, container, character)
-    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(

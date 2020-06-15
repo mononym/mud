@@ -115,7 +115,7 @@ defmodule Mud.Engine.Command.Remove do
       holdable_hand: Character.which_hand(context.character, held_items)
     })
 
-    others = Character.list_others_active_in_areas(context.character, context.character.area_id)
+    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(

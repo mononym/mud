@@ -476,14 +476,14 @@ defmodule Mud.Account do
         select: %{player: player.id, email: auth_email.email}
       )
     )
-    |> Enum.filter(fn %{email: encrypted_email} ->
+    |> Enum.find(fn %{email: encrypted_email} ->
       Mud.Vault.decrypt!(encrypted_email) === email
     end)
     |> case do
-      [] ->
+      nil ->
         {:error, :not_found}
 
-      [%{player: player_id}] ->
+      %{player: player_id} ->
         {:ok, player_id}
     end
   end

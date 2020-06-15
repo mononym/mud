@@ -145,7 +145,7 @@ defmodule Mud.Engine.Command.Sit do
         Character.update(context.character, update)
 
         others =
-          Character.list_others_active_in_areas(context.character, context.character.area_id)
+          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
         |> ExecutionContext.append_message(
@@ -175,7 +175,7 @@ defmodule Mud.Engine.Command.Sit do
         Character.update(context.character, update)
 
         others =
-          Character.list_others_active_in_areas(context.character, context.character.area_id)
+          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
         |> ExecutionContext.append_message(

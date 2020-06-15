@@ -156,7 +156,7 @@ defmodule Mud.Engine.Command.Move do
 
     # List all the characters that need to be informed of a move
     characters_by_area =
-      Character.list_others_active_in_areas(character, [link.to_id, link.from_id])
+      Character.list_others_active_in_areas(character.id, [link.to_id, link.from_id])
       # Group by location
       |> Enum.group_by(fn char ->
         char.area_id

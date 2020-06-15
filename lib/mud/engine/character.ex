@@ -235,12 +235,20 @@ defmodule Mud.Engine.Character do
     Item.list_worn_containers(character.id)
   end
 
-  def list_held_items(character) do
+  def list_held_items(character) when is_struct(character) do
     Item.list_held_by(character.id)
   end
 
-  def list_worn_items(character) do
+  def list_held_items(character_id) do
+    Item.list_held_by(character_id)
+  end
+
+  def list_worn_items(character) when is_struct(character) do
     Item.list_worn_by(character.id)
+  end
+
+  def list_worn_items(character_id) do
+    Item.list_worn_by(character_id)
   end
 
   @doc """
@@ -329,15 +337,15 @@ defmodule Mud.Engine.Character do
       [%Character{}, ...]
 
   """
-  @spec list_others_active_in_areas(%Character{}, String.t() | [String.t()]) :: [%__MODULE__{}]
-  def list_others_active_in_areas(character, area_ids) do
+  @spec list_others_active_in_areas(String.t(), String.t() | [String.t()]) :: [%__MODULE__{}]
+  def list_others_active_in_areas(character_id, area_ids) do
     area_ids = List.wrap(area_ids)
 
     base_query()
     |> where(
       [char],
       char.active == true and char.area_id in ^area_ids and
-        char.id != ^character.id
+        char.id != ^character_id
     )
     |> Repo.all()
   end

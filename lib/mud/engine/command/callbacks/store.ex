@@ -77,7 +77,7 @@ defmodule Mud.Engine.Command.Store do
 
               others =
                 Character.list_others_active_in_areas(
-                  context.character,
+                  context.character.id,
                   context.character.area_id
                 )
 

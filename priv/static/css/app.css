@@ -11347,6 +11347,10 @@ div[name="message"] {
   display: none;
 }
 
+.jstree_no_checkbox > i.jstree-checkbox {
+  display: none;
+}
+
 @media (min-width: 640px) {
   .sm\:sr-only {
     position: absolute;

@@ -20,7 +20,7 @@ defmodule Mud.Engine.Command.Quit do
       |> Mud.Engine.Character.get_by_id!()
       |> Mud.Engine.Character.update(%{active: false})
 
-    characters = Mud.Engine.Character.list_others_active_in_areas(character, character.area_id)
+    characters = Mud.Engine.Character.list_others_active_in_areas(character.id, character.area_id)
 
     context
     |> ExecutionContext.append_message(
