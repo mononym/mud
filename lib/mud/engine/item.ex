@@ -159,7 +159,6 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_recursive(items) do
-    IO.inspect(items)
     ids = Enum.map(items, & &1.id)
 
     item_tree_initial_query =
@@ -179,8 +178,6 @@ defmodule Mud.Engine.Item do
       {"item_tree", __MODULE__}
       |> recursive_ctes(true)
       |> with_cte("item_tree", as: ^item_tree_query)
-
-    IO.inspect(Ecto.Adapters.SQL.to_sql(:all, Repo, final_query))
 
     Repo.all(final_query)
   end

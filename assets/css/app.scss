@@ -19,10 +19,6 @@ div[name="message"] {
 }
 
 #story {
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-
   div,
   span {
     flex-shrink: 0;

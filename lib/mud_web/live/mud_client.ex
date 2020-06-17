@@ -12,7 +12,7 @@ defmodule MudWeb.MudClientLive do
       field(:content, :string, default: "")
     end
 
-    def new, do: %__MODULE__{} |> Ecto.Changeset.change(%{content: "", id: UUID.uuid4()})
+    def new, do: %__MODULE__{id: UUID.uuid4()} |> Ecto.Changeset.change()
   end
 
   def mount(_params, session, socket) do
@@ -32,14 +32,12 @@ defmodule MudWeb.MudClientLive do
   end
 
   def render(assigns) do
-    Logger.debug("Starting Rendering MudClient")
-    r = MudWeb.MudClientView.render("v1.html", assigns)
-    Logger.debug("Finished Rendering MudClient")
-    r
+    MudWeb.MudClientView.render("v1.html", assigns)
   end
 
   def handle_event("submit_input", %{"input" => %{"content" => ""}}, socket) do
-    {:noreply, assign(socket, input: Input.new())}
+    Logger.debug(inspect(socket.assigns.input))
+    {:noreply, socket}
   end
 
   def handle_event("submit_input", %{"input" => %{"content" => input}}, socket) do
@@ -51,6 +49,7 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_event("typing", _value, socket) do
+    Logger.debug("started typing")
     {:noreply, socket}
   end
 
@@ -59,12 +58,12 @@ defmodule MudWeb.MudClientLive do
         _value,
         socket
       ) do
+        Logger.debug("stopped typing")
     {:noreply, socket}
   end
 
   def handle_event("hotkey", event, socket) do
     Logger.debug("hotkey event received: #{inspect(event)}")
-    Logger.debug("assigns: #{inspect(socket.assigns)}")
 
     assigns = process_hotkey(event, socket.assigns)
 

@@ -10,29 +10,6 @@ import { Socket } from "phoenix"
 
 import LiveSocket from "phoenix_live_view"
 
-// function htmlToElement(html) {
-//     var template = document.createElement('template');
-//     html = html.trim(); // Never return a text node of whitespace as the result
-//     template.innerHTML = html;
-//     return template.content.firstChild;
-// }
-
-// function htmlToElements(html) {
-//     var template = document.createElement('template');
-//     template.innerHTML = html;
-//     return template.content.childNodes;
-// }
-
-// function createElementsFromHTML(htmlString) {
-//     var div = document.createElement('div');
-//     div.innerHTML = htmlString.trim();
-
-//     let frag = document.createRange().createContextualFragment(htmlString.trim())
-
-//     // Change this to div.childNodes to support multiple top-level nodes
-//     return frag;
-// }
-
 let Hooks = {}
 
 Hooks.Input = {
@@ -40,6 +17,13 @@ Hooks.Input = {
         this.el.focus()
     }
 }
+
+// Hooks.Form = {
+//     updated() {
+//         console.log("updated")
+//         input.focus()
+//     }
+// }
 
 const toggleMenu = command => {
     menu.style.display = command === "show" ? "block" : "none";
@@ -73,44 +57,35 @@ Hooks.CharacterInventoryWindow = {
 
 let storyWindowScrolledToBottom = true;
 let storywindow;
+let scrolltobottom;
 
-// Hooks.Story = {
-//     mounted() {
-//         storywindow = this.el
+Hooks.Story = {
+    mounted() {
+        storywindow = this.el
+    }
+}
 
-//         // let character_id = document.querySelector("meta[name='character_id']").getAttribute("content")
-//         // let channel = socket.channel("character:" + character_id, {})
+Hooks.MessageWrapper = {
+    updated() {
+        if (storyWindowScrolledToBottom) {
+            storywindow.scrollTop = storywindow.scrollHeight;
+        }
+    }
+}
 
-//         // channel.join()
-//         //     .receive("ok", ({ messages }) => console.log("successfully joined", messages))
-//         //     .receive("error", ({ reason }) => console.log("failed join", reason))
-//         //     .receive("timeout", () => console.log("Networking issue. Still waiting..."))
+function handleIntersect(entries, observer) {
+    storyWindowScrolledToBottom = entries[0].isIntersecting;
+}
 
-//         // let prompt = document.querySelector("#prompt")
-//         // prompt.focus()
+Hooks.ScrollToBottom = {
+    mounted() {
+        scrolltobottom = this.el;
 
-//         // "listen" for the [Enter] keypress event to send a message:
-//         // prompt.addEventListener('keydown', function (event) {
-//         //     if (event.keyCode == 13 && prompt.value.length > 0) { // don't sent empty msg.
-//         //         event.stopPropagation()
-//         //         event.preventDefault()
+        const io = new IntersectionObserver(handleIntersect, { threshold: [0, 1] })
 
-//         //         channel.push("input", prompt.value)
-
-//         //         prompt.value = '';         // reset the message input field for next message.
-//         //     }
-//         // });
-//     },
-
-//     beforeUpdate() {
-//         storyWindowScrolledToBottom = storywindow.scrollHeight - storywindow.clientHeight <= storywindow.scrollTop + 1;
-//     },
-
-//     updated() {
-//         if (storyWindowScrolledToBottom)
-//             storywindow.scrollTop = storywindow.scrollHeight - storywindow.clientHeight;
-//     }
-// }
+        io.observe(this.el)
+    },
+}
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {

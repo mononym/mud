@@ -11317,17 +11317,8 @@ div[name="message"] {
   white-space: pre-line;
 }
 
-#story {
-  display: -webkit-box;
-  display: flex;
-  -webkit-box-orient: vertical;
-  -webkit-box-direction: normal;
-          flex-direction: column;
-  overflow: auto;
-}
-
 #story div,
-  #story span {
+#story span {
   flex-shrink: 0;
 }
 

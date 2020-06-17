@@ -25,7 +25,6 @@ defmodule Mud.Engine do
 
     %ClientData{}
     |> populate_inventory(character)
-    |> IO.inspect()
   end
 
   defp populate_inventory(client_data, character) do
@@ -67,8 +66,10 @@ defmodule Mud.Engine do
     worn_items = Character.list_worn_items(character.id)
     all_items = Engine.Item.list_all_recursive(worn_items)
     groups = Enum.group_by(all_items, & &1.is_container)
-    container_nodes = Enum.map(groups[true], fn item -> transform_item(item, character) end)
-    container_item_nodes = Enum.map(groups[false], fn item -> transform_item(item, character) end)
+    container_nodes = Enum.map(groups[true] || [], fn item -> transform_item(item, character) end)
+
+    container_item_nodes =
+      Enum.map(groups[false] || [], fn item -> transform_item(item, character) end)
 
     index = build_container_item_index(container_item_nodes)
 

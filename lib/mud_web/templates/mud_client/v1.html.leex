@@ -2,7 +2,7 @@
 
 <div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4"><p>asjdhakjsdkjhd</p></div>
+    <div class="flex flex-1 border-4"></div>
     <div class="flex flex-col flex-1 border-4">
       <ul class="flex">
         <li class="flex-1 mr-2">
@@ -21,19 +21,20 @@
     </div>
   </div>
   <div class="w-3/5 flex flex-col">
-    <div id="story" phx-hook="Story" phx-update="append" class="border-4 border-r-0 min-w-full flex-1 flex flex-col overflow-y-scroll p-2 font-extrabold font-story">
-      <%= for message <- @messages do %>
-        <%= raw(message) %>
-      <% end %>
+    <div id="story" phx-hook="Story" class="flex flex-col min-w-full p-2 font-extrabold font-story border-4 border-r-0 flex-1 overflow-y-auto max-h-screen">
+      <div id="story_wrapper" phx-hook="MessageWrapper" phx-update="append">
+        <%= for message <- @messages do %>
+          <%= live_component @socket, MudWeb.Live.Component.StoryMessage, message: message %>
+        <% end %>
+      </div>
+      <div id="scroll-to-bottom" phx-hook="ScrollToBottom" class="h-2"></div>
     </div>
-    <div class="h-8 flex flex-col">
-      <%= form_for @input, "#", [phx_submit: :submit_input, class: "flex flex-col flex-1"], fn _f -> %>
-        <%= text_input :input, :content, phx_hook: "Input", phx_blur: "stop_typing", placeholder: "Enter Commands Here...", class: "min-w-full rounded-lg resize-y min-h-full", autocomplete: "off" %>
-      <% end %>
+    <div class="flex flex-shrink">
+        <%= live_component @socket, MudWeb.Live.Component.CommandPrompt, input: @input, id: "input" %>
     </div>
   </div>
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4"><p>asjdhakjsdkjhd</p></div>
+    <div class="flex flex-1 border-4"></div>
     <div class="flex flex-1 border-4">
       <ul class="flex flex-1">
         <li class="flex flex-1 mr-2">

@@ -3,8 +3,6 @@ defmodule MudWeb.MudClientView do
 
   def recurse_inventory_items(items, item_index, myself) do
     for item <- items do
-      IO.inspect(item_index)
-      IO.inspect(item.id)
       children? = Map.has_key?(item_index, item.id)
 
       if children? do
