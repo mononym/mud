@@ -180,7 +180,7 @@ defmodule Mud.Engine.Search do
       %Match{
         match_string: String.downcase(link.text),
         glance_description: link.text,
-        look_description: Link.describe_look(link, looking_character),
+        look_description: Link.short_look(link, looking_character),
         match: link
       }
     end)
@@ -190,8 +190,8 @@ defmodule Mud.Engine.Search do
     Enum.map(characters, fn character ->
       %Match{
         match_string: String.downcase(character.name),
-        glance_description: Character.describe_glance(character, looking_character),
-        look_description: Character.describe_look(character, looking_character),
+        glance_description: Character.short_description(character, looking_character),
+        look_description: Character.short_look(character, looking_character),
         match: character
       }
     end)
@@ -199,12 +199,12 @@ defmodule Mud.Engine.Search do
 
   defp things_to_match(items = [%Item{} | _], looking_character) do
     Enum.map(items, fn item ->
-      desc = Item.describe_glance(item, looking_character)
+      desc = Item.short_description(item, looking_character)
 
       %Match{
         match_string: String.downcase(desc),
         glance_description: desc,
-        look_description: Item.describe_look(item, looking_character),
+        look_description: Item.short_look(item, looking_character),
         match: item
       }
     end)

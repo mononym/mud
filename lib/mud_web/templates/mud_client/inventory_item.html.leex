@@ -1,0 +1,10 @@
+<div class="min-w-full flex flex-col flex-shrink">
+  <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_containers" phx-target="<%= @myself %>">
+    <%= if @item.is_openable do %>
+      <i class="fas fa-<%= if @item.opened do "minus" else "plus" end %>-circle"></i>&nbsp;<i class="<%= @item.icon %>"></i>
+    <% else %>
+      <i class="<%= @item.icon %>"
+    <% end %>
+    <%= @item.short_description %>
+  </div>
+</div>

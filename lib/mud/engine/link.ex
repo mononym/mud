@@ -30,7 +30,7 @@ defmodule Mud.Engine.Link do
       foreign_key: :to_id
     )
 
-      timestamps()
+    timestamps()
   end
 
   @doc false
@@ -175,11 +175,11 @@ defmodule Mud.Engine.Link do
     Repo.get!(__MODULE__, link_id)
   end
 
-  def describe_glance(link, _looking_character) do
+  def short_description(link, _looking_character) do
     link.text
   end
 
-  def describe_look(link, looking_character) do
-    Area.describe_look(link.to_id, looking_character)
+  def short_look(link, looking_character) do
+    Area.short_look(link.to_id, looking_character)
   end
 end

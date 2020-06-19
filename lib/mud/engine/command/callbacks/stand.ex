@@ -29,7 +29,8 @@ defmodule Mud.Engine.Command.Stand do
 
       desc = from_description(context.character)
 
-      others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+      others =
+        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
       context
       |> ExecutionContext.append_message(
@@ -62,7 +63,7 @@ defmodule Mud.Engine.Command.Stand do
     if character.relative_item_id != nil do
       desc =
         Item.get!(character.relative_item_id)
-        |> Item.describe_glance(character)
+        |> Item.short_description(character)
 
       " from #{desc}"
     else

@@ -18,16 +18,11 @@ defmodule MudWeb.MudClientLive do
   def mount(_params, session, socket) do
     send(self(), :post_mount)
 
-    Logger.debug("start init data")
-    client_data = Engine.init_client_data(session["character_id"])
-    Logger.debug("finish init data")
-
     {:ok,
      assign(socket,
        character_id: session["character_id"],
        input: Input.new(),
-       messages: [],
-       client_data: client_data
+       messages: []
      ), temporary_assigns: [messages: []]}
   end
 

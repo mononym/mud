@@ -16,7 +16,7 @@
         </li>
       </ul>
       <div class="flex flex-1 bg-gray-600 p-2">
-        <%= live_component @socket, MudWeb.Live.Component.CharacterInventory, id: :character_inventory, inventory: @client_data.inventory %>
+        <%= live_component @socket, MudWeb.Live.Component.CharacterInventory, id: "character_inventory", character_id: @character_id %>
       </div>
     </div>
   </div>

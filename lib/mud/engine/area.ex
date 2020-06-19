@@ -117,9 +117,9 @@ defmodule Mud.Engine.Area do
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
-  @spec describe_look(area_id :: String.t(), character :: Character.t()) ::
+  @spec short_look(area_id :: String.t(), character :: Character.t()) ::
           description :: String.t()
-  def describe_look(area_id, character) do
+  def short_look(area_id, character) do
     area = get_area!(area_id)
 
     build_area_name(area)
@@ -227,14 +227,14 @@ defmodule Mud.Engine.Area do
   end
 
   defp describe_thing(item = %Item{}, looking_character) do
-    Item.describe_glance(item, looking_character)
+    Item.short_description(item, looking_character)
   end
 
   defp describe_thing(character = %Character{}, looking_character) do
-    Character.describe_glance(character, looking_character)
+    Character.short_description(character, looking_character)
   end
 
   defp describe_thing(link = %Link{}, looking_character) do
-    Link.describe_glance(link, looking_character)
+    Link.short_description(link, looking_character)
   end
 end

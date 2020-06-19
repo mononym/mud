@@ -167,7 +167,7 @@ defmodule Mud.Engine.Command.Move do
     |> ExecutionContext.append_message(
       Message.new_output(
         context.character_id,
-        Area.describe_look(link.to_id, context.character)
+        Area.short_look(link.to_id, context.character)
       )
     )
     # Send messages to everyone in room that the character just left

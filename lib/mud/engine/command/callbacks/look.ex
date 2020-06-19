@@ -44,7 +44,7 @@ defmodule Mud.Engine.Command.Look do
 
     case ast do
       %TAP{thing: nil} ->
-        description = Area.describe_look(context.character.area_id, context.character)
+        description = Area.short_look(context.character.area_id, context.character)
 
         context
         |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
@@ -212,7 +212,7 @@ defmodule Mud.Engine.Command.Look do
 
             items_description =
               Stream.map(thing.container_items, fn item ->
-                Item.describe_glance(item, context.character)
+                Item.short_description(item, context.character)
               end)
               |> Enum.join("{{/item}}, {{item}}")
 

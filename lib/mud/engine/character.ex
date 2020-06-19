@@ -158,12 +158,12 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
-      iex> describe_glance(character)
+      iex> short_description(character)
       "awesome description"
 
   """
-  @spec describe_glance(%Character{}, %Character{}) :: String.t()
-  def describe_glance(character, _character_doing_the_looking) do
+  @spec short_description(%Character{}, %Character{}) :: String.t()
+  def short_description(character, _character_doing_the_looking) do
     a_or_an =
       if Regex.match?(~r/^[aeiouAEIOU]/, character.race) do
         "an"
@@ -181,12 +181,12 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
-      iex> describe_look(character)
+      iex> short_look(character)
       "awesome description"
 
   """
-  @spec describe_look(%Character{}, %Character{}) :: String.t()
-  def describe_look(character, looking_character) do
+  @spec short_look(%Character{}, %Character{}) :: String.t()
+  def short_look(character, looking_character) do
     # Woodsman Khandrish Aratar of Zoulren, an Elf.
     # Of average height, they have blue eyes and brown hair.
     # They are wearing a rugged leather backpack.
@@ -194,7 +194,7 @@ defmodule Mud.Engine.Character do
 
     worn_items =
       character.worn_items
-      |> Stream.map(fn item -> Item.describe_glance(item, looking_character) end)
+      |> Stream.map(fn item -> Item.short_description(item, looking_character) end)
       |> Enum.join("{{/item}}, {{item}}")
 
     worn_items_string = "{{item}}" <> worn_items <> "{{/item}}"
@@ -207,7 +207,7 @@ defmodule Mud.Engine.Character do
     position_string =
       cond do
         character.relative_item_id != nil ->
-          desc = Item.describe_glance(Item.get!(character.relative_item_id), character)
+          desc = Item.short_description(Item.get!(character.relative_item_id), character)
 
           " who is #{character.position} #{character.relative_position} #{desc}"
 
@@ -249,6 +249,22 @@ defmodule Mud.Engine.Character do
 
   def list_worn_items(character_id) do
     Item.list_worn_by(character_id)
+  end
+
+  @doc """
+  Returns a list of characters all characters.
+
+  ## Examples
+
+      iex> list_all()
+      [%Character{}, ...]
+
+  """
+  @spec list(list_of_ids :: [String.t(), ...]) :: [%__MODULE__{}]
+  def list(list_of_ids) do
+    base_query()
+    |> where([character], character.id in ^list_of_ids)
+    |> Repo.all()
   end
 
   @doc """

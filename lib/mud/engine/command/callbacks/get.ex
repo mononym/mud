@@ -282,8 +282,8 @@ defmodule Mud.Engine.Command.Get do
         match = %Search.Match{
           match_string: "",
           match: item,
-          glance_description: Item.describe_glance(item, context.character),
-          look_description: Item.describe_look(item, context.character)
+          glance_description: Item.short_description(item, context.character),
+          look_description: Item.short_look(item, context.character)
         }
 
         find_thing(context, match)
@@ -293,7 +293,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.describe_glance(item, context.character))}{{/item}} must be unlocked and open first.",
+          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be unlocked and open first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -302,7 +302,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.describe_glance(item, context.character))}{{/item}} must be unlocked first.",
+          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be unlocked first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -311,7 +311,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.describe_glance(item, context.character))}{{/item}} must be open first.",
+          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be open first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -437,7 +437,9 @@ defmodule Mud.Engine.Command.Get do
     character = context.character
 
     {self_msg, others_msg} = do_get_thing_in_place(thing, place, character)
-    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(

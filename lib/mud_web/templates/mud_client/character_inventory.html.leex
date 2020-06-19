@@ -1,14 +1,31 @@
-<div id="character_inventory_window" phx-hook="CharacterInventoryWindow" class="min-w-full min-h-full flex flex-col">
-  <div class="flex flex-col">
-    <div phx-click="toggle_containers" phx-target="<%= @myself %>" class="cursor-pointer select-none">
-      <i class="fas fa-<%= if @containers_expanded do "minus" else "plus" end %>-circle"></i> Containers
+<div phx-hook="CharacterInventoryWindow" class="min-w-full min-h-full flex flex-col">
+  <%= if @loading do %>
+    <div class="min-w-full flex flex-1 justify-center items-center">
+      <i class="fas fa-9x fa-ring fa-spin"></i>
     </div>
-    <%= if @containers_expanded do %>
-    <div>
-    <% else %>
-    <div hidden>
-    <% end %>
-      <%= recurse_inventory_items(@inventory.worn_containers, @inventory.item_child_index, @myself) %>
+  <% end %>
+  <%= if not @loading do %>
+    <div class="flex flex-col">
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_containers" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @held_expanded do "minus" else "plus" end %>-circle"></i> Held
+      </div>
+      <%= if @held_expanded do %>
+      <div class="flex flex-col flex-shrink">
+        <%= for item <- @inventory_data.held_items do%>
+          <%= live_component @socket, MudWeb.Live.Component.InventoryItem, item: item %>
+        <% end %>
+      </div>
+      <% end %>
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_containers" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @containers_expanded do "minus" else "plus" end %>-circle"></i> Containers
+      </div>
+      <%= if @containers_expanded do %>
+      <div class="flex flex-col flex-shrink">
+        <%= for container <- @inventory_data.worn_containers do%>
+          <%= live_component @socket, MudWeb.Live.Component.InventoryItem, item: container %>
+        <% end %>
+      </div>
+      <% end %>
     </div>
-  </div>
+  <% end %>
 </div>

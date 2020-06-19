@@ -36,11 +36,11 @@ defmodule Mud.Engine.Command.Swap do
       [item] ->
         other_msg =
           "{{character}}#{context.character.name}{{/character}} moves #{
-            Item.describe_glance(item)
+            Item.short_description(item)
           } to their {{bodypart}}#{item.holdable_hand} hand{{/bodypart}}"
 
         msg =
-          "{{item}}#{String.capitalize(Item.describe_glance(item))}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(Item.short_description(item))}{{/item}} is now in your {{bodypart}}#{
             item.holdable_hand
           } hand{{/bodypart}}."
 
@@ -62,15 +62,15 @@ defmodule Mud.Engine.Command.Swap do
       [item1, item2] ->
         other_msg =
           "{{character}}#{context.character.name}{{/character}} moves #{
-            Item.describe_glance(item1)
+            Item.short_description(item1)
           } to their {{bodypart}}#{item1.holdable_hand} hand{{/bodypart}}, and #{
-            Item.describe_glance(item2)
+            Item.short_description(item2)
           } to their {{bodypart}}#{item2.holdable_hand} hand{{/bodypart}} hand."
 
         msg =
-          "{{item}}#{String.capitalize(Item.describe_glance(item1))}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(Item.short_description(item1))}{{/item}} is now in your {{bodypart}}#{
             item1.holdable_hand
-          } hand{{/bodypart}}, and #{Item.describe_glance(item2)} is in your {{bodypart}}#{
+          } hand{{/bodypart}}, and #{Item.short_description(item2)} is in your {{bodypart}}#{
             item2.holdable_hand
           } hand{{/bodypart}}."
 
