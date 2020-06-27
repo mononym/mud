@@ -47,7 +47,7 @@ defmodule Mud.Engine.Command.Sit do
 
   def sit_on_target(context, input, which_target) do
     matches =
-      Search.find_matches_in_area([:item], context.character.area_id, input, context.character)
+      Search.find_matches_in_area([:item], context.character.area_id, input)
 
     num_exact_matches = length(matches.exact_matches)
     num_partial_matches = length(matches.partial_matches)
@@ -101,7 +101,7 @@ defmodule Mud.Engine.Command.Sit do
   end
 
   defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-    descriptions = Enum.map(matches, fn match -> match.glance_description end)
+    descriptions = Enum.map(matches, fn match -> match.short_description end)
 
     error_msg = "{{warning}}Please choose where to sit.{{/warning}}"
 
@@ -181,14 +181,14 @@ defmodule Mud.Engine.Command.Sit do
         |> ExecutionContext.append_message(
           Message.new_output(
             others,
-            "#{context.character.name} sits down on #{furniture_object.glance_description}.",
+            "#{context.character.name} sits down on #{furniture_object.short_description}.",
             "info"
           )
         )
         |> ExecutionContext.append_message(
           Message.new_output(
             context.character.id,
-            "You sit down on #{furniture_object.glance_description}.",
+            "You sit down on #{furniture_object.short_description}.",
             "info"
           )
         )
@@ -199,7 +199,7 @@ defmodule Mud.Engine.Command.Sit do
           context,
           Message.new_output(
             context.character.id,
-            "Unfortunately, #{furniture_object.glance_description} can not be sat on.",
+            "Unfortunately, #{furniture_object.short_description} can not be sat on.",
             "error"
           )
         )

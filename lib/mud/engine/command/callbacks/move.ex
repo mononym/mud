@@ -92,7 +92,6 @@ defmodule Mud.Engine.Command.Move do
         [:link],
         context.character.area_id,
         direction,
-        context.character,
         which_target
       )
 
@@ -117,7 +116,7 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-    descriptions = Enum.map(matches, & &1.glance_description)
+    descriptions = Enum.map(matches, & &1.short_description)
 
     error_msg = "{{warning}}Which exit?{{/warning}}"
 
@@ -167,7 +166,7 @@ defmodule Mud.Engine.Command.Move do
     |> ExecutionContext.append_message(
       Message.new_output(
         context.character_id,
-        Area.short_look(link.to_id, context.character)
+        Area.long_description(link.to_id, context.character)
       )
     )
     # Send messages to everyone in room that the character just left

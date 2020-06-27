@@ -79,7 +79,7 @@ defmodule Mud.Engine.Command.Remove do
         worn_items = Character.list_worn_items(context.character)
 
         matches =
-          Search.generate_matches(worn_items, ast.thing.input, context.character, ast.thing.which)
+          Search.generate_matches(worn_items, ast.thing.input, ast.thing.which)
 
         case matches do
           {:ok, [match]} ->
@@ -88,7 +88,7 @@ defmodule Mud.Engine.Command.Remove do
           {:ok, matches} when length(matches) > 1 ->
             Util.handle_multiple_items(
               context,
-              Enum.map(matches, & &1.glance_description),
+              Enum.map(matches, & &1.short_description),
               matches,
               "Which thing did you wish to remove?"
             )
@@ -112,23 +112,24 @@ defmodule Mud.Engine.Command.Remove do
       wearable_is_worn: false,
       holdable_held_by_id: context.character.id,
       holdable_is_held: true,
-      holdable_hand: Character.which_hand(context.character, held_items)
+      holdable_hand: Character.which_hand(held_items)
     })
 
-    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(
       others,
       "{{character}}#{context.character.name}{{/character}} removed {{item}}#{
-        match.glance_description
+        match.short_description
       }{{/item}} from their {{bodypart}}#{match.match.wearable_location}{{/bodypart}}.",
       "info"
     )
     |> ExecutionContext.append_output(
       context.character.id,
       String.capitalize(
-        "You remove {{item}}#{match.glance_description}{{/item}} from your {{bodypart}}#{
+        "You remove {{item}}#{match.short_description}{{/item}} from your {{bodypart}}#{
           match.match.wearable_location
         }{{/bodypart}}."
       ),

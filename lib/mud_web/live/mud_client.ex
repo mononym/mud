@@ -1,7 +1,9 @@
 defmodule MudWeb.MudClientLive do
   use Phoenix.LiveView
 
-  alias Mud.Engine
+  alias Mud.Engine.Character
+  alias Mud.Engine.Event
+  alias MudWeb.Live.Component.{CharacterInventory}
 
   require Logger
 
@@ -16,10 +18,13 @@ defmodule MudWeb.MudClientLive do
   end
 
   def mount(_params, session, socket) do
-    send(self(), :post_mount)
+    IO.inspect("mount")
+
+    Mud.Engine.Session.subscribe(session["character_id"])
 
     {:ok,
      assign(socket,
+       character: Character.get_by_id!(session["character_id"]),
        character_id: session["character_id"],
        input: Input.new(),
        messages: []
@@ -27,6 +32,7 @@ defmodule MudWeb.MudClientLive do
   end
 
   def render(assigns) do
+    Logger.debug(inspect(assigns))
     MudWeb.MudClientView.render("v1.html", assigns)
   end
 
@@ -37,7 +43,7 @@ defmodule MudWeb.MudClientLive do
 
   def handle_event("submit_input", %{"input" => %{"content" => input}}, socket) do
     Logger.debug("Handling input event: #{inspect(input)}")
-    send_command(socket.assigns.character_id, input)
+    send_command(socket.assigns.character.id, input)
     Logger.debug("Sent input")
 
     {:noreply, assign(socket, input: Input.new())}
@@ -53,7 +59,7 @@ defmodule MudWeb.MudClientLive do
         _value,
         socket
       ) do
-        Logger.debug("stopped typing")
+    Logger.debug("stopped typing")
     {:noreply, socket}
   end
 
@@ -65,8 +71,10 @@ defmodule MudWeb.MudClientLive do
     {:noreply, %{socket | assigns: assigns}}
   end
 
-  def handle_info(:post_mount, socket) do
-    Mud.Engine.Session.subscribe(socket.assigns.character_id)
+  def handle_cast(event = %Event{event: _ = %Event.Client.UpdateInventory{}}, socket) do
+    IO.puts("HANDLE BROADCAST FOR UPDATE INVENTORY #{event.event.item.id}")
+
+    send_update(CharacterInventory, id: socket.assigns.character.id, event: event.event)
 
     {:noreply, socket}
   end
@@ -77,62 +85,68 @@ defmodule MudWeb.MudClientLive do
     {:noreply, assign(socket, messages: [output.text | socket.assigns.messages])}
   end
 
+  def handle_cast(event, socket) do
+    IO.inspect(event)
+
+    {:noreply, socket}
+  end
+
   defp process_hotkey(%{"code" => "Numpad9", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "northeast")
+    send_command(assigns.character.id, "northeast")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad8", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "north")
+    send_command(assigns.character.id, "north")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad7", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "northwest")
+    send_command(assigns.character.id, "northwest")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad6", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "east")
+    send_command(assigns.character.id, "east")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad5", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "out")
+    send_command(assigns.character.id, "out")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad5", "altKey" => true}, assigns) do
-    send_command(assigns.character_id, "in")
+    send_command(assigns.character.id, "in")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad4", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "west")
+    send_command(assigns.character.id, "west")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad3", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "southeast")
+    send_command(assigns.character.id, "southeast")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad2", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "south")
+    send_command(assigns.character.id, "south")
 
     assigns
   end
 
   defp process_hotkey(%{"code" => "Numpad1", "ctrlKey" => true}, assigns) do
-    send_command(assigns.character_id, "southwest")
+    send_command(assigns.character.id, "southwest")
 
     assigns
   end
@@ -143,6 +157,6 @@ defmodule MudWeb.MudClientLive do
 
   defp send_command(character_id, text) do
     %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text}
-    |> Mud.Engine.Session.cast_message()
+    |> Mud.Engine.Session.cast_message_or_event()
   end
 end

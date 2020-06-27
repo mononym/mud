@@ -8,6 +8,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  require Logger
 
   @type id :: String.t()
 
@@ -27,8 +28,11 @@ defmodule Mud.Engine.Item do
     field(:is_hidden, :boolean, default: false)
 
     # How to describe the item
-    field(:glance_description, :string, default: "item")
-    field(:look_description, :string, default: "item")
+    field(:short_description, :string, default: "item")
+    field(:long_description, :string, default: "item")
+
+    # How to display the item in the client
+    field(:icon, :string, default: "fas fa-question")
 
     ##
     #
@@ -97,8 +101,8 @@ defmodule Mud.Engine.Item do
       :is_hidden,
       :is_furniture,
       :is_scenery,
-      :glance_description,
-      :look_description,
+      :short_description,
+      :long_description,
       :container_id,
       :is_container,
       :container_closeable,
@@ -116,16 +120,52 @@ defmodule Mud.Engine.Item do
       :is_holdable,
       :holdable_is_held,
       :holdable_hand,
-      :holdable_held_by_id
+      :holdable_held_by_id,
+      :icon
     ])
     |> foreign_key_constraint(:character_id)
     |> foreign_key_constraint(:area_id)
+  end
+
+  @topic inspect(__MODULE__)
+
+  @doc """
+  Subscribe to the PubSub topic for all Character events.
+  """
+  @spec subscribe :: {:ok, :subscribed}
+  def subscribe do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, @topic)
+    {:ok, :subscribed}
+  end
+
+  @doc """
+  Subscribe to the PubSub topic for all Character events related to a single Character.
+  """
+  @spec subscribe(String.t()) :: {:ok, :subscribed}
+  def subscribe(item_id) when is_binary(item_id) do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, @topic <> ":#{item_id}")
+    {:ok, :subscribed}
   end
 
   def create(attrs \\ %{}) do
     %__MODULE__{}
     |> changeset(attrs)
     |> Repo.insert!()
+  end
+
+  def update!(item_id, attrs) when is_binary(item_id) do
+    keywords =
+      attrs
+      |> Keyword.new()
+      |> Keyword.put_new(:updated_at, Timex.now())
+
+    item =
+      from(item in __MODULE__, where: item.id == ^item_id, select: item)
+      |> Repo.update_all(set: keywords)
+      |> elem(1)
+      |> List.first()
+
+    item
   end
 
   def update!(item, attrs) do
@@ -158,7 +198,23 @@ defmodule Mud.Engine.Item do
     |> Repo.one()
   end
 
+  def toggle_container_open(item_id) do
+    from(item in __MODULE__,
+      where: item.id == ^item_id,
+      update: [set: [container_open: not item.container_open]],
+      select: item
+    )
+    |> Repo.update_all([])
+    |> elem(1)
+    |> List.first()
+  end
+
+  def list_all_recursive([]) do
+    []
+  end
+
   def list_all_recursive(items) do
+    Logger.debug(inspect(items))
     ids = Enum.map(items, & &1.id)
 
     item_tree_initial_query =
@@ -239,13 +295,5 @@ defmodule Mud.Engine.Item do
       where: item.holdable_held_by_id == ^character_id
     )
     |> Repo.all()
-  end
-
-  def short_look(item, _looking_character \\ nil) do
-    item.look_description
-  end
-
-  def short_description(item, _looking_character \\ nil) do
-    item.glance_description
   end
 end

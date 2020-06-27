@@ -15,6 +15,7 @@ defmodule Mud.Engine.Command.Drop do
 
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Event
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
@@ -59,8 +60,7 @@ defmodule Mud.Engine.Command.Drop do
       else
         ast = context.command.ast
 
-        matches =
-          Search.generate_matches(held_items, ast.thing.input, context.character, ast.thing.which)
+        matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
 
         case matches do
           {:ok, [match]} ->
@@ -69,7 +69,7 @@ defmodule Mud.Engine.Command.Drop do
           {:ok, matches} when length(matches) > 1 ->
             Util.handle_multiple_items(
               context,
-              Enum.map(matches, & &1.glance_description),
+              Enum.map(matches, & &1.short_description),
               matches,
               "Which thing did you wish to drop?",
               ""
@@ -97,12 +97,13 @@ defmodule Mud.Engine.Command.Drop do
 
     other_msg =
       "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
-        match.glance_description
+        match.short_description
       }{{/item}} on the ground."
 
-    self_msg = "You drop {{item}}#{match.glance_description}{{/item}} on the ground."
+    self_msg = "You drop {{item}}#{match.short_description}{{/item}} on the ground."
 
-    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(
@@ -115,6 +116,10 @@ defmodule Mud.Engine.Command.Drop do
       self_msg,
       "info"
     )
+    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
+      action: :remove,
+      item: match.match
+    })
     |> ExecutionContext.set_success()
   end
 end

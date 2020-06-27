@@ -35,12 +35,12 @@ defmodule Mud.Engine.Command.Swap do
     case items do
       [item] ->
         other_msg =
-          "{{character}}#{context.character.name}{{/character}} moves #{
-            Item.short_description(item)
-          } to their {{bodypart}}#{item.holdable_hand} hand{{/bodypart}}"
+          "{{character}}#{context.character.name}{{/character}} moves #{item.short_description} to their {{bodypart}}#{
+            item.holdable_hand
+          } hand{{/bodypart}}"
 
         msg =
-          "{{item}}#{String.capitalize(Item.short_description(item))}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} is now in your {{bodypart}}#{
             item.holdable_hand
           } hand{{/bodypart}}."
 
@@ -61,16 +61,16 @@ defmodule Mud.Engine.Command.Swap do
 
       [item1, item2] ->
         other_msg =
-          "{{character}}#{context.character.name}{{/character}} moves #{
-            Item.short_description(item1)
-          } to their {{bodypart}}#{item1.holdable_hand} hand{{/bodypart}}, and #{
-            Item.short_description(item2)
-          } to their {{bodypart}}#{item2.holdable_hand} hand{{/bodypart}} hand."
+          "{{character}}#{context.character.name}{{/character}} moves #{item1.short_description} to their {{bodypart}}#{
+            item1.holdable_hand
+          } hand{{/bodypart}}, and #{item2.short_description} to their {{bodypart}}#{
+            item2.holdable_hand
+          } hand{{/bodypart}} hand."
 
         msg =
-          "{{item}}#{String.capitalize(Item.short_description(item1))}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(item1.short_description)}{{/item}} is now in your {{bodypart}}#{
             item1.holdable_hand
-          } hand{{/bodypart}}, and #{Item.short_description(item2)} is in your {{bodypart}}#{
+          } hand{{/bodypart}}, and #{item2.short_description} is in your {{bodypart}}#{
             item2.holdable_hand
           } hand{{/bodypart}}."
 

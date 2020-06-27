@@ -44,7 +44,7 @@ defmodule Mud.Engine.Command.Look do
 
     case ast do
       %TAP{thing: nil} ->
-        description = Area.short_look(context.character.area_id, context.character)
+        description = Area.long_description(context.character.area_id, context.character)
 
         context
         |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
@@ -74,7 +74,6 @@ defmodule Mud.Engine.Command.Look do
           target_types(),
           context.character.area_id,
           ast.thing.input,
-          context.character,
           ast.thing.which
         )
 
@@ -142,7 +141,7 @@ defmodule Mud.Engine.Command.Look do
   defp look_items(context, items) do
     ast = context.command.ast
 
-    case Search.generate_matches(items, ast.thing.input, context.character, ast.thing.which) do
+    case Search.generate_matches(items, ast.thing.input, ast.thing.which) do
       {:ok, [match]} ->
         look_in_or_at(context, match)
 
@@ -170,7 +169,7 @@ defmodule Mud.Engine.Command.Look do
   defp follow_path(context, place, items) do
     ast = context.command.ast
 
-    case Search.generate_matches(items, place.input, context.character, ast.place.which) do
+    case Search.generate_matches(items, place.input, ast.place.which) do
       {:ok, [match]} ->
         if is_nil(place.path) do
           {:ok, list_relative_items(place.where, match.match)}
@@ -211,12 +210,10 @@ defmodule Mud.Engine.Command.Look do
             thing = Mud.Repo.preload(thing, :container_items)
 
             items_description =
-              Stream.map(thing.container_items, fn item ->
-                Item.short_description(item, context.character)
-              end)
+              Stream.map(thing.container_items, & &1.short_description)
               |> Enum.join("{{/item}}, {{item}}")
 
-            container_desc = String.capitalize(match.glance_description)
+            container_desc = String.capitalize(match.short_description)
 
             if length(thing.container_items) > 0 do
               ExecutionContext.append_message(
@@ -246,7 +243,7 @@ defmodule Mud.Engine.Command.Look do
               Message.new_output(
                 context.character.id,
                 String.capitalize(
-                  "{{item}}#{match.glance_description}{{/item}} must be opened first."
+                  "{{item}}#{match.short_description}{{/item}} must be opened first."
                 ),
                 "info"
               )
@@ -258,7 +255,7 @@ defmodule Mud.Engine.Command.Look do
               context,
               Message.new_output(
                 context.character.id,
-                "You cannot look inside {{item}}#{match.glance_description}{{/item}}.",
+                "You cannot look inside {{item}}#{match.short_description}{{/item}}.",
                 "info"
               )
             )
@@ -270,7 +267,7 @@ defmodule Mud.Engine.Command.Look do
           context,
           Message.new_output(
             context.character.id,
-            match.look_description,
+            match.long_description,
             "info"
           )
         )

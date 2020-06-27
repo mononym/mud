@@ -24,6 +24,9 @@ defmodule MudWeb.ClientData do
 
       # Map where the key is an item id and the value is a list of items which are children of that item
       field(:item_child_index, map(), default: %{})
+
+      # Map where the key is an item id and the value is the item
+      field(:item_index, map(), default: %{})
     end
 
     defmodule Item do

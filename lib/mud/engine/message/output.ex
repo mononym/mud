@@ -1,10 +1,7 @@
 defmodule Mud.Engine.Message.Output do
-  # defstruct id: nil, text: nil, to: nil, table_data: nil, silent: false
-
   use TypedStruct
 
   typedstruct do
-    # How the segment will be uniquely known in the AST
     field(:id, String.t(), required: true)
     field(:text, String.t(), required: true)
     field(:to, [String.t()], required: true)

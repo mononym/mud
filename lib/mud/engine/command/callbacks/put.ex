@@ -14,6 +14,7 @@ defmodule Mud.Engine.Command.Put do
   """
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Event
   alias Mud.Engine.Item
   alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
@@ -54,7 +55,7 @@ defmodule Mud.Engine.Command.Put do
   #   ExecutionContext.append_output(
   #     context,
   #     context.character.id,
-  #     "{{item}}#{String.capitalize(context.input.glance_description)}{{/item}} is no longer present.",
+  #     "{{item}}#{String.capitalize(context.input.short_description)}{{/item}} is no longer present.",
   #     "error"
   #   )
   #   |> ExecutionContext.set_success()
@@ -91,7 +92,6 @@ defmodule Mud.Engine.Command.Put do
         case Search.generate_matches(
                character.held_items,
                ast.thing.input,
-               context.character,
                ast.thing.which
              ) do
           # single worn container matched
@@ -106,7 +106,7 @@ defmodule Mud.Engine.Command.Put do
 
             cont_data = %ContinuationData{thing: indexed_things, type: :thing}
 
-            descriptions = Enum.map(matches, & &1.glance_description)
+            descriptions = Enum.map(matches, & &1.short_description)
 
             Util.handle_multiple_items(
               context,
@@ -166,7 +166,7 @@ defmodule Mud.Engine.Command.Put do
     worn_containers = Character.list_worn_containers(context.character)
     all_containers = held_containers(context.character.held_items) ++ worn_containers
 
-    case Search.generate_matches(all_containers, ast.place.input, context.character) do
+    case Search.generate_matches(all_containers, ast.place.input) do
       {:ok, [match]} ->
         put_item_in_container(context, item_match, match)
 
@@ -177,7 +177,7 @@ defmodule Mud.Engine.Command.Put do
 
         cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        descriptions = Enum.map(matches, & &1.glance_description)
+        descriptions = Enum.map(matches, & &1.short_description)
 
         Util.handle_multiple_items(
           context,
@@ -191,7 +191,7 @@ defmodule Mud.Engine.Command.Put do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "Could not find where you wished to put {{item}}#{item_match.glance_description}{{/item}}.",
+          "Could not find where you wished to put {{item}}#{item_match.short_description}{{/item}}.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -206,7 +206,6 @@ defmodule Mud.Engine.Command.Put do
         target_types(),
         context.character.area_id,
         ast.place.input,
-        context.character,
         0
       )
 
@@ -220,7 +219,7 @@ defmodule Mud.Engine.Command.Put do
 
         cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        descriptions = Enum.map(matches, & &1.glance_description)
+        descriptions = Enum.map(matches, & &1.short_description)
 
         Util.handle_multiple_items(
           context,
@@ -239,7 +238,9 @@ defmodule Mud.Engine.Command.Put do
     character = context.character
 
     {self_msg, others_msg} = do_put_item_in_container(item, container, character)
-    others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
     |> ExecutionContext.append_output(
@@ -252,6 +253,10 @@ defmodule Mud.Engine.Command.Put do
       self_msg,
       "info"
     )
+    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
+      action: :update,
+      item: item.match
+    })
     |> ExecutionContext.set_success()
   end
 
@@ -267,33 +272,33 @@ defmodule Mud.Engine.Command.Put do
 
     cond do
       container.container_open ->
-        {"You put {{item}}#{item_match.glance_description}{{/item}} inside {{item}}#{
-           container_match.glance_description
+        {"You put {{item}}#{item_match.short_description}{{/item}} inside {{item}}#{
+           container_match.short_description
          }{{/item}}.",
          "{{character}}#{character.name}{{/character}} puts {{item}}#{
-           item_match.glance_description
-         }{{/item}} inside {{item}}#{container_match.glance_description}{{/item}}."}
+           item_match.short_description
+         }{{/item}} inside {{item}}#{container_match.short_description}{{/item}}."}
 
       not container.container_open and not container.container_locked and
           character.auto_open_containers ->
         if character.auto_close_containers do
-          {"You open {{item}}#{container_match.glance_description}{{/item}} just long enough to put {{item}}#{
-             item_match.glance_description
+          {"You open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
+             item_match.short_description
            }{{/item}} inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{
-             container_match.glance_description
-           }{{/item}} just long enough to put {{item}}#{item_match.glance_description}{{/item}} inside."}
+             container_match.short_description
+           }{{/item}} just long enough to put {{item}}#{item_match.short_description}{{/item}} inside."}
         else
           Item.update!(container, %{
             container_open: true
           })
 
-          {"You open {{item}}#{container_match.glance_description}{{/item}} and put {{item}}#{
-             item_match.glance_description
+          {"You open {{item}}#{container_match.short_description}{{/item}} and put {{item}}#{
+             item_match.short_description
            }{{/item}} inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{
-             container_match.glance_description
-           }{{/item}} and puts {{item}}#{item_match.glance_description}{{/item}} inside."}
+             container_match.short_description
+           }{{/item}} and puts {{item}}#{item_match.short_description}{{/item}} inside."}
         end
 
       container.container_locked and character.auto_unlock_containers ->
@@ -302,13 +307,13 @@ defmodule Mud.Engine.Command.Put do
 
         cond do
           close and lock ->
-            {"You unlock and open {{item}}#{container_match.glance_description}{{/item}} just long enough to put {{item}}#{
-               item_match.glance_description
+            {"You unlock and open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
+               item_match.short_description
              }{{/item}} inside, securing it once more.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.glance_description
+               container_match.short_description
              }{{/item}} a moment before opening it just long enough to put {{item}}#{
-               item_match.glance_description
+               item_match.short_description
              }{{/item}} inside, fiddling with it again once it is closed."}
 
           close ->
@@ -316,13 +321,13 @@ defmodule Mud.Engine.Command.Put do
               container_locked: false
             })
 
-            {"You unlock and open {{item}}#{container_match.glance_description}{{/item}} just long enough to put {{item}}#{
-               item_match.glance_description
+            {"You unlock and open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
+               item_match.short_description
              }{{/item}} inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.glance_description
+               container_match.short_description
              }{{/item}} a moment before opening it just long enough to put {{item}}#{
-               item_match.glance_description
+               item_match.short_description
              }{{/item}} inside."}
 
           true ->
@@ -331,12 +336,12 @@ defmodule Mud.Engine.Command.Put do
               container_open: true
             })
 
-            {"You unlock and open {{item}}#{container_match.glance_description}{{/item}}, putting {{item}}#{
-               item_match.glance_description
+            {"You unlock and open {{item}}#{container_match.short_description}{{/item}}, putting {{item}}#{
+               item_match.short_description
              }{{/item}} inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.glance_description
-             }{{/item}} a moment before opening it to put {{item}}#{item_match.glance_description}{{/item}} inside."}
+               container_match.short_description
+             }{{/item}} a moment before opening it to put {{item}}#{item_match.short_description}{{/item}} inside."}
         end
     end
   end

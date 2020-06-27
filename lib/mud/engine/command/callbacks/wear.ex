@@ -58,7 +58,7 @@ defmodule Mud.Engine.Command.Wear do
         ast = context.command.ast
 
         matches =
-          Search.generate_matches(held_items, ast.thing.input, context.character, ast.thing.which)
+          Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
 
         case matches do
           {:ok, [match]} ->
@@ -67,7 +67,7 @@ defmodule Mud.Engine.Command.Wear do
           {:ok, matches} when length(matches) > 1 ->
             Util.handle_multiple_items(
               context,
-              Enum.map(matches, & &1.glance_description),
+              Enum.map(matches, & &1.short_description),
               matches,
               "Which thing did you wish to wear?"
             )
@@ -98,19 +98,20 @@ defmodule Mud.Engine.Command.Wear do
         holdable_hand: nil
       })
 
-      others = Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+      others =
+        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
       context
       |> ExecutionContext.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
-          match.glance_description
+          match.short_description
         }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
         "info"
       )
       |> ExecutionContext.append_output(
         context.character.id,
-        "You put {{item}}#{match.glance_description}{{/item}} on your {{bodypart}}#{
+        "You put {{item}}#{match.short_description}{{/item}} on your {{bodypart}}#{
           item.wearable_location
         }{{/bodypart}}.",
         "info"
@@ -120,7 +121,7 @@ defmodule Mud.Engine.Command.Wear do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        String.capitalize("{{item}}#{match.glance_description}{{/item}} cannot be worn."),
+        String.capitalize("{{item}}#{match.short_description}{{/item}} cannot be worn."),
         "error"
       )
       |> ExecutionContext.set_success()

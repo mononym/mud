@@ -117,15 +117,15 @@ defmodule Mud.Engine.Area do
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
-  @spec short_look(area_id :: String.t(), character :: Character.t()) ::
+  @spec long_description(area_id :: String.t(), character :: Character.t()) ::
           description :: String.t()
-  def short_look(area_id, character) do
+  def long_description(area_id, character) do
     area = get_area!(area_id)
 
     build_area_name(area)
     |> build_area_desc(area)
-    |> maybe_build_things_of_interest(area, character)
-    |> maybe_build_on_ground(area, character)
+    |> maybe_build_things_of_interest(area)
+    |> maybe_build_on_ground(area)
     |> maybe_build_hostiles(area)
     |> maybe_build_denizens(area)
     |> maybe_build_also_present(area, character)
@@ -150,13 +150,11 @@ defmodule Mud.Engine.Area do
     text
   end
 
-  defp maybe_build_things_of_interest(text, area, looking_character) do
+  defp maybe_build_things_of_interest(text, area) do
     things_of_interest =
       area.id
       |> Item.list_visible_scenery_in_area()
-      |> Stream.map(fn item ->
-        describe_thing(item, looking_character.id)
-      end)
+      |> Stream.map(& &1.short_description)
       |> Enum.sort()
       |> Enum.join(", ")
 
@@ -168,13 +166,11 @@ defmodule Mud.Engine.Area do
     end
   end
 
-  defp maybe_build_on_ground(text, area, looking_character) do
+  defp maybe_build_on_ground(text, area) do
     on_ground =
       Item.list_in_area(area.id)
       |> Stream.filter(&(!&1.is_scenery))
-      |> Stream.map(fn item ->
-        describe_thing(item, looking_character.id)
-      end)
+      |> Stream.map(& &1.short_description)
       |> Enum.sort()
       |> Enum.join(", ")
 
@@ -207,8 +203,8 @@ defmodule Mud.Engine.Area do
 
   defp build_obvious_exits_string(area_id) do
     Mud.Engine.Link.list_obvious_exits_in_area(area_id)
-    |> Enum.map(fn link ->
-      link.text
+    |> Stream.map(fn link ->
+      link.short_description
     end)
     |> Enum.sort()
     |> Enum.join(", ")
@@ -222,19 +218,7 @@ defmodule Mud.Engine.Area do
       char.id != looking_character.id
     end)
     |> Enum.sort(&(&1.name <= &2.name))
-    |> Enum.map(&Character.describe_room_glance(&1, looking_character))
+    |> Enum.map(&Character.describe_room_glance/1)
     |> Enum.join(", ")
-  end
-
-  defp describe_thing(item = %Item{}, looking_character) do
-    Item.short_description(item, looking_character)
-  end
-
-  defp describe_thing(character = %Character{}, looking_character) do
-    Character.short_description(character, looking_character)
-  end
-
-  defp describe_thing(link = %Link{}, looking_character) do
-    Link.short_description(link, looking_character)
   end
 end

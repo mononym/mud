@@ -12,6 +12,7 @@ defmodule Mud.Engine.Command.Get do
   """
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Event
   alias Mud.Engine.Item
   alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
@@ -116,7 +117,6 @@ defmodule Mud.Engine.Command.Get do
         [:item],
         context.character.area_id,
         input,
-        context.character,
         which_target
       )
 
@@ -141,21 +141,25 @@ defmodule Mud.Engine.Command.Get do
           |> ExecutionContext.append_output(
             others,
             "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
-              thing.glance_description
+              thing.short_description
             }{{/item}} from the ground.",
             "info"
           )
           |> ExecutionContext.append_output(
             context.character.id,
-            "You pick up {{item}}#{thing.glance_description}{{/item}}.",
+            "You pick up {{item}}#{thing.short_description}{{/item}}.",
             "info"
           )
+          |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
+            action: :add,
+            item: thing.match
+          })
           |> ExecutionContext.set_success()
         else
           ExecutionContext.append_output(
             context,
             context.character.id,
-            "You cannot pick up {{item}}#{thing.glance_description}{{/item}}.",
+            "You cannot pick up {{item}}#{thing.short_description}{{/item}}.",
             "error"
           )
           |> ExecutionContext.set_success()
@@ -212,7 +216,6 @@ defmodule Mud.Engine.Command.Get do
         case Search.generate_matches(
                all_containers,
                ast.place.input,
-               context.character,
                ast.place.which
              ) do
           # single worn container matched
@@ -282,8 +285,8 @@ defmodule Mud.Engine.Command.Get do
         match = %Search.Match{
           match_string: "",
           match: item,
-          glance_description: Item.short_description(item, context.character),
-          look_description: Item.short_look(item, context.character)
+          short_description: item.short_description,
+          long_description: item.long_description
         }
 
         find_thing(context, match)
@@ -293,7 +296,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be unlocked and open first.",
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -302,7 +305,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be unlocked first.",
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -311,7 +314,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "{{item}}#{String.capitalize(Item.short_description(item, context.character))}{{/item}} must be open first.",
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -329,7 +332,6 @@ defmodule Mud.Engine.Command.Get do
         target_types(),
         character.area_id,
         ast.place.input,
-        character,
         0
       )
 
@@ -351,7 +353,7 @@ defmodule Mud.Engine.Command.Get do
             ExecutionContext.append_output(
               context,
               context.character.id,
-              "{{item}}#{place.glance_description}{{/item}} must be open first.",
+              "{{item}}#{place.short_description}{{/item}} must be open first.",
               "error"
             )
             |> ExecutionContext.set_success()
@@ -360,7 +362,7 @@ defmodule Mud.Engine.Command.Get do
             ExecutionContext.append_output(
               context,
               context.character.id,
-              "{{item}}#{place.glance_description}{{/item}} is not a container.",
+              "{{item}}#{place.short_description}{{/item}} is not a container.",
               "error"
             )
             |> ExecutionContext.set_success()
@@ -384,7 +386,7 @@ defmodule Mud.Engine.Command.Get do
   defp find_thing(context, place) do
     ast = context.command.ast
 
-    case find_thing_in_place(place, ast.thing.input, context.character) do
+    case find_thing_in_place(place, ast.thing.input) do
       {:ok, thing} ->
         get_thing_in_place(context, thing, place)
 
@@ -392,7 +394,7 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "Multiple potential matches found inside {{item}}#{place.glance_description}{{/item}}, please be more specific.",
+          "Multiple potential matches found inside {{item}}#{place.short_description}{{/item}}, please be more specific.",
           "error"
         )
         |> ExecutionContext.set_success()
@@ -401,22 +403,22 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          "Could not find any matching item to get from {{item}}#{place.glance_description}{{/item}}.",
+          "Could not find any matching item to get from {{item}}#{place.short_description}{{/item}}.",
           "help_docs"
         )
         |> ExecutionContext.set_success()
     end
   end
 
-  @spec find_thing_in_place(Search.Match.t(), String.t(), Character.t()) ::
+  @spec find_thing_in_place(Search.Match.t(), String.t()) ::
           {:ok, Search.Match.t()}
           | {:multiple, [Search.Match.t()]}
           | {:error, :no_match | :out_of_range}
-  defp find_thing_in_place(place, input, character) do
+  defp find_thing_in_place(place, input) do
     place = Repo.preload(place.match, :container_items)
     items = place.container_items
 
-    case Search.generate_matches(items, input, character) do
+    case Search.generate_matches(items, input) do
       {:ok, [result]} ->
         {:ok, result}
 
@@ -452,6 +454,10 @@ defmodule Mud.Engine.Command.Get do
       self_msg,
       "info"
     )
+    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
+      action: :add,
+      item: thing.match
+    })
     |> ExecutionContext.set_success()
   end
 
@@ -467,32 +473,32 @@ defmodule Mud.Engine.Command.Get do
 
     cond do
       container.container_open ->
-        {"You get {{item}}#{thing.glance_description}{{/item}} from inside {{item}}#{
-           place.glance_description
+        {"You get {{item}}#{thing.short_description}{{/item}} from inside {{item}}#{
+           place.short_description
          }{{/item}}.",
-         "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.glance_description}{{/item}} from inside {{item}}#{
-           place.glance_description
+         "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.short_description}{{/item}} from inside {{item}}#{
+           place.short_description
          }{{/item}}."}
 
       not container.container_open and not container.container_locked and
           character.auto_open_containers ->
         if character.auto_close_containers do
-          {"You open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-             thing.glance_description
+          {"You open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
+             thing.short_description
            }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-             thing.glance_description
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
+             thing.short_description
            }{{/item}} from inside."}
         else
           Item.update!(container, %{
             container_open: true
           })
 
-          {"You open {{item}}#{place.glance_description}{{/item}} and get {{item}}#{
-             thing.glance_description
+          {"You open {{item}}#{place.short_description}{{/item}} and get {{item}}#{
+             thing.short_description
            }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.glance_description}{{/item}} and gets {{item}}#{
-             thing.glance_description
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} and gets {{item}}#{
+             thing.short_description
            }{{/item}} from inside."}
         end
 
@@ -502,13 +508,13 @@ defmodule Mud.Engine.Command.Get do
 
         cond do
           close and lock ->
-            {"You unlock and open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-               thing.glance_description
+            {"You unlock and open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
+               thing.short_description
              }{{/item}} from inside it, securing it once more.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.glance_description
+               place.short_description
              }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.glance_description
+               thing.short_description
              }{{/item}} from inside, fiddling with it again once it is closed."}
 
           close ->
@@ -516,13 +522,13 @@ defmodule Mud.Engine.Command.Get do
               container_locked: false
             })
 
-            {"You unlock and open {{item}}#{place.glance_description}{{/item}} just long enough to get {{item}}#{
-               thing.glance_description
+            {"You unlock and open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
+               thing.short_description
              }{{/item}} from inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.glance_description
+               place.short_description
              }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.glance_description
+               thing.short_description
              }{{/item}} from inside."}
 
           true ->
@@ -531,12 +537,12 @@ defmodule Mud.Engine.Command.Get do
               container_open: true
             })
 
-            {"You unlock and open {{item}}#{place.glance_description}{{/item}}, getting {{item}}#{
-               thing.glance_description
+            {"You unlock and open {{item}}#{place.short_description}{{/item}}, getting {{item}}#{
+               thing.short_description
              }{{/item}} from inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.glance_description
-             }{{/item}} a moment before opening it to get {{item}}#{thing.glance_description}{{/item}} from inside."}
+               place.short_description
+             }{{/item}} a moment before opening it to get {{item}}#{thing.short_description}{{/item}} from inside."}
         end
     end
   end

@@ -61,11 +61,9 @@ defmodule Mud.Engine.Command.Stand do
 
   defp from_description(character) do
     if character.relative_item_id != nil do
-      desc =
-        Item.get!(character.relative_item_id)
-        |> Item.short_description(character)
+      item = Item.get!(character.relative_item_id)
 
-      " from #{desc}"
+      " from #{item.short_description}"
     else
       ""
     end

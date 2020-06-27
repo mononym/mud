@@ -109,7 +109,7 @@ defmodule Mud.Engine.Command.Kick do
           |> ExecutionContext.append_output(
             others,
             "#{context.character.name} looks ready to kick #{
-              Item.short_description(match, context.character)
+              match.short_description
             }!",
             "info"
           )

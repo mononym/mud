@@ -1,10 +1,20 @@
-<div class="min-w-full flex flex-col flex-shrink">
-  <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_containers" phx-target="<%= @myself %>">
-    <%= if @item.is_openable do %>
-      <i class="fas fa-<%= if @item.opened do "minus" else "plus" end %>-circle"></i>&nbsp;<i class="<%= @item.icon %>"></i>
-    <% else %>
-      <i class="<%= @item.icon %>"
+<div class="pl-4 min-w-full flex flex-col flex-shrink">
+  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex-shrink cursor-pointer select-none">
+    <%= if @item.container_closeable do %>
+      <i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;
     <% end %>
-    <%= @item.short_description %>
+    <i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %>
   </div>
+  <%= if @expanded do %>
+  <div class="flex-shrink pl-8">
+    <%= @item.long_description %>
+  </div>
+  <% end %>
+  <%= if @item.container_open do %>
+    <%= for child <- @child_index[@item.id] || [] do %>
+    <div class="pl-4">
+      <%= live_component(@socket, MudWeb.Live.Component.InventoryItem, id: child, item_index: @item_index, child_index: @child_index) %>
+    </div>
+    <% end %>
+  <% end %>
 </div>

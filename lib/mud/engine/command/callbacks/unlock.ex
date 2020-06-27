@@ -35,7 +35,7 @@ defmodule Mud.Engine.Command.Unlock do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        "The #{context.input.glance_description} is no longer present.",
+        "The #{context.input.short_description} is no longer present.",
         "error"
       )
       |> ExecutionContext.set_success()
@@ -53,7 +53,6 @@ defmodule Mud.Engine.Command.Unlock do
         target_types(),
         context.character.area_id,
         input,
-        context.character,
         which_target
       )
 
@@ -72,7 +71,7 @@ defmodule Mud.Engine.Command.Unlock do
         character = Repo.preload(context.character, :worn_items)
         worn_items = character.worn_items
 
-        case Search.generate_matches(worn_items, input, context.character, which_target) do
+        case Search.generate_matches(worn_items, input, which_target) do
           {:ok, [match]} ->
             do_thing_to_match(context, match)
 
@@ -123,12 +122,12 @@ defmodule Mud.Engine.Command.Unlock do
         context
         |> ExecutionContext.append_output(
           others,
-          "#{context.character.name} unlocked #{match.glance_description}.",
+          "#{context.character.name} unlocked #{match.short_description}.",
           "info"
         )
         |> ExecutionContext.append_output(
           context.character.id,
-          String.capitalize("#{match.glance_description} is now unlocked."),
+          String.capitalize("#{match.short_description} is now unlocked."),
           "info"
         )
         |> ExecutionContext.set_success()
@@ -137,7 +136,7 @@ defmodule Mud.Engine.Command.Unlock do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.glance_description} is already unlocked."),
+          String.capitalize("#{match.short_description} is already unlocked."),
           "error"
         )
         |> ExecutionContext.set_success()
@@ -146,7 +145,7 @@ defmodule Mud.Engine.Command.Unlock do
         ExecutionContext.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.glance_description} is not lockable."),
+          String.capitalize("#{match.short_description} is not lockable."),
           "error"
         )
         |> ExecutionContext.set_success()

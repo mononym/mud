@@ -5,6 +5,7 @@ defmodule Mud.Engine.Command.ExecutionContext do
   populate required data.
   """
 
+  alias Mud.Engine.Event
   alias Mud.Engine.Message
 
   @type character() :: Mud.Engine.Character.t()
@@ -40,6 +41,9 @@ defmodule Mud.Engine.Command.ExecutionContext do
 
     # Messages to be sent upon successful execution of logic.
     field(:messages, [Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()], default: [])
+
+    # Events to be sent upon successful execution of logic.
+    field(:events, [struct()], default: [])
 
     # The raw text input before any processing.
     field(:input, String.t(), required: true)
@@ -84,7 +88,12 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @doc """
   Append a message to the list of messages which will be sent after the command has been executed
   """
-  @spec append_output(context :: %__MODULE__{}, to :: String.t() | [String.t()], message :: String.t(), tag :: String.t()) :: context
+  @spec append_output(
+          context :: %__MODULE__{},
+          to :: String.t() | [String.t()],
+          message :: String.t(),
+          tag :: String.t()
+        ) :: context
   def append_output(%__MODULE__{} = context, to, message, tag) do
     msg =
       Message.new_output(
@@ -94,6 +103,26 @@ defmodule Mud.Engine.Command.ExecutionContext do
       )
 
     append_message(context, msg)
+  end
+
+  @doc """
+  Append an event to the list of events which will be sent after the command has been executed
+  """
+  @spec append_event(
+          context :: %__MODULE__{},
+          to :: String.t() | [String.t()],
+          event :: struct()
+        ) :: context
+  def append_event(%__MODULE__{} = context, to, event) do
+    append_event(context, Event.new(to, event))
+  end
+
+  @doc """
+  Append an event to the list of events which will be sent after the command has been executed
+  """
+  @spec append_event(context :: %__MODULE__{}, event :: Mud.Engine.Event.t()) :: context
+  def append_event(%__MODULE__{} = context, event) do
+    %{context | events: [event | context.events]}
   end
 
   @doc """

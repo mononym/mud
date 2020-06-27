@@ -187,4 +187,31 @@ defmodule Mud.Engine.Util do
     # given a container, recursively follow the path until the last container is found and return it
     # This will involve generating matches and finding
   end
+
+  @doc """
+  Notify the subscribers of various topics.
+
+  Designed to be used with Items/Characters/Areas/etc... where thee is a global and a specific subscription.
+  """
+  def notify_subscribers(result, topic, event, global_only \\ false)
+
+  def notify_subscribers({:error, reason}, _topic, _event, _global_only), do: {:error, reason}
+
+  def notify_subscribers(result, topic, event, global_only) when is_struct(result) do
+    notify_subscribers({:ok, result}, topic, event, global_only)
+  end
+
+  def notify_subscribers({:ok, result}, topic, event, global_only) do
+    Phoenix.PubSub.broadcast(Mud.PubSub, topic, {event, result})
+
+    if not global_only do
+      Phoenix.PubSub.broadcast(
+        Mud.PubSub,
+        "#{topic}:#{result.id}",
+        {event, result}
+      )
+    end
+
+    {:ok, result}
+  end
 end

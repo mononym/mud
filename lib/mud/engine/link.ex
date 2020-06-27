@@ -17,7 +17,8 @@ defmodule Mud.Engine.Link do
   schema "links" do
     field(:departure_direction, :string)
     field(:arrival_direction, :string)
-    field(:text, :string)
+    field(:short_description, :string)
+    field(:long_description, :string)
     field(:type, :string)
 
     belongs_to(:from, Area,
@@ -36,14 +37,15 @@ defmodule Mud.Engine.Link do
   @doc false
   def changeset(link, attrs) do
     link
-    |> cast(attrs, [:type, :arrival_direction, :departure_direction, :from_id, :to_id, :text])
+    |> cast(attrs, [:type, :arrival_direction, :departure_direction, :from_id, :to_id, :short_description])
     |> validate_required([
       :type,
       :arrival_direction,
       :departure_direction,
       :from_id,
       :to_id,
-      :text
+      :short_description,
+      :long_description
     ])
   end
 
@@ -176,10 +178,10 @@ defmodule Mud.Engine.Link do
   end
 
   def short_description(link, _looking_character) do
-    link.text
+    link.short_description
   end
 
-  def short_look(link, looking_character) do
-    Area.short_look(link.to_id, looking_character)
+  def long_description(link) do
+    link.long_description
   end
 end

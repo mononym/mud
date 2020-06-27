@@ -123,6 +123,26 @@ defmodule Mud.Engine.Character do
     |> unique_constraint(:name)
   end
 
+  @topic inspect(__MODULE__)
+
+  @doc """
+  Subscribe to the PubSub topic for all Character events.
+  """
+  @spec subscribe :: {:ok, :subscribed}
+  def subscribe do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, @topic)
+    {:ok, :subscribed}
+  end
+
+  @doc """
+  Subscribe to the PubSub topic for all Character events related to a single Character.
+  """
+  @spec subscribe(String.t()) :: {:ok, :subscribed}
+  def subscribe(character_id) when is_binary(character_id) do
+    :ok = Phoenix.PubSub.subscribe(Mud.PubSub, @topic <> ":#{character_id}")
+    {:ok, :subscribed}
+  end
+
   @doc """
   Creates a Character.
 
@@ -162,8 +182,8 @@ defmodule Mud.Engine.Character do
       "awesome description"
 
   """
-  @spec short_description(%Character{}, %Character{}) :: String.t()
-  def short_description(character, _character_doing_the_looking) do
+  @spec short_description(%Character{}) :: String.t()
+  def short_description(character) do
     a_or_an =
       if Regex.match?(~r/^[aeiouAEIOU]/, character.race) do
         "an"
@@ -181,12 +201,12 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
-      iex> short_look(character)
+      iex> long_description(character)
       "awesome description"
 
   """
-  @spec short_look(%Character{}, %Character{}) :: String.t()
-  def short_look(character, looking_character) do
+  @spec long_description(%Character{}) :: String.t()
+  def long_description(character) do
     # Woodsman Khandrish Aratar of Zoulren, an Elf.
     # Of average height, they have blue eyes and brown hair.
     # They are wearing a rugged leather backpack.
@@ -194,7 +214,7 @@ defmodule Mud.Engine.Character do
 
     worn_items =
       character.worn_items
-      |> Stream.map(fn item -> Item.short_description(item, looking_character) end)
+      |> Stream.map(& &1.short_description)
       |> Enum.join("{{/item}}, {{item}}")
 
     worn_items_string = "{{item}}" <> worn_items <> "{{/item}}"
@@ -203,13 +223,13 @@ defmodule Mud.Engine.Character do
       "They are wearing #{worn_items_string}"
   end
 
-  def describe_room_glance(character, _looking_character) do
+  def describe_room_glance(character) do
     position_string =
       cond do
         character.relative_item_id != nil ->
-          desc = Item.short_description(Item.get!(character.relative_item_id), character)
+          item = Item.get!(character.relative_item_id)
 
-          " who is #{character.position} #{character.relative_position} #{desc}"
+          " who is #{character.position} #{character.relative_position} #{item.short_description}"
 
         character.position != standing() ->
           " who is #{character.position}"
@@ -422,6 +442,23 @@ defmodule Mud.Engine.Character do
     |> Repo.update()
   end
 
+  def update!(character_id, attrs) when is_binary(character_id) do
+    keywords =
+      attrs
+      |> Keyword.new()
+      |> Keyword.put_new(:updated_at, Timex.now())
+
+    character =
+      from(character in __MODULE__, where: character.id == ^character_id, select: character)
+      |> Repo.update_all(set: keywords)
+      |> elem(1)
+      |> List.first()
+
+    Util.notify_subscribers(character, @topic, :updated)
+
+    character
+  end
+
   @doc """
   Updates a character.
 
@@ -437,7 +474,7 @@ defmodule Mud.Engine.Character do
 
   """
   @spec update!(character :: %__MODULE__{}, attributes :: map()) :: %__MODULE__{}
-  def update!(character, attrs \\ %{}) do
+  def update!(character, attrs) do
     character
     |> changeset(attrs)
     |> Repo.update!()
@@ -461,13 +498,13 @@ defmodule Mud.Engine.Character do
   end
 
   @doc """
-  Given a character and a list of items that they currently hold in their hands, return the hand to put an item into.
+  Given a list of items that they currently hold in their hands, return the hand to put an item into.
 
-  In the case of a single held item the hand returned is the opposite one. If there are no held items the character's
-  handedness will be used instead.
+  In the case of a single held item the hand returned is the opposite one. If there are no held items the right hand
+  will be chosen as a default.
   """
-  @spec which_hand(%Mud.Engine.Character{}, [Item.t()]) :: String.t()
-  def which_hand(character, held_items) when length(held_items) < 2 do
+  @spec which_hand([Item.t()]) :: String.t()
+  def which_hand(held_items) when length(held_items) < 2 do
     case held_items do
       [item] ->
         if item.holdable_hand == "left" do
@@ -477,7 +514,6 @@ defmodule Mud.Engine.Character do
         end
 
       _items ->
-        # character.handedness
         "right"
     end
   end

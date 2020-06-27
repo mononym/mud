@@ -33,7 +33,6 @@ defmodule Mud.Engine.Command.Store do
         [:item],
         context.character.area_id,
         ast[:thing][:input],
-        context.character,
         0
       )
 
@@ -42,7 +41,6 @@ defmodule Mud.Engine.Command.Store do
         [:item],
         context.character.area_id,
         ast[:thing][:path][:place][:input],
-        context.character,
         0
       )
 
@@ -67,7 +65,7 @@ defmodule Mud.Engine.Command.Store do
               ExecutionContext.append_output(
                 context,
                 context.character.id,
-                "{{item}}#{place.glance_description}{{/item}} #{msg}.",
+                "{{item}}#{place.short_description}{{/item}} #{msg}.",
                 "info"
               )
               |> ExecutionContext.set_success()
@@ -85,14 +83,14 @@ defmodule Mud.Engine.Command.Store do
               |> ExecutionContext.append_output(
                 others,
                 "{{character}}#{context.character.name}{{/character}} picks up and stores {{item}}#{
-                  thing.glance_description
-                }{{/item}} inside {{item}}#{place.glance_description}{{/item}}.",
+                  thing.short_description
+                }{{/item}} inside {{item}}#{place.short_description}{{/item}}.",
                 "info"
               )
               |> ExecutionContext.append_output(
                 context.character.id,
-                "{{item}}#{thing.glance_description}{{/item}} is now inside {{item}}#{
-                  place.glance_description
+                "{{item}}#{thing.short_description}{{/item}} is now inside {{item}}#{
+                  place.short_description
                 }{{/item}}",
                 "info"
               )
@@ -102,7 +100,7 @@ defmodule Mud.Engine.Command.Store do
               ExecutionContext.append_output(
                 context,
                 context.character.id,
-                "{{item}}#{place.glance_description}{{/item}} is not a container",
+                "{{item}}#{place.short_description}{{/item}} is not a container",
                 "info"
               )
               |> ExecutionContext.set_success()
@@ -140,7 +138,7 @@ defmodule Mud.Engine.Command.Store do
             context,
             thing_matches,
             cont_data,
-            "Where were you trying to store {{item}}#{thing.glance_description}{{/item}}?",
+            "Where were you trying to store {{item}}#{thing.short_description}{{/item}}?",
             "There were too many places to choose from. Please be more specific."
           )
       end
@@ -172,7 +170,7 @@ defmodule Mud.Engine.Command.Store do
          _too_many_matches_err
        )
        when length(matches) < 10 do
-    descriptions = Enum.map(matches, & &1.glance_description)
+    descriptions = Enum.map(matches, & &1.short_description)
 
     Util.multiple_match_error(
       context,

@@ -4,6 +4,8 @@ defmodule Mud.Util do
   """
 
   import Ecto.Changeset
+  alias Mud.Repo
+  use Retry
 
   def changeset_has_error?(changeset = %Ecto.Changeset{}, field) when is_atom(field) do
     Keyword.has_key?(changeset.errors, field)
@@ -40,5 +42,39 @@ defmodule Mud.Util do
     Enum.map(errors, fn {error, path} ->
       {field, {"#{path}: #{error}", []}}
     end)
+  end
+
+  def retryable_transaction_v1(multi, retries \\ 1_000)
+
+  def retryable_transaction_v1(_multi, 0) do
+    {:error, :retries_exhausted}
+  end
+
+  def retryable_transaction_v1(multi, retries) do
+    try do
+      Repo.transaction(fn ->
+        Repo.query!("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+        Repo.transaction(multi)
+      end)
+    rescue
+      Postgrex.Error ->
+        # simple retry logic
+        # this eventually needs to handle disconnects and the like
+        retryable_transaction_v1(multi, retries - 1)
+    end
+  end
+
+  def retryable_transaction_v2(multi) do
+    retry with: exponential_backoff() |> cap(100) |> expiry(1_000),
+          rescue_only: [Postgrex.Error] do
+      Repo.transaction(fn ->
+        Repo.query!("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+        Repo.transaction(multi)
+      end)
+    after
+      result -> result
+    else
+      error -> error
+    end
   end
 end

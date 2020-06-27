@@ -17,7 +17,7 @@ defmodule MudWeb.MudClientController do
       Engine.start_character_session(character_id)
 
       # Send a silent look command
-      Engine.Session.cast_message(%Engine.Message.Input{
+      Engine.Session.cast_message_or_event(%Engine.Message.Input{
         id: UUID.uuid4(),
         to: character_id,
         text: "look",

@@ -10,41 +10,57 @@ defmodule MudWeb.Live.Component.CharacterInventory do
     socket =
       socket
       |> assign(
-        :containers_expanded,
-        true
-      )
-      |> assign(
-        :held_expanded,
-        true
-      )
-      |> assign(
-        :loading,
-        true
+        containers_expanded: true,
+        held_expanded: true,
+        loading: true,
+        event: nil
       )
 
-    {:ok, socket}
+    {:ok, socket, temporary_assigns: [event: nil]}
   end
 
-  def preload(list_of_assigns) do
-    list_of_ids =
-      Enum.map(list_of_assigns, fn assigns ->
-        assigns.character_id
-      end)
+  def preload(assigns_list) do
+    Enum.map(assigns_list, fn assigns ->
+      if Map.has_key?(assigns, :id) do
+        assigns
+        |> Map.put(:inventory_data, init_inventory_data(assigns.id))
+        |> Map.put(:loading, false)
+      else
+        if Map.has_key?(assigns, :event) do
+          inventory = assigns.inventory_data
+          event = assigns.event
+          item = event.item
 
-    characters =
-      list_of_ids
-      |> Character.list()
-      |> Enum.reduce(%{}, fn character, map ->
-        Map.put(map, character.id, character)
-      end)
+          updated_index =
+            case event.action do
+              :add ->
+                Map.put(inventory.item_index, item.id, item)
 
-    Enum.map(list_of_assigns, fn assigns ->
-      character = characters[assigns.character_id]
-      inventory_data = init_inventory_data(character)
+              :remove ->
+                if item.updated_at > inventory.item_index[item.id].updated_at do
+                  Map.delete(inventory.item_index, item.id)
+                else
+                  inventory.item_index
+                end
 
-      assigns
-      |> Map.put(:inventory_data, inventory_data)
-      |> Map.put(:loading, false)
+              :update ->
+                if item.updated_at > inventory.item_index[item.id].updated_at do
+                  Map.put(inventory.item_index, item.id, item)
+                else
+                  inventory.item_index
+                end
+            end
+
+          inv =
+            inventory
+            |> Map.put(:item_index, updated_index)
+            |> generate_child_index()
+
+          Map.put(assigns, :inventory_data, inv)
+        else
+          assigns
+        end
+      end
     end)
   end
 
@@ -52,9 +68,16 @@ defmodule MudWeb.Live.Component.CharacterInventory do
     Phoenix.View.render(MudWeb.MudClientView, "character_inventory.html", assigns)
   end
 
+  def handle_event("toggle_held", _, socket) do
+    {:noreply,
+     assign(
+       socket,
+       :held_expanded,
+       not socket.assigns.held_expanded
+     )}
+  end
+
   def handle_event("toggle_containers", _, socket) do
-    Logger.debug("toggle_containers")
-
     {:noreply,
      assign(
        socket,
@@ -63,82 +86,49 @@ defmodule MudWeb.Live.Component.CharacterInventory do
      )}
   end
 
-  def handle_event("toggle_container", _, socket) do
-    Logger.debug("toggle_container")
-
-    {:noreply,
-     assign(
-       socket,
-       :containers_expanded,
-       not socket.assigns.containers_expanded
-     )}
-  end
-
-  defp init_inventory_data(character) do
+  defp init_inventory_data(character_id) do
     inv =
       %Inventory{}
-      |> populate_held_items(character)
-      |> populate_worn_items(character)
+      |> populate_held_items(character_id)
+      |> populate_worn_items(character_id)
 
-    root_items = (inv.held_items ++ inv.worn_containers) |> Enum.filter(&(not is_nil(&1)))
+    Logger.debug(inspect(inv))
+    root_items = inv.held_items ++ inv.worn_containers
 
-    all_items =
-      Engine.Item.list_all_recursive(root_items)
-      |> Enum.reduce(%{}, fn item, map ->
-        value = [item | Map.get(map, item.container_id, [])]
+    Logger.debug(inspect(root_items))
+
+    all_items = Engine.Item.list_all_recursive(root_items)
+    item_index = Map.new(all_items, &{&1.id, &1})
+
+    inv
+    |> Map.put(:item_index, item_index)
+    |> generate_child_index()
+  end
+
+  defp generate_child_index(inventory) do
+    all_items = Map.values(inventory.item_index)
+
+    item_child_index =
+      Enum.reduce(all_items, %{}, fn item, map ->
+        value = [item.id | Map.get(map, item.container_id, [])]
         Map.put(map, item.container_id, value)
       end)
 
-    Map.put(inv, :item_child_index, all_items)
+    Map.put(inventory, :item_child_index, item_child_index)
   end
 
-  defp populate_held_items(inventory, character) do
-    held_items =
-      Character.list_held_items(character.id)
-      |> Enum.map(fn item -> transform_item(item, character) end)
+  defp populate_held_items(inventory, character_id) do
+    held_items = Character.list_held_items(character_id)
 
     inventory
     |> Map.put(:held_items, held_items)
   end
 
-  defp populate_worn_items(inventory, character) do
-    worn_items = Character.list_worn_items(character.id)
+  defp populate_worn_items(inventory, character_id) do
+    worn_items = Character.list_worn_items(character_id)
 
-    container_nodes =
-      Enum.filter(worn_items, & &1.is_container)
-      |> Enum.map(fn item -> transform_item(item, character) end)
+    container_nodes = Enum.filter(worn_items, & &1.is_container)
 
-    all_items =
-      Engine.Item.list_all_recursive(worn_items)
-      |> Enum.map(fn item -> transform_item(item, character) end)
-
-    all_items_index = build_container_item_index(all_items)
-
-    inventory
-    |> Map.put(:worn_containers, container_nodes)
-    |> Map.put(:worn_container_item_index, all_items_index)
+    Map.put(inventory, :worn_containers, container_nodes)
   end
-
-  defp build_container_item_index(nodes) do
-    Enum.reduce(nodes, %{}, fn node, map ->
-      children = [node | Map.get(node, node.parent, [])]
-      Map.put(map, node.parent, children)
-    end)
-  end
-
-  defp transform_item(item, character) do
-    icon = choose_icon(item)
-
-    %Inventory.Item{
-      short_description: Mud.Engine.Item.short_description(item, character),
-      long_description: Mud.Engine.Item.short_look(item, character),
-      id: item.id,
-      opened: item.container_open,
-      parent: item.container_id,
-      icon: icon,
-      openable: item.is_container
-    }
-  end
-
-  defp choose_icon(_), do: "fas fa-question"
 end

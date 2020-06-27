@@ -6,13 +6,13 @@
   <% end %>
   <%= if not @loading do %>
     <div class="flex flex-col">
-      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_containers" phx-target="<%= @myself %>">
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_held" phx-target="<%= @myself %>">
         <i class="fas fa-<%= if @held_expanded do "minus" else "plus" end %>-circle"></i> Held
       </div>
       <%= if @held_expanded do %>
       <div class="flex flex-col flex-shrink">
         <%= for item <- @inventory_data.held_items do%>
-          <%= live_component @socket, MudWeb.Live.Component.InventoryItem, item: item %>
+          <%= live_component(@socket, MudWeb.Live.Component.InventoryItem, id: item.id, item_index: @inventory_data.item_index, child_index: @inventory_data.item_child_index) %>
         <% end %>
       </div>
       <% end %>
@@ -22,7 +22,7 @@
       <%= if @containers_expanded do %>
       <div class="flex flex-col flex-shrink">
         <%= for container <- @inventory_data.worn_containers do%>
-          <%= live_component @socket, MudWeb.Live.Component.InventoryItem, item: container %>
+          <%= live_component @socket, MudWeb.Live.Component.InventoryItem, id: container.id, item_index: @inventory_data.item_index, child_index: @inventory_data.item_child_index %>
         <% end %>
       </div>
       <% end %>

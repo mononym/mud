@@ -8,16 +8,16 @@ defmodule Mud.Engine.Search do
   require Logger
 
   defmodule Match do
-    @enforce_keys [:match_string, :glance_description, :look_description, :match]
+    @enforce_keys [:match_string, :short_description, :long_description, :match]
     defstruct match_string: nil,
-              glance_description: nil,
-              look_description: nil,
+              short_description: nil,
+              long_description: nil,
               match: nil
 
     @type t() :: %__MODULE__{
             match_string: String.t(),
-            glance_description: String.t(),
-            look_description: String.t(),
+            short_description: String.t(),
+            long_description: String.t(),
             match: Character.t() | Item.t() | Link.t()
           }
   end
@@ -37,16 +37,15 @@ defmodule Mud.Engine.Search do
           [:character | :item | :link],
           String.t(),
           String.t(),
-          Character.t(),
           integer()
         ) ::
           {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
-  def find_matches_in_area_v2(target_types, area_id, input, looking_character, which_target) do
+  def find_matches_in_area_v2(target_types, area_id, input, which_target) do
     target_types
     |> Stream.map(fn type -> find_matches(type, area_id) end)
     |> Enum.map(fn matches ->
       matches
-      |> things_to_match(looking_character)
+      |> things_to_match()
       |> build_search_results(input)
     end)
     |> merge_search_results()
@@ -96,25 +95,24 @@ defmodule Mud.Engine.Search do
   @spec generate_matches(
           [Character.t() | Item.t() | Link.t()],
           String.t(),
-          Character.t(),
           integer()
         ) ::
           {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
-  def generate_matches(things, input, looking_character, which_target \\ 0) do
+  def generate_matches(things, input, which_target \\ 0) do
     things
-    |> things_to_match(looking_character)
+    |> things_to_match()
     |> build_search_results(input)
     |> check_search_results(which_target)
   end
 
-  @spec find_matches_in_area([:character | :item | :link], String.t(), String.t(), Character.t()) ::
+  @spec find_matches_in_area([:character | :item | :link], String.t(), String.t()) ::
           SearchResults.t()
-  def find_matches_in_area(target_types, area_id, input, looking_character) do
+  def find_matches_in_area(target_types, area_id, input) do
     target_types
     |> Stream.map(fn type -> find_matches(type, area_id) end)
     |> Enum.map(fn matches ->
       matches
-      |> things_to_match(looking_character)
+      |> things_to_match()
       |> build_search_results(input)
     end)
     |> merge_search_results()
@@ -175,40 +173,38 @@ defmodule Mud.Engine.Search do
     end
   end
 
-  defp things_to_match(links = [%Link{} | _], looking_character) do
+  defp things_to_match(links = [%Link{} | _]) do
     Enum.map(links, fn link ->
       %Match{
-        match_string: String.downcase(link.text),
-        glance_description: link.text,
-        look_description: Link.short_look(link, looking_character),
+        match_string: String.downcase(link.short_description),
+        short_description: link.short_description,
+        long_description: link.long_description,
         match: link
       }
     end)
   end
 
-  defp things_to_match(characters = [%Character{} | _], looking_character) do
+  defp things_to_match(characters = [%Character{} | _]) do
     Enum.map(characters, fn character ->
       %Match{
         match_string: String.downcase(character.name),
-        glance_description: Character.short_description(character, looking_character),
-        look_description: Character.short_look(character, looking_character),
+        short_description: Character.short_description(character),
+        long_description: Character.long_description(character),
         match: character
       }
     end)
   end
 
-  defp things_to_match(items = [%Item{} | _], looking_character) do
+  defp things_to_match(items = [%Item{} | _]) do
     Enum.map(items, fn item ->
-      desc = Item.short_description(item, looking_character)
-
       %Match{
-        match_string: String.downcase(desc),
-        glance_description: desc,
-        look_description: Item.short_look(item, looking_character),
+        match_string: String.downcase(item.short_description),
+        short_description: item.short_description,
+        long_description: item.long_description,
         match: item
       }
     end)
   end
 
-  defp things_to_match([], _), do: []
+  defp things_to_match([]), do: []
 end

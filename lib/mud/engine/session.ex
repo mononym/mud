@@ -4,6 +4,7 @@ defmodule Mud.Engine.Session do
   import Ecto.Query, warn: false
   require Logger
   alias Mud.Engine.CharacterSessionData
+  alias Mud.Engine.Event
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -29,6 +30,7 @@ defmodule Mud.Engine.Session do
     defstruct character_id: nil,
               text_buffer: [],
               undelivered_text: [],
+              undelivered_events: [],
               subscribers: %{},
               inactivity_timer_reference: nil,
               inactivity_timer_type: :warning,
@@ -51,12 +53,16 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  @spec cast_message(%Mud.Engine.Message.Output{} | %Mud.Engine.Message.Input{}) :: :ok
-  def cast_message(message) do
-    to = List.wrap(message.to)
+  @spec cast_message_or_event(
+          %Mud.Engine.Message.Output{}
+          | %Mud.Engine.Message.Input{}
+          | Mud.Engine.Event.t()
+        ) :: :ok
+  def cast_message_or_event(message_or_event) do
+    to = List.wrap(message_or_event.to)
 
     Enum.each(to, fn dest ->
-      msg = %{message | to: dest}
+      msg = %{message_or_event | to: dest}
       GenServer.cast(via(dest), msg)
     end)
   end
@@ -133,6 +139,25 @@ defmodule Mud.Engine.Session do
     state = update_timeout(state, @character_inactivity_timeout_warning)
 
     {:ok, state}
+  end
+
+  def handle_cast(%Event{} = event, state) do
+    Logger.debug("#{inspect(event)}")
+    Logger.debug("Subscribers: #{inspect(state.subscribers)}")
+
+    state =
+      if map_size(state.subscribers) != 0 do
+        Map.values(state.subscribers)
+        |> Enum.each(fn subscriber ->
+          GenServer.cast(subscriber.pid, event)
+        end)
+
+        state
+      else
+        %{state | undelivered_events: [event | state.undelivered_events]}
+      end
+
+    {:noreply, state}
   end
 
   def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
@@ -254,6 +279,18 @@ defmodule Mud.Engine.Session do
       else
         state
       end
+
+      state =
+        if length(state.undelivered_events) != 0 do
+          Map.values(updated_subscribers)
+          |> Enum.each(fn subscriber ->
+            GenServer.cast(subscriber.pid, zip_output(state.undelivered_events))
+          end)
+
+          %{state | undelivered_events: []}
+        else
+          state
+        end
 
     {:reply, :ok, %{state | subscribers: updated_subscribers}}
   end
