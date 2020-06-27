@@ -1,17 +1,17 @@
-defmodule Mud.Engine.Event.Client.UpdateInventory do
+defmodule Mud.Engine.Event.Client.UpdateArea do
   use TypedStruct
 
   typedstruct do
     # add, remove, update
     field(:action, String.t(), required: true)
     # the item being updated
-    field(:items, struct(), required: true)
+    field(:things, struct(), required: true)
   end
 
-  def new(action, items) do
+  def new(action, things) do
     %__MODULE__{
       action: action,
-      items: List.wrap(items)
+      things: List.wrap(things)
     }
   end
 end

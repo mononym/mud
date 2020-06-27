@@ -10,6 +10,7 @@ defmodule Mud.Engine.Command.Remove do
   """
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Item
   alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
@@ -78,8 +79,7 @@ defmodule Mud.Engine.Command.Remove do
         ast = context.command.ast
         worn_items = Character.list_worn_items(context.character)
 
-        matches =
-          Search.generate_matches(worn_items, ast.thing.input, ast.thing.which)
+        matches = Search.generate_matches(worn_items, ast.thing.input, ast.thing.which)
 
         case matches do
           {:ok, [match]} ->
@@ -134,6 +134,10 @@ defmodule Mud.Engine.Command.Remove do
         }{{/bodypart}}."
       ),
       "info"
+    )
+    |> ExecutionContext.append_event(
+      context.character_id,
+      UpdateInventory.new(:update, match.match)
     )
     |> ExecutionContext.set_success()
   end

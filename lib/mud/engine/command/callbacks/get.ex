@@ -12,7 +12,7 @@ defmodule Mud.Engine.Command.Get do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Event
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
   alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
@@ -150,10 +150,14 @@ defmodule Mud.Engine.Command.Get do
             "You pick up {{item}}#{thing.short_description}{{/item}}.",
             "info"
           )
-          |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
-            action: :add,
-            item: thing.match
-          })
+          |> ExecutionContext.append_event(
+            context.character_id,
+            UpdateInventory.new(:add, thing.match)
+          )
+          |> ExecutionContext.append_event(
+            [context.character_id | others],
+            UpdateArea.new(:remove, thing.match)
+          )
           |> ExecutionContext.set_success()
         else
           ExecutionContext.append_output(
@@ -289,7 +293,7 @@ defmodule Mud.Engine.Command.Get do
           long_description: item.long_description
         }
 
-        find_thing(context, match)
+        find_thing(context, match, true)
 
       item.container_locked and not character.auto_unlock_containers and
           not character.auto_open_containers ->
@@ -345,7 +349,7 @@ defmodule Mud.Engine.Command.Get do
           (item.is_container and item.container_open) or
             (item.is_container and character.auto_unlock_containers) or
               (item.is_container and not item.container_locked and character.auto_open_containers) ->
-            find_thing(context, place)
+            find_thing(context, place, false)
 
           (item.is_container and item.container_locked and not character.auto_unlock_containers) or
               (item.is_container and not item.container_open and
@@ -382,13 +386,13 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
-  @spec find_thing(ExecutionContext.t(), Search.Match.t()) :: ExecutionContext.t()
-  defp find_thing(context, place) do
+  @spec find_thing(ExecutionContext.t(), Search.Match.t(), boolean()) :: ExecutionContext.t()
+  defp find_thing(context, place, private) do
     ast = context.command.ast
 
     case find_thing_in_place(place, ast.thing.input) do
       {:ok, thing} ->
-        get_thing_in_place(context, thing, place)
+        get_thing_in_place(context, thing, place, private)
 
       {:multiple, _matches} ->
         ExecutionContext.append_output(
@@ -433,15 +437,27 @@ defmodule Mud.Engine.Command.Get do
   @spec get_thing_in_place(
           Mud.Engine.Command.ExecutionContext.t(),
           Mud.Engine.Search.Match.t(),
-          Mud.Engine.Search.Match.t()
+          Mud.Engine.Search.Match.t(),
+          boolean()
         ) :: Mud.Engine.Command.ExecutionContext.t()
-  defp get_thing_in_place(context, thing, place) do
+  defp get_thing_in_place(context, thing, place, private) do
     character = context.character
 
     {self_msg, others_msg} = do_get_thing_in_place(thing, place, character)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+    context =
+      if private do
+        context
+      else
+        ExecutionContext.append_event(
+          context,
+          [context.character_id | others],
+          UpdateArea.new(:remove, thing.match)
+        )
+      end
 
     context
     |> ExecutionContext.append_output(
@@ -454,10 +470,10 @@ defmodule Mud.Engine.Command.Get do
       self_msg,
       "info"
     )
-    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
-      action: :add,
-      item: thing.match
-    })
+    |> ExecutionContext.append_event(
+      context.character_id,
+      UpdateInventory.new(:add, thing.match)
+    )
     |> ExecutionContext.set_success()
   end
 

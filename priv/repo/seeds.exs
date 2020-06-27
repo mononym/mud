@@ -464,7 +464,8 @@ Mud.Engine.Item.create(%{
   short_description: "a flat rounded rock",
   long_description:
     "This rock has been worn down over time by water into a smooth, flat round shape.",
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-leaf"
 })
 
 Mud.Engine.Item.create(%{
@@ -474,7 +475,8 @@ Mud.Engine.Item.create(%{
   short_description: "a rough round rock",
   long_description:
     "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-leaf"
 })
 
 Mud.Engine.Item.create(%{
@@ -484,7 +486,8 @@ Mud.Engine.Item.create(%{
   short_description: "a leafy branch",
   long_description:
     "The leafy branch has only recently been removed from its tree, the leaves not yet wilted.",
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-leaf"
 })
 
 Mud.Engine.Item.create(%{
@@ -494,7 +497,8 @@ Mud.Engine.Item.create(%{
   short_description: "a massive fountain",
   long_description:
     "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself.",
-  is_hidden: true
+  is_hidden: true,
+  icon: "fas fa-water"
 })
 
 Mud.Engine.Item.create(%{
@@ -504,7 +508,8 @@ Mud.Engine.Item.create(%{
   area_id: center_room.id,
   short_description: "a worn wooden bench",
   long_description:
-    "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+    "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker.",
+  icon: "fas fa-chair"
 })
 
 Mud.Engine.Item.create(%{
@@ -522,7 +527,8 @@ Mud.Engine.Item.create(%{
   container_width: 75,
   container_height: 75,
   container_capacity: 1000,
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-box"
 })
 
 Mud.Engine.Item.create(%{
@@ -538,7 +544,8 @@ Mud.Engine.Item.create(%{
   container_capacity: 1000,
   is_wearable: true,
   wearable_location: "back",
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-box"
 })
 
 Mud.Engine.Item.create(%{
@@ -547,5 +554,6 @@ Mud.Engine.Item.create(%{
   short_description: "a rough round rock",
   long_description:
     "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
-  is_holdable: true
+  is_holdable: true,
+  icon: "fas fa-leaf"
 })

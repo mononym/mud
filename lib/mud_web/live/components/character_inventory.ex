@@ -29,26 +29,32 @@ defmodule MudWeb.Live.Component.CharacterInventory do
         if Map.has_key?(assigns, :event) do
           inventory = assigns.inventory_data
           event = assigns.event
-          item = event.item
+          items = event.items
 
           updated_index =
             case event.action do
               :add ->
-                Map.put(inventory.item_index, item.id, item)
+                Enum.reduce(items, inventory.item_index, fn item, index ->
+                  Map.put(index, item.id, item)
+                end)
 
               :remove ->
-                if item.updated_at > inventory.item_index[item.id].updated_at do
-                  Map.delete(inventory.item_index, item.id)
-                else
-                  inventory.item_index
-                end
+                Enum.reduce(items, inventory.item_index, fn item, index ->
+                  if item.updated_at > index[item.id].updated_at do
+                    Map.delete(index, item.id)
+                  else
+                    index
+                  end
+                end)
 
               :update ->
-                if item.updated_at > inventory.item_index[item.id].updated_at do
-                  Map.put(inventory.item_index, item.id, item)
-                else
-                  inventory.item_index
-                end
+                Enum.reduce(items, inventory.item_index, fn item, index ->
+                  if item.updated_at > index[item.id].updated_at do
+                    Map.put(index, item.id, item)
+                  else
+                    index
+                  end
+                end)
             end
 
           inv =

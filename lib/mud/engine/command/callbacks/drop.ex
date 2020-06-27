@@ -15,7 +15,7 @@ defmodule Mud.Engine.Command.Drop do
 
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Event
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
@@ -116,10 +116,14 @@ defmodule Mud.Engine.Command.Drop do
       self_msg,
       "info"
     )
-    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
-      action: :remove,
-      item: match.match
-    })
+    |> ExecutionContext.append_event(
+      [context.character_id | others],
+      UpdateArea.new(:add, match.match)
+    )
+    |> ExecutionContext.append_event(
+      context.character_id,
+      UpdateInventory.new(:remove, match.match)
+    )
     |> ExecutionContext.set_success()
   end
 end

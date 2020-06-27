@@ -11,6 +11,7 @@ defmodule Mud.Engine.Command.Wear do
     - wear backpack
   """
 
+  alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Search
@@ -57,8 +58,7 @@ defmodule Mud.Engine.Command.Wear do
       else
         ast = context.command.ast
 
-        matches =
-          Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
+        matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
 
         case matches do
           {:ok, [match]} ->
@@ -115,6 +115,10 @@ defmodule Mud.Engine.Command.Wear do
           item.wearable_location
         }{{/bodypart}}.",
         "info"
+      )
+      |> ExecutionContext.append_event(
+        context.character_id,
+        UpdateInventory.new(:update, item)
       )
       |> ExecutionContext.set_success()
     else

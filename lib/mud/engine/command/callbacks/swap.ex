@@ -8,6 +8,7 @@ defmodule Mud.Engine.Command.Swap do
 
   use Mud.Engine.Command.Callback
 
+  alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.{Character, Item}
 
@@ -31,6 +32,13 @@ defmodule Mud.Engine.Command.Swap do
           Item.update!(item, %{holdable_hand: "left"})
         end
       end)
+
+    context =
+      ExecutionContext.append_event(
+        context,
+        context.character_id,
+        UpdateInventory.new(:update, items)
+      )
 
     case items do
       [item] ->

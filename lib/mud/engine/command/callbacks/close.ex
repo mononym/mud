@@ -11,6 +11,7 @@ defmodule Mud.Engine.Command.Close do
   """
 
   alias Mud.Repo
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
@@ -23,20 +24,33 @@ defmodule Mud.Engine.Command.Close do
 
   defp target_types(), do: [:item]
 
+  @doc false
+  @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.ThingAndPlace.t()
+  def build_ast(ast_nodes) do
+    Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
+  end
+
+  @doc false
   @impl true
   def continue(context) do
     target = Util.refresh_thing(context.input.match)
 
-    if context.character.area_id == target.area_id or context.character.id == target.worn_by_id do
-      do_thing_to_match(context, %{context.input | match: target})
-    else
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        "The #{context.input.short_description} is no longer present.",
-        "error"
-      )
-      |> ExecutionContext.set_success()
+    cond do
+      context.character.area_id == target.area_id ->
+        do_thing_to_match(context, %{context.input | match: target}, false)
+
+      context.character.id == target.worn_by_id ->
+        do_thing_to_match(context, %{context.input | match: target}, true)
+
+      true ->
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "The #{context.input.short_description} is no longer present.",
+          "error"
+        )
+        |> ExecutionContext.set_success()
     end
   end
 
@@ -57,7 +71,7 @@ defmodule Mud.Engine.Command.Close do
 
     case result do
       {:ok, [match]} ->
-        do_thing_to_match(context, match)
+        do_thing_to_match(context, match, false)
 
       {:ok, matches} ->
         SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
@@ -69,7 +83,7 @@ defmodule Mud.Engine.Command.Close do
 
         case Search.generate_matches(worn_items, input, which_target) do
           {:ok, [match]} ->
-            do_thing_to_match(context, match)
+            do_thing_to_match(context, match, true)
 
           {:ok, matches} ->
             SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
@@ -104,8 +118,9 @@ defmodule Mud.Engine.Command.Close do
     end
   end
 
-  @spec do_thing_to_match(ExecutionContext.t(), Mud.Engine.Match.t()) :: ExecutionContext.t()
-  defp do_thing_to_match(context, match) do
+  @spec do_thing_to_match(ExecutionContext.t(), Mud.Engine.Match.t(), boolean()) ::
+          ExecutionContext.t()
+  defp do_thing_to_match(context, match, private) do
     item = match.match
 
     cond do
@@ -114,6 +129,21 @@ defmodule Mud.Engine.Command.Close do
 
         others =
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+        context =
+          if private do
+            ExecutionContext.append_event(
+              context,
+              context.character_id,
+              UpdateInventory.new(:update, item)
+            )
+          else
+            ExecutionContext.append_event(
+              context,
+              [context.character_id | others],
+              UpdateArea.new(:update, item)
+            )
+          end
 
         context
         |> ExecutionContext.append_output(

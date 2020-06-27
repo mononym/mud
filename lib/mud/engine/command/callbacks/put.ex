@@ -14,7 +14,7 @@ defmodule Mud.Engine.Command.Put do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Event
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
   alias Mud.Engine.Character
   alias Mud.Engine.Command.ExecutionContext
@@ -168,7 +168,7 @@ defmodule Mud.Engine.Command.Put do
 
     case Search.generate_matches(all_containers, ast.place.input) do
       {:ok, [match]} ->
-        put_item_in_container(context, item_match, match)
+        put_item_in_container(context, item_match, match, true)
 
       {:ok, matches} ->
         indexed_places =
@@ -212,7 +212,7 @@ defmodule Mud.Engine.Command.Put do
     case results do
       # single match
       {:ok, [container]} ->
-        put_item_in_container(context, item_match, container)
+        put_item_in_container(context, item_match, container, false)
 
       {:ok, matches} ->
         indexed_places = Util.list_to_index_map(matches)
@@ -234,13 +234,32 @@ defmodule Mud.Engine.Command.Put do
     end
   end
 
-  defp put_item_in_container(context, item, container) do
+  defp put_item_in_container(context, item, container, private) do
     character = context.character
 
     {self_msg, others_msg} = do_put_item_in_container(item, container, character)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+    context =
+      if private do
+        ExecutionContext.append_event(
+          context,
+          context.character_id,
+          UpdateInventory.new(:update, item.match)
+        )
+      else
+        context
+        |> ExecutionContext.append_event(
+          context.character_id,
+          UpdateInventory.new(:remove, item.match)
+        )
+        |> ExecutionContext.append_event(
+          [context.character_id | others],
+          UpdateArea.new(:add, item.match)
+        )
+      end
 
     context
     |> ExecutionContext.append_output(
@@ -253,10 +272,6 @@ defmodule Mud.Engine.Command.Put do
       self_msg,
       "info"
     )
-    |> ExecutionContext.append_event(context.character_id, %Event.Client.UpdateInventory{
-      action: :update,
-      item: item.match
-    })
     |> ExecutionContext.set_success()
   end
 

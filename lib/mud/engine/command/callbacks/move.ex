@@ -20,6 +20,7 @@ defmodule Mud.Engine.Command.Move do
   """
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.{Character, Area}
+  alias Mud.Engine.Event.Client.UpdateArea
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Message
@@ -185,7 +186,18 @@ defmodule Mud.Engine.Command.Move do
         "info"
       )
     )
-    |> Util.clear_continuation_from_context()
+    |> ExecutionContext.append_event(
+      characters_by_area[link.from_id],
+      UpdateArea.new(:remove, character)
+    )
+    |> ExecutionContext.append_event(
+      characters_by_area[link.to_id],
+      UpdateArea.new(:add, character)
+    )
+    |> ExecutionContext.append_event(
+      character.id,
+      UpdateArea.new(:new, character.area_id)
+    )
     |> ExecutionContext.set_success()
   end
 

@@ -3,6 +3,7 @@ defmodule MudWeb.MudClientLive do
 
   alias Mud.Engine.Character
   alias Mud.Engine.Event
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias MudWeb.Live.Component.{CharacterInventory}
 
   require Logger
@@ -71,10 +72,18 @@ defmodule MudWeb.MudClientLive do
     {:noreply, %{socket | assigns: assigns}}
   end
 
-  def handle_cast(event = %Event{event: _ = %Event.Client.UpdateInventory{}}, socket) do
-    IO.puts("HANDLE BROADCAST FOR UPDATE INVENTORY #{event.event.item.id}")
+  def handle_cast(%Event{event: event = %UpdateInventory{}}, socket) do
+    IO.puts("HANDLE BROADCAST FOR UPDATE INVENTORY")
 
-    send_update(CharacterInventory, id: socket.assigns.character.id, event: event.event)
+    send_update(CharacterInventory, id: socket.assigns.character.id, event: event)
+
+    {:noreply, socket}
+  end
+
+  def handle_cast(%Event{event: event = %UpdateArea{}}, socket) do
+    IO.puts("HANDLE BROADCAST FOR UPDATE AREA")
+
+    # send_update(CharacterInventory, id: socket.assigns.character.id, event: event.event)
 
     {:noreply, socket}
   end

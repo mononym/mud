@@ -26,7 +26,7 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_in("input", input, socket) do
-    Mud.Engine.Session.cast_message(%Mud.Engine.Message.Input{
+    Mud.Engine.Session.cast_message_or_event(%Mud.Engine.Message.Input{
       to: socket.assigns.character_id,
       text: input,
       id: UUID.uuid4()
