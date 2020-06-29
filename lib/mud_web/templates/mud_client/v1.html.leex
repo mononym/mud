@@ -1,4 +1,4 @@
-<%= tag :meta, name: "character_id", content: @character_id %>
+<%= tag :meta, name: "character_id", content: @character.id %>
 
 <div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
   <div class="w-1/5 flex flex-col">
@@ -16,7 +16,7 @@
         </li>
       </ul>
       <div class="flex flex-1 bg-gray-600 p-2">
-        <%= live_component(@socket, MudWeb.Live.Component.CharacterInventory, id: @character_id) %>
+        <%= live_component(@socket, MudWeb.Live.Component.CharacterInventory, id: @character.id) %>
       </div>
     </div>
   </div>
@@ -34,7 +34,9 @@
     </div>
   </div>
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4"></div>
+    <div class="flex flex-1 border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
+    </div>
     <div class="flex flex-1 border-4">
       <ul class="flex flex-1">
         <li class="flex flex-1 mr-2">

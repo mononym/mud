@@ -265,6 +265,36 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
+  @spec list_non_scenery_in_areas(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
+          Ecto.Multi.t()
+  def list_non_scenery_in_areas(multi, name, area_ids) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      area_ids = List.wrap(area_ids)
+
+      from(
+        item in __MODULE__,
+        where: item.area_id in ^area_ids and item.is_scenery == false
+      )
+      |> repo.all()
+      |> (&{:ok, &1}).()
+    end)
+  end
+
+  @spec list_visible_scenery_in_area(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
+          Ecto.Multi.t()
+  def list_visible_scenery_in_area(multi, name, area_ids) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      area_ids = List.wrap(area_ids)
+
+      from(
+        item in __MODULE__,
+        where: item.area_id in ^area_ids and item.is_scenery == true and item.is_hidden == false
+      )
+      |> repo.all()
+      |> (&{:ok, &1}).()
+    end)
+  end
+
   def list_contained_items(container_id) do
     from(
       item in __MODULE__,

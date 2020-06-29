@@ -386,6 +386,23 @@ defmodule Mud.Engine.Character do
     |> Repo.all()
   end
 
+  @spec list_others_active_in_areas(Ecto.Multi.t(), atom(), String.t(), String.t() | [String.t()]) ::
+          Ecto.Multi.t()
+  def list_others_active_in_areas(multi, name, character_id, area_ids) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      area_ids = List.wrap(area_ids)
+
+      base_query()
+      |> where(
+        [char],
+        char.active == true and char.area_id in ^area_ids and
+          char.id != ^character_id
+      )
+      |> repo.all()
+      |> (&{:ok, &1}).()
+    end)
+  end
+
   @spec get_by_name(String.t()) :: %__MODULE__{} | nil
   def get_by_name(name) do
     Repo.get_by(__MODULE__, name: name)

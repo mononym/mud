@@ -527,7 +527,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           key: :which,
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           must_follow: [:move],
           transformer: &string_to_int/1
         },

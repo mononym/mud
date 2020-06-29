@@ -15,11 +15,12 @@ defmodule Mud.Engine.Link do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
-    field(:departure_direction, :string)
-    field(:arrival_direction, :string)
+    field(:departure_text, :string)
+    field(:arrival_text, :string)
     field(:short_description, :string)
     field(:long_description, :string)
     field(:type, :string)
+    field(:icon, :string, default: "fas fa-compass")
 
     belongs_to(:from, Area,
       type: :binary_id,
@@ -37,11 +38,18 @@ defmodule Mud.Engine.Link do
   @doc false
   def changeset(link, attrs) do
     link
-    |> cast(attrs, [:type, :arrival_direction, :departure_direction, :from_id, :to_id, :short_description])
+    |> cast(attrs, [
+      :type,
+      :arrival_text,
+      :departure_text,
+      :from_id,
+      :to_id,
+      :short_description
+    ])
     |> validate_required([
       :type,
-      :arrival_direction,
-      :departure_direction,
+      :arrival_text,
+      :departure_text,
       :from_id,
       :to_id,
       :short_description,
@@ -79,6 +87,20 @@ defmodule Mud.Engine.Link do
         where: link.from_id == ^area_id and link.type == ^"obvious"
       )
     )
+  end
+
+  @spec list_obvious_exits_in_area(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
+          Ecto.Multi.t()
+  def list_obvious_exits_in_area(multi, name, area_ids) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      area_ids = List.wrap(area_ids)
+
+      from(link in __MODULE__,
+        where: link.from_id in ^area_ids and link.type == ^"obvious"
+      )
+      |> repo.all()
+      |> (&{:ok, &1}).()
+    end)
   end
 
   @doc """

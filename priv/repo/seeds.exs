@@ -82,8 +82,8 @@ southwest_room =
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: east_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -92,8 +92,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: center_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -103,8 +103,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: west_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -113,8 +113,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: center_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -124,8 +124,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: north_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -134,8 +134,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: center_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -145,8 +145,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: south_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -155,8 +155,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: center_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -166,8 +166,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: southeast_room.id,
-  departure_direction: "southeast",
-  arrival_direction: "the northwest",
+  departure_text: "southeast",
+  arrival_text: "the northwest",
   type: "obvious",
   short_description: "southeast",
   long_description: "southeast"
@@ -176,8 +176,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: center_room.id,
-  departure_direction: "northwest",
-  arrival_direction: "the southeast",
+  departure_text: "northwest",
+  arrival_text: "the southeast",
   type: "obvious",
   short_description: "northwest",
   long_description: "northwest"
@@ -187,8 +187,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: southwest_room.id,
-  departure_direction: "southwest",
-  arrival_direction: "the northeast",
+  departure_text: "southwest",
+  arrival_text: "the northeast",
   type: "obvious",
   short_description: "southwest",
   long_description: "southwest"
@@ -197,8 +197,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: center_room.id,
-  departure_direction: "northeast",
-  arrival_direction: "the southwest",
+  departure_text: "northeast",
+  arrival_text: "the southwest",
   type: "obvious",
   short_description: "northeast",
   long_description: "northeast"
@@ -208,8 +208,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: northwest_room.id,
-  departure_direction: "northwest",
-  arrival_direction: "the southeast",
+  departure_text: "northwest",
+  arrival_text: "the southeast",
   type: "obvious",
   short_description: "northwest",
   long_description: "northwest"
@@ -218,8 +218,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: center_room.id,
-  departure_direction: "southeast",
-  arrival_direction: "the northwest",
+  departure_text: "southeast",
+  arrival_text: "the northwest",
   type: "obvious",
   short_description: "southeast",
   long_description: "southeast"
@@ -229,8 +229,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: center_room.id,
   to_id: northeast_room.id,
-  departure_direction: "northeast",
-  arrival_direction: "the southwest",
+  departure_text: "northeast",
+  arrival_text: "the southwest",
   type: "obvious",
   short_description: "northeast",
   long_description: "northeast"
@@ -239,8 +239,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: center_room.id,
-  departure_direction: "southwest",
-  arrival_direction: "the northeast",
+  departure_text: "southwest",
+  arrival_text: "the northeast",
   type: "obvious",
   short_description: "southwest",
   long_description: "southwest"
@@ -250,8 +250,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: northeast_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -260,8 +260,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: north_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -271,8 +271,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: north_room.id,
   to_id: northwest_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -281,8 +281,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: north_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -292,8 +292,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: southeast_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -302,8 +302,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: south_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -313,8 +313,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: south_room.id,
   to_id: southwest_room.id,
-  departure_direction: "west",
-  arrival_direction: "the east",
+  departure_text: "west",
+  arrival_text: "the east",
   type: "obvious",
   short_description: "west",
   long_description: "west"
@@ -323,8 +323,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: south_room.id,
-  departure_direction: "east",
-  arrival_direction: "the west",
+  departure_text: "east",
+  arrival_text: "the west",
   type: "obvious",
   short_description: "east",
   long_description: "east"
@@ -334,8 +334,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: northeast_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -344,8 +344,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: east_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -355,8 +355,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: east_room.id,
   to_id: southeast_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -365,8 +365,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southeast_room.id,
   to_id: east_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -376,8 +376,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: northwest_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -386,8 +386,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: west_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -397,8 +397,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: west_room.id,
   to_id: southwest_room.id,
-  departure_direction: "south",
-  arrival_direction: "the north",
+  departure_text: "south",
+  arrival_text: "the north",
   type: "obvious",
   short_description: "south",
   long_description: "south"
@@ -407,8 +407,8 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: west_room.id,
-  departure_direction: "north",
-  arrival_direction: "the south",
+  departure_text: "north",
+  arrival_text: "the south",
   type: "obvious",
   short_description: "north",
   long_description: "north"
@@ -418,41 +418,45 @@ Mud.Repo.insert!(%Link{
 Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: northeast_room.id,
-  departure_direction: "into a shimmering portal",
-  arrival_direction: "a shimmering portal",
+  departure_text: "into a shimmering portal",
+  arrival_text: "a shimmering portal",
   type: "obvious",
   short_description: "a shimmering portal",
-  long_description: "a shimmering portal"
+  long_description: "a shimmering portal",
+  icon: "far fa-circle"
 })
 
 Mud.Repo.insert!(%Link{
   from_id: southwest_room.id,
   to_id: northwest_room.id,
-  departure_direction: "into a glimmering portal",
-  arrival_direction: "a glimmering portal",
+  departure_text: "into a glimmering portal",
+  arrival_text: "a glimmering portal",
   type: "obvious",
   short_description: "a glimmering portal",
-  long_description: "a glimmering portal"
+  long_description: "a glimmering portal",
+  icon: "far fa-circle"
 })
 
 Mud.Repo.insert!(%Link{
   from_id: northwest_room.id,
   to_id: southwest_room.id,
-  departure_direction: "into a glimmering portal",
-  arrival_direction: "a glimmering portal",
+  departure_text: "into a glimmering portal",
+  arrival_text: "a glimmering portal",
   type: "obvious",
   short_description: "a glimmering portal",
-  long_description: "a glimmering portal"
+  long_description: "a glimmering portal",
+  icon: "far fa-circle"
 })
 
 Mud.Repo.insert!(%Link{
   from_id: northeast_room.id,
   to_id: southwest_room.id,
-  departure_direction: "into a shimmering portal",
-  arrival_direction: "from a shimmering portal",
+  departure_text: "into a shimmering portal",
+  arrival_text: "from a shimmering portal",
   type: "obvious",
   short_description: "a shimmering portal",
-  long_description: "a shimmering portal"
+  long_description: "a shimmering portal",
+  icon: "far fa-circle"
 })
 
 # Object insertions

@@ -1,0 +1,54 @@
+<div phx-hook="AreaOverviewWindow" class="min-w-full min-h-full flex flex-col bg-gray-600">
+  <%= if @loading do %>
+    <div class="min-w-full flex flex-1 justify-center items-center">
+      <i class="far fa-9x fa-eye fa-spin"></i>
+    </div>
+  <% else %>
+    <div class="flex flex-col">
+      <div class="flex-shrink cursor-pointer" phx-click="toggle_description" phx-target="<%= @myself %>">
+      <p>[<%= @area_data.area.name %>]</p>
+      </div>
+      <%= if @description_expanded do %>
+      <div class="flex flex-col flex-shrink">
+        <p><%= @area_data.area.description %></p>
+      </div>
+      <% end %>
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_exits" phx-target="<%= @myself %>">
+        <%= if @exits_expanded do %>
+        <i class="fas fa-minus-circle"></i>
+        <% else %>
+        <i class="fas fa-plus-circle"></i>
+        <% end %>
+         Exits
+      </div>
+      <%= if @exits_expanded do %>
+      <div class="flex flex-col flex-shrink">
+        <%= for ext <- Map.values(@area_data.exits) do %>
+          <%= live_component @socket, MudWeb.Live.Component.AreaExit, id: ext.id, exit: ext, character_id: @character_id %>
+        <% end %>
+      </div>
+      <% end %>
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_characters" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @characters_expanded do "minus" else "plus" end %>-circle"></i> Characters
+      </div>
+      <%= if @characters_expanded do %>
+      <div class="flex flex-col flex-shrink">
+      </div>
+      <% end %>
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_toi" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @things_expanded do "minus" else "plus" end %>-circle"></i> Things of Interest
+      </div>
+      <%= if @things_expanded do %>
+      <div class="flex flex-col flex-shrink">
+      </div>
+      <% end %>
+      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_ground" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @items_expanded do "minus" else "plus" end %>-circle"></i> On Ground
+      </div>
+      <%= if @items_expanded do %>
+      <div class="flex flex-col flex-shrink">
+      </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

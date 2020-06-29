@@ -7,17 +7,19 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:type, :citext)
       add(:short_description, :citext)
       add(:long_description, :citext)
-      add(:departure_direction, :citext)
-      add(:arrival_direction, :citext)
+      add(:departure_text, :citext)
+      add(:arrival_text, :citext)
+      add(:icon, :citext)
       add(:from_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
       add(:to_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
 
       timestamps()
     end
 
-    create(index(:links, [:departure_direction]))
-    create(index(:links, [:arrival_direction]))
+    create(index(:links, [:departure_text]))
+    create(index(:links, [:arrival_text]))
     create(index(:links, [:type]))
+    create(index(:links, [:icon]))
     create(index(:links, [:short_description]))
     create(index(:links, [:long_description]))
     create(index(:links, [:from_id]))

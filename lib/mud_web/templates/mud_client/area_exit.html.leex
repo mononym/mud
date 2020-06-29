@@ -1,0 +1,14 @@
+<div class="pl-4 min-w-full flex flex-col flex-shrink">
+  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex-shrink cursor-pointer select-none">
+    <i class="<%= @exit.icon %>"></i>&nbsp;<%= @exit.short_description %>
+  </div>
+  <%= if @expanded do %>
+  <div class="flex-shrink pl-8">
+    <%= @exit.long_description %>
+  </div>
+  <div class="flex flex-shrink pl-8">
+    <div class="flex flex-1" phx-click="send" phx-value-command="go <%= @exit.id %>" phx-target="<%= @myself %>"><button>go</button></div>
+    <div class="flex flex-1" phx-click="send" phx-value-command="peer <%= @exit.id %>" phx-target="<%= @myself %>"><button>peer</button></div>
+  </div>
+  <% end %>
+</div>

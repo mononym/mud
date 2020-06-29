@@ -28,38 +28,25 @@ defmodule MudWeb.ClientData do
       # Map where the key is an item id and the value is the item
       field(:item_index, map(), default: %{})
     end
+  end
 
-    defmodule Item do
-      use TypedStruct
+  defmodule AreaOverview do
+    use TypedStruct
 
-      @derive Jason.Encoder
-      typedstruct do
-        # uniquely id each item
-        field(:id, String.t(), required: true)
-        # used for the tree view
-        field(:short_description, String.t(), required: true)
-        # used for the detail view
-        field(:long_description, String.t(), required: true)
-        # if this item is inside another item it will have an id
-        field(:parent, String.t())
-        # for use in drawing the tree view
-        field(:children, [], default: [])
-        # the icon to use for the item in the row
-        field(:icon, String.t(), default: "fas fa-question")
-        # if the item can be opened or not
-        field(:openable, boolean, default: false)
-        # if the item is open or not
-        field(:opened, boolean, default: false)
-        # if the item should be disabled or not in the UI
-        field(:disabled, boolean, default: false)
-        # If the item has been selected
-        field(:selected, boolean, default: false)
-        # The actions which can be taken on the item.
-        # For example an entry of %{text: "Open", command: "open my #{item.id}"}
-        # would create an "Open" button when the item is selected, which when clicked would silently send that
-        # command to the server
-        field(:actions, [], default: [])
-      end
+    @derive Jason.Encoder
+    typedstruct do
+      field(:area, Mud.Engine.Area.t())
+
+      field(:exits, map(), default: %{})
+
+      field(:characters, map(), default: %{})
+
+      field(:things_of_interest, map(), default: %{})
+
+      field(:items, map(), default: %{})
+
+      # Map where the key is an item id and the value is a list of items which are children of that item
+      field(:item_child_index, map(), default: %{})
     end
   end
 end

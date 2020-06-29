@@ -48,6 +48,13 @@ defmodule Mud.Engine.Area do
   @spec get_area!(id :: String.t()) :: %__MODULE__{}
   def get_area!(id), do: Repo.get!(__MODULE__, id)
 
+  @spec get_area!(Ecto.Multi.t(), atom(), String.t()) :: Ecto.Multi.t()
+  def get_area!(multi, name, area_id) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      {:ok, repo.get!(__MODULE__, area_id)}
+    end)
+  end
+
   @doc """
   Creates a area.
 
