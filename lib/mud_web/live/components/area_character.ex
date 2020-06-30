@@ -1,4 +1,4 @@
-defmodule MudWeb.Live.Component.AreaExit do
+defmodule MudWeb.Live.Component.AreaCharacter do
   use Phoenix.LiveComponent
 
   def mount(socket) do
@@ -9,7 +9,7 @@ defmodule MudWeb.Live.Component.AreaExit do
   end
 
   def render(assigns) do
-    Phoenix.View.render(MudWeb.MudClientView, "area_exit.html", assigns)
+    Phoenix.View.render(MudWeb.MudClientView, "area_character.html", assigns)
   end
 
   def handle_event("toggle_expanded", _, socket) do
@@ -20,13 +20,14 @@ defmodule MudWeb.Live.Component.AreaExit do
   end
 
   def handle_event("send", %{"command" => command}, socket) do
-    send_command(socket.assigns.character_id, command)
+    %Mud.Engine.Message.Input{
+      id: UUID.uuid4(),
+      to: socket.assigns.character_id,
+      text: command,
+      type: :silent
+    }
+    |> Mud.Engine.Session.cast_message_or_event()
 
     {:noreply, socket}
-  end
-
-  defp send_command(character_id, text) do
-    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text, type: :silent}
-    |> Mud.Engine.Session.cast_message_or_event()
   end
 end

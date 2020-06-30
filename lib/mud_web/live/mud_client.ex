@@ -4,7 +4,7 @@ defmodule MudWeb.MudClientLive do
   alias Mud.Engine.Character
   alias Mud.Engine.Event
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
-  alias MudWeb.Live.Component.{CharacterInventory, StoryWindow}
+  alias MudWeb.Live.Component.{CharacterInventory}
 
   require Logger
 

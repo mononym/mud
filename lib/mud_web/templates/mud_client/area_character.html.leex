@@ -1,0 +1,11 @@
+<div class="pl-4 min-w-full flex flex-col flex-shrink">
+  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex-shrink cursor-pointer select-none">
+    <i class="fas fa-user"></i>&nbsp;<%= @character.name %>
+  </div>
+  <%= if @expanded do %>
+  <div class="flex flex-shrink pl-8">
+    <div class="flex flex-1" phx-click="send" phx-value-command="look <%= @character.id %>" phx-target="<%= @myself %>"><button>look</button></div>
+    <div class="flex flex-1" phx-click="send" phx-value-command="join <%= @character.id %>" phx-target="<%= @myself %>"><button>join</button></div>
+  </div>
+  <% end %>
+</div>
