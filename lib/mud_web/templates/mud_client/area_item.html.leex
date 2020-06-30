@@ -9,6 +9,11 @@
   <div class="flex-shrink pl-8">
     <%= @item.long_description %>
   </div>
+  <div class="flex flex-shrink pl-8">
+    <%= if @item.is_furniture do %>
+      <div class="flex flex-1" phx-click="send" phx-value-command="sit on <%= @character_id %>" phx-target="<%= @myself %>"><button>sit</button></div>
+    <% end %>
+  </div>
   <% end %>
   <%= if @item.container_open do %>
     <%= for child <- @child_index[@item.id] || [] do %>

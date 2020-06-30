@@ -42,11 +42,12 @@ defmodule MudWeb.ClientData do
       field(:characters, map(), default: %{})
 
       field(:things_of_interest, map(), default: %{})
+      field(:things_of_interest_child_index, map(), default: %{})
+      field(:things_of_interest_item_index, map(), default: %{})
 
       field(:items, map(), default: %{})
-
-      # Map where the key is an item id and the value is a list of items which are children of that item
       field(:item_child_index, map(), default: %{})
+      field(:item_index, map(), default: %{})
     end
   end
 end

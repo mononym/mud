@@ -24,38 +24,11 @@ defmodule MudWeb.Live.Component.AreaOverview do
 
   def preload(assigns_list) do
     Enum.map(assigns_list, fn assigns ->
-      if Map.has_key?(assigns, :id) do
-        assigns
-        |> Map.put(:area_data, init_area_data(assigns.id, assigns.character_id))
+      if Map.has_key?(assigns, :area_id) do
+        init_area_data(assigns)
         |> Map.put(:loading, false)
       else
-        if Map.has_key?(assigns, :event) do
-          data = assigns.area_data
-          event = assigns.event
-          things = event.things
-
-          updated_data =
-            case event.action do
-              :add ->
-                Enum.reduce(things, data, fn thing, data ->
-                  add(data, thing)
-                end)
-
-              :remove ->
-                Enum.reduce(things, data, fn thing, data ->
-                  remove(data, thing)
-                end)
-
-              :update ->
-                Enum.reduce(things, data, fn thing, data ->
-                  modify(data, thing)
-                end)
-            end
-
-          Map.put(assigns, :area_data, updated_data)
-        else
-          assigns
-        end
+        assigns
       end
     end)
   end
@@ -107,11 +80,41 @@ defmodule MudWeb.Live.Component.AreaOverview do
   defp remove(data, item = %Item{}) do
     items = Map.delete(data.items, item.id)
 
+    IO.inspect(data, label: "remove")
+    IO.inspect(item, label: "remove")
+
     Map.put(data, :items, items)
     |> generate_child_index()
   end
 
   def render(assigns) do
+    assigns =
+      cond do
+        not is_nil(assigns.event) ->
+          event = assigns.event
+          things = event.things
+
+          case event.action do
+            :add ->
+              Enum.reduce(things, assigns, fn thing, assigns ->
+                add(assigns, thing)
+              end)
+
+            :remove ->
+              Enum.reduce(things, assigns, fn thing, assigns ->
+                remove(assigns, thing)
+              end)
+
+            :update ->
+              Enum.reduce(things, assigns, fn thing, assigns ->
+                modify(assigns, thing)
+              end)
+          end
+
+        true ->
+          assigns
+      end
+
     Phoenix.View.render(MudWeb.MudClientView, "area_overview.html", assigns)
   end
 
@@ -160,7 +163,10 @@ defmodule MudWeb.Live.Component.AreaOverview do
      )}
   end
 
-  defp init_area_data(area_id, character_id) do
+  defp init_area_data(assigns) do
+    area_id = assigns.area_id
+    character_id = assigns.id
+
     {:ok, returns} =
       Multi.new()
       |> Area.get_area!(:area, area_id)
@@ -170,33 +176,40 @@ defmodule MudWeb.Live.Component.AreaOverview do
       |> Link.list_obvious_exits_in_area(:exits, area_id)
       |> Mud.Repo.transaction()
 
-    %AreaOverview{}
+    assigns
     |> populate_area(returns[:area])
     |> populate_others(returns[:others])
-    |> populate_toi(returns[:scenery])
+    |> populate_toi(Item.list_all_recursive(returns[:scenery]))
     |> populate_items(returns[:items])
     |> populate_exits(returns[:exits])
-    |> generate_child_index()
   end
 
-  defp populate_area(overview, area) do
-    %{overview | area: area}
+  defp populate_area(assigns, area) do
+    Map.put(assigns, :area, area)
   end
 
-  defp populate_others(overview, characters) do
-    %{overview | characters: to_index(characters)}
+  defp populate_others(assigns, characters) do
+    Map.put(assigns, :characters, to_index(characters))
   end
 
-  defp populate_toi(overview, toi) do
-    %{overview | things_of_interest: to_index(toi)}
+  defp populate_toi(assigns, items) do
+    indexed_items = to_index(items)
+
+    assigns
+    |> Map.put(:things_of_interest, indexed_items)
+    |> Map.put(:things_of_interest_child_index, generate_child_index(items))
   end
 
-  defp populate_items(overview, items) do
-    %{overview | items: to_index(items)}
+  defp populate_items(assigns, items) do
+    indexed_items = to_index(items)
+
+    assigns
+    |> Map.put(:items, indexed_items)
+    |> Map.put(:item_child_index, generate_child_index(items))
   end
 
-  defp populate_exits(overview, exits) do
-    %{overview | exits: to_index(exits)}
+  defp populate_exits(assigns, exits) do
+    Map.put(assigns, :exits, to_index(exits))
   end
 
   defp to_index(things) do
@@ -205,15 +218,10 @@ defmodule MudWeb.Live.Component.AreaOverview do
     end)
   end
 
-  defp generate_child_index(area_overview) do
-    all_items = Map.values(area_overview.items)
-
-    item_child_index =
-      Enum.reduce(all_items, %{}, fn item, map ->
-        value = [item.id | Map.get(map, item.container_id, [])]
-        Map.put(map, item.container_id, value)
-      end)
-
-    Map.put(area_overview, :item_child_index, item_child_index)
+  defp generate_child_index(all_items) do
+    Enum.reduce(all_items, %{}, fn item, map ->
+      value = [item.id | Map.get(map, item.container_id, [])]
+      Map.put(map, item.container_id, value)
+    end)
   end
 end

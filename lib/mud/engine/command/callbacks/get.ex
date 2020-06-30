@@ -120,8 +120,6 @@ defmodule Mud.Engine.Command.Get do
         which_target
       )
 
-    Logger.debug(inspect(result))
-
     case result do
       {:ok, [thing]} ->
         if thing.match.is_holdable do
@@ -450,10 +448,18 @@ defmodule Mud.Engine.Command.Get do
 
     context =
       if private do
-        context
-      else
         ExecutionContext.append_event(
           context,
+          context.character_id,
+          UpdateInventory.new(:update, thing.match)
+        )
+      else
+        context
+        |> ExecutionContext.append_event(
+          context.character_id,
+          UpdateInventory.new(:add, thing.match)
+        )
+        |> ExecutionContext.append_event(
           [context.character_id | others],
           UpdateArea.new(:remove, thing.match)
         )
@@ -469,10 +475,6 @@ defmodule Mud.Engine.Command.Get do
       context.character.id,
       self_msg,
       "info"
-    )
-    |> ExecutionContext.append_event(
-      context.character_id,
-      UpdateInventory.new(:add, thing.match)
     )
     |> ExecutionContext.set_success()
   end

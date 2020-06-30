@@ -21,7 +21,7 @@
     </div>
   </div>
   <div class="w-3/5 flex flex-col">
-    <div id="story" phx-hook="Story" class="flex flex-col min-w-full p-2 font-extrabold font-story border-4 border-r-0 flex-1 overflow-y-auto max-h-screen">
+    <div id="story" phx-hook="Story" class="flex flex-col min-w-full p-2 font-extrabold font-story border-4 border-r-0 flex-1 overflow-y-hidden max-h-screen">
       <div id="story_wrapper" phx-hook="MessageWrapper" phx-update="append">
         <%= for message <- @messages do %>
           <%= live_component @socket, MudWeb.Live.Component.StoryMessage, message: message %>
@@ -35,7 +35,7 @@
   </div>
   <div class="w-1/5 flex flex-col">
     <div class="flex flex-1 border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
+      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.id, area_id: @character.area_id) %>
     </div>
     <div class="flex flex-1 border-4">
       <ul class="flex flex-1">

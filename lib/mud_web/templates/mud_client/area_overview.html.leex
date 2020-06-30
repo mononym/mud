@@ -1,4 +1,4 @@
-<div phx-hook="AreaOverviewWindow" class="min-w-full min-h-full flex flex-col bg-gray-600">
+<div class="min-w-full min-h-full flex flex-col bg-gray-600 p-2">
   <%= if @loading do %>
     <div class="min-w-full flex flex-1 justify-center items-center">
       <i class="far fa-9x fa-eye fa-spin"></i>
@@ -6,50 +6,56 @@
   <% else %>
     <div class="flex flex-col">
       <div class="flex-shrink cursor-pointer" phx-click="toggle_description" phx-target="<%= @myself %>">
-      <p>[<%= @area_data.area.name %>]</p>
+      <p>[<%= @area.name %>]</p>
       </div>
       <%= if @description_expanded do %>
       <div class="flex flex-col flex-shrink">
-        <p><%= @area_data.area.description %></p>
+        <p><%= @area.description %></p>
       </div>
       <% end %>
-      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_exits" phx-target="<%= @myself %>">
+      <div class="flex-shrink cursor-pointer select-none text-lg" phx-click="toggle_exits" phx-target="<%= @myself %>">
         <%= if @exits_expanded do %>
         <i class="fas fa-minus-circle"></i>
         <% else %>
         <i class="fas fa-plus-circle"></i>
         <% end %>
-         Exits
+         Exits (<%= Enum.count(@exits) %>)
       </div>
       <%= if @exits_expanded do %>
       <div class="flex flex-col flex-shrink">
-        <%= for ext <- Map.values(@area_data.exits) do %>
-          <%= live_component @socket, MudWeb.Live.Component.AreaExit, id: ext.id, exit: ext, character_id: @character_id %>
+        <%= for ext <- Map.values(@exits) do %>
+          <%= live_component @socket, MudWeb.Live.Component.AreaExit, id: ext.id, exit: ext, character_id: @id %>
         <% end %>
       </div>
       <% end %>
-      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_characters" phx-target="<%= @myself %>">
-        <i class="fas fa-<%= if @characters_expanded do "minus" else "plus" end %>-circle"></i> Characters
+      <div class="flex-shrink cursor-pointer select-none text-lg" phx-click="toggle_characters" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @characters_expanded do "minus" else "plus" end %>-circle"></i> Characters  (<%= Enum.count(@characters) %>)
       </div>
       <%= if @characters_expanded do %>
       <div class="flex flex-col flex-shrink">
-        <%= for char <- Map.values(@area_data.characters) do %>
+        <%= for char <- Map.values(@characters) do %>
           <%= live_component @socket, MudWeb.Live.Component.AreaCharacter, id: char.id, character: char %>
         <% end %>
       </div>
       <% end %>
-      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_toi" phx-target="<%= @myself %>">
-        <i class="fas fa-<%= if @things_expanded do "minus" else "plus" end %>-circle"></i> Things of Interest
+      <div class="flex-shrink cursor-pointer select-none text-lg" phx-click="toggle_toi" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @things_expanded do "minus" else "plus" end %>-circle"></i> Things of Interest (<%= Enum.count(@things_of_interest) %>)
       </div>
       <%= if @things_expanded do %>
       <div class="flex flex-col flex-shrink">
+        <%= for item <- Map.values(@things_of_interest) do %>
+          <%= live_component @socket, MudWeb.Live.Component.AreaItem, id: item.id, item: item, character_id: @character_id, item_index: @things_of_interest, child_index: @things_of_interest_child_index %>
+        <% end %>
       </div>
       <% end %>
-      <div class="flex-shrink cursor-pointer select-none" phx-click="toggle_ground" phx-target="<%= @myself %>">
-        <i class="fas fa-<%= if @items_expanded do "minus" else "plus" end %>-circle"></i> On Ground
+      <div class="flex-shrink cursor-pointer select-none text-lg" phx-click="toggle_ground" phx-target="<%= @myself %>">
+        <i class="fas fa-<%= if @items_expanded do "minus" else "plus" end %>-circle"></i> On Ground (<%= Enum.count(@items) %>)
       </div>
       <%= if @items_expanded do %>
       <div class="flex flex-col flex-shrink">
+        <%= for item <- Map.values(@items) do %>
+          <%= live_component @socket, MudWeb.Live.Component.AreaItem, id: item.id, item: item, character_id: @id, item_index: @items, child_index: @item_child_index %>
+        <% end %>
       </div>
       <% end %>
     </div>

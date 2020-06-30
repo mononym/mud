@@ -10,6 +10,8 @@ import { Socket } from "phoenix"
 
 import LiveSocket from "phoenix_live_view"
 
+let socket = new Socket("/socket")
+
 let Hooks = {}
 
 Hooks.Input = {
@@ -59,16 +61,48 @@ let storyWindowScrolledToBottom = true;
 let storywindow;
 let scrolltobottom;
 
+Hooks.Tooltip = {
+    mounted() {
+        let instance =
+            tippy(this.el, {
+                content: this.el.dataset.tooltip,
+                placement: this.el.dataset.tooltip_placement
+            })
+
+        this.el.dataset.instance = instance
+    },
+
+    before_destroy() {
+        this.el.dataset.instance.destroy()
+    }
+}
+
 Hooks.Story = {
     mounted() {
         storywindow = this.el
+
+        // let channel = socket.channel("character:" + document.querySelector('meta[name="character_id"]').content, {})
+
+        // channel.on("output:story", payload => {
+        //     let message = document.createRange().createContextualFragment(payload.body)
+        //     storywindow.appendChild(message)
+        //     if (storyWindowScrolledToBottom) {
+        //         scrolltobottom.scrollIntoView(false)
+        //     }
+        // })
+        // console.log(channel)
+        // channel.join()
+        //     .receive("ok", resp => { console.log("Joined successfully", resp) })
+        //     .receive("error", resp => { console.log("Unable to join", resp) })
+        // console.log(channel)
     }
 }
 
 Hooks.MessageWrapper = {
     updated() {
         if (storyWindowScrolledToBottom) {
-            storywindow.scrollTop = storywindow.scrollHeight;
+            // storywindow.scrollTop = storywindow.scrollHeight;
+            scrolltobottom.scrollIntoView(false)
         }
     }
 }
@@ -102,7 +136,7 @@ let liveSocket = new LiveSocket("/live", Socket, {
 });
 liveSocket.connect()
 
-let socket = new Socket("/socket", { params: { token: window.userToken } })
+// let socket = new Socket("/socket", { params: { token: window.userToken } })
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
@@ -149,9 +183,18 @@ let socket = new Socket("/socket", { params: { token: window.userToken } })
 // socket.connect()
 
 // Now that you are connected, you can join channels with a topic:
-// let channel = socket.channel("topic:subtopic", {})
-// channel.join()
-//   .receive("ok", resp => { console.log("Joined successfully", resp) })
-//   .receive("error", resp => { console.log("Unable to join", resp) })
+// let channel = socket.channel("character:" + document.querySelector('meta[name="character_id"]').content, {})
 
+// channel.on("output:story", payload => {
+//     let message = document.createRange().createContextualFragment(payload.body)
+//     storywindow.appendChild(message)
+//     if (storyWindowScrolledToBottom) {
+//         scrolltobottom.scrollIntoView(false)
+//     }
+// })
+// console.log(channel)
+// channel.join()
+//     .receive("ok", resp => { console.log("Joined successfully", resp) })
+//     .receive("error", resp => { console.log("Unable to join", resp) })
+// console.log(channel)
 export default socket
