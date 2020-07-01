@@ -4,7 +4,6 @@ defmodule MudWeb.CharacterChannel do
   require Logger
 
   def join("character:" <> character_id, _message, socket) do
-    IO.inspect("JOININGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
     Mud.Engine.Session.subscribe(socket.assigns.character_id)
 
     {:ok, assign(socket, :character_id, character_id)}

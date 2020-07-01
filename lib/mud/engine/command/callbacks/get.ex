@@ -42,6 +42,7 @@ defmodule Mud.Engine.Command.Get do
 
   @impl true
   def execute(context) do
+    Logger.debug(inspect(context))
     # Make sure command was given with additional input, if not give help docs
     if context.command.ast.thing != nil do
       character = Repo.preload(context.character, :held_items)
@@ -64,7 +65,12 @@ defmodule Mud.Engine.Command.Get do
 
           # get thing on ground, fallback to worn container
           %TAP{place: nil, thing: %Thing{personal: false}} ->
-            get_item_from_ground_or_worn_container(context)
+            if Util.is_uuid4(context.command.ast.thing.input) do
+              Logger.debug("uuid")
+              get_item_by_uuid(context)
+            else
+              get_item_from_ground_or_worn_container(context)
+            end
 
           # get thing from container on ground, fallback to worn containers
           %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
@@ -85,6 +91,43 @@ defmodule Mud.Engine.Command.Get do
       )
       |> ExecutionContext.set_success()
     end
+  end
+
+  # primarily triggered by actions on the client
+  defp get_item_by_uuid(context) do
+    ast = context.command.ast
+    item = Item.get!(ast.thing.input)
+
+    # if the item selected is in the area/on the ground
+    if not is_nil(item.area_id) do
+      # make sure it's in the same area as the character
+      if item.area_id == context.character.area_id do
+        [match] = Search.things_to_match([item])
+
+        do_get_item_from_ground(context, match)
+      else
+        ExecutionContext.append_output(
+          context,
+          context.character.id,
+          "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
+          "error"
+        )
+        |> ExecutionContext.set_success()
+      end
+
+      # the item is assumed to be inside a container
+    else
+      items = Item.list_all_recursive_parents(ast.thing.input)
+      # check all parents to find an item that is not inside a container
+      # check that parent to see if it is either in the area with the character or on the character
+    end
+
+    # IO.inspect(items)
+    # get the item
+    # item must be
+    #  * in area
+    #  * in container on character
+    #  * in container in area
   end
 
   defp get_item_in_area_container_or_worn_container(context) do
@@ -122,50 +165,7 @@ defmodule Mud.Engine.Command.Get do
 
     case result do
       {:ok, [thing]} ->
-        if thing.match.is_holdable do
-          hand = which_hand(context.character)
-
-          Item.update!(thing.match, %{
-            area_id: nil,
-            holdable_held_by_id: context.character.id,
-            holdable_is_held: true,
-            holdable_hand: hand
-          })
-
-          others =
-            Character.list_others_active_in_areas(context.character.id, context.character.area_id)
-
-          context
-          |> ExecutionContext.append_output(
-            others,
-            "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
-              thing.short_description
-            }{{/item}} from the ground.",
-            "info"
-          )
-          |> ExecutionContext.append_output(
-            context.character.id,
-            "You pick up {{item}}#{thing.short_description}{{/item}}.",
-            "info"
-          )
-          |> ExecutionContext.append_event(
-            context.character_id,
-            UpdateInventory.new(:add, thing.match)
-          )
-          |> ExecutionContext.append_event(
-            [context.character_id | others],
-            UpdateArea.new(:remove, thing.match)
-          )
-          |> ExecutionContext.set_success()
-        else
-          ExecutionContext.append_output(
-            context,
-            context.character.id,
-            "You cannot pick up {{item}}#{thing.short_description}{{/item}}.",
-            "error"
-          )
-          |> ExecutionContext.set_success()
-        end
+        do_get_item_from_ground(context, thing)
 
       {:ok, _things} ->
         ExecutionContext.append_output(
@@ -178,6 +178,53 @@ defmodule Mud.Engine.Command.Get do
 
       error ->
         error
+    end
+  end
+
+  defp do_get_item_from_ground(context, thing) do
+    if thing.match.is_holdable do
+      hand = which_hand(context.character)
+
+      Item.update!(thing.match, %{
+        area_id: nil,
+        holdable_held_by_id: context.character.id,
+        holdable_is_held: true,
+        holdable_hand: hand
+      })
+
+      others =
+        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+
+      context
+      |> ExecutionContext.append_output(
+        others,
+        "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
+          thing.short_description
+        }{{/item}} from the ground.",
+        "info"
+      )
+      |> ExecutionContext.append_output(
+        context.character.id,
+        "You pick up {{item}}#{thing.short_description}{{/item}}.",
+        "info"
+      )
+      |> ExecutionContext.append_event(
+        context.character_id,
+        UpdateInventory.new(:add, thing.match)
+      )
+      |> ExecutionContext.append_event(
+        [context.character_id | others],
+        UpdateArea.new(:remove, thing.match)
+      )
+      |> ExecutionContext.set_success()
+    else
+      ExecutionContext.append_output(
+        context,
+        context.character.id,
+        "You cannot pick up {{item}}#{thing.short_description}{{/item}}.",
+        "error"
+      )
+      |> ExecutionContext.set_success()
     end
   end
 

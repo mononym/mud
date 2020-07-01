@@ -1,25 +1,25 @@
 <div class="pl-4 min-w-full flex flex-col flex-shrink text-lg">
-  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex-shrink cursor-pointer select-none">
+  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
     <%= if @item.container_closeable do %>
-      <i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;
+      <div class="flex-shrink"><i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
     <% end %>
-    <i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %>
+    <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %></div>
+    <div class="flex flex-1 pl-4">
+    <%= if @item.is_furniture and not is_nil(@item.area_id) do %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="send" phx-value-command="sit <%= @item.id %>" phx-target="<%= @myself %>">
+        sit
+      </button>
+    <% end %>
+    <%= if @item.is_holdable and not is_nil(@item.area_id) do %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="send" phx-value-command="get <%= @item.id %>" phx-target="<%= @myself %>">
+        get
+      </button>
+    <% end %>
+    </div>
   </div>
   <%= if @expanded do %>
   <div class="flex-shrink pl-8">
     <%= @item.long_description %>
   </div>
-  <div class="flex flex-shrink pl-8">
-    <%= if @item.is_furniture do %>
-      <div class="flex flex-1" phx-click="send" phx-value-command="sit on <%= @character_id %>" phx-target="<%= @myself %>"><button>sit</button></div>
-    <% end %>
-  </div>
-  <% end %>
-  <%= if @item.container_open do %>
-    <%= for child <- @child_index[@item.id] || [] do %>
-    <div class="pl-4">
-      <%= live_component(@socket, MudWeb.Live.Component.InventoryItem, id: child, item_index: @item_index, child_index: @child_index) %>
-    </div>
-    <% end %>
   <% end %>
 </div>

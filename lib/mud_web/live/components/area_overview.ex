@@ -2,7 +2,6 @@ defmodule MudWeb.Live.Component.AreaOverview do
   use Phoenix.LiveComponent
 
   alias Ecto.Multi
-  alias MudWeb.ClientData.AreaOverview
   alias Mud.Engine.{Area, Character, Item, Link}
   require Logger
 
@@ -16,105 +15,136 @@ defmodule MudWeb.Live.Component.AreaOverview do
         things_expanded: true,
         items_expanded: true,
         loading: true,
+        initialized: false,
         event: nil
       )
 
     {:ok, socket, temporary_assigns: [event: nil]}
   end
 
-  def preload(assigns_list) do
-    Enum.map(assigns_list, fn assigns ->
-      if Map.has_key?(assigns, :area_id) do
-        init_area_data(assigns)
-        |> Map.put(:loading, false)
+  defp add(socket, character = %Character{}) do
+    chars = Map.put(socket.assigns.characters, character.id, character)
+    assign(socket, :characters, chars)
+  end
+
+  defp add(socket, link = %Link{}) do
+    links = Map.put(socket.assigns.exits, link.id, link)
+    assign(socket, :exits, links)
+  end
+
+  defp add(socket, item = %Item{}) do
+    if item.is_furniture do
+      items = Map.put(socket.assigns.things_of_interest, item.id, item)
+
+      socket
+      |> assign(:things_of_interest, items)
+      |> assign(:things_of_interest_child_index, generate_child_index(Map.values(items)))
+    else
+      items =
+        if item.is_container do
+          new_items = Item.list_all_recursive(item)
+          Enum.reduce(new_items, socket.assigns.items, &Map.put(&2, &1.id, &1))
+        else
+          Map.put(socket.assigns.items, item.id, item)
+        end
+
+      socket
+      |> assign(:items, items)
+      |> assign(:item_child_index, generate_child_index(Map.values(items)))
+    end
+  end
+
+  defp modify(socket, character = %Character{}) do
+    chars = Map.put(socket.assigns.characters, character.id, character)
+    assign(socket, :characters, chars)
+  end
+
+  defp modify(socket, link = %Link{}) do
+    links = Map.put(socket.assigns.exits, link.id, link)
+    assign(socket, :exits, links)
+  end
+
+  defp modify(socket, item = %Item{}) do
+    add(socket, item)
+  end
+
+  defp remove(socket, character = %Character{}) do
+    chars = Map.delete(socket.assigns.characters, character.id)
+    assign(socket, :characters, chars)
+  end
+
+  defp remove(socket, link = %Link{}) do
+    links = Map.delete(socket.assigns.exits, link.id)
+    assign(socket, :exits, links)
+  end
+
+  defp remove(socket, item = %Item{}) do
+    if item.is_furniture do
+      items = Map.delete(socket.assigns.things_of_interest, item.id)
+
+      socket
+      |> assign(:things_of_interest, items)
+      |> assign(:things_of_interest_child_index, generate_child_index(Map.values(items)))
+    else
+      # items = Map.delete(socket.assigns.items, item.id)
+      items = prune(socket.assigns.items, item.id, socket.assigns.item_child_index)
+
+      socket
+      |> assign(:items, items)
+      |> assign(:item_child_index, generate_child_index(Map.values(items)))
+    end
+  end
+
+  defp prune(items, item_id, child_index) do
+    items =
+      if Map.has_key?(items, item_id) do
+        Map.delete(items, item_id)
       else
-        assigns
+        items
       end
-    end)
+
+    Enum.reduce(child_index[item_id] || [], items, &prune(&2, &1, child_index))
   end
 
-  defp add(data, character = %Character{}) do
-    chars = Map.put(data.characters, character.id, character)
-    Map.put(data, :characters, chars)
-  end
+  def update(assigns, socket) do
+    socket = assign(socket, Enum.to_list(assigns))
 
-  defp add(data, link = %Link{}) do
-    links = Map.put(data.exits, link.id, link)
-    Map.put(data, :exits, links)
-  end
-
-  defp add(data, item = %Item{}) do
-    items = Map.put(data.items, item.id, item)
-
-    Map.put(data, :items, items)
-    |> generate_child_index()
-  end
-
-  defp modify(data, character = %Character{}) do
-    chars = Map.put(data.characters, character.id, character)
-    Map.put(data, :characters, chars)
-  end
-
-  defp modify(data, link = %Link{}) do
-    links = Map.put(data.exits, link.id, link)
-    Map.put(data, :exits, links)
-  end
-
-  defp modify(data, item = %Item{}) do
-    items = Map.put(data.items, item.id, item)
-
-    Map.put(data, :items, items)
-    |> generate_child_index()
-  end
-
-  defp remove(data, character = %Character{}) do
-    chars = Map.delete(data.characters, character.id)
-    Map.put(data, :characters, chars)
-  end
-
-  defp remove(data, link = %Link{}) do
-    links = Map.delete(data.exits, link.id)
-    Map.put(data, :exits, links)
-  end
-
-  defp remove(data, item = %Item{}) do
-    items = Map.delete(data.items, item.id)
-
-    IO.inspect(data, label: "remove")
-    IO.inspect(item, label: "remove")
-
-    Map.put(data, :items, items)
-    |> generate_child_index()
-  end
-
-  def render(assigns) do
-    assigns =
+    socket =
       cond do
-        not is_nil(assigns.event) ->
-          event = assigns.event
+        not socket.assigns.initialized ->
+          init_area_data(socket)
+          |> assign(:initialized, true)
+          |> assign(:loading, false)
+
+        not is_nil(socket.assigns.event) ->
+          event = socket.assigns.event
           things = event.things
 
           case event.action do
             :add ->
-              Enum.reduce(things, assigns, fn thing, assigns ->
-                add(assigns, thing)
+              Enum.reduce(things, socket, fn thing, socket ->
+                add(socket, thing)
               end)
 
             :remove ->
-              Enum.reduce(things, assigns, fn thing, assigns ->
-                remove(assigns, thing)
+              Enum.reduce(things, socket, fn thing, socket ->
+                remove(socket, thing)
               end)
 
             :update ->
-              Enum.reduce(things, assigns, fn thing, assigns ->
-                modify(assigns, thing)
+              Enum.reduce(things, socket, fn thing, socket ->
+                modify(socket, thing)
               end)
           end
 
         true ->
-          assigns
+          socket
       end
 
+    {:ok, socket}
+  end
+
+  def render(assigns) do
     Phoenix.View.render(MudWeb.MudClientView, "area_overview.html", assigns)
   end
 
@@ -163,9 +193,9 @@ defmodule MudWeb.Live.Component.AreaOverview do
      )}
   end
 
-  defp init_area_data(assigns) do
-    area_id = assigns.area_id
-    character_id = assigns.id
+  defp init_area_data(socket) do
+    area_id = socket.assigns.id
+    character_id = socket.assigns.character_id
 
     {:ok, returns} =
       Multi.new()
@@ -176,40 +206,40 @@ defmodule MudWeb.Live.Component.AreaOverview do
       |> Link.list_obvious_exits_in_area(:exits, area_id)
       |> Mud.Repo.transaction()
 
-    assigns
+    socket
     |> populate_area(returns[:area])
     |> populate_others(returns[:others])
     |> populate_toi(Item.list_all_recursive(returns[:scenery]))
-    |> populate_items(returns[:items])
+    |> populate_items(Item.list_all_recursive(returns[:items]))
     |> populate_exits(returns[:exits])
   end
 
-  defp populate_area(assigns, area) do
-    Map.put(assigns, :area, area)
+  defp populate_area(socket, area) do
+    assign(socket, :area, area)
   end
 
-  defp populate_others(assigns, characters) do
-    Map.put(assigns, :characters, to_index(characters))
+  defp populate_others(socket, characters) do
+    assign(socket, :characters, to_index(characters))
   end
 
-  defp populate_toi(assigns, items) do
+  defp populate_toi(socket, items) do
     indexed_items = to_index(items)
 
-    assigns
-    |> Map.put(:things_of_interest, indexed_items)
-    |> Map.put(:things_of_interest_child_index, generate_child_index(items))
+    socket
+    |> assign(:things_of_interest, indexed_items)
+    |> assign(:things_of_interest_child_index, generate_child_index(items))
   end
 
-  defp populate_items(assigns, items) do
+  defp populate_items(socket, items) do
     indexed_items = to_index(items)
 
-    assigns
-    |> Map.put(:items, indexed_items)
-    |> Map.put(:item_child_index, generate_child_index(items))
+    socket
+    |> assign(:items, indexed_items)
+    |> assign(:item_child_index, generate_child_index(items))
   end
 
-  defp populate_exits(assigns, exits) do
-    Map.put(assigns, :exits, to_index(exits))
+  defp populate_exits(socket, exits) do
+    assign(socket, :exits, to_index(exits))
   end
 
   defp to_index(things) do

@@ -19,7 +19,6 @@ defmodule MudWeb.MudClientLive do
   end
 
   def mount(_params, session, socket) do
-    IO.inspect("mount")
 
     Mud.Engine.Session.subscribe(session["character_id"])
 
@@ -88,7 +87,7 @@ defmodule MudWeb.MudClientLive do
   def handle_cast(%Event{event: event = %UpdateArea{}}, socket) do
     IO.puts("HANDLE BROADCAST FOR UPDATE AREA")
 
-    send_update(AreaOverview, id: socket.assigns.character.id, event: event)
+    send_update(AreaOverview, id: socket.assigns.character.area_id, event: event)
 
     {:noreply, socket}
   end

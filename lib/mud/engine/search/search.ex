@@ -173,7 +173,7 @@ defmodule Mud.Engine.Search do
     end
   end
 
-  defp things_to_match(links = [%Link{} | _]) do
+  def things_to_match(links = [%Link{} | _]) do
     Enum.map(links, fn link ->
       %Match{
         match_string: String.downcase(link.short_description),
@@ -184,7 +184,7 @@ defmodule Mud.Engine.Search do
     end)
   end
 
-  defp things_to_match(characters = [%Character{} | _]) do
+  def things_to_match(characters = [%Character{} | _]) do
     Enum.map(characters, fn character ->
       %Match{
         match_string: String.downcase(character.name),
@@ -195,7 +195,7 @@ defmodule Mud.Engine.Search do
     end)
   end
 
-  defp things_to_match(items = [%Item{} | _]) do
+  def things_to_match(items = [%Item{} | _]) do
     Enum.map(items, fn item ->
       %Match{
         match_string: String.downcase(item.short_description),
@@ -206,5 +206,5 @@ defmodule Mud.Engine.Search do
     end)
   end
 
-  defp things_to_match([]), do: []
+  def things_to_match([]), do: []
 end

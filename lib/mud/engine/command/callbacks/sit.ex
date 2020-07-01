@@ -15,107 +15,80 @@ defmodule Mud.Engine.Command.Sit do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.{Character}
+  alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.Util
   alias Mud.Engine.Search
   alias Mud.Engine.Message
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
 
   require Logger
 
-  import Mud.Engine.Util
-
-  @impl true
-  def continue(%ExecutionContext{} = context) do
-    make_character_sit(context, context.input.match)
+  @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.OneThing.t()
+  def build_ast(ast_nodes) do
+    Mud.Engine.Command.AstUtil.build_one_thing_ast(ast_nodes)
   end
 
   @impl true
   def execute(%ExecutionContext{} = context) do
     ast = context.command.ast
 
-    if ast[:target] != nil do
-      which_target = min(0, ast[:number][:input] || 0)
-
-      sit_on_target(
-        context,
-        ast[:target][:input],
-        which_target
-      )
-    else
+    if is_nil(ast.thing) do
       make_character_sit(context)
+    else
+      sit_on_target(context)
     end
   end
 
-  def sit_on_target(context, input, which_target) do
-    matches =
-      Search.find_matches_in_area([:item], context.character.area_id, input)
+  def sit_on_target(context) do
+    ast = context.command.ast
 
-    num_exact_matches = length(matches.exact_matches)
-    num_partial_matches = length(matches.partial_matches)
+    if Util.is_uuid4(ast.thing.input) do
+      item = Item.get!(ast.thing.input)
 
-    # NOTE: The 'duplicate' logic here is intentional. DO NOT REFACTOR UNLESS YOU ARE SURE OF WHAT YOU ARE DOING!
-    #
-    # Desired behaviour is that if there are exact matches, they should be handled as if there were no partial matches.
-    cond do
-      # happy path with a single match with no index chosen
-      num_exact_matches == 1 and which_target == 0 ->
-        match = List.first(matches.exact_matches)
-
-        make_character_sit(context, match.match)
-
-      # happy path where there are matches, and chosen index is in range
-      num_exact_matches > 1 and which_target > 0 and which_target <= num_exact_matches ->
-        match = Enum.at(matches.exact_matches, which_target - 1)
-
-        make_character_sit(context, match.match)
-
-      # unhappy path where there are multiple matches
-      num_exact_matches > 1 and which_target == 0 ->
-        handle_multiple_matches(context, matches.exact_matches)
-
-      # happy path with a single match with no index chosen
-      num_partial_matches == 1 and which_target == 0 ->
-        match = List.first(matches.partial_matches)
-
-        make_character_sit(context, match.match)
-
-      # happy path where there are matches, and chosen index is in range
-      num_partial_matches > 1 and which_target > 0 and which_target <= num_partial_matches ->
-        match = Enum.at(matches.partial_matches, which_target - 1)
-
-        make_character_sit(context, match.match)
-
-      # unhappy path where there are multiple matches
-      num_partial_matches > 1 and which_target == 0 ->
-        handle_multiple_matches(context, matches.partial_matches)
-
-      # unhappy path where there are no matches at all
-      true ->
-        error_msg = "{{warning}}You want to sit on what?{{/warning}}"
-
-        ExecutionContext.append_message(
+      if item.area_id == context.character.area_id do
+        make_character_sit(context, item)
+      else
+        ExecutionContext.append_output(
           context,
-          Message.new_output(context.character.id, error_msg, "error")
+          context.character.id,
+          "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
+          "error"
         )
         |> ExecutionContext.set_success()
+      end
+    else
+      result =
+        Search.find_matches_in_area_v2(
+          [:item],
+          context.character.area_id,
+          ast.thing.input,
+          ast.thing.which
+        )
+
+      case result do
+        {:ok, [thing]} ->
+          make_character_sit(context, thing.match)
+
+        {:ok, _matches} ->
+          ExecutionContext.append_output(
+            context,
+            context.character.id,
+            "Multiple potential places to sit found. Please be more specific.",
+            "error"
+          )
+          |> ExecutionContext.set_success()
+
+        {:error, :no_match} ->
+          ExecutionContext.append_output(
+            context,
+            context.character.id,
+            "Could not find anywhere to sit.",
+            "error"
+          )
+          |> ExecutionContext.set_success()
+      end
     end
-  end
-
-  defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-    descriptions = Enum.map(matches, fn match -> match.short_description end)
-
-    error_msg = "{{warning}}Please choose where to sit.{{/warning}}"
-
-    multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
-  end
-
-  defp handle_multiple_matches(context, _matches) do
-    error_msg = "Found too many matches. Please be more specific."
-
-    ExecutionContext.append_message(
-      context,
-      Message.new_output(context.character.id, error_msg, "error")
-    )
-    |> ExecutionContext.set_success()
   end
 
   @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t() | nil) ::
@@ -142,7 +115,7 @@ defmodule Mud.Engine.Command.Sit do
           relative_item_id: nil
         }
 
-        Character.update(context.character, update)
+        {:ok, char} = Character.update(context.character, update)
 
         others =
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -161,6 +134,14 @@ defmodule Mud.Engine.Command.Sit do
             "You sit down.",
             "info"
           )
+        )
+        |> ExecutionContext.append_event(
+          others,
+          UpdateArea.new(:update, char)
+        )
+        |> ExecutionContext.append_event(
+          context.character.id,
+          UpdateCharacter.new(:update, char)
         )
         |> ExecutionContext.set_success()
 
@@ -191,6 +172,14 @@ defmodule Mud.Engine.Command.Sit do
             "You sit down on #{furniture_object.short_description}.",
             "info"
           )
+        )
+        |> ExecutionContext.append_event(
+          others,
+          UpdateArea.new(:update, char)
+        )
+        |> ExecutionContext.append_event(
+          context.character.id,
+          UpdateCharacter.new(:update, char)
         )
         |> ExecutionContext.set_success()
 

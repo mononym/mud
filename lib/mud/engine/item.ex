@@ -215,7 +215,7 @@ defmodule Mud.Engine.Item do
 
   def list_all_recursive(items) do
     Logger.debug(inspect(items))
-    ids = Enum.map(items, & &1.id)
+    ids = Enum.map(List.wrap(items), & &1.id)
 
     item_tree_initial_query =
       __MODULE__
@@ -225,6 +225,40 @@ defmodule Mud.Engine.Item do
     item_tree_recursion_query =
       __MODULE__
       |> join(:inner, [i], it in "item_tree", on: i.container_id == it.id)
+
+    item_tree_query =
+      item_tree_initial_query
+      |> union_all(^item_tree_recursion_query)
+
+    final_query =
+      {"item_tree", __MODULE__}
+      |> recursive_ctes(true)
+      |> with_cte("item_tree", as: ^item_tree_query)
+
+    Repo.all(final_query)
+  end
+
+  def list_all_recursive_parents(items) do
+    ids =
+      items
+      |> List.wrap()
+      |> Enum.map(
+        &if is_struct(&1) do
+          &1.id
+        else
+          &1
+        end
+      )
+
+    Logger.debug(inspect(ids))
+
+    item_tree_initial_query =
+      __MODULE__
+      |> where([i], i.id in ^ids)
+
+    item_tree_recursion_query =
+      __MODULE__
+      |> join(:inner, [i], it in "item_tree", on: i.id == it.container_id)
 
     item_tree_query =
       item_tree_initial_query

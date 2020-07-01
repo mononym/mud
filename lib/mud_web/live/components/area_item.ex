@@ -20,14 +20,14 @@ defmodule MudWeb.Live.Component.AreaItem do
   end
 
   def handle_event("send", %{"command" => command}, socket) do
-    %Mud.Engine.Message.Input{
-      id: UUID.uuid4(),
-      to: socket.assigns.character_id,
-      text: command,
-      type: :silent
-    }
-    |> Mud.Engine.Session.cast_message_or_event()
+
+    send_command(socket.assigns.character_id, command)
 
     {:noreply, socket}
+  end
+
+  defp send_command(character_id, text) do
+    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text, type: :silent}
+    |> Mud.Engine.Session.cast_message_or_event()
   end
 end

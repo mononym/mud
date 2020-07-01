@@ -137,7 +137,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           key: :number,
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           must_follow: [:my, :open],
           transformer: &string_to_int/1
         },
@@ -190,7 +190,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:get, :thing_personal],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :thing_which,
           transformer: &string_to_int/1
         },
@@ -217,7 +217,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place_personal, :place_where],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :place_which,
           transformer: &string_to_int/1
         },
@@ -250,7 +250,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:put, :thing_where, :thing_personal],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :thing_number,
           transformer: &string_to_int/1
         },
@@ -277,7 +277,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place_personal, :place_where],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :place_number,
           transformer: &string_to_int/1
         },
@@ -467,13 +467,13 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:sit],
           matches: ["on"],
-          key: :position,
+          key: :where,
           transformer: &Enum.join/1
         },
         %Part{
-          must_follow: [:position, :sit],
+          must_follow: [:where, :sit],
           matches: [~r/.*/],
-          key: :target,
+          key: :thing,
           transformer: &join_with_space_downcase/1
         }
       ]
@@ -605,7 +605,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:look, :thing_where, :thing_personal],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :thing_number,
           transformer: &string_to_int/1
         },
@@ -632,7 +632,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place_personal, :place_where],
-          matches: [~r/\d/],
+          matches: [~r/^\d$/],
           key: :place_number,
           transformer: &string_to_int/1
         },

@@ -64,7 +64,7 @@ defmodule Mud.Engine.Command.Move do
           link = Link.get!(ast.thing.input)
 
           if link.from_id == context.character.area_id do
-            attempt_move_link(context, Link.get!(ast.thing.input))
+            attempt_move_link(context, link)
           else
             ExecutionContext.append_output(
               context,

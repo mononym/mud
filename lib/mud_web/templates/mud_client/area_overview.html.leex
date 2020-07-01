@@ -24,7 +24,7 @@
       <%= if @exits_expanded do %>
       <div class="flex flex-col flex-shrink">
         <%= for ext <- Map.values(@exits) do %>
-          <%= live_component @socket, MudWeb.Live.Component.AreaExit, id: ext.id, exit: ext, character_id: @id %>
+          <%= live_component @socket, MudWeb.Live.Component.AreaExit, id: ext.id, exit: ext, character_id: @character_id %>
         <% end %>
       </div>
       <% end %>
@@ -49,12 +49,14 @@
       </div>
       <% end %>
       <div class="flex-shrink cursor-pointer select-none text-lg" phx-click="toggle_ground" phx-target="<%= @myself %>">
-        <i class="fas fa-<%= if @items_expanded do "minus" else "plus" end %>-circle"></i> On Ground (<%= Enum.count(@items) %>)
+        <i class="fas fa-<%= if @items_expanded do "minus" else "plus" end %>-circle"></i> On Ground (<%= Enum.count(Enum.filter(Map.values(@items), &(not is_nil(&1.area_id)))) %>)
       </div>
       <%= if @items_expanded do %>
       <div class="flex flex-col flex-shrink">
         <%= for item <- Map.values(@items) do %>
-          <%= live_component @socket, MudWeb.Live.Component.AreaItem, id: item.id, item: item, character_id: @id, item_index: @items, child_index: @item_child_index %>
+          <%= if not is_nil(item.area_id) do %>
+            <%= live_component @socket, MudWeb.Live.Component.AreaItem, id: item.id, item: item, character_id: @character_id, item_index: @items, child_index: @item_child_index %>
+          <% end %>
         <% end %>
       </div>
       <% end %>

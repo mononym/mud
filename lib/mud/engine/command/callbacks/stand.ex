@@ -13,8 +13,13 @@ defmodule Mud.Engine.Command.Stand do
   alias Mud.Engine.Message
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
 
   require Logger
+
+  def build_ast(ast_nodes) do
+    ast_nodes
+  end
 
   @impl true
   def execute(%ExecutionContext{} = context) do
@@ -25,7 +30,7 @@ defmodule Mud.Engine.Command.Stand do
         relative_item_id: nil
       }
 
-      Character.update(context.character, update)
+      {:ok, char} = Character.update(context.character, update)
 
       desc = from_description(context.character)
 
@@ -46,6 +51,14 @@ defmodule Mud.Engine.Command.Stand do
           "You rise to your feet" <> desc <> ".",
           "info"
         )
+      )
+      |> ExecutionContext.append_event(
+        others,
+        UpdateArea.new(:update, char)
+      )
+      |> ExecutionContext.append_event(
+        context.character.id,
+        UpdateCharacter.new(:update, char)
       )
       |> ExecutionContext.set_success()
     else

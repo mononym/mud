@@ -13,7 +13,8 @@ defmodule MudWeb.Live.Component.CharacterInventory do
         containers_expanded: true,
         held_expanded: true,
         loading: true,
-        event: nil
+        event: nil,
+        initialized: false
       )
 
     {:ok, socket, temporary_assigns: [event: nil]}
