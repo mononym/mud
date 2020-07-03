@@ -36,7 +36,6 @@ defmodule Mud.Engine.Command.Remove do
         Util.get_module_docs(__MODULE__),
         "error"
       )
-      |> ExecutionContext.set_success()
     else
       if Util.is_uuid4(ast.thing.input) do
         item = Item.get!(ast.thing.input)
@@ -62,7 +61,6 @@ defmodule Mud.Engine.Command.Remove do
         "Your hands are full. Empty at least one of them first.",
         "error"
       )
-      |> ExecutionContext.set_success()
     else
       ast = context.command.ast
       worn_items = Character.list_worn_items(context.character)
@@ -88,14 +86,13 @@ defmodule Mud.Engine.Command.Remove do
             "Could not find what you were attempting to remove.",
             "error"
           )
-          |> ExecutionContext.set_success()
       end
     end
   end
 
   defp remove_thing(context, item) do
     held_items = Character.list_held_items(context.character)
-    container_primary = item.container_primary
+    was_container_primary = not is_nil(item.container_primary)
 
     item =
       Item.update!(item, %{
@@ -107,7 +104,7 @@ defmodule Mud.Engine.Command.Remove do
         container_primary: false
       })
 
-    context = Util.maybe_update_primary_container(context, container_primary)
+    context = Util.maybe_update_primary_container(context, was_container_primary)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -133,6 +130,5 @@ defmodule Mud.Engine.Command.Remove do
       context.character_id,
       UpdateInventory.new(:update, item)
     )
-    |> ExecutionContext.set_success()
   end
 end

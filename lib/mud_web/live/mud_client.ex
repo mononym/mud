@@ -1,7 +1,7 @@
 defmodule MudWeb.MudClientLive do
   use Phoenix.LiveView
 
-  alias Mud.Engine.Character
+  alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Event
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
   alias MudWeb.Live.Component.{AreaOverview, CharacterInventory}
@@ -32,6 +32,29 @@ defmodule MudWeb.MudClientLive do
   def render(assigns) do
     Logger.debug(inspect(assigns))
     MudWeb.MudClientView.render("v1.html", assigns)
+  end
+
+  def handle_event("set_primary_container", %{"id" => item_id}, socket) do
+    case Item.get_primary_container(socket.assigns.character.id) do
+      nil ->
+        item = Item.update!(item_id, %{container_primary: true})
+
+        send_update(CharacterInventory,
+          id: socket.assigns.character.id,
+          event: UpdateInventory.new(:update, item)
+        )
+
+      primary_container ->
+        primary_container = Item.update!(primary_container.id, %{container_primary: false})
+        item = Item.update!(socket.assigns.id, %{container_primary: true})
+
+        send_update(CharacterInventory,
+          id: socket.assigns.character.id,
+          event: UpdateInventory.new(:update, [primary_container, item])
+        )
+    end
+
+    {:noreply, socket}
   end
 
   def handle_event("submit_input", %{"input" => %{"content" => ""}}, socket) do

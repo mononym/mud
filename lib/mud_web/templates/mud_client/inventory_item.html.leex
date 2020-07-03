@@ -2,7 +2,9 @@
   <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
     <%= if @item.container_closeable do %>
       <div class="flex-shrink"><i phx-click="send" phx-value-command="<%= if @item.container_open do "close" else "open" end %> <%= @item.id %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
-      <div class="flex-shrink"><i phx-click="send" phx-value-command=" <%= @item.id %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
+      <%= if not is_nil(@item.wearable_worn_by_id) do %>
+        <div class="flex-shrink"><i phx-click="set_primary_container" phx-value-id="<%= @item.id%>" class="<%= if @item.container_primary do "fas fa-star" else "far fa-star" end %>"></i>&nbsp;</div>
+      <% end %>
     <% end %>
     <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %></div>
     <div class="flex flex-1 pl-4">
@@ -10,29 +12,29 @@
       <%= if @item.holdable_is_held do %>
         <%= if @item.is_wearable do %>
           <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="wear <%= @item.id %>">
-            wear
+            Wear
           </button>
         <% end %>
-        <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="drop <%= @item.id %>">
-          drop
-        </button>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="stow <%= @item.id %>">
-          stow
+          Stow
+        </button>
+        <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="drop <%= @item.id %>">
+          Drop
         </button>
       <% end %>
       <%# worn item %>
       <%= if @item.wearable_is_worn do %>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="remove <%= @item.id %>">
-          remove
+          Remove
         </button>
       <% end %>
       <%# in container %>
       <%= if not is_nil(@item.container_id) do %>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="get <%= @item.id %>">
-          get
+          Get
         </button>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="discard <%= @item.id %>">
-          discard
+          Discard
         </button>
       <% end %>
     </div>

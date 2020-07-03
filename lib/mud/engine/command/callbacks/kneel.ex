@@ -46,8 +46,7 @@ defmodule Mud.Engine.Command.Kneel do
   end
 
   def kneel_on_target(context, input, which_target) do
-    matches =
-      Search.find_matches_in_area([:item], context.character.area_id, input)
+    matches = Search.find_matches_in_area([:item], context.character.area_id, input)
 
     num_exact_matches = length(matches.exact_matches)
     num_partial_matches = length(matches.partial_matches)
@@ -96,7 +95,6 @@ defmodule Mud.Engine.Command.Kneel do
           context,
           Message.new_output(context.character.id, error_msg, "error")
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -115,7 +113,6 @@ defmodule Mud.Engine.Command.Kneel do
       context,
       Message.new_output(context.character.id, error_msg, "error")
     )
-    |> ExecutionContext.set_success()
   end
 
   @spec make_character_kneel(
@@ -136,7 +133,6 @@ defmodule Mud.Engine.Command.Kneel do
             "error"
           )
         )
-        |> ExecutionContext.set_success()
 
       furniture_object == nil ->
         update = %{
@@ -165,7 +161,6 @@ defmodule Mud.Engine.Command.Kneel do
             "info"
           )
         )
-        |> ExecutionContext.set_success()
 
       furniture_object != nil and furniture_object.is_furniture and
           char.position != Character.kneeling() ->
@@ -195,7 +190,6 @@ defmodule Mud.Engine.Command.Kneel do
             "info"
           )
         )
-        |> ExecutionContext.set_success()
 
       true ->
         ExecutionContext.append_message(
@@ -206,7 +200,6 @@ defmodule Mud.Engine.Command.Kneel do
             "error"
           )
         )
-        |> ExecutionContext.set_success()
     end
   end
 end

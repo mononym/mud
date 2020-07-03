@@ -51,7 +51,6 @@ defmodule Mud.Engine.Command.Close do
           "The #{context.input.short_description} is no longer present.",
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -76,7 +75,6 @@ defmodule Mud.Engine.Command.Close do
 
       {:ok, matches} ->
         SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
-        |> ExecutionContext.set_success()
 
       {:error, _} ->
         character = Repo.preload(context.character, :worn_items)
@@ -88,7 +86,6 @@ defmodule Mud.Engine.Command.Close do
 
           {:ok, matches} ->
             SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
-            |> ExecutionContext.set_success()
         end
     end
   end
@@ -157,7 +154,6 @@ defmodule Mud.Engine.Command.Close do
           String.capitalize("#{match.short_description} is now closed."),
           "info"
         )
-        |> ExecutionContext.set_success()
 
       item.is_container and not item.container_open ->
         ExecutionContext.append_output(
@@ -166,7 +162,6 @@ defmodule Mud.Engine.Command.Close do
           String.capitalize("#{match.short_description} is already closed."),
           "error"
         )
-        |> ExecutionContext.set_success()
 
       not item.is_container ->
         ExecutionContext.append_output(
@@ -175,7 +170,6 @@ defmodule Mud.Engine.Command.Close do
           String.capitalize("#{match.short_description} cannot be closed."),
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 end

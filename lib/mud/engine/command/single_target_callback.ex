@@ -61,6 +61,5 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
       context,
       Message.new_output(context.character.id, too_many_matches_err, "error")
     )
-    |> ExecutionContext.set_success()
   end
 end

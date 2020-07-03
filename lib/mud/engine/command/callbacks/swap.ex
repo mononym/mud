@@ -65,7 +65,6 @@ defmodule Mud.Engine.Command.Swap do
           msg,
           "info"
         )
-        |> ExecutionContext.set_success()
 
       [item1, item2] ->
         other_msg =
@@ -96,7 +95,6 @@ defmodule Mud.Engine.Command.Swap do
           msg,
           "info"
         )
-        |> ExecutionContext.set_success()
 
       [] ->
         ExecutionContext.append_output(
@@ -105,7 +103,6 @@ defmodule Mud.Engine.Command.Swap do
           "You aren't holding anything.",
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 end

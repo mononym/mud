@@ -55,7 +55,6 @@ defmodule Mud.Engine.Command.Sit do
           "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
           "error"
         )
-        |> ExecutionContext.set_success()
       end
     else
       result =
@@ -77,7 +76,6 @@ defmodule Mud.Engine.Command.Sit do
             "Multiple potential places to sit found. Please be more specific.",
             "error"
           )
-          |> ExecutionContext.set_success()
 
         {:error, :no_match} ->
           ExecutionContext.append_output(
@@ -86,7 +84,6 @@ defmodule Mud.Engine.Command.Sit do
             "Could not find anywhere to sit.",
             "error"
           )
-          |> ExecutionContext.set_success()
       end
     end
   end
@@ -106,7 +103,6 @@ defmodule Mud.Engine.Command.Sit do
             "error"
           )
         )
-        |> ExecutionContext.set_success()
 
       furniture_object == nil ->
         update = %{
@@ -143,7 +139,6 @@ defmodule Mud.Engine.Command.Sit do
           context.character.id,
           UpdateCharacter.new(:update, char)
         )
-        |> ExecutionContext.set_success()
 
       furniture_object != nil and furniture_object.is_furniture and
           char.position != Character.sitting() ->
@@ -181,7 +176,6 @@ defmodule Mud.Engine.Command.Sit do
           context.character.id,
           UpdateCharacter.new(:update, char)
         )
-        |> ExecutionContext.set_success()
 
       true ->
         ExecutionContext.append_message(
@@ -192,7 +186,6 @@ defmodule Mud.Engine.Command.Sit do
             "error"
           )
         )
-        |> ExecutionContext.set_success()
     end
   end
 end

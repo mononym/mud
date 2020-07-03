@@ -73,7 +73,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_sit_command(),
       define_stand_command(),
-      define_store_command(),
+      define_stow_command(),
       define_swap_command(),
       define_unlock_command(),
       define_wear_command()
@@ -385,17 +385,23 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_store_command do
+  defp define_stow_command do
     %Definition{
-      callback_module: Command.Store,
+      callback_module: Command.Stow,
       parts: [
         %Part{
-          matches: ["store"],
+          matches: ["stow"],
           key: :put,
           transformer: &Enum.join/1
         },
         %Part{
           must_follow: [:put],
+          matches: ["my"],
+          key: :thing_personal,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:put, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
           transformer: &join_with_space_downcase/1

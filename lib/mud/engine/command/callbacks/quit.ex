@@ -37,6 +37,5 @@ defmodule Mud.Engine.Command.Quit do
         "info"
       )
     )
-    |> ExecutionContext.set_success()
   end
 end

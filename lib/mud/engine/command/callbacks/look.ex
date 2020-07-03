@@ -48,7 +48,6 @@ defmodule Mud.Engine.Command.Look do
 
         context
         |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
-        |> ExecutionContext.set_success()
 
       %TAP{place: nil, thing: %Thing{personal: false}} ->
         look_area_then_worn(context)
@@ -130,7 +129,6 @@ defmodule Mud.Engine.Command.Look do
             "Could not find what you were looking for.",
             "error"
           )
-          |> ExecutionContext.set_success()
 
         result ->
           result
@@ -160,7 +158,6 @@ defmodule Mud.Engine.Command.Look do
           "Could not find what you were looking for.",
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -224,7 +221,6 @@ defmodule Mud.Engine.Command.Look do
                   "info"
                 )
               )
-              |> ExecutionContext.set_success()
             else
               ExecutionContext.append_message(
                 context,
@@ -234,7 +230,6 @@ defmodule Mud.Engine.Command.Look do
                   "info"
                 )
               )
-              |> ExecutionContext.set_success()
             end
 
           thing.is_container and not thing.container_open ->
@@ -248,7 +243,6 @@ defmodule Mud.Engine.Command.Look do
                 "info"
               )
             )
-            |> ExecutionContext.set_success()
 
           not thing.is_container ->
             ExecutionContext.append_message(
@@ -259,7 +253,6 @@ defmodule Mud.Engine.Command.Look do
                 "info"
               )
             )
-            |> ExecutionContext.set_success()
         end
 
       true ->
@@ -271,7 +264,6 @@ defmodule Mud.Engine.Command.Look do
             "info"
           )
         )
-        |> ExecutionContext.set_success()
     end
   end
 

@@ -26,42 +26,6 @@ defmodule Mud.Engine.Command.Put do
 
   require Logger
 
-  defmodule ContinuationData do
-    use TypedStruct
-
-    typedstruct do
-      field(:type, atom(), required: true)
-      field(:thing, Mud.Engine.Search.Match.t(), required: true)
-      field(:place, Mud.Engine.Search.Match.t(), required: true)
-    end
-  end
-
-  # @impl true
-  # def continue(%ExecutionContext{} = context) do
-  # {input, continuation_data} = context.input
-
-  # integer = String.to_integer(input)
-  # match = continuation_data[continuation_data.type][integer]
-
-  # if context.character.area_id == match.match.area_id do
-  #   case continuation_data.type do
-  #     :thing ->
-  #       get_thing_in_place(context, match, continuation_data.place)
-
-  #     :place ->
-  #       find_thing(context, match)
-  #   end
-  # else
-  #   ExecutionContext.append_output(
-  #     context,
-  #     context.character.id,
-  #     "{{item}}#{String.capitalize(context.input.short_description)}{{/item}} is no longer present.",
-  #     "error"
-  #   )
-  #   |> ExecutionContext.set_success()
-  # end
-  # end
-
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.ThingAndPlace.t()
   def build_ast(ast_nodes) do
@@ -87,7 +51,6 @@ defmodule Mud.Engine.Command.Put do
           "Your hands are empty.",
           "error"
         )
-        |> ExecutionContext.set_success()
       else
         case Search.generate_matches(
                character.held_items,
@@ -99,22 +62,23 @@ defmodule Mud.Engine.Command.Put do
             put_item_away(context, match)
 
           # multiple held items matched
-          {:ok, matches} ->
-            indexed_things =
-              Enum.map(matches, & &1.match)
-              |> Util.list_to_index_map()
+          {:ok, _matches} ->
+            # indexed_things =
+            #   Enum.map(matches, & &1.match)
+            #   |> Util.list_to_index_map()
 
-            cont_data = %ContinuationData{thing: indexed_things, type: :thing}
+            # cont_data = %ContinuationData{thing: indexed_things, type: :thing}
 
-            descriptions = Enum.map(matches, & &1.short_description)
+            # descriptions = Enum.map(matches, & &1.short_description)
 
-            Util.handle_multiple_items(
-              context,
-              descriptions,
-              cont_data,
-              "Which item were you referring to?",
-              "There were too many items to choose from. Please be more specific."
-            )
+            # Util.handle_multiple_items(
+            #   context,
+            #   descriptions,
+            #   cont_data,
+            #   "Which item were you referring to?",
+            #   "There were too many items to choose from. Please be more specific."
+            # )
+            Util.multiple_error(context)
 
           # no held items match
           {:error, :no_match} ->
@@ -124,7 +88,6 @@ defmodule Mud.Engine.Command.Put do
               "You are not holding any such item.",
               "error"
             )
-            |> ExecutionContext.set_success()
         end
       end
     else
@@ -135,7 +98,6 @@ defmodule Mud.Engine.Command.Put do
         Util.get_module_docs(__MODULE__),
         "docs"
       )
-      |> ExecutionContext.set_success()
     end
   end
 
@@ -170,22 +132,23 @@ defmodule Mud.Engine.Command.Put do
       {:ok, [match]} ->
         put_item_in_container(context, item_match, match, true)
 
-      {:ok, matches} ->
-        indexed_places =
-          Enum.map(matches, & &1.match)
-          |> Util.list_to_index_map()
+      {:ok, _matches} ->
+        # indexed_places =
+        #   Enum.map(matches, & &1.match)
+        #   |> Util.list_to_index_map()
 
-        cont_data = %ContinuationData{place: indexed_places, type: :place}
+        # cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        descriptions = Enum.map(matches, & &1.short_description)
+        # descriptions = Enum.map(matches, & &1.short_description)
 
-        Util.handle_multiple_items(
-          context,
-          descriptions,
-          cont_data,
-          "Which container did you mean?",
-          "There were too many containers to choose from. Please be more specific."
-        )
+        # Util.handle_multiple_items(
+        #   context,
+        #   descriptions,
+        #   cont_data,
+        #   "Which container did you mean?",
+        #   "There were too many containers to choose from. Please be more specific."
+        # )
+        Util.multiple_error(context)
 
       _error ->
         ExecutionContext.append_output(
@@ -194,7 +157,6 @@ defmodule Mud.Engine.Command.Put do
           "Could not find where you wished to put {{item}}#{item_match.short_description}{{/item}}.",
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -214,20 +176,21 @@ defmodule Mud.Engine.Command.Put do
       {:ok, [container]} ->
         put_item_in_container(context, item_match, container, false)
 
-      {:ok, matches} ->
-        indexed_places = Util.list_to_index_map(matches)
+      {:ok, _matches} ->
+        # indexed_places = Util.list_to_index_map(matches)
 
-        cont_data = %ContinuationData{place: indexed_places, type: :place}
+        # cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        descriptions = Enum.map(matches, & &1.short_description)
+        # descriptions = Enum.map(matches, & &1.short_description)
 
-        Util.handle_multiple_items(
-          context,
-          descriptions,
-          cont_data,
-          "Which container did you mean?",
-          "There were too many containers to choose from. Please be more specific."
-        )
+        # Util.handle_multiple_items(
+        #   context,
+        #   descriptions,
+        #   cont_data,
+        #   "Which container did you mean?",
+        #   "There were too many containers to choose from. Please be more specific."
+        # )
+        Util.multiple_error(context)
 
       error ->
         error
@@ -272,7 +235,6 @@ defmodule Mud.Engine.Command.Put do
       self_msg,
       "info"
     )
-    |> ExecutionContext.set_success()
   end
 
   defp do_put_item_in_container(item_match, container_match, character) do

@@ -1,6 +1,7 @@
 defmodule MudWeb.Live.Component.InventoryItem do
   use Phoenix.LiveComponent
 
+  alias Mud.Engine.Character
   alias Mud.Engine.Item
 
   def mount(socket) do

@@ -148,7 +148,6 @@ defmodule Mud.Engine.Command do
             "No matching commands were found. Please try again.",
             "error"
           )
-          |> ExecutionContext.set_success()
 
         process_events(context)
         process_messages(context)
@@ -165,21 +164,17 @@ defmodule Mud.Engine.Command do
   end
 
   defp process_events(context) do
-    if context.success do
-      Enum.each(context.events, fn event ->
-        Mud.Engine.Session.cast_message_or_event(event)
-      end)
-    end
+    Enum.each(context.events, fn event ->
+      Mud.Engine.Session.cast_message_or_event(event)
+    end)
 
     context
   end
 
   defp process_messages(context) do
-    if context.success do
-      Enum.each(context.messages, fn message ->
-        Mud.Engine.Session.cast_message_or_event(message)
-      end)
-    end
+    Enum.each(context.messages, fn message ->
+      Mud.Engine.Session.cast_message_or_event(message)
+    end)
 
     context
   end

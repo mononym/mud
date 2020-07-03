@@ -52,7 +52,6 @@ defmodule Mud.Engine.Util do
     |> set_continuation_data(values)
     |> set_continuation_module(continuation_module)
     |> set_continuation_type(continuation_type)
-    |> set_success()
   end
 
   @doc """
@@ -181,7 +180,6 @@ defmodule Mud.Engine.Util do
       too_many_items_err,
       "error"
     )
-    |> ExecutionContext.set_success()
   end
 
   def follow_path do
@@ -230,7 +228,6 @@ defmodule Mud.Engine.Util do
       "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
       "error"
     )
-    |> ExecutionContext.set_success()
   end
 
   def multiple_error(context) do
@@ -240,7 +237,6 @@ defmodule Mud.Engine.Util do
       "Multiple matches found. Please be more specific.",
       "error"
     )
-    |> ExecutionContext.set_success()
   end
 
   def maybe_update_primary_container(context, false) do
@@ -248,17 +244,24 @@ defmodule Mud.Engine.Util do
   end
 
   def maybe_update_primary_container(context, true) do
-    {:ok, new_primary} =
+    new_container =
       context.character_id
       |> Item.list_worn_containers()
       |> Enum.sort(&(&1.container_capacity <= &2.container_capacity))
       |> List.first()
-      |> Item.update(%{container_primary: true})
 
-    ExecutionContext.append_event(
-      context,
-      context.character_id,
-      UpdateInventory.new(:update, new_primary)
-    )
+    case new_container do
+      nil ->
+        context
+
+      new_primary ->
+        {:ok, new_primary} = Item.update(new_primary, %{container_primary: true})
+
+        ExecutionContext.append_event(
+          context,
+          context.character_id,
+          UpdateInventory.new(:update, new_primary)
+        )
+    end
   end
 end

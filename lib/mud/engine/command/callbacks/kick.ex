@@ -65,7 +65,6 @@ defmodule Mud.Engine.Command.Kick do
           error_msg,
           "error"
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -81,7 +80,6 @@ defmodule Mud.Engine.Command.Kick do
         "You must be standing to do that.",
         "error"
       )
-      |> ExecutionContext.set_success()
     else
       case match do
         character = %Character{} ->
@@ -99,7 +97,6 @@ defmodule Mud.Engine.Command.Kick do
             "Violence is...sometimes the answer. But not this time.",
             "info"
           )
-          |> ExecutionContext.set_success()
 
         _item = %Item{} ->
           others =
@@ -108,9 +105,7 @@ defmodule Mud.Engine.Command.Kick do
           context
           |> ExecutionContext.append_output(
             others,
-            "#{context.character.name} looks ready to kick #{
-              match.short_description
-            }!",
+            "#{context.character.name} looks ready to kick #{match.short_description}!",
             "info"
           )
           |> ExecutionContext.append_output(
@@ -118,7 +113,6 @@ defmodule Mud.Engine.Command.Kick do
             "What would kicking that solve?",
             "info"
           )
-          |> ExecutionContext.set_success()
       end
     end
   end

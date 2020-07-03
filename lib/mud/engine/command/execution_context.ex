@@ -20,7 +20,6 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @type is_continuation() :: boolean()
   @type message() :: Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()
   @type messages() :: [message()]
-  @type success() :: boolean()
   @type terminate_session() :: boolean()
   @type context() :: __MODULE__.t()
 
@@ -47,12 +46,6 @@ defmodule Mud.Engine.Command.ExecutionContext do
 
     # The raw text input before any processing.
     field(:input, String.t(), required: true)
-
-    # Whether or not the execution was successful. Will be nil if execution has not been performed.
-    field(:success, boolean())
-
-    # If success is false, the message will be populated with the reason why.
-    field(:error_message, String.t())
 
     # A special flag that can be returned by any command which signals the character session to close.
     field(:terminate_session, boolean(), default: false)
@@ -139,14 +132,6 @@ defmodule Mud.Engine.Command.ExecutionContext do
   @spec append_event(context :: %__MODULE__{}, event :: Mud.Engine.Event.t()) :: context
   def append_event(%__MODULE__{} = context, event) do
     %{context | events: [event | context.events]}
-  end
-
-  @doc """
-  Append a message to the list of messages which will be sent after the command has been executed
-  """
-  @spec set_success(context, boolean) :: context
-  def set_success(%__MODULE__{} = context, successful \\ true) when is_boolean(successful) do
-    %{context | success: successful}
   end
 
   @doc """

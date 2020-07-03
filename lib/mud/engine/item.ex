@@ -8,6 +8,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Character
   require Logger
 
   @type id :: String.t()
@@ -211,6 +212,20 @@ defmodule Mud.Engine.Item do
     )
     |> Repo.one()
   end
+
+  @spec get_primary_container(character_id :: binary || character :: Character.t()) ::
+          nil | %__MODULE__{}
+  def get_primary_container(character_id) when is_binary(character_id) do
+    from(
+      item in __MODULE__,
+      where:
+        item.wearable_worn_by_id == ^character_id and item.is_container and item.container_primary
+    )
+    |> Repo.one()
+  end
+
+  def get_primary_container(character) when is_struct(character),
+    do: get_primary_container(character.id)
 
   def toggle_container_open(item_id) do
     from(item in __MODULE__,

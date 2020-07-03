@@ -50,7 +50,6 @@ defmodule Mud.Engine.Command.Move do
           "{{help_docs}}#{Util.get_module_docs(__MODULE__)}{{/help_docs}}",
           "error"
         )
-        |> ExecutionContext.set_success()
 
       ast.command not in ["go", "move"] ->
         direction =
@@ -72,7 +71,6 @@ defmodule Mud.Engine.Command.Move do
               "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
               "error"
             )
-            |> ExecutionContext.set_success()
           end
         else
           attempt_move_direction(ast.thing.input, context, ast.thing.which)
@@ -91,7 +89,7 @@ defmodule Mud.Engine.Command.Move do
   #         "{{error}}Unfortunately, your desired direction of travel is no longer possible.{{/error}}"
   #       )
   #     )
-  #     |> ExecutionContext.set_success()
+  #
   #   end
   # end
 
@@ -120,7 +118,6 @@ defmodule Mud.Engine.Command.Move do
             "error"
           )
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -139,7 +136,6 @@ defmodule Mud.Engine.Command.Move do
       context,
       Message.new_output(context.character.id, error_msg, "error")
     )
-    |> ExecutionContext.set_success()
   end
 
   @doc """
@@ -159,7 +155,6 @@ defmodule Mud.Engine.Command.Move do
         context,
         Message.new_output(context.character.id, error_msg, "error")
       )
-      |> ExecutionContext.set_success()
     end
   end
 
@@ -211,7 +206,6 @@ defmodule Mud.Engine.Command.Move do
       character.id,
       UpdateCharacter.new(character)
     )
-    |> ExecutionContext.set_success()
   end
 
   defp normalize_direction(direction) do

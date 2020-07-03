@@ -52,7 +52,6 @@ defmodule Mud.Engine.Command.Get do
       if length(character.held_items) == 2 do
         context
         |> ExecutionContext.append_error("Your hands are full. Empty them first.")
-        |> ExecutionContext.set_success()
       else
         case context.command.ast do
           # get thing from any container on character
@@ -84,7 +83,6 @@ defmodule Mud.Engine.Command.Get do
         Util.get_module_docs(__MODULE__),
         "docs"
       )
-      |> ExecutionContext.set_success()
     end
   end
 
@@ -168,7 +166,6 @@ defmodule Mud.Engine.Command.Get do
         |> ExecutionContext.append_error(
           "Multiple potential items found, please be more specific."
         )
-        |> ExecutionContext.set_success()
 
       error ->
         error
@@ -211,13 +208,11 @@ defmodule Mud.Engine.Command.Get do
         [context.character_id | others],
         UpdateArea.new(:remove, item)
       )
-      |> ExecutionContext.set_success()
     else
       context
       |> ExecutionContext.append_error(
         "You cannot pick up {{item}}#{thing.short_description}{{/item}}."
       )
-      |> ExecutionContext.set_success()
     end
   end
 
@@ -270,13 +265,11 @@ defmodule Mud.Engine.Command.Get do
             |> ExecutionContext.append_error(
               "Multiple potential containers found, please be more specific."
             )
-            |> ExecutionContext.set_success()
 
           # no worn containers matches
           {:error, :no_match} ->
             context
             |> ExecutionContext.append_error("Could not find that container.")
-            |> ExecutionContext.set_success()
         end
 
       # character is wearing exactly one container and the container has not been specified
@@ -292,13 +285,11 @@ defmodule Mud.Engine.Command.Get do
       not is_nil(ast.place) and length(all_containers) == 0 ->
         context
         |> ExecutionContext.append_error("Could not find that item.")
-        |> ExecutionContext.set_success()
 
       # character is not wearing any containers and container has been specified
       is_nil(ast.place) and length(all_containers) == 0 ->
         context
         |> ExecutionContext.append_error("Could not find where you wanted to get the item from.")
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -325,21 +316,18 @@ defmodule Mud.Engine.Command.Get do
         |> ExecutionContext.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first."
         )
-        |> ExecutionContext.set_success()
 
       item.container_locked and not character.auto_unlock_containers ->
         context
         |> ExecutionContext.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first."
         )
-        |> ExecutionContext.set_success()
 
       not item.container_open and not character.auto_open_containers ->
         context
         |> ExecutionContext.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first."
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -378,7 +366,6 @@ defmodule Mud.Engine.Command.Get do
               "{{item}}#{place.short_description}{{/item}} must be open first.",
               "error"
             )
-            |> ExecutionContext.set_success()
 
           not place.match.is_container ->
             ExecutionContext.append_output(
@@ -387,7 +374,6 @@ defmodule Mud.Engine.Command.Get do
               "{{item}}#{place.short_description}{{/item}} is not a container.",
               "error"
             )
-            |> ExecutionContext.set_success()
         end
 
       {:ok, _matches} ->
@@ -397,7 +383,6 @@ defmodule Mud.Engine.Command.Get do
           "Multiple potential containers found, please be more specific.",
           "error"
         )
-        |> ExecutionContext.set_success()
 
       error ->
         error
@@ -419,7 +404,6 @@ defmodule Mud.Engine.Command.Get do
           "Multiple potential matches found inside {{item}}#{place.short_description}{{/item}}, please be more specific.",
           "error"
         )
-        |> ExecutionContext.set_success()
 
       {:error, :no_match} ->
         ExecutionContext.append_output(
@@ -428,7 +412,6 @@ defmodule Mud.Engine.Command.Get do
           "Could not find any matching item to get from {{item}}#{place.short_description}{{/item}}.",
           "help_docs"
         )
-        |> ExecutionContext.set_success()
     end
   end
 
@@ -471,17 +454,17 @@ defmodule Mud.Engine.Command.Get do
         ExecutionContext.append_event(
           context,
           context.character_id,
-          UpdateInventory.new(:update, thing.match)
+          UpdateInventory.new(:update, [thing.match | items])
         )
       else
         context
         |> ExecutionContext.append_event(
           context.character_id,
-          UpdateInventory.new(:add, items)
+          UpdateInventory.new(:add, [thing.match | items])
         )
         |> ExecutionContext.append_event(
           [context.character_id | others],
-          UpdateArea.new(:remove, items)
+          UpdateArea.new(:remove, [thing.match | items])
         )
       end
 
@@ -496,7 +479,6 @@ defmodule Mud.Engine.Command.Get do
       self_msg,
       "info"
     )
-    |> ExecutionContext.set_success()
   end
 
   defp do_get_thing_in_place(thing, place, character) do
@@ -506,6 +488,7 @@ defmodule Mud.Engine.Command.Get do
     item =
       Item.update!(item, %{
         hand: which_hand(character),
+        holdable_is_held: true,
         holdable_held_by_id: character.id,
         container_id: nil
       })

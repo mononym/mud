@@ -40,7 +40,6 @@ defmodule Mud.Engine.Command.Drop do
         Util.get_module_docs(__MODULE__),
         "error"
       )
-      |> ExecutionContext.set_success()
     else
       if Util.is_uuid4(context.command.ast.thing.input) do
         item = Item.get!(context.command.ast.thing.input)
@@ -62,7 +61,6 @@ defmodule Mud.Engine.Command.Drop do
     if length(held_items) == 0 do
       context
       |> ExecutionContext.append_error("You aren't holding anything.")
-      |> ExecutionContext.set_success()
     else
       ast = context.command.ast
 
@@ -78,7 +76,6 @@ defmodule Mud.Engine.Command.Drop do
         _ ->
           context
           |> ExecutionContext.append_error("Could not find what you were attempting to drop.")
-          |> ExecutionContext.set_success()
       end
     end
   end
@@ -120,6 +117,5 @@ defmodule Mud.Engine.Command.Drop do
       context.character_id,
       UpdateInventory.new(:remove, item)
     )
-    |> ExecutionContext.set_success()
   end
 end

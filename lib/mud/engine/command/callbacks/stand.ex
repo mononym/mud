@@ -60,7 +60,6 @@ defmodule Mud.Engine.Command.Stand do
         context.character.id,
         UpdateCharacter.new(:update, char)
       )
-      |> ExecutionContext.set_success()
     else
       error_msg = "You are already standing!"
 
@@ -68,7 +67,6 @@ defmodule Mud.Engine.Command.Stand do
       |> ExecutionContext.append_message(
         Message.new_output(context.character.id, error_msg, "error")
       )
-      |> ExecutionContext.set_success()
     end
   end
 
