@@ -41,14 +41,15 @@ defmodule Mud.Engine.Item do
     ##
 
     field(:is_container, :boolean, default: false)
+    field(:container_capacity, :integer, default: 0)
     field(:container_closeable, :boolean, default: false)
-    field(:container_open, :boolean, default: true)
+    field(:container_height, :integer, default: 0)
+    field(:container_length, :integer, default: 0)
     field(:container_lockable, :boolean, default: false)
     field(:container_locked, :boolean, default: false)
-    field(:container_length, :integer, default: 0)
+    field(:container_open, :boolean, default: true)
+    field(:container_primary, :boolean, default: false)
     field(:container_width, :integer, default: 0)
-    field(:container_height, :integer, default: 0)
-    field(:container_capacity, :integer, default: 0)
 
     has_many(:container_items, __MODULE__, foreign_key: :container_id)
     belongs_to(:container, __MODULE__, type: :binary_id)
@@ -90,6 +91,18 @@ defmodule Mud.Engine.Item do
     field(:holdable_is_held, :boolean, default: false)
     field(:holdable_hand, :string)
     belongs_to(:holdable_held_by, Mud.Engine.Character, type: :binary_id)
+
+    ##
+    #
+    # Physical Component: The item has a physical presence in the world that needs describing such as dimensions, weight, the the like
+    #
+    ##
+
+    field(:is_physical, :boolean, default: false)
+    field(:physical_length, :integer, default: 1)
+    field(:physical_height, :integer, default: 1)
+    field(:physical_width, :integer, default: 1)
+    field(:physical_weight, :integer, default: 1)
   end
 
   @doc false
@@ -113,6 +126,7 @@ defmodule Mud.Engine.Item do
       :container_width,
       :container_height,
       :container_capacity,
+      :container_primary,
       :is_wearable,
       :wearable_is_worn,
       :wearable_location,

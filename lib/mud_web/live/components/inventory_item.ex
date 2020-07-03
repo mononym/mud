@@ -19,7 +19,6 @@ defmodule MudWeb.Live.Component.InventoryItem do
   end
 
   def render(assigns) do
-    IO.inspect(assigns)
     Phoenix.View.render(MudWeb.MudClientView, "inventory_item.html", assigns)
   end
 

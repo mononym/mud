@@ -179,12 +179,13 @@ defmodule Mud.Engine.Command.Get do
     if thing.match.is_holdable do
       hand = which_hand(context.character)
 
-      Item.update!(thing.match, %{
-        area_id: nil,
-        holdable_held_by_id: context.character.id,
-        holdable_is_held: true,
-        holdable_hand: hand
-      })
+      item =
+        Item.update!(thing.match, %{
+          area_id: nil,
+          holdable_held_by_id: context.character.id,
+          holdable_is_held: true,
+          holdable_hand: hand
+        })
 
       others =
         Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -204,11 +205,11 @@ defmodule Mud.Engine.Command.Get do
       )
       |> ExecutionContext.append_event(
         context.character_id,
-        UpdateInventory.new(:add, thing.match)
+        UpdateInventory.new(:add, item)
       )
       |> ExecutionContext.append_event(
         [context.character_id | others],
-        UpdateArea.new(:remove, thing.match)
+        UpdateArea.new(:remove, item)
       )
       |> ExecutionContext.set_success()
     else
@@ -460,7 +461,7 @@ defmodule Mud.Engine.Command.Get do
   defp get_thing_in_place(context, thing, place, private) do
     character = context.character
 
-    {self_msg, others_msg} = do_get_thing_in_place(thing, place, character)
+    {self_msg, others_msg, items} = do_get_thing_in_place(thing, place, character)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -476,11 +477,11 @@ defmodule Mud.Engine.Command.Get do
         context
         |> ExecutionContext.append_event(
           context.character_id,
-          UpdateInventory.new(:add, thing.match)
+          UpdateInventory.new(:add, items)
         )
         |> ExecutionContext.append_event(
           [context.character_id | others],
-          UpdateArea.new(:remove, thing.match)
+          UpdateArea.new(:remove, items)
         )
       end
 
@@ -502,11 +503,12 @@ defmodule Mud.Engine.Command.Get do
     item = thing.match
     container = place.match
 
-    Item.update!(item, %{
-      hand: which_hand(character),
-      holdable_held_by_id: character.id,
-      container_id: nil
-    })
+    item =
+      Item.update!(item, %{
+        hand: which_hand(character),
+        holdable_held_by_id: character.id,
+        container_id: nil
+      })
 
     cond do
       container.container_open ->
@@ -515,7 +517,7 @@ defmodule Mud.Engine.Command.Get do
          }{{/item}}.",
          "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.short_description}{{/item}} from inside {{item}}#{
            place.short_description
-         }{{/item}}."}
+         }{{/item}}.", [item]}
 
       not container.container_open and not container.container_locked and
           character.auto_open_containers ->
@@ -525,18 +527,19 @@ defmodule Mud.Engine.Command.Get do
            }{{/item}} from inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
              thing.short_description
-           }{{/item}} from inside."}
+           }{{/item}} from inside.", [item]}
         else
-          Item.update!(container, %{
-            container_open: true
-          })
+          container =
+            Item.update!(container, %{
+              container_open: true
+            })
 
           {"You open {{item}}#{place.short_description}{{/item}} and get {{item}}#{
              thing.short_description
            }{{/item}} from inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} and gets {{item}}#{
              thing.short_description
-           }{{/item}} from inside."}
+           }{{/item}} from inside.", [item, container]}
         end
 
       container.container_locked and character.auto_unlock_containers ->
@@ -555,9 +558,10 @@ defmodule Mud.Engine.Command.Get do
              }{{/item}} from inside, fiddling with it again once it is closed."}
 
           close ->
-            Item.update!(container, %{
-              container_locked: false
-            })
+            container =
+              Item.update!(container, %{
+                container_locked: false
+              })
 
             {"You unlock and open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
                thing.short_description
@@ -566,20 +570,22 @@ defmodule Mud.Engine.Command.Get do
                place.short_description
              }{{/item}} a moment before opening it just long enough to get {{item}}#{
                thing.short_description
-             }{{/item}} from inside."}
+             }{{/item}} from inside.", [item, container]}
 
           true ->
-            Item.update!(container, %{
-              container_locked: false,
-              container_open: true
-            })
+            container =
+              Item.update!(container, %{
+                container_locked: false,
+                container_open: true
+              })
 
             {"You unlock and open {{item}}#{place.short_description}{{/item}}, getting {{item}}#{
                thing.short_description
              }{{/item}} from inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
                place.short_description
-             }{{/item}} a moment before opening it to get {{item}}#{thing.short_description}{{/item}} from inside."}
+             }{{/item}} a moment before opening it to get {{item}}#{thing.short_description}{{/item}} from inside.",
+             [item, container]}
         end
     end
   end

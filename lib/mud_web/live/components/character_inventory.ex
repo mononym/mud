@@ -31,7 +31,6 @@ defmodule MudWeb.Live.Component.CharacterInventory do
         not is_nil(socket.assigns.event) ->
           event = socket.assigns.event
           items = event.items
-          IO.inspect(event)
 
           case event.action do
             :add ->

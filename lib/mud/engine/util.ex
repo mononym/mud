@@ -7,6 +7,7 @@ defmodule Mud.Engine.Util do
   alias Mud.Engine.Command.ExecutionContext
   alias Mud.Engine.Message
   alias Mud.Engine.{Area, Character, Link, Item}
+  alias Mud.Engine.Event.Client.UpdateInventory
 
   def clear_continuation_from_context(context) do
     context
@@ -240,5 +241,24 @@ defmodule Mud.Engine.Util do
       "error"
     )
     |> ExecutionContext.set_success()
+  end
+
+  def maybe_update_primary_container(context, false) do
+    context
+  end
+
+  def maybe_update_primary_container(context, true) do
+    {:ok, new_primary} =
+      context.character_id
+      |> Item.list_worn_containers()
+      |> Enum.sort(&(&1.container_capacity <= &2.container_capacity))
+      |> List.first()
+      |> Item.update(%{container_primary: true})
+
+    ExecutionContext.append_event(
+      context,
+      context.character_id,
+      UpdateInventory.new(:update, new_primary)
+    )
   end
 end

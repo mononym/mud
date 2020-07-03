@@ -1,17 +1,29 @@
 <div class="pl-4 min-w-full flex flex-col flex-shrink text-lg">
   <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
     <%= if @item.container_closeable do %>
-      <div class="flex-shrink"><i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
+      <div class="flex-shrink"><i phx-click="send" phx-value-command="<%= if @item.container_open do "close" else "open" end %> <%= @item.id %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
+      <div class="flex-shrink"><i phx-click="send" phx-value-command=" <%= @item.id %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
     <% end %>
     <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %></div>
     <div class="flex flex-1 pl-4">
       <%# holding item %>
       <%= if @item.holdable_is_held do %>
+        <%= if @item.is_wearable do %>
+          <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="wear <%= @item.id %>">
+            wear
+          </button>
+        <% end %>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="drop <%= @item.id %>">
           drop
         </button>
         <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="stow <%= @item.id %>">
           stow
+        </button>
+      <% end %>
+      <%# worn item %>
+      <%= if @item.wearable_is_worn do %>
+        <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded px-px flex-1" phx-click="send" phx-value-command="remove <%= @item.id %>">
+          remove
         </button>
       <% end %>
       <%# in container %>

@@ -164,7 +164,7 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:close],
           matches: [~r/.*/],
-          key: :target,
+          key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         }

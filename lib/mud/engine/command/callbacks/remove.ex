@@ -95,6 +95,7 @@ defmodule Mud.Engine.Command.Remove do
 
   defp remove_thing(context, item) do
     held_items = Character.list_held_items(context.character)
+    container_primary = item.container_primary
 
     item =
       Item.update!(item, %{
@@ -102,8 +103,11 @@ defmodule Mud.Engine.Command.Remove do
         wearable_is_worn: false,
         holdable_held_by_id: context.character.id,
         holdable_is_held: true,
-        holdable_hand: Character.which_hand(held_items)
+        holdable_hand: Character.which_hand(held_items),
+        container_primary: false
       })
+
+    context = Util.maybe_update_primary_container(context, container_primary)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)

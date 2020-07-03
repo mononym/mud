@@ -8,6 +8,7 @@ defmodule Mud.Engine.Command.Close do
   Examples:
     - close backpack
     - close door
+    - close pouch in backpack
   """
 
   alias Mud.Repo

@@ -2,7 +2,9 @@
 
 <div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4"></div>
+    <div class="flex flex-1 border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
+    </div>
     <div class="flex flex-col flex-1 border-4">
       <ul class="flex">
         <li class="flex-1 mr-2">
@@ -35,7 +37,6 @@
   </div>
   <div class="w-1/5 flex flex-col">
     <div class="flex flex-1 border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
     </div>
     <div class="flex flex-1 border-4">
     </div>
