@@ -221,4 +221,24 @@ defmodule Mud.Engine.Util do
       string
     )
   end
+
+  def dave_error(context) do
+    ExecutionContext.append_output(
+      context,
+      context.character.id,
+      "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
+      "error"
+    )
+    |> ExecutionContext.set_success()
+  end
+
+  def multiple_error(context) do
+    ExecutionContext.append_output(
+      context,
+      context.character.id,
+      "Multiple matches found. Please be more specific.",
+      "error"
+    )
+    |> ExecutionContext.set_success()
+  end
 end

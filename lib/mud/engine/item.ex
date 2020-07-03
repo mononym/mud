@@ -329,6 +329,23 @@ defmodule Mud.Engine.Item do
     end)
   end
 
+  @spec list_held_or_worn_items_and_children(String.t()) :: [%__MODULE__{}]
+  def list_held_or_worn_items_and_children(character_id) do
+    character_id
+    |> held_or_worn_and_children_query()
+    |> Repo.all()
+  end
+
+  @spec list_held_or_worn_items_and_children(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
+          Ecto.Multi.t()
+  def list_held_or_worn_items_and_children(multi, name, character_id) do
+    Ecto.Multi.run(multi, name, fn repo, _changes ->
+      character_id
+      |> held_or_worn_and_children_query()
+      |> repo.all()
+    end)
+  end
+
   def list_contained_items(container_id) do
     from(
       item in __MODULE__,
@@ -359,5 +376,26 @@ defmodule Mud.Engine.Item do
       where: item.holdable_held_by_id == ^character_id
     )
     |> Repo.all()
+  end
+
+  defp held_or_worn_and_children_query(character_id) do
+    item_tree_initial_query =
+      __MODULE__
+      |> where(
+        [i],
+        i.wearable_worn_by_id == ^character_id or i.holdable_held_by_id == ^character_id
+      )
+
+    item_tree_recursion_query =
+      __MODULE__
+      |> join(:inner, [i], it in "item_tree", on: i.id == it.container_id)
+
+    item_tree_query =
+      item_tree_initial_query
+      |> union_all(^item_tree_recursion_query)
+
+    {"item_tree", __MODULE__}
+    |> recursive_ctes(true)
+    |> with_cte("item_tree", as: ^item_tree_query)
   end
 end

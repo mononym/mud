@@ -80,13 +80,17 @@ defmodule MudWeb.Live.Component.AreaOverview do
 
   defp remove(socket, item = %Item{}) do
     if item.is_furniture do
-      items = Map.delete(socket.assigns.things_of_interest, item.id)
+      items =
+        prune(
+          socket.assigns.things_of_interest,
+          item.id,
+          socket.assigns.things_of_interest_child_index
+        )
 
       socket
       |> assign(:things_of_interest, items)
       |> assign(:things_of_interest_child_index, generate_child_index(Map.values(items)))
     else
-      # items = Map.delete(socket.assigns.items, item.id)
       items = prune(socket.assigns.items, item.id, socket.assigns.item_child_index)
 
       socket

@@ -106,6 +106,22 @@ defmodule Mud.Engine.Command.ExecutionContext do
   end
 
   @doc """
+  Append an error, to be sent to the character, to the context.
+  """
+  @spec append_error(
+          context :: %__MODULE__{},
+          message :: String.t()
+        ) :: context
+  def append_error(%__MODULE__{} = context, message) do
+    append_output(
+      context,
+      context.character.id,
+      message,
+      "error"
+    )
+  end
+
+  @doc """
   Append an event to the list of events which will be sent after the command has been executed
   """
   @spec append_event(

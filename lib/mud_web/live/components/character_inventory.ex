@@ -1,9 +1,7 @@
 defmodule MudWeb.Live.Component.CharacterInventory do
   use Phoenix.LiveComponent
 
-  alias Mud.Engine
-  alias Mud.Engine.Character
-  alias MudWeb.ClientData.Inventory
+  alias Mud.Engine.Item
   require Logger
 
   def mount(socket) do
@@ -20,55 +18,70 @@ defmodule MudWeb.Live.Component.CharacterInventory do
     {:ok, socket, temporary_assigns: [event: nil]}
   end
 
-  def preload(assigns_list) do
-    Enum.map(assigns_list, fn assigns ->
-      if Map.has_key?(assigns, :id) do
-        assigns
-        |> Map.put(:inventory_data, init_inventory_data(assigns.id))
-        |> Map.put(:loading, false)
-      else
-        if Map.has_key?(assigns, :event) do
-          inventory = assigns.inventory_data
-          event = assigns.event
+  def update(assigns, socket) do
+    socket = assign(socket, Enum.to_list(assigns))
+
+    socket =
+      cond do
+        not socket.assigns.initialized ->
+          init_inventory_data(socket)
+          |> assign(:initialized, true)
+          |> assign(:loading, false)
+
+        not is_nil(socket.assigns.event) ->
+          event = socket.assigns.event
           items = event.items
+          IO.inspect(event)
 
-          updated_index =
-            case event.action do
-              :add ->
-                Enum.reduce(items, inventory.item_index, fn item, index ->
-                  Map.put(index, item.id, item)
-                end)
+          case event.action do
+            :add ->
+              Enum.reduce(items, socket, fn thing, socket ->
+                modify(socket, thing)
+              end)
 
-              :remove ->
-                Enum.reduce(items, inventory.item_index, fn item, index ->
-                  if item.updated_at > index[item.id].updated_at do
-                    Map.delete(index, item.id)
-                  else
-                    index
-                  end
-                end)
+            :remove ->
+              Enum.reduce(items, socket, fn thing, socket ->
+                remove(socket, thing)
+              end)
 
-              :update ->
-                Enum.reduce(items, inventory.item_index, fn item, index ->
-                  if item.updated_at > index[item.id].updated_at do
-                    Map.put(index, item.id, item)
-                  else
-                    index
-                  end
-                end)
-            end
+            :update ->
+              Enum.reduce(items, socket, fn thing, socket ->
+                modify(socket, thing)
+              end)
+          end
 
-          inv =
-            inventory
-            |> Map.put(:item_index, updated_index)
-            |> generate_child_index()
-
-          Map.put(assigns, :inventory_data, inv)
-        else
-          assigns
-        end
+        true ->
+          socket
       end
-    end)
+
+    {:ok, socket}
+  end
+
+  defp modify(socket, item = %Item{}) do
+    items = Map.put(socket.assigns.items, item.id, item)
+
+    socket
+    |> assign(:items, items)
+    |> update_indexes()
+  end
+
+  defp remove(socket, item = %Item{}) do
+    items = prune(socket.assigns.items, item.id, socket.assigns.item_child_index)
+
+    socket
+    |> assign(:items, items)
+    |> update_indexes()
+  end
+
+  defp prune(items, item_id, child_index) do
+    items =
+      if Map.has_key?(items, item_id) do
+        Map.delete(items, item_id)
+      else
+        items
+      end
+
+    Enum.reduce(child_index[item_id] || [], items, &prune(&2, &1, child_index))
   end
 
   def render(assigns) do
@@ -93,49 +106,54 @@ defmodule MudWeb.Live.Component.CharacterInventory do
      )}
   end
 
-  defp init_inventory_data(character_id) do
-    inv =
-      %Inventory{}
-      |> populate_held_items(character_id)
-      |> populate_worn_items(character_id)
+  defp update_indexes(socket) do
+    child_index = generate_child_index(Map.values(socket.assigns.items))
 
-    Logger.debug(inspect(inv))
-    root_items = inv.held_items ++ inv.worn_containers
+    grouped_items =
+      Enum.group_by(
+        Map.values(socket.assigns.items),
+        fn item ->
+          cond do
+            item.holdable_is_held ->
+              :held
 
-    Logger.debug(inspect(root_items))
+            item.wearable_is_worn and item.is_container ->
+              :container
 
-    all_items = Engine.Item.list_all_recursive(root_items)
-    item_index = Map.new(all_items, &{&1.id, &1})
+            item.wearable_is_worn and not item.is_container ->
+              :worn
 
-    inv
-    |> Map.put(:item_index, item_index)
-    |> generate_child_index()
+            true ->
+              :child
+          end
+        end,
+        & &1.id
+      )
+
+    socket
+    |> assign(:held_items, grouped_items[:held] || [])
+    |> assign(:worn_containers, grouped_items[:container] || [])
+    |> assign(:item_child_index, child_index)
   end
 
-  defp generate_child_index(inventory) do
-    all_items = Map.values(inventory.item_index)
+  defp init_inventory_data(socket) do
+    all_items = Item.list_held_or_worn_items_and_children(socket.assigns.id)
 
-    item_child_index =
-      Enum.reduce(all_items, %{}, fn item, map ->
-        value = [item.id | Map.get(map, item.container_id, [])]
-        Map.put(map, item.container_id, value)
-      end)
-
-    Map.put(inventory, :item_child_index, item_child_index)
+    socket
+    |> assign(:items, to_index(all_items))
+    |> update_indexes()
   end
 
-  defp populate_held_items(inventory, character_id) do
-    held_items = Character.list_held_items(character_id)
-
-    inventory
-    |> Map.put(:held_items, held_items)
+  defp to_index(things) do
+    Map.new(things, fn thing ->
+      {thing.id, thing}
+    end)
   end
 
-  defp populate_worn_items(inventory, character_id) do
-    worn_items = Character.list_worn_items(character_id)
-
-    container_nodes = Enum.filter(worn_items, & &1.is_container)
-
-    Map.put(inventory, :worn_containers, container_nodes)
+  defp generate_child_index(all_items) do
+    Enum.reduce(all_items, %{}, fn item, map ->
+      value = [item.id | Map.get(map, item.container_id, [])]
+      Map.put(map, item.container_id, value)
+    end)
   end
 end

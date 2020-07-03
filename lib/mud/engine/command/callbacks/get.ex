@@ -50,12 +50,8 @@ defmodule Mud.Engine.Command.Get do
 
       # No reason to go further if hands are full. Check them first.
       if length(character.held_items) == 2 do
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Your hands are full. Empty them first.",
-          "error"
-        )
+        context
+        |> ExecutionContext.append_error("Your hands are full. Empty them first.")
         |> ExecutionContext.set_success()
       else
         case context.command.ast do
@@ -66,7 +62,6 @@ defmodule Mud.Engine.Command.Get do
           # get thing on ground, fallback to worn container
           %TAP{place: nil, thing: %Thing{personal: false}} ->
             if Util.is_uuid4(context.command.ast.thing.input) do
-              Logger.debug("uuid")
               get_item_by_uuid(context)
             else
               get_item_from_ground_or_worn_container(context)
@@ -106,28 +101,29 @@ defmodule Mud.Engine.Command.Get do
 
         do_get_item_from_ground(context, match)
       else
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
-          "error"
-        )
-        |> ExecutionContext.set_success()
+        Util.dave_error(context)
       end
-
-      # the item is assumed to be inside a container
     else
+      # the item is assumed to be inside a container
       items = Item.list_all_recursive_parents(ast.thing.input)
-      # check all parents to find an item that is not inside a container
-      # check that parent to see if it is either in the area with the character or on the character
-    end
+      char = context.character
 
-    # IO.inspect(items)
-    # get the item
-    # item must be
-    #  * in area
-    #  * in container on character
-    #  * in container in area
+      # is item inside containers either on character or in character's area or in character's hand
+      parent =
+        Enum.find(items, fn item ->
+          item.wearable_worn_by_id == char.id or item.area_id == char.area_id or
+            item.holdable_held_by_id == char.id
+        end)
+
+      if parent do
+        [thing, place] = Search.things_to_match([item, parent])
+
+        private = is_nil(parent.area_id)
+        get_thing_in_place(context, thing, place, private)
+      else
+        Util.dave_error(context)
+      end
+    end
   end
 
   defp get_item_in_area_container_or_worn_container(context) do
@@ -168,11 +164,9 @@ defmodule Mud.Engine.Command.Get do
         do_get_item_from_ground(context, thing)
 
       {:ok, _things} ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Multiple potential items found, please be more specific.",
-          "error"
+        context
+        |> ExecutionContext.append_error(
+          "Multiple potential items found, please be more specific."
         )
         |> ExecutionContext.set_success()
 
@@ -218,11 +212,9 @@ defmodule Mud.Engine.Command.Get do
       )
       |> ExecutionContext.set_success()
     else
-      ExecutionContext.append_output(
-        context,
-        context.character.id,
-        "You cannot pick up {{item}}#{thing.short_description}{{/item}}.",
-        "error"
+      context
+      |> ExecutionContext.append_error(
+        "You cannot pick up {{item}}#{thing.short_description}{{/item}}."
       )
       |> ExecutionContext.set_success()
     end
@@ -273,22 +265,16 @@ defmodule Mud.Engine.Command.Get do
 
           # multiple worn containers matched
           {:ok, _matches} ->
-            ExecutionContext.append_output(
-              context,
-              context.character.id,
-              "Multiple potential containers found, please be more specific.",
-              "error"
+            context
+            |> ExecutionContext.append_error(
+              "Multiple potential containers found, please be more specific."
             )
             |> ExecutionContext.set_success()
 
           # no worn containers matches
           {:error, :no_match} ->
-            ExecutionContext.append_output(
-              context,
-              context.character.id,
-              "Could not find that container.",
-              "error"
-            )
+            context
+            |> ExecutionContext.append_error("Could not find that container.")
             |> ExecutionContext.set_success()
         end
 
@@ -303,22 +289,14 @@ defmodule Mud.Engine.Command.Get do
 
       # character is not wearing any containers and no container has been specified
       not is_nil(ast.place) and length(all_containers) == 0 ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Could not find that item.",
-          "error"
-        )
+        context
+        |> ExecutionContext.append_error("Could not find that item.")
         |> ExecutionContext.set_success()
 
       # character is not wearing any containers and container has been specified
       is_nil(ast.place) and length(all_containers) == 0 ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "Could not find where you wanted to get the item from.",
-          "error"
-        )
+        context
+        |> ExecutionContext.append_error("Could not find where you wanted to get the item from.")
         |> ExecutionContext.set_success()
     end
   end
@@ -342,29 +320,23 @@ defmodule Mud.Engine.Command.Get do
 
       item.container_locked and not character.auto_unlock_containers and
           not character.auto_open_containers ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first.",
-          "error"
+        context
+        |> ExecutionContext.append_error(
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first."
         )
         |> ExecutionContext.set_success()
 
       item.container_locked and not character.auto_unlock_containers ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first.",
-          "error"
+        context
+        |> ExecutionContext.append_error(
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first."
         )
         |> ExecutionContext.set_success()
 
       not item.container_open and not character.auto_open_containers ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first.",
-          "error"
+        context
+        |> ExecutionContext.append_error(
+          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first."
         )
         |> ExecutionContext.set_success()
     end

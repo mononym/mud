@@ -173,6 +173,8 @@ defmodule Mud.Engine.Search do
     end
   end
 
+  def things_to_match(things) when not is_list(things), do: things_to_match(List.wrap(things))
+
   def things_to_match(links = [%Link{} | _]) do
     Enum.map(links, fn link ->
       %Match{

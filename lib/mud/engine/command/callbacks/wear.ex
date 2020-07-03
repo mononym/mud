@@ -19,12 +19,7 @@ defmodule Mud.Engine.Command.Wear do
 
   require Logger
 
-  @behaviour Mud.Engine.Command.Callback
-
-  @impl true
-  def continue(context) do
-    wear_thing(context, context.input)
-  end
+  use Mud.Engine.Command.Callback
 
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.OneThing.t()
@@ -45,58 +40,58 @@ defmodule Mud.Engine.Command.Wear do
       )
       |> ExecutionContext.set_success()
     else
-      held_items = Character.list_held_items(context.character)
+      if Util.is_uuid4(ast.thing.input) do
+        item = Item.get!(ast.thing.input)
 
-      if length(held_items) == 0 do
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "You aren't holding anything.",
-          "error"
-        )
-        |> ExecutionContext.set_success()
-      else
-        ast = context.command.ast
-
-        matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
-
-        case matches do
-          {:ok, [match]} ->
-            wear_thing(context, match)
-
-          {:ok, matches} when length(matches) > 1 ->
-            Util.handle_multiple_items(
-              context,
-              Enum.map(matches, & &1.short_description),
-              matches,
-              "Which thing did you wish to wear?"
-            )
-
-          _ ->
-            ExecutionContext.append_output(
-              context,
-              context.character.id,
-              "Could not find what you were attempting to drop.",
-              "error"
-            )
-            |> ExecutionContext.set_success()
+        if item.holdable_held_by_id == context.character.id do
+          wear_thing(context, item)
+        else
+          Util.dave_error(context)
         end
+      else
+        find_thing_to_wear(context)
       end
     end
   end
 
-  @spec wear_thing(ExecutionContext.t(), Mud.Engine.Match.t()) :: ExecutionContext.t()
-  defp wear_thing(context, match) do
-    item = match.match
+  defp find_thing_to_wear(context) do
+    held_items = Character.list_held_items(context.character)
 
+    if length(held_items) == 0 do
+      context
+      |> ExecutionContext.append_error("You aren't holding anything.")
+      |> ExecutionContext.set_success()
+    else
+      ast = context.command.ast
+
+      matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
+
+      case matches do
+        {:ok, [match]} ->
+          wear_thing(context, match.match)
+
+        {:ok, matches} when length(matches) > 1 ->
+          Util.multiple_error(context)
+
+        _ ->
+          context
+          |> ExecutionContext.append_error("Could not find what you were attempting to wear.")
+          |> ExecutionContext.set_success()
+      end
+    end
+  end
+
+  @spec wear_thing(ExecutionContext.t(), Mud.Engine.Item.t()) :: ExecutionContext.t()
+  defp wear_thing(context, item) do
     if item.is_wearable do
-      Item.update!(item, %{
-        wearable_worn_by_id: context.character.id,
-        wearable_is_worn: true,
-        holdable_held_by_id: nil,
-        holdable_is_held: false,
-        holdable_hand: nil
-      })
+      item =
+        Item.update!(item, %{
+          wearable_worn_by_id: context.character.id,
+          wearable_is_worn: true,
+          holdable_held_by_id: nil,
+          holdable_is_held: false,
+          holdable_hand: nil
+        })
 
       others =
         Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -105,13 +100,13 @@ defmodule Mud.Engine.Command.Wear do
       |> ExecutionContext.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
-          match.short_description
+          item.short_description
         }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
         "info"
       )
       |> ExecutionContext.append_output(
         context.character.id,
-        "You put {{item}}#{match.short_description}{{/item}} on your {{bodypart}}#{
+        "You put {{item}}#{item.short_description}{{/item}} on your {{bodypart}}#{
           item.wearable_location
         }{{/bodypart}}.",
         "info"
@@ -125,7 +120,7 @@ defmodule Mud.Engine.Command.Wear do
       ExecutionContext.append_output(
         context,
         context.character.id,
-        String.capitalize("{{item}}#{match.short_description}{{/item}} cannot be worn."),
+        String.capitalize("{{item}}#{item.short_description}{{/item}} cannot be worn."),
         "error"
       )
       |> ExecutionContext.set_success()

@@ -19,7 +19,6 @@ defmodule MudWeb.MudClientLive do
   end
 
   def mount(_params, session, socket) do
-
     Mud.Engine.Session.subscribe(session["character_id"])
 
     {:ok,
@@ -40,12 +39,20 @@ defmodule MudWeb.MudClientLive do
     {:noreply, socket}
   end
 
+  # input sent via text box
   def handle_event("submit_input", %{"input" => %{"content" => input}}, socket) do
     Logger.debug("Handling input event: #{inspect(input)}")
     send_command(socket.assigns.character.id, input)
     Logger.debug("Sent input")
 
     {:noreply, assign(socket, input: Input.new())}
+  end
+
+  # input sent from button clicks and the like
+  def handle_event("send", %{"command" => command}, socket) do
+    send_command(socket.assigns.character.id, command, :silent)
+
+    {:noreply, socket}
   end
 
   def handle_event("typing", _value, socket) do
@@ -168,8 +175,8 @@ defmodule MudWeb.MudClientLive do
     assigns
   end
 
-  defp send_command(character_id, text) do
-    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text}
+  defp send_command(character_id, text, type \\ :normal) do
+    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text, type: type}
     |> Mud.Engine.Session.cast_message_or_event()
   end
 end

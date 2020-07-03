@@ -23,11 +23,6 @@ defmodule Mud.Engine.Command.Drop do
 
   require Logger
 
-  @impl true
-  def continue(context) do
-    drop_thing(context, context.input)
-  end
-
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.OneThing.t()
   def build_ast(ast_nodes) do
@@ -47,60 +42,61 @@ defmodule Mud.Engine.Command.Drop do
       )
       |> ExecutionContext.set_success()
     else
-      held_items = Character.list_held_items(context.character)
+      if Util.is_uuid4(context.command.ast.thing.input) do
+        item = Item.get!(context.command.ast.thing.input)
 
-      if length(held_items) == 0 do
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "You aren't holding anything.",
-          "error"
-        )
-        |> ExecutionContext.set_success()
-      else
-        ast = context.command.ast
-
-        matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
-
-        case matches do
-          {:ok, [match]} ->
-            drop_thing(context, match)
-
-          {:ok, matches} when length(matches) > 1 ->
-            Util.handle_multiple_items(
-              context,
-              Enum.map(matches, & &1.short_description),
-              matches,
-              "Which thing did you wish to drop?",
-              ""
-            )
-
-          _ ->
-            ExecutionContext.append_output(
-              context,
-              context.character.id,
-              "Could not find what you were attempting to drop.",
-              "error"
-            )
-            |> ExecutionContext.set_success()
+        if item.holdable_held_by_id == context.character.id do
+          drop_thing(context, item)
+        else
+          Util.dave_error(context)
         end
+      else
+        find_thing_to_drop(context)
       end
     end
   end
 
-  defp drop_thing(context, match) do
-    Item.update!(match.match, %{
-      holdable_held_by_id: nil,
-      holdable_hand: nil,
-      area_id: context.character.area_id
-    })
+  defp find_thing_to_drop(context) do
+    held_items = Character.list_held_items(context.character)
+
+    if length(held_items) == 0 do
+      context
+      |> ExecutionContext.append_error("You aren't holding anything.")
+      |> ExecutionContext.set_success()
+    else
+      ast = context.command.ast
+
+      matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
+
+      case matches do
+        {:ok, [match]} ->
+          drop_thing(context, match.match)
+
+        {:ok, matches} when length(matches) > 1 ->
+          Util.multiple_error(context)
+
+        _ ->
+          context
+          |> ExecutionContext.append_error("Could not find what you were attempting to drop.")
+          |> ExecutionContext.set_success()
+      end
+    end
+  end
+
+  defp drop_thing(context, item) do
+    item =
+      Item.update!(item, %{
+        holdable_held_by_id: nil,
+        holdable_hand: nil,
+        area_id: context.character.area_id
+      })
 
     other_msg =
       "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
-        match.short_description
+        item.short_description
       }{{/item}} on the ground."
 
-    self_msg = "You drop {{item}}#{match.short_description}{{/item}} on the ground."
+    self_msg = "You drop {{item}}#{item.short_description}{{/item}} on the ground."
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -118,11 +114,11 @@ defmodule Mud.Engine.Command.Drop do
     )
     |> ExecutionContext.append_event(
       [context.character_id | others],
-      UpdateArea.new(:add, match.match)
+      UpdateArea.new(:add, item)
     )
     |> ExecutionContext.append_event(
       context.character_id,
-      UpdateInventory.new(:remove, match.match)
+      UpdateInventory.new(:remove, item)
     )
     |> ExecutionContext.set_success()
   end
