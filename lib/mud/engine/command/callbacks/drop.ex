@@ -44,7 +44,7 @@ defmodule Mud.Engine.Command.Drop do
       if Util.is_uuid4(context.command.ast.thing.input) do
         item = Item.get!(context.command.ast.thing.input)
 
-        if item.holdable_held_by_id == context.character.id do
+        if Util.is_item_on_character?(item, context.character) do
           drop_thing(context, item)
         else
           Util.dave_error(context)
@@ -83,10 +83,14 @@ defmodule Mud.Engine.Command.Drop do
   defp drop_thing(context, item) do
     item =
       Item.update!(item, %{
+        container_id: nil,
+        holdable_is_held: false,
         holdable_held_by_id: nil,
         holdable_hand: nil,
         area_id: context.character.area_id
       })
+
+    all_items = Item.list_all_recursive(item)
 
     other_msg =
       "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
@@ -111,11 +115,11 @@ defmodule Mud.Engine.Command.Drop do
     )
     |> ExecutionContext.append_event(
       [context.character_id | others],
-      UpdateArea.new(:add, item)
+      UpdateArea.new(:add, all_items)
     )
     |> ExecutionContext.append_event(
       context.character_id,
-      UpdateInventory.new(:remove, item)
+      UpdateInventory.new(:remove, all_items)
     )
   end
 end

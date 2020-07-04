@@ -51,6 +51,11 @@ defmodule Mud.Engine.Command.Stow do
             if Util.is_uuid4(ast.thing.input) do
               item = Item.get!(ast.thing.input)
 
+              IO.inspect({item, context.character}, label: :stow)
+              IO.inspect(item.holdable_held_by_id == context.character.id, label: :stow)
+              IO.inspect(item.area_id == context.character.area_id, label: :stow)
+              IO.inspect(not is_nil(item.container_id), label: :stow)
+
               cond do
                 item.holdable_held_by_id == context.character.id ->
                   stow_items(context, [item], primary_container, true)
@@ -135,6 +140,10 @@ defmodule Mud.Engine.Command.Stow do
 
     others = Character.list_active_in_areas(context.character.id)
 
+    all_items = Item.list_all_recursive(items)
+    IO.inspect(items, label: :items)
+    IO.inspect(all_items, label: :all_items)
+
     if private do
       ExecutionContext.append_event(
         context,
@@ -145,11 +154,11 @@ defmodule Mud.Engine.Command.Stow do
       context
       |> ExecutionContext.append_event(
         context.character_id,
-        UpdateInventory.new(:add, items)
+        UpdateInventory.new(:add, all_items)
       )
       |> ExecutionContext.append_event(
         [context.character_id | others],
-        UpdateArea.new(:remove, items)
+        UpdateArea.new(:remove, all_items)
       )
     end
     |> ExecutionContext.append_output(

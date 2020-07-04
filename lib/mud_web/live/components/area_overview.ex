@@ -197,6 +197,17 @@ defmodule MudWeb.Live.Component.AreaOverview do
      )}
   end
 
+  def handle_event("send", %{"command" => command}, socket) do
+    send_command(socket.assigns.character_id, command)
+
+    {:noreply, socket}
+  end
+
+  defp send_command(character_id, text) do
+    %Mud.Engine.Message.Input{id: UUID.uuid4(), to: character_id, text: text, type: :silent}
+    |> Mud.Engine.Session.cast_message_or_event()
+  end
+
   defp init_area_data(socket) do
     area_id = socket.assigns.id
     character_id = socket.assigns.character_id

@@ -187,6 +187,8 @@ defmodule Mud.Engine.Command.Get do
       others =
         Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
+      all_items = Item.list_all_recursive(item)
+
       context
       |> ExecutionContext.append_output(
         others,
@@ -202,11 +204,11 @@ defmodule Mud.Engine.Command.Get do
       )
       |> ExecutionContext.append_event(
         context.character_id,
-        UpdateInventory.new(:add, item)
+        UpdateInventory.new(:add, all_items)
       )
       |> ExecutionContext.append_event(
         [context.character_id | others],
-        UpdateArea.new(:remove, item)
+        UpdateArea.new(:remove, all_items)
       )
     else
       context
@@ -449,22 +451,24 @@ defmodule Mud.Engine.Command.Get do
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
+    all_items = Item.list_all_recursive(items)
+
     context =
       if private do
         ExecutionContext.append_event(
           context,
           context.character_id,
-          UpdateInventory.new(:update, [thing.match | items])
+          UpdateInventory.new(:update, [thing.match | all_items])
         )
       else
         context
         |> ExecutionContext.append_event(
           context.character_id,
-          UpdateInventory.new(:add, [thing.match | items])
+          UpdateInventory.new(:add, [thing.match | all_items])
         )
         |> ExecutionContext.append_event(
           [context.character_id | others],
-          UpdateArea.new(:remove, [thing.match | items])
+          UpdateArea.new(:remove, [thing.match | all_items])
         )
       end
 

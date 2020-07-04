@@ -8,7 +8,6 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.Character
   require Logger
 
   @type id :: String.t()
@@ -213,8 +212,6 @@ defmodule Mud.Engine.Item do
     |> Repo.one()
   end
 
-  @spec get_primary_container(character_id :: binary || character :: Character.t()) ::
-          nil | %__MODULE__{}
   def get_primary_container(character_id) when is_binary(character_id) do
     from(
       item in __MODULE__,
@@ -243,12 +240,11 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_recursive(items) do
-    Logger.debug(inspect(items))
+    Logger.debug(inspect(items), label: :list_all_recursive)
     ids = Enum.map(List.wrap(items), & &1.id)
 
     item_tree_initial_query =
       __MODULE__
-      |> where([i], is_nil(i.container_id))
       |> where([i], i.id in ^ids)
 
     item_tree_recursion_query =
@@ -417,7 +413,7 @@ defmodule Mud.Engine.Item do
 
     item_tree_recursion_query =
       __MODULE__
-      |> join(:inner, [i], it in "item_tree", on: i.id == it.container_id)
+      |> join(:inner, [i], it in "item_tree", on: i.container_id == it.id)
 
     item_tree_query =
       item_tree_initial_query

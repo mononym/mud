@@ -80,6 +80,8 @@ defmodule Mud.Engine.Command.Wear do
 
   @spec wear_thing(ExecutionContext.t(), Mud.Engine.Item.t()) :: ExecutionContext.t()
   defp wear_thing(context, item) do
+    primary_container = Item.get_primary_container(context.character.id)
+
     if item.is_wearable do
       item =
         Item.update!(item, %{
@@ -87,7 +89,8 @@ defmodule Mud.Engine.Command.Wear do
           wearable_is_worn: true,
           holdable_held_by_id: nil,
           holdable_is_held: false,
-          holdable_hand: nil
+          holdable_hand: nil,
+          container_primary: item.is_container and is_nil(primary_container)
         })
 
       others =

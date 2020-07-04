@@ -137,6 +137,7 @@ defmodule MudWeb.Live.Component.CharacterInventory do
 
   defp init_inventory_data(socket) do
     all_items = Item.list_held_or_worn_items_and_children(socket.assigns.id)
+    IO.inspect(all_items)
 
     socket
     |> assign(:items, to_index(all_items))
