@@ -2,12 +2,25 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Item}
+  alias Mud.Engine.{Character, Link, Item, Region}
+  import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
     field(:description, :string)
     field(:name, :string)
+
+    ##
+    ##
+    # Map stuff
+    ##
+    ##
+
+    field(:map_x, :integer)
+    field(:map_y, :integer)
+    field(:map_size, :integer)
+
+    belongs_to(:region, Region, type: :binary_id)
 
     has_many(:characters, Character)
     has_many(:items, Item)
@@ -29,6 +42,20 @@ defmodule Mud.Engine.Area do
   @spec list_all() :: [%__MODULE__{}]
   def list_all do
     Repo.all(__MODULE__)
+  end
+
+  @spec list_in_region(region :: struct() | String.t()) :: [%__MODULE__{}]
+  def list_in_region(region) when is_struct(region) do
+    list_in_region(region.id)
+  end
+
+  def list_in_region(region_id) do
+    Repo.all(
+      from(
+        area in __MODULE__,
+        where: area.region_id == ^region_id
+      )
+    )
   end
 
   @doc """

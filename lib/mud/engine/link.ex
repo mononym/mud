@@ -71,6 +71,20 @@ defmodule Mud.Engine.Link do
     Repo.all(__MODULE__)
   end
 
+  def list_in_region(region) when is_struct(region) do
+    list_in_region(region.id)
+  end
+
+  def list_in_region(region_id) do
+    Repo.all(
+      from(
+        link in __MODULE__,
+        join: area in Area,
+        on: area.region_id == ^region_id
+      )
+    )
+  end
+
   @doc """
   Returns the list of links "from" a room where the type of the link is "obvious".
 

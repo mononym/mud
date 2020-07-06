@@ -242,7 +242,7 @@ defmodule Mud.Engine.Command.Put do
     item = item_match.match
 
     Item.update!(item, %{
-      hand: nil,
+      holdable_hand: nil,
       holdable_held_by_id: nil,
       holdable_is_held: false,
       container_id: container.id

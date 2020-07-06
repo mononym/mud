@@ -1,21 +1,24 @@
 <div class="pl-4 min-w-full flex flex-col flex-shrink text-lg">
   <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
-    <%= if @item_index[@id].container_closeable do %>
+    <%= if @item_index[@id].is_container do %>
       <div class="flex-shrink"><i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item_index[@id].container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
     <% end %>
     <div class="flex-shrink"><i class="<%= @item_index[@id].icon %>"></i>&nbsp;<%= @item_index[@id].short_description %></div>
+    <%= if @item_index[@id].is_container do %>
+      <div>&nbsp;(<%= length(@child_index[@id] || []) %>)</div>
+    <% end %>
     <div class="flex flex-1 pl-4">
     <%= if @item_index[@id].is_furniture and not is_nil(@item_index[@id].area_id) do %>
       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="send" phx-value-command="sit <%= @id %>">
-        sit
+        Sit
       </button>
     <% end %>
     <%= if @item_index[@id].is_holdable do %>
       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="send" phx-value-command="get <%= @id %>">
-        get
+        Get
       </button>
       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="send" phx-value-command="stow <%= @id %>">
-        stow
+        Stow
       </button>
     <% end %>
     </div>

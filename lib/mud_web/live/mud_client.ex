@@ -103,6 +103,8 @@ defmodule MudWeb.MudClientLive do
   def handle_cast(%Event{event: event = %UpdateCharacter{}}, socket) do
     IO.puts("HANDLE BROADCAST FOR UPDATE CHARACTER")
 
+    send_update(Map, id: socket.assigns.character.id, area_id: socket.assigns.character.area_id)
+
     {:noreply, assign(socket, :character, event.character)}
   end
 

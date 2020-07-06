@@ -9,12 +9,21 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+alias Mud.Engine.{Region, Area, Link}
+
+# Region insertions
+region =
+  Mud.Repo.insert!(%Region{
+    name: "Royal Gardens"
+  })
 
 # Room insertions
-alias Mud.Engine.{Area, Link}
-
 center_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3000,
+    map_size: 20,
+    region_id: region.id,
     name: "Water Fountain",
     description:
       "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors."
@@ -22,6 +31,10 @@ center_room =
 
 east_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3050,
+    map_y: 3000,
+    map_size: 20,
+    region_id: region.id,
     name: "East Garden Path",
     description:
       "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
@@ -29,6 +42,10 @@ east_room =
 
 west_room =
   Mud.Repo.insert!(%Area{
+    map_x: 2950,
+    map_y: 3000,
+    map_size: 20,
+    region_id: region.id,
     name: "West Garden Path",
     description:
       "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
@@ -36,6 +53,10 @@ west_room =
 
 north_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 2950,
+    map_size: 20,
+    region_id: region.id,
     name: "North Garden Path",
     description:
       "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
@@ -43,6 +64,10 @@ north_room =
 
 south_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3050,
+    map_size: 20,
+    region_id: region.id,
     name: "South Garden Path",
     description:
       "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
@@ -50,6 +75,10 @@ south_room =
 
 northeast_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3050,
+    map_y: 2950,
+    map_size: 20,
+    region_id: region.id,
     name: "NorthEast Garden Path",
     description:
       "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
@@ -57,6 +86,10 @@ northeast_room =
 
 southeast_room =
   Mud.Repo.insert!(%Area{
+    map_x: 3050,
+    map_y: 3050,
+    map_size: 20,
+    region_id: region.id,
     name: "SouthEast Garden Path",
     description:
       "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
@@ -64,6 +97,10 @@ southeast_room =
 
 northwest_room =
   Mud.Repo.insert!(%Area{
+    map_x: 2950,
+    map_y: 2950,
+    map_size: 20,
+    region_id: region.id,
     name: "NorthWest Garden Path",
     description:
       "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
@@ -71,6 +108,10 @@ northwest_room =
 
 southwest_room =
   Mud.Repo.insert!(%Area{
+    map_x: 2950,
+    map_y: 3050,
+    map_size: 20,
+    region_id: region.id,
     name: "SouthWest Garden Path",
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."

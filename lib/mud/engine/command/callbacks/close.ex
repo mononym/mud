@@ -11,165 +11,110 @@ defmodule Mud.Engine.Command.Close do
     - close pouch in backpack
   """
 
-  alias Mud.Repo
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
-  alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Command.SingleTargetCallback
   alias Mud.Engine.{Character, Item}
 
   require Logger
 
-  @behaviour Mud.Engine.Command.Callback
+  use Mud.Engine.Command.Callback
 
-  defp target_types(), do: [:item]
-
-  @doc false
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
-          Mud.Engine.Command.AstNode.ThingAndPlace.t()
+          Mud.Engine.Command.AstNode.OneThing.t()
   def build_ast(ast_nodes) do
-    Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
-  end
-
-  @doc false
-  @impl true
-  def continue(context) do
-    target = Util.refresh_thing(context.input.match)
-
-    cond do
-      context.character.area_id == target.area_id ->
-        do_thing_to_match(context, %{context.input | match: target}, false)
-
-      context.character.id == target.worn_by_id ->
-        do_thing_to_match(context, %{context.input | match: target}, true)
-
-      true ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          "The #{context.input.short_description} is no longer present.",
-          "error"
-        )
-    end
+    Mud.Engine.Command.AstUtil.build_one_thing_ast(ast_nodes)
   end
 
   @impl true
   def execute(context) do
-    {input, which_target} = extract_input_and_target(context.command.ast)
+    ast = context.command.ast
 
-    result =
-      Search.find_matches_in_area_v2(
-        target_types(),
-        context.character.area_id,
-        input,
-        which_target
+    if is_nil(ast.thing) do
+      ExecutionContext.append_output(
+        context,
+        context.character.id,
+        Util.get_module_docs(__MODULE__),
+        "error"
       )
+    else
+      if Util.is_uuid4(context.command.ast.thing.input) do
+        item = Item.get!(context.command.ast.thing.input)
 
-    multi_error = "Which of these did you intend to close?"
-    too_many = "You can't possibly close all of those at once. Please be more specific."
-
-    case result do
-      {:ok, [match]} ->
-        do_thing_to_match(context, match, false)
-
-      {:ok, matches} ->
-        SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
-
-      {:error, _} ->
-        character = Repo.preload(context.character, :worn_items)
-        worn_items = character.worn_items
-
-        case Search.generate_matches(worn_items, input, which_target) do
-          {:ok, [match]} ->
-            do_thing_to_match(context, match, true)
-
-          {:ok, matches} ->
-            SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
+        if Util.is_item_on_character?(item, context.character) do
+          close_thing(context, item)
+        else
+          Util.dave_error(context)
         end
+      else
+        find_thing_to_close(context)
+      end
     end
   end
 
-  defp extract_input_and_target(ast) do
-    cond do
-      ast.generations == 3 ->
-        target = ast[:my][:number][:input]
-        input = ast[:my][:number][:target][:input]
+  defp find_thing_to_close(context) do
+    # held_items = Character.list_held_items(context.character)
 
-        {input, target}
+    # if length(held_items) == 0 do
+    #   context
+    #   |> ExecutionContext.append_error("You aren't holding anything.")
+    # else
+    #   ast = context.command.ast
 
-      ast.generations == 2 and ast[:number] != nil ->
-        target = ast[:number][:input]
-        input = ast[:number][:target][:input]
+    #   matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
 
-        {input, target}
+    #   case matches do
+    #     {:ok, [match]} ->
+    #       close_thing(context, match.match)
 
-      ast.generations == 2 ->
-        input = ast[:number][:target][:input]
+    #     {:ok, matches} when length(matches) > 1 ->
+    #       Util.multiple_error(context)
 
-        {input, 0}
-
-      true ->
-        input = ast[:target][:input]
-
-        {input, 0}
-    end
+    #     _ ->
+    #       context
+    #       |> ExecutionContext.append_error("Could not find what you were attempting to close.")
+    #   end
+    # end
+    context
   end
 
-  @spec do_thing_to_match(ExecutionContext.t(), Mud.Engine.Match.t(), boolean()) ::
-          ExecutionContext.t()
-  defp do_thing_to_match(context, match, private) do
-    item = match.match
+  defp close_thing(context, item) do
+    item =
+      Item.update!(item, %{
+        container_open: false
+      })
 
-    cond do
-      item.is_container and item.container_open ->
-        Item.update!(item, %{container_open: false})
+    other_msg =
+      "{{character}}#{context.character.name}{{/character}} closes {{item}}#{
+        item.short_description
+      }{{/item}}."
 
-        others =
-          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+    self_msg = "You close {{item}}#{item.short_description}{{/item}}."
 
-        context =
-          if private do
-            ExecutionContext.append_event(
-              context,
-              context.character_id,
-              UpdateInventory.new(:update, item)
-            )
-          else
-            ExecutionContext.append_event(
-              context,
-              [context.character_id | others],
-              UpdateArea.new(:update, item)
-            )
-          end
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
-        context
-        |> ExecutionContext.append_output(
-          others,
-          "#{context.character.name} closed #{match.short_description}.",
-          "info"
-        )
-        |> ExecutionContext.append_output(
-          context.character.id,
-          String.capitalize("#{match.short_description} is now closed."),
-          "info"
-        )
+    # context =
+    #   if is_nil()
 
-      item.is_container and not item.container_open ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          String.capitalize("#{match.short_description} is already closed."),
-          "error"
-        )
-
-      not item.is_container ->
-        ExecutionContext.append_output(
-          context,
-          context.character.id,
-          String.capitalize("#{match.short_description} cannot be closed."),
-          "error"
-        )
-    end
+    context
+    |> ExecutionContext.append_output(
+      others,
+      other_msg,
+      "info"
+    )
+    |> ExecutionContext.append_output(
+      context.character.id,
+      self_msg,
+      "info"
+    )
+    |> ExecutionContext.append_event(
+      [context.character_id | others],
+      UpdateArea.new(:add, item)
+    )
+    |> ExecutionContext.append_event(
+      context.character_id,
+      UpdateInventory.new(:remove, item)
+    )
   end
 end

@@ -1,12 +1,15 @@
 <div class="pl-4 min-w-full flex flex-col flex-shrink text-lg">
   <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
-    <%= if @item.container_closeable do %>
+    <%= if @item.is_container do %>
       <div class="flex-shrink"><i phx-click="send" phx-value-command="<%= if @item.container_open do "close" else "open" end %> <%= @item.id %>" class="fas fa-<%= if @item.container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
       <%= if not is_nil(@item.wearable_worn_by_id) do %>
         <div class="flex-shrink"><i phx-click="set_primary_container" phx-value-id="<%= @item.id%>" class="<%= if @item.container_primary do "fas fa-star" else "far fa-star" end %>"></i>&nbsp;</div>
       <% end %>
     <% end %>
     <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %></div>
+    <%= if @item_index[@id].is_container do %>
+      <div>&nbsp;(<%= length(@child_index[@id] || []) %>)</div>
+    <% end %>
     <div class="flex flex-1 pl-4">
       <%# holding item %>
       <%= if @item.holdable_is_held do %>
