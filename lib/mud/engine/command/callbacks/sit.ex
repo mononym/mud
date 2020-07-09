@@ -14,7 +14,7 @@ defmodule Mud.Engine.Command.Sit do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Util
   alias Mud.Engine.Search
@@ -30,7 +30,7 @@ defmodule Mud.Engine.Command.Sit do
   end
 
   @impl true
-  def execute(%ExecutionContext{} = context) do
+  def execute(%Context{} = context) do
     ast = context.command.ast
 
     if is_nil(ast.thing) do
@@ -49,7 +49,7 @@ defmodule Mud.Engine.Command.Sit do
       if item.area_id == context.character.area_id do
         make_character_sit(context, item)
       else
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
@@ -70,7 +70,7 @@ defmodule Mud.Engine.Command.Sit do
           make_character_sit(context, thing.match)
 
         {:ok, _matches} ->
-          ExecutionContext.append_output(
+          Context.append_output(
             context,
             context.character.id,
             "Multiple potential places to sit found. Please be more specific.",
@@ -78,7 +78,7 @@ defmodule Mud.Engine.Command.Sit do
           )
 
         {:error, :no_match} ->
-          ExecutionContext.append_output(
+          Context.append_output(
             context,
             context.character.id,
             "Could not find anywhere to sit.",
@@ -88,14 +88,14 @@ defmodule Mud.Engine.Command.Sit do
     end
   end
 
-  @spec make_character_sit(context :: ExecutionContext.t(), furniture_object :: Object.t() | nil) ::
-          ExecutionContext.t()
+  @spec make_character_sit(context :: Context.t(), furniture_object :: Object.t() | nil) ::
+          Context.t()
   defp make_character_sit(context, furniture_object \\ nil) do
     char = context.character
 
     cond do
       char.position == Character.sitting() ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,
@@ -117,25 +117,25 @@ defmodule Mud.Engine.Command.Sit do
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             others,
             "#{context.character.name} sits down.",
             "info"
           )
         )
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             context.character.id,
             "You sit down.",
             "info"
           )
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           others,
           UpdateArea.new(:update, char)
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           context.character.id,
           UpdateCharacter.new(:update, char)
         )
@@ -154,31 +154,31 @@ defmodule Mud.Engine.Command.Sit do
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             others,
             "#{context.character.name} sits down on #{furniture_object.short_description}.",
             "info"
           )
         )
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             context.character.id,
             "You sit down on #{furniture_object.short_description}.",
             "info"
           )
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           others,
           UpdateArea.new(:update, char)
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           context.character.id,
           UpdateCharacter.new(:update, char)
         )
 
       true ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,

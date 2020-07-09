@@ -14,7 +14,7 @@ defmodule Mud.Engine.Command.Kick do
   """
 
   alias Mud.Engine.Util
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Command.SingleTargetCallback
   alias Mud.Engine.{Character, Item}
 
@@ -59,7 +59,7 @@ defmodule Mud.Engine.Command.Kick do
               "It's...it's gone! It's just not there! Maybe try again?"
           end
 
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           error_msg,
@@ -68,13 +68,13 @@ defmodule Mud.Engine.Command.Kick do
     end
   end
 
-  @spec do_thing_to_match(ExecutionContext.t(), nil | Character.t() | Item.t()) ::
-          ExecutionContext.t()
+  @spec do_thing_to_match(Context.t(), nil | Character.t() | Item.t()) ::
+          Context.t()
   defp do_thing_to_match(context, match) do
     char = context.character
 
     if char.position != Character.standing() do
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         "You must be standing to do that.",
@@ -87,12 +87,12 @@ defmodule Mud.Engine.Command.Kick do
             Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
           context
-          |> ExecutionContext.append_output(
+          |> Context.append_output(
             others,
             "#{context.character.name} looks ready to kick #{character.name}!",
             "info"
           )
-          |> ExecutionContext.append_output(
+          |> Context.append_output(
             context.character.id,
             "Violence is...sometimes the answer. But not this time.",
             "info"
@@ -103,12 +103,12 @@ defmodule Mud.Engine.Command.Kick do
             Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
           context
-          |> ExecutionContext.append_output(
+          |> Context.append_output(
             others,
             "#{context.character.name} looks ready to kick #{match.short_description}!",
             "info"
           )
-          |> ExecutionContext.append_output(
+          |> Context.append_output(
             context.character.id,
             "What would kicking that solve?",
             "info"

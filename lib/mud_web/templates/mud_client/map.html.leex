@@ -27,7 +27,7 @@
       <line x1="<%= line.x1 %>" y1="<%= line.y1 %>" x2="<%= line.x2 %>" y2="<%= line.y2 %>" stroke="white"></line>
     <% end %>
     <%= for square <- @squares do %>
-    <rect x="<%= square.x %>" y="<%= square.y %>" width="<%= square.size %>" height="<%= square.size %>" fill="<%= square.color %>"><title><%= square.name %></title></rect>
+    <rect class="cursor-pointer" x="<%= square.x %>" y="<%= square.y %>" width="<%= square.size %>" height="<%= square.size %>" fill="<%= square.color %>" phx-click="send" phx-value-command="travel <%= square.id %>"><title><%= square.name %></title></rect>
     <% end %>
   </svg>
 </div>

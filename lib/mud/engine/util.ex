@@ -3,8 +3,8 @@ defmodule Mud.Engine.Util do
   Helper functions.
   """
 
-  import Mud.Engine.Command.ExecutionContext
-  alias Mud.Engine.Command.ExecutionContext
+  import Mud.Engine.Command.Context
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
   alias Mud.Engine.{Area, Character, Link, Item}
   alias Mud.Engine.Event.Client.UpdateInventory
@@ -143,13 +143,13 @@ defmodule Mud.Engine.Util do
       )
 
   @spec handle_multiple_items(
-          Mud.Engine.Command.ExecutionContext.t(),
+          Mud.Engine.Command.Context.t(),
           [Mud.Engine.Search.Match.t()],
           ContinuationData.t(),
           String.t(),
           String.t()
         ) ::
-          Mud.Engine.Command.ExecutionContext.t()
+          Mud.Engine.Command.Context.t()
   def handle_multiple_items(
         context,
         lines,
@@ -174,7 +174,7 @@ defmodule Mud.Engine.Util do
         _multiple_items_err,
         too_many_items_err
       ) do
-    ExecutionContext.append_output(
+    Context.append_output(
       context,
       context.character.id,
       too_many_items_err,
@@ -222,7 +222,7 @@ defmodule Mud.Engine.Util do
   end
 
   def dave_error(context) do
-    ExecutionContext.append_output(
+    Context.append_output(
       context,
       context.character.id,
       "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
@@ -231,7 +231,7 @@ defmodule Mud.Engine.Util do
   end
 
   def multiple_error(context) do
-    ExecutionContext.append_output(
+    Context.append_output(
       context,
       context.character.id,
       "Multiple matches found. Please be more specific.",
@@ -257,7 +257,7 @@ defmodule Mud.Engine.Util do
       new_primary ->
         {:ok, new_primary} = Item.update(new_primary, %{container_primary: true})
 
-        ExecutionContext.append_event(
+        Context.append_event(
           context,
           context.character_id,
           UpdateInventory.new(:update, new_primary)
@@ -268,8 +268,6 @@ defmodule Mud.Engine.Util do
   def is_item_on_character?(item, character) do
     items = Item.list_all_recursive_parents(item)
     parent = Enum.find(items, &is_nil(&1.container_id))
-
-    IO.inspect({items, parent, character}, label: :on_char)
 
     parent.wearable_worn_by_id == character.id or parent.holdable_held_by_id == character.id
   end
@@ -288,4 +286,30 @@ defmodule Mud.Engine.Util do
 
     parent.area_id == character.area_id
   end
+
+  # Check to see if the gzip header is present, and if it is gunzip first.
+  def unpack_term(<<31::size(8), 139::size(8), 8::size(8), _rest::binary>> = bin) do
+    try do
+      bin
+      |> :zlib.gunzip()
+      |> :erlang.binary_to_term()
+    rescue
+      :data_error ->
+        :erlang.binary_to_term(bin)
+    end
+  end
+
+  def unpack_term(bin), do: :erlang.binary_to_term(bin)
+
+  def pack_term(term) do
+    bin = :erlang.term_to_binary(term)
+
+    if byte_size(bin) >= 1024 do
+      :zlib.gzip(bin)
+    else
+      bin
+    end
+  end
+
+  def via(registry, key), do: {:via, Registry, {registry, key}}
 end

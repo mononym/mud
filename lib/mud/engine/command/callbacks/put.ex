@@ -17,7 +17,7 @@ defmodule Mud.Engine.Command.Put do
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
   alias Mud.Engine.Character
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
   alias Mud.Engine.Search
   alias Mud.Repo
@@ -45,7 +45,7 @@ defmodule Mud.Engine.Command.Put do
       context = %{context | character: character}
 
       if length(character.held_items) == 0 do
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Your hands are empty.",
@@ -82,7 +82,7 @@ defmodule Mud.Engine.Command.Put do
 
           # no held items match
           {:error, :no_match} ->
-            ExecutionContext.append_output(
+            Context.append_output(
               context,
               context.character.id,
               "You are not holding any such item.",
@@ -92,7 +92,7 @@ defmodule Mud.Engine.Command.Put do
       end
     else
       # get help docs if get command was entered without additional input
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         Util.get_module_docs(__MODULE__),
@@ -151,7 +151,7 @@ defmodule Mud.Engine.Command.Put do
         Util.multiple_error(context)
 
       _error ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Could not find where you wished to put {{item}}#{item_match.short_description}{{/item}}.",
@@ -207,30 +207,30 @@ defmodule Mud.Engine.Command.Put do
 
     context =
       if private do
-        ExecutionContext.append_event(
+        Context.append_event(
           context,
           context.character_id,
           UpdateInventory.new(:update, item.match)
         )
       else
         context
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           context.character_id,
           UpdateInventory.new(:remove, item.match)
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           [context.character_id | others],
           UpdateArea.new(:add, item.match)
         )
       end
 
     context
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       others,
       others_msg,
       "info"
     )
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       context.character.id,
       self_msg,
       "info"

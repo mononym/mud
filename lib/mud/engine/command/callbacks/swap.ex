@@ -9,7 +9,7 @@ defmodule Mud.Engine.Command.Swap do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Event.Client.UpdateInventory
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
 
   require Logger
@@ -34,7 +34,7 @@ defmodule Mud.Engine.Command.Swap do
       end)
 
     context =
-      ExecutionContext.append_event(
+      Context.append_event(
         context,
         context.character_id,
         UpdateInventory.new(:update, items)
@@ -55,12 +55,12 @@ defmodule Mud.Engine.Command.Swap do
         others = Character.list_active_in_areas(context.character.area_id)
 
         context
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           others,
           other_msg,
           "info"
         )
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           context.character.id,
           msg,
           "info"
@@ -85,19 +85,19 @@ defmodule Mud.Engine.Command.Swap do
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           others,
           other_msg,
           "info"
         )
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           context.character.id,
           msg,
           "info"
         )
 
       [] ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "You aren't holding anything.",

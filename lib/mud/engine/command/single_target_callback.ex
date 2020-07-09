@@ -6,7 +6,7 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
   around a single matching item/character/link or no provided target at all. Anything else is an error.
   """
 
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Character
   alias Mud.Engine.Message
   alias Mud.Engine.Search
@@ -37,12 +37,12 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
   end
 
   @spec handle_multiple_matches(
-          Mud.Engine.Command.ExecutionContext.t(),
+          Mud.Engine.Command.Context.t(),
           [Mud.Engine.Search.Match.t()],
           String.t(),
           String.t()
         ) ::
-          Mud.Engine.Command.ExecutionContext.t()
+          Mud.Engine.Command.Context.t()
   def handle_multiple_matches(context, matches, multiple_matches_err, _too_many_matches_err)
       when length(matches) < 10 do
     descriptions = Enum.map(matches, & &1.short_description)
@@ -57,7 +57,7 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
   end
 
   def handle_multiple_matches(context, _matches, _multiple_matches_err, too_many_matches_err) do
-    ExecutionContext.append_message(
+    Context.append_message(
       context,
       Message.new_output(context.character.id, too_many_matches_err, "error")
     )

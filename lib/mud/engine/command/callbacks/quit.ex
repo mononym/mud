@@ -1,7 +1,7 @@
 defmodule Mud.Engine.Command.Quit do
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
 
   def build_ast(ast_nodes) do
@@ -11,7 +11,7 @@ defmodule Mud.Engine.Command.Quit do
   def execute(context) do
     context
     |> do_ingame_stuff()
-    |> ExecutionContext.terminate_session()
+    |> Context.terminate_session()
   end
 
   def do_ingame_stuff(context) do
@@ -23,14 +23,14 @@ defmodule Mud.Engine.Command.Quit do
     characters = Mud.Engine.Character.list_others_active_in_areas(character.id, character.area_id)
 
     context
-    |> ExecutionContext.append_message(
+    |> Context.append_message(
       Message.new_output(
         character.id,
         "Thank you for playing! Come back soon!",
         "warning"
       )
     )
-    |> ExecutionContext.append_message(
+    |> Context.append_message(
       Message.new_output(
         characters,
         "#{character.name} just left.",

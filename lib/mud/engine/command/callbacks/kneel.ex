@@ -14,7 +14,7 @@ defmodule Mud.Engine.Command.Kneel do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character}
   alias Mud.Engine.Search
   alias Mud.Engine.Message
@@ -24,12 +24,12 @@ defmodule Mud.Engine.Command.Kneel do
   import Mud.Engine.Util
 
   @impl true
-  def continue(%ExecutionContext{} = context) do
+  def continue(%Context{} = context) do
     make_character_kneel(context, context.input.match)
   end
 
   @impl true
-  def execute(%ExecutionContext{} = context) do
+  def execute(%Context{} = context) do
     ast = context.command.ast
 
     if ast[:target] != nil do
@@ -91,7 +91,7 @@ defmodule Mud.Engine.Command.Kneel do
       true ->
         error_msg = "You want to kneel on what?"
 
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(context.character.id, error_msg, "error")
         )
@@ -109,23 +109,23 @@ defmodule Mud.Engine.Command.Kneel do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many matches. Please be more specific."
 
-    ExecutionContext.append_message(
+    Context.append_message(
       context,
       Message.new_output(context.character.id, error_msg, "error")
     )
   end
 
   @spec make_character_kneel(
-          context :: ExecutionContext.t(),
+          context :: Context.t(),
           furniture_object :: Object.t() | nil
         ) ::
-          ExecutionContext.t()
+          Context.t()
   defp make_character_kneel(context, furniture_object \\ nil) do
     char = context.character
 
     cond do
       char.position == Character.kneeling() ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,
@@ -147,14 +147,14 @@ defmodule Mud.Engine.Command.Kneel do
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             others,
             "#{context.character.name} kneels down.",
             "info"
           )
         )
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             context.character.id,
             "You kneel down.",
@@ -176,14 +176,14 @@ defmodule Mud.Engine.Command.Kneel do
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
         context
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             others,
             "#{context.character.name} kneels down on #{furniture_object.short_description}.",
             "info"
           )
         )
-        |> ExecutionContext.append_message(
+        |> Context.append_message(
           Message.new_output(
             context.character.id,
             "You kneel down on #{furniture_object.short_description}.",
@@ -192,7 +192,7 @@ defmodule Mud.Engine.Command.Kneel do
         )
 
       true ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,

@@ -36,6 +36,7 @@ defmodule Mud.Engine.Session do
               inactivity_timer_type: :warning,
               input_buffer: [],
               input_processing_task: nil,
+              travel_task: nil,
               continuation_data: nil,
               is_continuation: false,
               continuation_module: nil,
@@ -280,17 +281,17 @@ defmodule Mud.Engine.Session do
         state
       end
 
-      state =
-        if length(state.undelivered_events) != 0 do
-          Map.values(updated_subscribers)
-          |> Enum.each(fn subscriber ->
-            GenServer.cast(subscriber.pid, zip_output(state.undelivered_events))
-          end)
+    state =
+      if length(state.undelivered_events) != 0 do
+        Map.values(updated_subscribers)
+        |> Enum.each(fn subscriber ->
+          GenServer.cast(subscriber.pid, zip_output(state.undelivered_events))
+        end)
 
-          %{state | undelivered_events: []}
-        else
-          state
-        end
+        %{state | undelivered_events: []}
+      else
+        state
+      end
 
     {:reply, :ok, %{state | subscribers: updated_subscribers}}
   end
@@ -423,7 +424,7 @@ defmodule Mud.Engine.Session do
         end
 
         execution_context =
-          Mud.Engine.Command.execute(%Mud.Engine.Command.ExecutionContext{
+          Mud.Engine.Command.execute(%Mud.Engine.Command.Context{
             id: input.id,
             character_id: input.to,
             input: input.text,

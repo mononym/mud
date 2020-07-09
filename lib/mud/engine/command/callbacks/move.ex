@@ -18,7 +18,7 @@ defmodule Mud.Engine.Command.Move do
     - move right
     - south
   """
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Area, Link}
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
   alias Mud.Engine.Search
@@ -34,17 +34,17 @@ defmodule Mud.Engine.Command.Move do
   end
 
   # @impl true
-  # def continue(%ExecutionContext{} = context) do
+  # def continue(%Context{} = context) do
   #   attempt_move(context.input.match, context)
   # end
 
   @impl true
-  def execute(%ExecutionContext{} = context) do
+  def execute(%Context{} = context) do
     ast = context.command.ast
 
     cond do
       ast.command in ["go", "move"] and is_nil(ast.thing) ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "{{help_docs}}#{Util.get_module_docs(__MODULE__)}{{/help_docs}}",
@@ -65,7 +65,7 @@ defmodule Mud.Engine.Command.Move do
           if link.from_id == context.character.area_id do
             attempt_move_link(context, link)
           else
-            ExecutionContext.append_output(
+            Context.append_output(
               context,
               context.character.id,
               "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
@@ -83,7 +83,7 @@ defmodule Mud.Engine.Command.Move do
   #     maybe_move(context, link)
   #   else
   #     context
-  #     |> ExecutionContext.append_message(
+  #     |> Context.append_message(
   #       Message.new_output(
   #         context.character_id,
   #         "{{error}}Unfortunately, your desired direction of travel is no longer possible.{{/error}}"
@@ -110,7 +110,7 @@ defmodule Mud.Engine.Command.Move do
         handle_multiple_matches(context, matches)
 
       _error ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,
@@ -132,17 +132,17 @@ defmodule Mud.Engine.Command.Move do
   defp handle_multiple_matches(context, _matches) do
     error_msg = "Found too many exits. Please be more specific."
 
-    ExecutionContext.append_message(
+    Context.append_message(
       context,
       Message.new_output(context.character.id, error_msg, "error")
     )
   end
 
   @doc """
-  Given an ExecutionContext containing a Character, nothing else required, and a link, attempt to move a Character.
+  Given an Context containing a Character, nothing else required, and a link, attempt to move a Character.
   """
-  @spec attempt_move_link(Mud.Engine.Command.ExecutionContext.t(), Mud.Engine.Link.t()) ::
-          Mud.Engine.Command.ExecutionContext.t()
+  @spec attempt_move_link(Mud.Engine.Command.Context.t(), Mud.Engine.Link.t()) ::
+          Mud.Engine.Command.Context.t()
   def attempt_move_link(context, link) do
     char = context.character
 
@@ -151,7 +151,7 @@ defmodule Mud.Engine.Command.Move do
     else
       error_msg = "You must be standing before you can move."
 
-      ExecutionContext.append_message(
+      Context.append_message(
         context,
         Message.new_output(context.character.id, error_msg, "error")
       )
@@ -172,14 +172,14 @@ defmodule Mud.Engine.Command.Move do
 
     # Perform look logic for character
     context
-    |> ExecutionContext.append_message(
+    |> Context.append_message(
       Message.new_output(
         context.character.id,
         Area.long_description(link.to_id, context.character)
       )
     )
     # Send messages to everyone in room that the character just left
-    |> ExecutionContext.append_message(
+    |> Context.append_message(
       Message.new_output(
         characters_by_area[link.from_id] || [],
         "#{character.name} left the area heading #{link.departure_text}.",
@@ -187,22 +187,22 @@ defmodule Mud.Engine.Command.Move do
       )
     )
     # Send messages to everyone in room that the character is arriving in
-    |> ExecutionContext.append_message(
+    |> Context.append_message(
       Message.new_output(
         characters_by_area[link.to_id] || [],
         "#{character.name} has entered the area from #{link.arrival_text}.",
         "info"
       )
     )
-    |> ExecutionContext.append_event(
+    |> Context.append_event(
       characters_by_area[link.from_id],
       UpdateArea.new(:remove, character)
     )
-    |> ExecutionContext.append_event(
+    |> Context.append_event(
       characters_by_area[link.to_id],
       UpdateArea.new(:add, character)
     )
-    |> ExecutionContext.append_event(
+    |> Context.append_event(
       character.id,
       UpdateCharacter.new(character)
     )

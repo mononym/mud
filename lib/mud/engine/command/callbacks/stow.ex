@@ -16,7 +16,7 @@ defmodule Mud.Engine.Command.Stow do
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
   alias Mud.Engine.Character
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
   alias Mud.Engine.Search
 
@@ -32,7 +32,7 @@ defmodule Mud.Engine.Command.Stow do
   def execute(context) do
     case Item.get_primary_container(context.character) do
       nil ->
-        ExecutionContext.append_error(
+        Context.append_error(
           context,
           "You must be wearing at least one container and have a primary container chosen for STOW to work."
         )
@@ -104,7 +104,7 @@ defmodule Mud.Engine.Command.Stow do
             Util.multiple_error(context)
 
           _error ->
-            ExecutionContext.append_error(
+            Context.append_error(
               context,
               "Could not find anything like that to stow. Please try again."
             )
@@ -145,30 +145,30 @@ defmodule Mud.Engine.Command.Stow do
     IO.inspect(all_items, label: :all_items)
 
     if private do
-      ExecutionContext.append_event(
+      Context.append_event(
         context,
         context.character_id,
         UpdateInventory.new(:update, items)
       )
     else
       context
-      |> ExecutionContext.append_event(
+      |> Context.append_event(
         context.character_id,
         UpdateInventory.new(:add, all_items)
       )
-      |> ExecutionContext.append_event(
+      |> Context.append_event(
         [context.character_id | others],
         UpdateArea.new(:remove, all_items)
       )
     end
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       others,
       "{{character}}#{context.character.name}{{/character}} stowed #{desc_string} in their {{item}}#{
         primary_container.short_description
       }{{/item}}.",
       "info"
     )
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       context.character.id,
       "{{item}}#{String.capitalize(primary_container.short_description)}{{/item}} now contains #{
         desc_string

@@ -15,7 +15,7 @@ defmodule Mud.Engine.Command.Get do
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
   alias Mud.Engine.Character
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
   alias Mud.Engine.Search
   alias Mud.Repo
@@ -51,7 +51,7 @@ defmodule Mud.Engine.Command.Get do
       # No reason to go further if hands are full. Check them first.
       if length(character.held_items) == 2 do
         context
-        |> ExecutionContext.append_error("Your hands are full. Empty them first.")
+        |> Context.append_error("Your hands are full. Empty them first.")
       else
         case context.command.ast do
           # get thing from any container on character
@@ -77,7 +77,7 @@ defmodule Mud.Engine.Command.Get do
       end
     else
       # get help docs if get command was entered without additional input
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         Util.get_module_docs(__MODULE__),
@@ -163,9 +163,7 @@ defmodule Mud.Engine.Command.Get do
 
       {:ok, _things} ->
         context
-        |> ExecutionContext.append_error(
-          "Multiple potential items found, please be more specific."
-        )
+        |> Context.append_error("Multiple potential items found, please be more specific.")
 
       error ->
         error
@@ -190,31 +188,29 @@ defmodule Mud.Engine.Command.Get do
       all_items = Item.list_all_recursive(item)
 
       context
-      |> ExecutionContext.append_output(
+      |> Context.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
           thing.short_description
         }{{/item}} from the ground.",
         "info"
       )
-      |> ExecutionContext.append_output(
+      |> Context.append_output(
         context.character.id,
         "You pick up {{item}}#{thing.short_description}{{/item}}.",
         "info"
       )
-      |> ExecutionContext.append_event(
+      |> Context.append_event(
         context.character_id,
         UpdateInventory.new(:add, all_items)
       )
-      |> ExecutionContext.append_event(
+      |> Context.append_event(
         [context.character_id | others],
         UpdateArea.new(:remove, all_items)
       )
     else
       context
-      |> ExecutionContext.append_error(
-        "You cannot pick up {{item}}#{thing.short_description}{{/item}}."
-      )
+      |> Context.append_error("You cannot pick up {{item}}#{thing.short_description}{{/item}}.")
     end
   end
 
@@ -264,14 +260,14 @@ defmodule Mud.Engine.Command.Get do
           # multiple worn containers matched
           {:ok, _matches} ->
             context
-            |> ExecutionContext.append_error(
+            |> Context.append_error(
               "Multiple potential containers found, please be more specific."
             )
 
           # no worn containers matches
           {:error, :no_match} ->
             context
-            |> ExecutionContext.append_error("Could not find that container.")
+            |> Context.append_error("Could not find that container.")
         end
 
       # character is wearing exactly one container and the container has not been specified
@@ -286,16 +282,16 @@ defmodule Mud.Engine.Command.Get do
       # character is not wearing any containers and no container has been specified
       not is_nil(ast.place) and length(all_containers) == 0 ->
         context
-        |> ExecutionContext.append_error("Could not find that item.")
+        |> Context.append_error("Could not find that item.")
 
       # character is not wearing any containers and container has been specified
       is_nil(ast.place) and length(all_containers) == 0 ->
         context
-        |> ExecutionContext.append_error("Could not find where you wanted to get the item from.")
+        |> Context.append_error("Could not find where you wanted to get the item from.")
     end
   end
 
-  @spec check_worn_container(ExecutionContext.t(), Item.t()) :: ExecutionContext.t()
+  @spec check_worn_container(Context.t(), Item.t()) :: Context.t()
   defp check_worn_container(context, item) do
     character = context.character
 
@@ -315,19 +311,19 @@ defmodule Mud.Engine.Command.Get do
       item.container_locked and not character.auto_unlock_containers and
           not character.auto_open_containers ->
         context
-        |> ExecutionContext.append_error(
+        |> Context.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first."
         )
 
       item.container_locked and not character.auto_unlock_containers ->
         context
-        |> ExecutionContext.append_error(
+        |> Context.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first."
         )
 
       not item.container_open and not character.auto_open_containers ->
         context
-        |> ExecutionContext.append_error(
+        |> Context.append_error(
           "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first."
         )
     end
@@ -362,7 +358,7 @@ defmodule Mud.Engine.Command.Get do
           (item.is_container and item.container_locked and not character.auto_unlock_containers) or
               (item.is_container and not item.container_open and
                  not character.auto_open_containers) ->
-            ExecutionContext.append_output(
+            Context.append_output(
               context,
               context.character.id,
               "{{item}}#{place.short_description}{{/item}} must be open first.",
@@ -370,7 +366,7 @@ defmodule Mud.Engine.Command.Get do
             )
 
           not place.match.is_container ->
-            ExecutionContext.append_output(
+            Context.append_output(
               context,
               context.character.id,
               "{{item}}#{place.short_description}{{/item}} is not a container.",
@@ -379,7 +375,7 @@ defmodule Mud.Engine.Command.Get do
         end
 
       {:ok, _matches} ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Multiple potential containers found, please be more specific.",
@@ -391,7 +387,7 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
-  @spec find_thing(ExecutionContext.t(), Search.Match.t(), boolean()) :: ExecutionContext.t()
+  @spec find_thing(Context.t(), Search.Match.t(), boolean()) :: Context.t()
   defp find_thing(context, place, private) do
     ast = context.command.ast
 
@@ -400,7 +396,7 @@ defmodule Mud.Engine.Command.Get do
         get_thing_in_place(context, thing, place, private)
 
       {:multiple, _matches} ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Multiple potential matches found inside {{item}}#{place.short_description}{{/item}}, please be more specific.",
@@ -408,7 +404,7 @@ defmodule Mud.Engine.Command.Get do
         )
 
       {:error, :no_match} ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Could not find any matching item to get from {{item}}#{place.short_description}{{/item}}.",
@@ -438,11 +434,11 @@ defmodule Mud.Engine.Command.Get do
   end
 
   @spec get_thing_in_place(
-          Mud.Engine.Command.ExecutionContext.t(),
+          Mud.Engine.Command.Context.t(),
           Mud.Engine.Search.Match.t(),
           Mud.Engine.Search.Match.t(),
           boolean()
-        ) :: Mud.Engine.Command.ExecutionContext.t()
+        ) :: Mud.Engine.Command.Context.t()
   defp get_thing_in_place(context, thing, place, private) do
     character = context.character
 
@@ -455,30 +451,30 @@ defmodule Mud.Engine.Command.Get do
 
     context =
       if private do
-        ExecutionContext.append_event(
+        Context.append_event(
           context,
           context.character_id,
           UpdateInventory.new(:update, [thing.match | all_items])
         )
       else
         context
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           context.character_id,
           UpdateInventory.new(:add, [thing.match | all_items])
         )
-        |> ExecutionContext.append_event(
+        |> Context.append_event(
           [context.character_id | others],
           UpdateArea.new(:remove, [thing.match | all_items])
         )
       end
 
     context
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       others,
       others_msg,
       "info"
     )
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       context.character.id,
       self_msg,
       "info"

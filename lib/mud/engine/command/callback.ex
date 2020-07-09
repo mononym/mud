@@ -43,5 +43,5 @@ defmodule Mud.Engine.Command.Callback do
   @callback continue(context) :: context
 
   @typedoc "An execution context providing the required information to execute a command."
-  @type context :: %Mud.Engine.Command.ExecutionContext{}
+  @type context :: %Mud.Engine.Command.Context{}
 end

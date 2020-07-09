@@ -64,12 +64,12 @@ defmodule Mud.Util do
     end
   end
 
-  def retryable_transaction_v2(multi) do
-    retry with: exponential_backoff() |> cap(100) |> expiry(1_000),
+  def retryable_transaction_v2(multi_or_fun) do
+    retry with: exponential_backoff() |> jitter() |> cap(100) |> expiry(10_000),
           rescue_only: [Postgrex.Error] do
       Repo.transaction(fn ->
         Repo.query!("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
-        Repo.transaction(multi)
+        Repo.transaction(multi_or_fun) |> elem(1)
       end)
     after
       result -> result

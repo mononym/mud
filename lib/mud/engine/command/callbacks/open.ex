@@ -14,7 +14,7 @@ defmodule Mud.Engine.Command.Open do
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Util
   alias Mud.Engine.Search
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Command.SingleTargetCallback
   alias Mud.Engine.{Character, Item}
 
@@ -26,8 +26,8 @@ defmodule Mud.Engine.Command.Open do
 
   @doc false
   @impl true
-  @spec continue(Mud.Engine.Command.ExecutionContext.t()) ::
-          Mud.Engine.Command.ExecutionContext.t()
+  @spec continue(Mud.Engine.Command.Context.t()) ::
+          Mud.Engine.Command.Context.t()
   def continue(context) do
     target = Util.refresh_thing(context.input.match)
 
@@ -39,7 +39,7 @@ defmodule Mud.Engine.Command.Open do
         do_thing_to_match(context, %{context.input | match: target}, true)
 
       true ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "The #{context.input.short_description} is no longer present.",
@@ -50,8 +50,8 @@ defmodule Mud.Engine.Command.Open do
 
   @doc false
   @impl true
-  @spec execute(Mud.Engine.Command.ExecutionContext.t()) ::
-          Mud.Engine.Command.ExecutionContext.t()
+  @spec execute(Mud.Engine.Command.Context.t()) ::
+          Mud.Engine.Command.Context.t()
   def execute(context) do
     {input, which_target} = extract_input_and_target(context.command.ast)
 
@@ -113,8 +113,8 @@ defmodule Mud.Engine.Command.Open do
     end
   end
 
-  @spec do_thing_to_match(ExecutionContext.t(), Mud.Engine.Match.t(), boolean()) ::
-          ExecutionContext.t()
+  @spec do_thing_to_match(Context.t(), Mud.Engine.Match.t(), boolean()) ::
+          Context.t()
   defp do_thing_to_match(context, match, private) do
     item = match.match
 
@@ -127,13 +127,13 @@ defmodule Mud.Engine.Command.Open do
 
         context =
           if private do
-            ExecutionContext.append_event(
+            Context.append_event(
               context,
               context.character_id,
               UpdateInventory.new(:update, item)
             )
           else
-            ExecutionContext.append_event(
+            Context.append_event(
               context,
               [context.character_id | others],
               UpdateArea.new(:update, item)
@@ -141,19 +141,19 @@ defmodule Mud.Engine.Command.Open do
           end
 
         context
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           others,
           "#{context.character.name} opened #{match.short_description}.",
           "info"
         )
-        |> ExecutionContext.append_output(
+        |> Context.append_output(
           context.character.id,
           String.capitalize("#{match.short_description} is now open."),
           "info"
         )
 
       item.is_container and item.container_open ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           String.capitalize("#{match.short_description} is already open."),
@@ -161,7 +161,7 @@ defmodule Mud.Engine.Command.Open do
         )
 
       not item.is_container ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           String.capitalize("#{match.short_description} cannot be opened."),

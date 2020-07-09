@@ -13,7 +13,7 @@ defmodule Mud.Engine.Command.Remove do
   alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Item
   alias Mud.Engine.Character
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
   alias Mud.Engine.Search
 
@@ -30,7 +30,7 @@ defmodule Mud.Engine.Command.Remove do
     ast = context.command.ast
 
     if is_nil(ast.thing) do
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         Util.get_module_docs(__MODULE__),
@@ -55,7 +55,7 @@ defmodule Mud.Engine.Command.Remove do
     held_items = Character.list_held_items(context.character)
 
     if length(held_items) == 2 do
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         "Your hands are full. Empty at least one of them first.",
@@ -80,7 +80,7 @@ defmodule Mud.Engine.Command.Remove do
           )
 
         _ ->
-          ExecutionContext.append_output(
+          Context.append_output(
             context,
             context.character.id,
             "Could not find what you were attempting to remove.",
@@ -110,14 +110,14 @@ defmodule Mud.Engine.Command.Remove do
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
     context
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       others,
       "{{character}}#{context.character.name}{{/character}} removed {{item}}#{
         item.short_description
       }{{/item}} from their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
       "info"
     )
-    |> ExecutionContext.append_output(
+    |> Context.append_output(
       context.character.id,
       String.capitalize(
         "You remove {{item}}#{item.short_description}{{/item}} from your {{bodypart}}#{
@@ -126,7 +126,7 @@ defmodule Mud.Engine.Command.Remove do
       ),
       "info"
     )
-    |> ExecutionContext.append_event(
+    |> Context.append_event(
       context.character_id,
       UpdateInventory.new(:update, item)
     )

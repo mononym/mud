@@ -24,7 +24,8 @@ defmodule MudWeb.Live.Component.Map do
         event: nil,
         initialized: false,
         zoom_in_disabled: true,
-        zoom_out_disabled: false
+        zoom_out_disabled: false,
+        graph: nil
       )
 
     {:ok, socket, temporary_assigns: [event: nil]}
@@ -94,6 +95,7 @@ defmodule MudWeb.Live.Component.Map do
     squares =
       Enum.map(assigns.areas, fn {_id, area} ->
         %{
+          id: area.id,
           x: area.map_x - area.map_size / 2,
           y: area.map_y - area.map_size / 2,
           size: area.map_size,

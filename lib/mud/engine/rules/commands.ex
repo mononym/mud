@@ -75,6 +75,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_stand_command(),
       define_stow_command(),
       define_swap_command(),
+      define_travel_command(),
       define_unlock_command(),
       define_wear_command()
     ])
@@ -323,6 +324,26 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:drop],
+          matches: [~r/.*/],
+          key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_travel_command do
+    %Definition{
+      callback_module: Command.Travel,
+      parts: [
+        %Part{
+          matches: ["travel"],
+          key: :travel,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:travel],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,

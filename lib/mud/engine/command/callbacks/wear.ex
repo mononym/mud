@@ -13,7 +13,7 @@ defmodule Mud.Engine.Command.Wear do
 
   alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Util
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Search
   alias Mud.Engine.{Character, Item}
 
@@ -32,7 +32,7 @@ defmodule Mud.Engine.Command.Wear do
     ast = context.command.ast
 
     if is_nil(ast.thing) do
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         Util.get_module_docs(__MODULE__),
@@ -58,7 +58,7 @@ defmodule Mud.Engine.Command.Wear do
 
     if length(held_items) == 0 do
       context
-      |> ExecutionContext.append_error("You aren't holding anything.")
+      |> Context.append_error("You aren't holding anything.")
     else
       ast = context.command.ast
 
@@ -73,12 +73,12 @@ defmodule Mud.Engine.Command.Wear do
 
         _ ->
           context
-          |> ExecutionContext.append_error("Could not find what you were attempting to wear.")
+          |> Context.append_error("Could not find what you were attempting to wear.")
       end
     end
   end
 
-  @spec wear_thing(ExecutionContext.t(), Mud.Engine.Item.t()) :: ExecutionContext.t()
+  @spec wear_thing(Context.t(), Mud.Engine.Item.t()) :: Context.t()
   defp wear_thing(context, item) do
     primary_container = Item.get_primary_container(context.character.id)
 
@@ -97,26 +97,26 @@ defmodule Mud.Engine.Command.Wear do
         Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
       context
-      |> ExecutionContext.append_output(
+      |> Context.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
           item.short_description
         }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
         "info"
       )
-      |> ExecutionContext.append_output(
+      |> Context.append_output(
         context.character.id,
         "You put {{item}}#{item.short_description}{{/item}} on your {{bodypart}}#{
           item.wearable_location
         }{{/bodypart}}.",
         "info"
       )
-      |> ExecutionContext.append_event(
+      |> Context.append_event(
         context.character_id,
         UpdateInventory.new(:update, item)
       )
     else
-      ExecutionContext.append_output(
+      Context.append_output(
         context,
         context.character.id,
         String.capitalize("{{item}}#{item.short_description}{{/item}} cannot be worn."),

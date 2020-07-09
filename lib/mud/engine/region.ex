@@ -5,7 +5,7 @@ defmodule Mud.Engine.Region do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.Area
+  alias Mud.Engine.{Area, Link}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -29,6 +29,28 @@ defmodule Mud.Engine.Region do
   @spec list_all() :: [%__MODULE__{}]
   def list_all do
     Repo.all(__MODULE__)
+  end
+
+  def list_area_and_link_ids(region_id) do
+    area_ids =
+      Repo.all(
+        from(
+          area in Area,
+          where: area.region_id == ^region_id,
+          select: area.id
+        )
+      )
+
+    link_ids =
+      Repo.all(
+        from(
+          link in Link,
+          where: link.to_id in ^area_ids or link.from_id in ^area_ids,
+          select: {link.id, link.from_id, link.to_id}
+        )
+      )
+
+    %{area_ids: area_ids, link_ids: link_ids}
   end
 
   @doc """

@@ -10,7 +10,7 @@ defmodule Mud.Engine.Command.Look do
   alias Mud.Engine.Search
   alias Mud.Engine.Character
   alias Mud.Engine.Item
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
   alias Mud.Engine.Command.AstUtil
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
@@ -47,7 +47,7 @@ defmodule Mud.Engine.Command.Look do
         description = Area.long_description(context.character.area_id, context.character)
 
         context
-        |> ExecutionContext.append_message(Message.new_output(context.character_id, description))
+        |> Context.append_message(Message.new_output(context.character_id, description))
 
       %TAP{place: nil, thing: %Thing{personal: false}} ->
         look_area_then_worn(context)
@@ -123,7 +123,7 @@ defmodule Mud.Engine.Command.Look do
           look_items(context, items)
 
         {:error, _error} ->
-          ExecutionContext.append_output(
+          Context.append_output(
             context,
             context.character.id,
             "Could not find what you were looking for.",
@@ -152,7 +152,7 @@ defmodule Mud.Engine.Command.Look do
         )
 
       _error ->
-        ExecutionContext.append_output(
+        Context.append_output(
           context,
           context.character.id,
           "Could not find what you were looking for.",
@@ -192,8 +192,8 @@ defmodule Mud.Engine.Command.Look do
     Item.list_contained_items(item.id)
   end
 
-  @spec look_in_or_at(ExecutionContext.t(), Mud.Engine.Search.Match.t()) ::
-          ExecutionContext.t()
+  @spec look_in_or_at(Context.t(), Mud.Engine.Search.Match.t()) ::
+          Context.t()
   defp look_in_or_at(context, match) do
     ast = context.command.ast
 
@@ -213,7 +213,7 @@ defmodule Mud.Engine.Command.Look do
             container_desc = String.capitalize(match.short_description)
 
             if length(thing.container_items) > 0 do
-              ExecutionContext.append_message(
+              Context.append_message(
                 context,
                 Message.new_output(
                   context.character.id,
@@ -222,7 +222,7 @@ defmodule Mud.Engine.Command.Look do
                 )
               )
             else
-              ExecutionContext.append_message(
+              Context.append_message(
                 context,
                 Message.new_output(
                   context.character.id,
@@ -233,7 +233,7 @@ defmodule Mud.Engine.Command.Look do
             end
 
           thing.is_container and not thing.container_open ->
-            ExecutionContext.append_message(
+            Context.append_message(
               context,
               Message.new_output(
                 context.character.id,
@@ -245,7 +245,7 @@ defmodule Mud.Engine.Command.Look do
             )
 
           not thing.is_container ->
-            ExecutionContext.append_message(
+            Context.append_message(
               context,
               Message.new_output(
                 context.character.id,
@@ -256,7 +256,7 @@ defmodule Mud.Engine.Command.Look do
         end
 
       true ->
-        ExecutionContext.append_message(
+        Context.append_message(
           context,
           Message.new_output(
             context.character.id,

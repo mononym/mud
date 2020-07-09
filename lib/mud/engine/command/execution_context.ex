@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Command.ExecutionContext do
+defmodule Mud.Engine.Command.Context do
   @moduledoc """
   A CommandContext struct contains everything required for the processing of a Command.
   The context is intended to be passed between multiple middlewares, some of which may need to run before others to

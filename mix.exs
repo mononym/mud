@@ -45,6 +45,7 @@ defmodule Mud.MixProject do
       {:hammer, "~> 6.0"},
       {:hammer_plug, "~> 2.1"},
       {:jason, "~> 1.2"},
+      {:libgraph, "~> 0.13.3"},
       {:phoenix, "~> 1.5.1"},
       {:phoenix_live_dashboard, "~> 0.2"},
       {:phoenix_ecto, "~> 4.1"},

@@ -16,7 +16,7 @@ defmodule Mud.Engine.Command do
   alias Mud.Engine.Rules.Commands
   alias Mud.Engine.Command.AbstractAstNode
   alias Mud.Engine.Command.Definition.Part
-  alias Mud.Engine.Command.ExecutionContext
+  alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
   alias Mud.Engine.Util
   require Logger
@@ -65,12 +65,12 @@ defmodule Mud.Engine.Command do
     end
   end
 
-  @spec execute(Mud.Engine.Command.ExecutionContext.t()) ::
-          Mud.Engine.Command.ExecutionContext.t()
+  @spec execute(Mud.Engine.Command.Context.t()) ::
+          Mud.Engine.Command.Context.t()
   @doc """
-  Given a populated `Mud.Engine.Command.ExecutionContext` struct, execute the command logic.
+  Given a populated `Mud.Engine.Command.Context` struct, execute the command logic.
   """
-  def execute(context = %ExecutionContext{}) do
+  def execute(context = %Context{}) do
     cond do
       context.is_continuation == true and context.continuation_type == :numeric ->
         case Integer.parse(context.input) do
@@ -85,14 +85,14 @@ defmodule Mud.Engine.Command do
 
           :error ->
             context
-            |> ExecutionContext.append_message(
+            |> Context.append_message(
               Message.new_output(
                 context.character_id,
                 "Selection not recognized. Executing input as is instead.",
                 "warning"
               )
             )
-            |> ExecutionContext.clear_continuation()
+            |> Context.clear_continuation()
             |> do_execute()
         end
 
@@ -113,9 +113,9 @@ defmodule Mud.Engine.Command do
 
     context =
       context
-      |> ExecutionContext.set_input(continuation_data)
-      |> ExecutionContext.set_command(ExecutionContext.get_continuation_command(context))
-      |> ExecutionContext.clear_continuation()
+      |> Context.set_input(continuation_data)
+      |> Context.set_command(Context.get_continuation_command(context))
+      |> Context.clear_continuation()
 
     {:ok, context} = transaction(context, &continuation_module.continue/1)
 
@@ -123,8 +123,8 @@ defmodule Mud.Engine.Command do
     process_messages(context)
   end
 
-  @spec do_execute(Mud.Engine.Command.ExecutionContext.t()) ::
-          Mud.Engine.Command.ExecutionContext.t()
+  @spec do_execute(Mud.Engine.Command.Context.t()) ::
+          Mud.Engine.Command.Context.t()
   defp do_execute(context) do
     Logger.debug("do_execute")
     Logger.debug(inspect(context))
@@ -143,7 +143,7 @@ defmodule Mud.Engine.Command do
 
         context =
           context
-          |> ExecutionContext.append_output(
+          |> Context.append_output(
             context.character_id,
             "No matching commands were found. Please try again.",
             "error"
@@ -157,7 +157,7 @@ defmodule Mud.Engine.Command do
   defp transaction(context, function) do
     Mud.Repo.transaction(fn ->
       character = Mud.Engine.Character.get_by_id!(context.character_id)
-      context = ExecutionContext.set_character(context, character)
+      context = Context.set_character(context, character)
 
       function.(context)
     end)
