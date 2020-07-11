@@ -1,0 +1,31 @@
+<div id="map" class="min-w-full min-h-full flex flex-col">
+  <%= live_component(@socket, MudWeb.Live.Component.MapTopbar, id: "#{@character.id}:map_top_bar", zoom_out_disabled: @zoom_out_disabled, zoom_in_disabled: @zoom_in_disabled, title: "#{@region.name}, #{@areas[@character.area_id].name}") %>
+  <svg class="flex-auto" viewBox="<%= @viewbox_x %> <%= @viewbox_y %> <%= @viewbox_size %> <%= @viewbox_size %>" preserveAspectRatio="xMidYMid slice">
+    <%= for line <- @lines do %>
+      <line x1="<%= line.x1 %>" y1="<%= line.y1 %>" x2="<%= line.x2 %>" y2="<%= line.y2 %>" stroke="white"></line>
+    <% end %>
+    <%= for square <- @squares do %>
+      <%= live_component(@socket, MudWeb.Live.Component.MapArea, id: square.id, square: square) %>
+    <% end %>
+  </svg>
+  <div class="flex">
+    <%= if @speed == "walk" do %>
+      <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
+        <i class="fas fa-walking"></i>
+      </button>
+    <% else %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_auto_travel_speed" phx-value-speed="walk" phx-target="<%= @myself %>">
+        <i class="fas fa-walking"></i>
+      </button>
+    <% end %>
+    <%= if @speed == "run" do %>
+      <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
+        <i class="fas fa-running"></i>
+      </button>
+    <% else %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_auto_travel_speed" phx-value-speed="run" phx-target="<%= @myself %>">
+        <i class="fas fa-running"></i>
+      </button>
+    <% end %>
+  </div>
+</div>

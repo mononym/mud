@@ -57,7 +57,7 @@ defmodule Mud.Engine.Command.Travel do
 
         path = Graph.dijkstra(graph, context.character.area_id, area.id)
 
-        :ok = Script.attach(context.character, "quick_travel", Script.Travel, path)
+        :ok = Script.attach(context.character, "auto_travel", Script.Travel, path)
 
         context
       else

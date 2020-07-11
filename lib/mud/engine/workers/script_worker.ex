@@ -248,25 +248,24 @@ defmodule Mud.Engine.Worker.ScriptWorker do
     {:noreply, context, {:continue, :run}}
   end
 
-  # @doc false
-  # @spec handle_cast({:message, message}, context) :: {:noreply, context}
-  # def handle_cast({:message, message}, context) do
-  #   context
-  #   |> put_args(message)
-  #   |> transaction(fn context ->
-  #     apply(context.callback_module, :handle_message, [
-  #       context,
-  #       message
-  #     ])
-  #   end)
-  #   |> case do
-  #     {:ok, context} ->
-  #       {:noreply, clear_args(context)}
+  @doc false
+  @spec handle_cast({:message, message}, context) :: {:noreply, context}
+  def handle_cast({:message, message}, context) do
+    context
+    |> transaction(fn context ->
+      apply(context.callback_module, :handle_message, [
+        context,
+        message
+      ])
+    end)
+    |> case do
+      {:ok, context} ->
+        {:noreply, context}
 
-  #     {:error, error} ->
-  #       {:stop, error, context}
-  #   end
-  # end
+      {:error, error} ->
+        {:stop, error, context}
+    end
+  end
 
   @doc false
   @spec handle_continue(:init, context) :: {:noreply, context} | {:stop, :normal, context}

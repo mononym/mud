@@ -70,7 +70,7 @@ south_room =
     region_id: region.id,
     name: "South Garden Path",
     description:
-      "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
+      "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle."
   })
 
 northeast_room =
@@ -116,6 +116,789 @@ southwest_room =
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
+
+# Maze
+
+maze_1 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3100,
+    map_y: 3000,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze Entrance",
+    description:
+      "The openness of the gardens to the west are in contrast to the confinement of the maze to the east."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: east_room.id,
+  to_id: maze_1.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_1.id,
+  to_id: east_room.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_2 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3150,
+    map_y: 3000,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "The entrance from the west is the only break in the otherwise endless hegerows."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_1.id,
+  to_id: maze_2.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_2.id,
+  to_id: maze_1.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_3 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3150,
+    map_y: 3050,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_2.id,
+  to_id: maze_3.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_3.id,
+  to_id: maze_2.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+maze_4 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3150,
+    map_y: 3100,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_3.id,
+  to_id: maze_4.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_4.id,
+  to_id: maze_3.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+maze_5 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3150,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_4.id,
+  to_id: maze_5.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_5.id,
+  to_id: maze_4.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+maze_6 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3200,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_5.id,
+  to_id: maze_6.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_6.id,
+  to_id: maze_5.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_7 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3250,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_6.id,
+  to_id: maze_7.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_7.id,
+  to_id: maze_6.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_8 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3250,
+    map_y: 3100,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_7.id,
+  to_id: maze_8.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_8.id,
+  to_id: maze_7.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+maze_9 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3200,
+    map_y: 3100,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_9.id,
+  to_id: maze_8.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_8.id,
+  to_id: maze_9.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_10 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3300,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_7.id,
+  to_id: maze_10.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_10.id,
+  to_id: maze_7.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_11 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3350,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_10.id,
+  to_id: maze_11.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_11.id,
+  to_id: maze_10.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_12 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3400,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_11.id,
+  to_id: maze_12.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_12.id,
+  to_id: maze_11.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_13 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3400,
+    map_y: 3200,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_13.id,
+  to_id: maze_12.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_12.id,
+  to_id: maze_13.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+maze_14 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3400,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_14.id,
+  to_id: maze_13.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_13.id,
+  to_id: maze_14.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+maze_15 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3350,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_15.id,
+  to_id: maze_14.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_14.id,
+  to_id: maze_15.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_16 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3300,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_16.id,
+  to_id: maze_15.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_15.id,
+  to_id: maze_16.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_17 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3250,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_17.id,
+  to_id: maze_16.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_16.id,
+  to_id: maze_17.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_18 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3200,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_18.id,
+  to_id: maze_17.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_17.id,
+  to_id: maze_18.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_19 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3150,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_19.id,
+  to_id: maze_18.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_18.id,
+  to_id: maze_19.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_20 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3100,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_20.id,
+  to_id: maze_19.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_19.id,
+  to_id: maze_20.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_21 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3050,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_21.id,
+  to_id: maze_20.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_20.id,
+  to_id: maze_21.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_22 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3250,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_22.id,
+  to_id: maze_21.id,
+  departure_text: "east",
+  arrival_text: "the west",
+  type: "obvious",
+  short_description: "east",
+  long_description: "east"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_21.id,
+  to_id: maze_22.id,
+  departure_text: "west",
+  arrival_text: "the east",
+  type: "obvious",
+  short_description: "west",
+  long_description: "west"
+})
+
+maze_23 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3200,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_22.id,
+  to_id: maze_23.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_23.id,
+  to_id: maze_22.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+maze_24 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3150,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_23.id,
+  to_id: maze_24.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_24.id,
+  to_id: maze_23.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+maze_25 =
+  Mud.Repo.insert!(%Area{
+    map_x: 3000,
+    map_y: 3100,
+    map_size: 20,
+    region_id: region.id,
+    name: "Maze",
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+  })
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_24.id,
+  to_id: maze_25.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_25.id,
+  to_id: maze_24.id,
+  departure_text: "south",
+  arrival_text: "the north",
+  type: "obvious",
+  short_description: "south",
+  long_description: "south"
+})
+
+Mud.Repo.insert!(%Link{
+  from_id: maze_25.id,
+  to_id: south_room.id,
+  departure_text: "north",
+  arrival_text: "the south",
+  type: "obvious",
+  short_description: "north",
+  long_description: "north"
+})
+
+# maze_26 =
+#   Mud.Repo.insert!(%Area{
+#     map_x: 3050,
+#     map_y: 3100,
+#     map_size: 20,
+#     region_id: region.id,
+#     name: "Maze",
+#     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+#   })
+
+# maze_27 =
+#   Mud.Repo.insert!(%Area{
+#     map_x: 3150,
+#     map_y: 3100,
+#     map_size: 20,
+#     region_id: region.id,
+#     name: "Maze",
+#     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+#   })
 
 # Link insertions
 

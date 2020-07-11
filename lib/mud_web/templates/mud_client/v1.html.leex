@@ -37,7 +37,7 @@
   </div>
   <div class="w-1/5 flex flex-col">
     <div class="flex flex-1 border-4">
-        <%= live_component(@socket, MudWeb.Live.Component.Map, id: @character.id, area_id: @character.area_id) %>
+        <%= live_component(@socket, MudWeb.Live.Component.Map, id: @character.id, character: @character) %>
     </div>
     <div class="flex flex-1 border-4">
     </div>

@@ -13,11 +13,17 @@ defmodule Mud.Engine.Script.Travel do
 
   def initialize(context) do
     context
-    |> put_state(:path, build_path(context.args, []))
-    |> put_state(:start, List.first(context.args))
-    |> put_state(:finish, List.last(context.args))
+    |> put_state(:path, build_path(context.args.path, []))
+    |> put_state(:start, List.first(context.args.path))
+    |> put_state(:finish, List.last(context.args.path))
     |> put_state(:direction, :forward)
     |> put_state(:place, context.thing.area_id)
+    |> put_state(:speed, context.args.speed)
+  end
+
+  def handle_message(context, {:update_speed, speed}) do
+    context
+    |> put_state(:speed, speed)
   end
 
   defp build_path([], path) do
@@ -52,7 +58,7 @@ defmodule Mud.Engine.Script.Travel do
           |> detach()
         else
           context
-          |> next(500)
+          |> next(get_delay(context))
           |> put_state(:place, next)
           |> append_input(context.thing.id, "move #{node.id}:#{next}", :silent)
         end
@@ -64,6 +70,16 @@ defmodule Mud.Engine.Script.Travel do
         |> halt()
         |> detach()
         |> append_error("Not in expected position. AutoTravel disabled.")
+    end
+  end
+
+  defp get_delay(context) do
+    case get_state(context, :speed) do
+      "walk" ->
+        500
+
+      "run" ->
+        250
     end
   end
 end

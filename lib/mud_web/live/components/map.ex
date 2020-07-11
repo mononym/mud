@@ -1,6 +1,6 @@
 defmodule MudWeb.Live.Component.Map do
   use Phoenix.LiveComponent
-  alias Mud.Engine.{Area, Link, Region}
+  alias Mud.Engine.{Area, Link, Region, Script}
   alias Ecto.Multi
 
   @zoom_coordinate_increment 250
@@ -13,6 +13,8 @@ defmodule MudWeb.Live.Component.Map do
   @canvas_coord @canvas_size / 2 - @viewbox_min_size / 2
 
   def mount(socket) do
+    IO.inspect("mount")
+
     socket =
       socket
       |> assign(
@@ -25,7 +27,8 @@ defmodule MudWeb.Live.Component.Map do
         initialized: false,
         zoom_in_disabled: true,
         zoom_out_disabled: false,
-        graph: nil
+        graph: nil,
+        speed: "walk"
       )
 
     {:ok, socket, temporary_assigns: [event: nil]}
@@ -34,20 +37,20 @@ defmodule MudWeb.Live.Component.Map do
   def update(assigns, socket) do
     socket =
       cond do
-        not socket.assigns.initialized and Map.has_key?(assigns, :area_id) ->
+        not socket.assigns.initialized and Map.has_key?(assigns, :character) ->
           socket
-          |> assign(:area_id, assigns.area_id)
+          |> assign(:character, assigns.character)
           |> init_map_data()
           |> assign(:initialized, true)
 
-        Map.has_key?(assigns, :area_id) ->
-          if Map.has_key?(socket.assigns.areas, assigns.area_id) do
+        Map.has_key?(assigns, :character) ->
+          if Map.has_key?(socket.assigns.areas, assigns.character.area_id) do
             socket
-            |> assign(:area_id, assigns.area_id)
+            |> assign(:character, assigns.character)
             |> draw_map()
           else
             socket
-            |> assign(:area_id, assigns.area_id)
+            |> assign(:character, assigns.character)
             |> init_map_data()
           end
 
@@ -59,7 +62,7 @@ defmodule MudWeb.Live.Component.Map do
   end
 
   def render(assigns) do
-    Phoenix.View.render(MudWeb.MudClientView, "map.html", assigns)
+    Phoenix.View.render(MudWeb.MudClientMapView, "map.html", assigns)
   end
 
   def draw_map(socket) do
@@ -101,7 +104,7 @@ defmodule MudWeb.Live.Component.Map do
           size: area.map_size,
           name: area.name,
           color:
-            if area.id == assigns.area_id do
+            if area.id == assigns.character.area_id do
               "green"
             else
               "blue"
@@ -114,6 +117,46 @@ defmodule MudWeb.Live.Component.Map do
 
   def handle_event("zoom", %{"direction" => dir}, socket) do
     calculate_zoom(socket, dir)
+  end
+
+  def handle_event("set_auto_travel_speed", %{"speed" => speed}, socket) do
+    Script.cast(socket.assigns.character, "auto_travel", {:update_speed, speed})
+
+    {:noreply,
+     assign(
+       socket,
+       speed: speed
+     )}
+  end
+
+  def handle_event("auto_travel", %{"destination" => destination}, socket) do
+    area = Area.get_area!(destination)
+
+    raw_data = Region.list_area_and_link_ids(area.region_id)
+
+    raw_data =
+      Map.put(
+        raw_data,
+        :link_ids,
+        Enum.map(raw_data[:link_ids], fn {lid, l1, l2} ->
+          {l1, l2, [label: lid, weight: 1]}
+        end)
+      )
+
+    graph =
+      Graph.new(type: :directed)
+      |> Graph.add_edges(raw_data[:link_ids])
+      |> Graph.add_vertices(raw_data[:area_ids])
+
+    path = Graph.dijkstra(graph, socket.assigns.character.area_id, area.id)
+
+    :ok =
+      Script.attach(socket.assigns.character, "auto_travel", Script.Travel, %{
+        path: path,
+        speed: socket.assigns.speed
+      })
+
+    {:noreply, socket}
   end
 
   defp calculate_zoom(socket, "in") do
@@ -163,7 +206,7 @@ defmodule MudWeb.Live.Component.Map do
   end
 
   defp init_map_data(socket) do
-    area_id = socket.assigns.area_id
+    area_id = socket.assigns.character.area_id
 
     {:ok, returns} =
       Multi.new()
