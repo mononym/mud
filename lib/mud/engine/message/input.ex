@@ -6,7 +6,6 @@ defmodule Mud.Engine.Message.Input do
     field(:id, String.t(), required: true)
     field(:text, String.t(), required: true)
     field(:to, [String.t()], required: true)
-    field(:player_id, String.t(), required: true)
     field(:type, :normal | :silent, default: :normal)
   end
 end

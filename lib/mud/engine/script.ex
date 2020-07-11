@@ -74,26 +74,21 @@ defmodule Mud.Engine.Script do
           :ok | {:error, term() | :already_attached}
   def attach(thing, key, callback_module, args \\ nil) do
     if exists?(thing, key) do
+      Logger.debug("exists")
       {:error, :already_attached}
     else
+      Logger.debug("doesn't exist")
       context = %Context{key: key, callback_module: callback_module, thing: thing, args: args}
       context = apply(callback_module, :initialize, [context])
 
       if is_nil(context.error) do
-        %{
-          :callback_module => callback_module,
-          :state => context.state,
-          thing_to_id_key(thing) => thing.id,
-          :key => key
-        }
-        |> ScriptData.create!()
+        Logger.debug("successfully initialized")
 
         do_start(%Context{
           key: key,
           callback_module: callback_module,
           state: context.state,
-          thing: thing,
-          initialized: true
+          thing: thing
         })
 
         :ok
@@ -238,7 +233,6 @@ defmodule Mud.Engine.Script do
   end
 
   defp do_start(context) do
-
     with {:ok, _} <-
            DynamicSupervisor.start_child(ScriptSupervisor, {ScriptWorker, context}) do
       :ok

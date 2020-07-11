@@ -31,6 +31,8 @@ defmodule Mud.Engine.Script.Context do
     field(:next_iteration, integer(), default: 6_000)
     field(:halt, boolean(), default: false)
 
+    field(:script, Mud.Engine.Script.ScriptData.t(), required: true)
+
     # Flag to help with attaching/loading data
     field(:initialized, boolean(), default: false)
 
@@ -84,6 +86,26 @@ defmodule Mud.Engine.Script.Context do
   @spec append_message(context, message) :: context
   def append_message(%__MODULE__{} = context, message) do
     %{context | messages: [message | context.messages]}
+  end
+
+  @doc """
+  Append a message to the list of messages which will be sent after the command has been executed
+  """
+  @spec append_input(
+          context :: %__MODULE__{},
+          to :: String.t() | [String.t()],
+          message :: String.t(),
+          type :: atom()
+        ) :: context
+  def append_input(%__MODULE__{} = context, to, message, type) do
+    msg =
+      Message.new_input(
+        to,
+        message,
+        type
+      )
+
+    append_message(context, msg)
   end
 
   @doc """

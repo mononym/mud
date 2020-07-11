@@ -58,12 +58,11 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   @doc false
   @spec child_spec(args :: term) :: child_spec
   def child_spec(args) do
-
     %{
       id: __MODULE__,
       start: {__MODULE__, :start_link, [args]},
       restart: :transient,
-      shutdown: 1000,
+      shutdown: 5000,
       type: :worker
     }
   end
@@ -73,9 +72,14 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   def start_link(context) do
     registered_name = Script.gen_server_id(context.thing, context.key)
 
+    IO.inspect(registered_name, label: :start_link)
+
     case GenServer.start_link(__MODULE__, context, name: registered_name) do
-      {:error, {:already_started, _pid}} -> {:error, :already_started}
-      result -> result
+      {:error, {:already_started, _pid}} ->
+        {:error, :already_started} |> IO.inspect(label: :start_link)
+
+      result ->
+        result |> IO.inspect(label: :start_link)
     end
   end
 
@@ -84,42 +88,48 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   #
 
   @doc false
-  @spec init(context) :: {:ok, state} | {:stop, error}
+  @spec init(context) :: {:ok, term(), {:continue, :init}}
   def init(context) do
+    IO.inspect("INIT SCRIPT WORKER")
+    IO.inspect(context)
 
-    if context.initialized do
-      {:ok, context, {:continue, :run}}
-    else
-      with {:ok, context} <- load_state(context) do
-        context
-        |> transaction(fn context ->
-          apply(context.callback_module, :start, [context])
-        end)
-        |> case do
-          {:ok, context} ->
-            context = clear_args(context)
+    {:ok, context, {:continue, :init}}
 
-            {:ok, context, {:continue, :run}}
+    # if context.initialized do
+    #   {:ok, context, {:continue, :run}}
+    # else
+    # case load_state(context) do
+    #   {:ok, context} ->
+    #     do_start(context)
 
-          {:error, error} ->
-            {:stop, error}
-        end
-      else
-        {:error, error} -> {:stop, error}
-      end
-    end
+    #   _ ->
+    #     script =
+    #       %{
+    #         :callback_module => context.callback_module,
+    #         :state => context.state,
+    #         Script.thing_to_id_key(context.thing) => context.thing.id,
+    #         :key => context.key
+    #       }
+    #       |> IO.inspect
+    #       |> ScriptData.create!()
+    #       |> IO.inspect("CREATE", label: :init)
+
+    #     context = %{context | script: script}
+
+    #     do_start(context)
+    # end
   end
 
   defp load_state(context) do
     case ScriptData.get(context.thing, context.key) do
       {:ok, script} ->
-
         {:ok,
          %Context{
            key: script.key,
            callback_module: script.callback_module,
            state: script.state,
-           thing: context.thing
+           thing: context.thing,
+           script: script
          }}
 
       error ->
@@ -128,7 +138,6 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   end
 
   defp process_transaction_result(result, context) do
-
     case result do
       {:ok, context = %Context{halt: false}} ->
         ref = Process.send_after(self(), :run, context.next_iteration)
@@ -144,19 +153,24 @@ defmodule Mud.Engine.Worker.ScriptWorker do
         end
 
       {:ok, context = %Context{halt: true}} ->
+        IO.inspect("halting")
         context = process(context)
 
-        if not context.detach do
-          persist(context)
-        else
-          ScriptData.purge(context.thing, context.key)
-        end
+        context =
+          if not context.detach do
+            persist(context)
+          else
+            IO.inspect("detaching #{Timex.now()}")
+            ScriptData.purge(context.script)
+            Map.put(context, :script, nil)
+          end
 
         cond do
           not is_nil(context.response) ->
             {:stop, :normal, context.response, clear_response(context)}
 
           is_nil(context.response) ->
+            IO.inspect("stopping")
             {:stop, :normal, context}
         end
 
@@ -225,22 +239,62 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   end
 
   @doc false
-  @spec handle_cast({:message, message}, context) :: {:noreply, context}
-  def handle_cast({:message, message}, context) do
-    context
-    |> put_args(message)
-    |> transaction(fn context ->
-      apply(context.callback_module, :handle_message, [
-        context,
-        message
-      ])
-    end)
-    |> case do
-      {:ok, context} ->
-        {:noreply, clear_args(context)}
+  @spec handle_info(:run, context) :: {:noreply, context, {:continue, :run}}
+  def handle_info(:run, context) do
+    if is_reference(context.timer_ref) do
+      Process.cancel_timer(context.timer_ref)
+    end
 
-      {:error, error} ->
-        {:stop, error, context}
+    {:noreply, context, {:continue, :run}}
+  end
+
+  # @doc false
+  # @spec handle_cast({:message, message}, context) :: {:noreply, context}
+  # def handle_cast({:message, message}, context) do
+  #   context
+  #   |> put_args(message)
+  #   |> transaction(fn context ->
+  #     apply(context.callback_module, :handle_message, [
+  #       context,
+  #       message
+  #     ])
+  #   end)
+  #   |> case do
+  #     {:ok, context} ->
+  #       {:noreply, clear_args(context)}
+
+  #     {:error, error} ->
+  #       {:stop, error, context}
+  #   end
+  # end
+
+  @doc false
+  @spec handle_continue(:init, context) :: {:noreply, context} | {:stop, :normal, context}
+  def handle_continue(:init, context) do
+    Logger.debug("init")
+
+    case load_state(context) do
+      {:ok, context} ->
+        Logger.debug("loaded")
+        do_start(context)
+
+      _ ->
+        Logger.debug("creating")
+
+        script =
+          %{
+            :callback_module => context.callback_module,
+            :state => context.state,
+            Script.thing_to_id_key(context.thing) => context.thing.id,
+            :key => context.key
+          }
+          |> IO.inspect()
+          |> ScriptData.create!()
+          |> IO.inspect(label: :init)
+
+        context = %{context | script: script}
+
+        do_start(context)
     end
   end
 
@@ -256,15 +310,32 @@ defmodule Mud.Engine.Worker.ScriptWorker do
       apply(context.callback_module, :run, [context])
     end)
     |> process_transaction_result(context)
+    |> IO.inspect(label: :run_result)
   end
 
   #
   # Private Functions
   #
 
+  defp do_start(context) do
+    context
+    |> transaction(fn context ->
+      apply(context.callback_module, :start, [context])
+    end)
+    |> case do
+      {:ok, context} ->
+        context = clear_args(context)
+
+        {:noreply, context, {:continue, :run}}
+
+      {:error, error} ->
+        {:stop, error}
+    end
+  end
+
   @spec persist(context) :: context
   defp persist(context) do
-    {:ok, state} = ScriptData.update(context.thing, context.key, context.state)
+    state = ScriptData.update!(context.script, context.state)
 
     %{context | state: state}
   end
@@ -286,7 +357,6 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   end
 
   defp transaction(context, function) do
-
     Mud.Util.retryable_transaction_v2(fn ->
       thing = Util.refresh_thing(context.thing)
       context = %{context | thing: thing}

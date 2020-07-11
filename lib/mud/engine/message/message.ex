@@ -5,10 +5,18 @@ defmodule Mud.Engine.Message do
 
   alias Mud.Engine.Mode.Character
   alias Mud.Engine.Message.Output
+  alias Mud.Engine.Message.Input
 
   @type message() :: String.t()
   @type tag() :: String.t()
   @type to() :: String.t() | [String.t()] | Character.t() | [Character.t()]
+
+  def new_input(to, message, type) do
+    to
+    |> List.wrap()
+    |> maybe_transform_to()
+    |> input(message, type)
+  end
 
   def new_output(to, message) do
     to
@@ -60,6 +68,15 @@ defmodule Mud.Engine.Message do
         dest
       end
     end)
+  end
+
+  defp input(to, message, type) do
+    %Input{
+      id: UUID.uuid4(),
+      to: to,
+      text: message,
+      type: type
+    }
   end
 
   defp output(to, message, table_data \\ nil) do

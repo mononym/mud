@@ -213,6 +213,14 @@ defmodule Mud.Engine.Link do
     Repo.get!(__MODULE__, link_id)
   end
 
+  def get!(from_id, to_id) do
+    Repo.one!(
+      from(link in __MODULE__,
+        where: link.from_id == ^from_id and link.to_id == ^to_id
+      )
+    )
+  end
+
   def short_description(link, _looking_character) do
     link.short_description
   end

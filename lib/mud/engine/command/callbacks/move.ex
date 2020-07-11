@@ -27,6 +27,8 @@ defmodule Mud.Engine.Command.Move do
 
   use Mud.Engine.Command.Callback
 
+  require Logger
+
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.OneThing.t()
   def build_ast(ast_nodes) do
@@ -59,21 +61,31 @@ defmodule Mud.Engine.Command.Move do
         attempt_move_direction(direction, context, 0)
 
       true ->
-        if Util.is_uuid4(ast.thing.input) do
-          link = Link.get!(ast.thing.input)
+        cond do
+          Regex.match?(
+            ~r/^[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}:[A-F\d]{8}-[A-F\d]{4}-4[A-F\d]{3}-[89AB][A-F\d]{3}-[A-F\d]{12}$/i,
+            ast.thing.input
+          ) ->
+            [from, to] = String.split(ast.thing.input, ":")
+            link = Link.get!(from, to)
 
-          if link.from_id == context.character.area_id do
-            attempt_move_link(context, link)
-          else
-            Context.append_output(
-              context,
-              context.character.id,
-              "{{error}}I'm sorry #{context.character.name}, I'm afraid I can't do that.{{/error}}",
-              "error"
-            )
-          end
-        else
-          attempt_move_direction(ast.thing.input, context, ast.thing.which)
+            if link.from_id == context.character.area_id do
+              attempt_move_link(context, link)
+            else
+              Util.dave_error(context)
+            end
+
+          Util.is_uuid4(ast.thing.input) ->
+            link = Link.get!(ast.thing.input)
+
+            if link.from_id == context.character.area_id do
+              attempt_move_link(context, link)
+            else
+              Util.dave_error(context)
+            end
+
+          true ->
+            attempt_move_direction(ast.thing.input, context, ast.thing.which)
         end
     end
   end
@@ -94,6 +106,8 @@ defmodule Mud.Engine.Command.Move do
   # end
 
   defp attempt_move_direction(direction, context, which) do
+    Logger.debug(inspect({direction, context, which}))
+
     result =
       Search.find_matches_in_area_v2(
         [:link],

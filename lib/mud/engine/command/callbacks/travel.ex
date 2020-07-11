@@ -11,12 +11,10 @@ defmodule Mud.Engine.Command.Travel do
 
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
-  alias Mud.Engine.Search
   alias Mud.Engine.Script
   alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Area, Character, Item, Region}
+  alias Mud.Engine.{Area, Region}
 
   require Logger
 
@@ -57,15 +55,10 @@ defmodule Mud.Engine.Command.Travel do
           |> Graph.add_edges(raw_data[:link_ids])
           |> Graph.add_vertices(raw_data[:area_ids])
 
-        IO.inspect(:erlang.byte_size(:erlang.term_to_binary(graph)), label: :travel_execute)
-
         path = Graph.dijkstra(graph, context.character.area_id, area.id)
 
-        IO.inspect(path, label: :travel_execute)
+        :ok = Script.attach(context.character, "quick_travel", Script.Travel, path)
 
-        Script.attach(context.character, "quick_travel", Script.Travel, path) |> IO.inspect()
-
-        Script.start(context.character, "quick_travel") |> IO.inspect()
         context
       else
         Util.dave_error(context)

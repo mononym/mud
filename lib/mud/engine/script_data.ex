@@ -80,6 +80,17 @@ defmodule Mud.Engine.ScriptData do
   end
 
   @doc """
+  Update the state of a Script in the database.
+
+  Primarily used by the Engine to persist the state of a running Script whenever it changes.
+  """
+  def update!(script = %__MODULE__{}, attrs) do
+    script
+    |> changeset(attrs)
+    |> Repo.update!()
+  end
+
+  @doc """
   Purge Script data from the database.
 
   This method does not check for a running Script, or in any way ensure that the state can't or won't be rewritten.
@@ -88,10 +99,21 @@ defmodule Mud.Engine.ScriptData do
   def purge(thing, key) do
     script_query(thing, key)
     |> Repo.delete_all()
+    |> IO.inspect(label: :purge)
     |> case do
       {1, _} -> :ok
       {0, _} -> {:error, :no_such_script}
     end
+  end
+
+  @doc """
+  Purge Script data from the database.
+
+  This method does not check for a running Script, or in any way ensure that the state can't or won't be rewritten.
+  It is a dumb delete.
+  """
+  def purge(script = %__MODULE__{}) do
+    Repo.delete(script)
   end
 
   def list_all_on_thing(thing) do
