@@ -83,7 +83,7 @@ defmodule MudWeb.MudClientLive do
     {:noreply,
      assign(socket,
        input: Input.new(),
-       commands: [input | socket.assigns.commands],
+       commands: Enum.slice([input | socket.assigns.commands], 0..99),
        command_index: 0,
        viewing_history: false,
        latest_input: ""
