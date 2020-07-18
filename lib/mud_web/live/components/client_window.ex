@@ -5,7 +5,8 @@ defmodule MudWeb.Live.Component.ClientWindow do
     {:ok,
      assign(socket,
        active_pane: nil,
-       panes: []
+       panes: [],
+       client_state: nil
      )}
   end
 
@@ -17,7 +18,8 @@ defmodule MudWeb.Live.Component.ClientWindow do
        active_pane: (assigns[:panes] || socket.assigns[:panes]) |> List.first(),
        panes: assigns.panes,
        id: assigns.id,
-       character: assigns[:character] || socket.assigns.character
+       character: assigns[:character] || socket.assigns.character,
+       client_state: assigns[:client_state]
      )
      |> IO.inspect()}
   end
@@ -33,28 +35,4 @@ defmodule MudWeb.Live.Component.ClientWindow do
      )
      |> IO.inspect()}
   end
-
-  # def handle_event("expand_all", _, socket) do
-  #   skillsets_expanded =
-  #     Enum.into(socket.assigns.skillsets_expanded, %{}, fn {key, _value} ->
-  #       {key, true}
-  #     end)
-
-  #   {:noreply,
-  #    assign(socket,
-  #      skillsets_expanded: skillsets_expanded
-  #    )}
-  # end
-
-  # def handle_event("collapse_all", _, socket) do
-  #   skillsets_expanded =
-  #     Enum.into(socket.assigns.skillsets_expanded, %{}, fn {key, _value} ->
-  #       {key, false}
-  #     end)
-
-  #   {:noreply,
-  #    assign(socket,
-  #      skillsets_expanded: skillsets_expanded
-  #    )}
-  # end
 end

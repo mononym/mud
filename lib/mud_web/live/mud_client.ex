@@ -4,7 +4,8 @@ defmodule MudWeb.MudClientLive do
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Event
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
-  alias MudWeb.Live.Component.{AreaOverview, ClientWindow, CharacterInventory, RegionMap}
+  alias MudWeb.Live.Component.{AreaOverview, CharacterInventory}
+  alias Mud.Engine.Character.ClientState
 
   require Logger
 
@@ -36,7 +37,10 @@ defmodule MudWeb.MudClientLive do
        top_left: ["area"],
        bottom_left: ["inventory"],
        top_right: ["map"],
-       bottom_right: ["skills"]
+       bottom_right: ["skills"],
+       client_state:
+         ClientState.load_or_create(session["character_id"])
+         |> Ecto.Changeset.change()
      ), temporary_assigns: [messages: []]}
   end
 
@@ -69,32 +73,14 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_event("move_pane", pane, socket) do
-    IO.inspect(pane)
     [from_str, pane, to_str] = String.split(pane, ":")
-    IO.inspect(pane)
     from = String.to_existing_atom(from_str)
     to = String.to_existing_atom(to_str)
-    IO.inspect(from)
-    IO.inspect(to)
-    IO.inspect(socket.assigns[from])
-    IO.inspect(socket.assigns[to])
-
-    # send_update(ClientWindow,
-    #   id: from_str,
-    #   panes: Enum.filter(socket.assigns[from], &(&1 != pane)) |> IO.inspect(label: :from)
-    # )
-
-    # send_update(ClientWindow,
-    #   id: to_str,
-    #   panes: [pane | socket.assigns[to]] |> IO.inspect(label: :to)
-    # )
 
     socket =
       socket
       |> assign(from, Enum.filter(socket.assigns[from], &(&1 != pane)))
       |> assign(to, [pane | socket.assigns[to]])
-
-    IO.inspect(socket.assigns)
 
     {:noreply, socket}
   end
@@ -150,6 +136,19 @@ defmodule MudWeb.MudClientLive do
     Logger.debug("hotkey event received: #{inspect(event)}")
 
     {:noreply, process_hotkey(event, socket)}
+  end
+
+  def handle_info({:update_client_state, key, value}, socket) do
+    # IO.inspect({:update_client_state, key, value}, label: :updating_client_state_in_mud_client)
+    # IO.inspect(socket.assigns.client_state, label: :updating_client_state_in_mud_client)
+
+    state = ClientState.modify(socket.assigns.client_state, key, value)
+    # IO.inspect(state, label: :updating_client_state_in_mud_client)
+    {:noreply, assign(socket, :client_state, state)}
+  end
+
+  def terminate(_, socket) do
+    IO.inspect(ClientState.update!(socket.assigns.client_state), label: "terminate")
   end
 
   def handle_cast(%Event{event: event = %UpdateCharacter{}}, socket) do

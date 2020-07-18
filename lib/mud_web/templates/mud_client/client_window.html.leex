@@ -11,15 +11,15 @@
     <% end %>
   </ul>
   <%= if @active_pane == "skills" do %>
-    <%= live_component(@socket, MudWeb.Live.Component.CharacterSkills, id: @character.id) %>
+    <%= live_component(@socket, MudWeb.Live.Component.CharacterSkills, id: @character.id, client_state: @client_state) %>
   <% end %>
   <%= if @active_pane == "map" do %>
-    <%= live_component(@socket, MudWeb.Live.Component.RegionMap, id: @character.id, character: @character) %>
+    <%= live_component(@socket, MudWeb.Live.Component.RegionMap, id: @character.id, character: @character, client_state: @client_state) %>
   <% end %>
   <%= if @active_pane == "inventory" do %>
-    <%= live_component(@socket, MudWeb.Live.Component.CharacterInventory, id: @character.id) %>
+    <%= live_component(@socket, MudWeb.Live.Component.CharacterInventory, id: @character.id, client_state: @client_state) %>
   <% end %>
   <%= if @active_pane == "area" do %>
-    <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
+    <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id, client_state: @client_state) %>
   <% end %>
 </div>

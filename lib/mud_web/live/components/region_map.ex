@@ -24,7 +24,6 @@ defmodule MudWeb.Live.Component.RegionMap do
         initialized: false,
         zoom_in_disabled: true,
         zoom_out_disabled: false,
-        graph: nil,
         speed: "walk"
       )
 
@@ -35,6 +34,15 @@ defmodule MudWeb.Live.Component.RegionMap do
     socket =
       cond do
         not socket.assigns.initialized and Map.has_key?(assigns, :character) ->
+          state = Ecto.Changeset.fetch_field!(assigns.client_state, :state)
+
+          socket =
+            if Map.has_key?(state, "region map") do
+              load_state(state["region map"], socket)
+            else
+              socket
+            end
+
           socket
           |> assign(:character, assigns.character)
           |> init_map_data()
@@ -133,11 +141,15 @@ defmodule MudWeb.Live.Component.RegionMap do
   def handle_event("set_auto_travel_speed", %{"speed" => speed}, socket) do
     Script.cast(socket.assigns.character, "auto_travel", {:update_speed, speed})
 
-    {:noreply,
-     assign(
-       socket,
-       speed: speed
-     )}
+    socket =
+      assign(
+        socket,
+        speed: speed
+      )
+
+    send(self(), {:update_client_state, "region map", dump_state(socket)})
+
+    {:noreply, socket}
   end
 
   def handle_event("auto_travel", %{"destination" => destination}, socket) do
@@ -183,6 +195,8 @@ defmodule MudWeb.Live.Component.RegionMap do
       )
       |> center_map()
 
+    send(self(), {:update_client_state, "region map", dump_state(socket)})
+
     {:noreply, socket}
   end
 
@@ -198,6 +212,8 @@ defmodule MudWeb.Live.Component.RegionMap do
         zoom_out_disabled: size == @viewbox_max_size
       )
       |> center_map()
+
+    send(self(), {:update_client_state, "region map", dump_state(socket)})
 
     {:noreply, socket}
   end
@@ -244,5 +260,16 @@ defmodule MudWeb.Live.Component.RegionMap do
     Map.new(things, fn thing ->
       {thing.id, thing}
     end)
+  end
+
+  defp dump_state(socket) do
+    %{speed: socket.assigns.speed, viewbox_size: socket.assigns.viewbox_size}
+  end
+
+  defp load_state(state, socket) do
+    assign(socket,
+      speed: state.speed,
+      viewbox_size: state.viewbox_size
+    )
   end
 end

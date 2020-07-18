@@ -17,5 +17,6 @@ defmodule Mud.Repo.Migrations.CreateSkills do
     create(index(:character_skills, [:skillset]))
     create(index(:character_skills, [:pool]))
     create(index(:character_skills, [:points]))
+    create(index(:character_skills, [:character_id]))
   end
 end
