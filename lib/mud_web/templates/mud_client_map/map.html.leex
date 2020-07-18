@@ -1,4 +1,4 @@
-<div id="map" class="min-w-full min-h-full flex flex-col">
+<div id="map" class="min-w-full h-full flex flex-col">
   <%= live_component(@socket, MudWeb.Live.Component.MapTopbar, id: "#{@character.id}:map_top_bar", zoom_out_disabled: @zoom_out_disabled, zoom_in_disabled: @zoom_in_disabled, title: "#{@region.name}, #{@areas[@character.area_id].name}") %>
   <svg class="flex-auto" viewBox="<%= @viewbox_x %> <%= @viewbox_y %> <%= @viewbox_size %> <%= @viewbox_size %>" preserveAspectRatio="xMidYMid slice">
     <%= for line <- @lines do %>

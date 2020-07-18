@@ -13,8 +13,6 @@ defmodule MudWeb.Live.Component.Map do
   @canvas_coord @canvas_size / 2 - @viewbox_min_size / 2
 
   def mount(socket) do
-    IO.inspect("mount")
-
     socket =
       socket
       |> assign(
@@ -112,7 +110,21 @@ defmodule MudWeb.Live.Component.Map do
         }
       end)
 
-    assign(socket, lines: lines, squares: squares)
+    assign(socket,
+      lines: lines,
+      squares: squares
+    )
+    |> center_map()
+  end
+
+  defp center_map(socket) do
+    {_id, active_area} =
+      Enum.find(socket.assigns.areas, fn {id, _area} -> id == socket.assigns.character.area_id end)
+
+    assign(socket,
+      viewbox_x: active_area.map_x - socket.assigns.viewbox_size / 2,
+      viewbox_y: active_area.map_y - socket.assigns.viewbox_size / 2
+    )
   end
 
   def handle_event("zoom", %{"direction" => dir}, socket) do
@@ -163,46 +175,32 @@ defmodule MudWeb.Live.Component.Map do
     assigns = socket.assigns
     size = max(assigns.viewbox_size - @zoom_size_increment, @viewbox_min_size)
 
-    {x, y} =
-      if size == assigns.viewbox_size do
-        {assigns.viewbox_x, assigns.viewbox_y}
-      else
-        {assigns.viewbox_x + @zoom_coordinate_increment,
-         assigns.viewbox_x + @zoom_coordinate_increment}
-      end
+    socket =
+      socket
+      |> assign(
+        viewbox_size: size,
+        zoom_in_disabled: size == @viewbox_min_size,
+        zoom_out_disabled: size == @viewbox_max_size
+      )
+      |> center_map()
 
-    {:noreply,
-     assign(
-       socket,
-       viewbox_x: x,
-       viewbox_y: y,
-       viewbox_size: size,
-       zoom_in_disabled: size == @viewbox_min_size,
-       zoom_out_disabled: size == @viewbox_max_size
-     )}
+    {:noreply, socket}
   end
 
   defp calculate_zoom(socket, "out") do
     assigns = socket.assigns
     size = min(assigns.viewbox_size + @zoom_size_increment, @viewbox_max_size)
 
-    {x, y} =
-      if size == assigns.viewbox_size do
-        {assigns.viewbox_x, assigns.viewbox_y}
-      else
-        {assigns.viewbox_x - @zoom_coordinate_increment,
-         assigns.viewbox_x - @zoom_coordinate_increment}
-      end
+    socket =
+      socket
+      |> assign(
+        viewbox_size: size,
+        zoom_in_disabled: size == @viewbox_min_size,
+        zoom_out_disabled: size == @viewbox_max_size
+      )
+      |> center_map()
 
-    {:noreply,
-     assign(
-       socket,
-       viewbox_x: x,
-       viewbox_y: y,
-       viewbox_size: size,
-       zoom_in_disabled: size == @viewbox_min_size,
-       zoom_out_disabled: size == @viewbox_max_size
-     )}
+    {:noreply, socket}
   end
 
   defp init_map_data(socket) do

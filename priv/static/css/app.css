@@ -11342,6 +11342,10 @@ div[name="message"] {
   display: none;
 }
 
+.half-height {
+  height: 50%;
+}
+
 @media (min-width: 640px) {
   .sm\:sr-only {
     position: absolute;

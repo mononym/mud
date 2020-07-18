@@ -6,6 +6,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item}
   alias Mud.Engine.Util
+  alias Mud.Engine.Character.Skill
 
   require Logger
 
@@ -77,6 +78,12 @@ defmodule Mud.Engine.Character do
     field(:auto_close_containers, :boolean, default: false)
     field(:auto_unlock_containers, :boolean, default: false)
     field(:auto_lock_containers, :boolean, default: false)
+
+    #
+    # Skills
+    #
+
+    has_many(:raw_skills, Skill)
   end
 
   ##
@@ -164,9 +171,14 @@ defmodule Mud.Engine.Character do
 
     # TODO: Figure out where to create characters and how to present the options.
     # This random selection is just for prototype.
-    %__MODULE__{}
-    |> changeset(Map.put(attrs, "area_id", area.id))
-    |> Repo.insert()
+    {:ok, character} =
+      %__MODULE__{}
+      |> changeset(Map.put(attrs, "area_id", area.id))
+      |> Repo.insert()
+
+    :ok = Skill.initialize(character.id)
+
+    {:ok, character}
   end
 
   def change(character), do: Ecto.Changeset.change(character)
@@ -243,10 +255,10 @@ defmodule Mud.Engine.Character do
 
   @spec list_by_case_insensitive_prefix_in_area(String.t(), String.t()) :: [%__MODULE__{}]
   def list_by_case_insensitive_prefix_in_area(partial_name, character_id) do
-    base_query()
+    base_no_skills_query(character_id)
     |> where(
       [character: character],
-      character.id == ^character_id and like(character.name, ^"#{partial_name}%")
+      like(character.name, ^"#{partial_name}%")
     )
     |> Repo.all()
   end
@@ -282,7 +294,7 @@ defmodule Mud.Engine.Character do
   """
   @spec list(list_of_ids :: [String.t(), ...]) :: [%__MODULE__{}]
   def list(list_of_ids) do
-    base_query()
+    base_no_skills_query()
     |> where([character], character.id in ^list_of_ids)
     |> Repo.all()
   end
@@ -335,7 +347,7 @@ defmodule Mud.Engine.Character do
   """
   @spec list_in_area(String.t()) :: [%__MODULE__{}]
   def list_in_area(area_id) do
-    base_query()
+    base_no_skills_query()
     |> where([character], character.area_id == ^area_id)
     |> Repo.all()
   end
@@ -356,7 +368,7 @@ defmodule Mud.Engine.Character do
   def list_active_in_areas(area_ids) do
     area_ids = List.wrap(area_ids)
 
-    base_query()
+    base_no_skills_query()
     |> where([character], character.active == true and character.area_id in ^area_ids)
     |> Repo.all()
   end
@@ -377,7 +389,7 @@ defmodule Mud.Engine.Character do
   def list_others_active_in_areas(character_id, area_ids) do
     area_ids = List.wrap(area_ids)
 
-    base_query()
+    base_no_skills_query()
     |> where(
       [char],
       char.active == true and char.area_id in ^area_ids and
@@ -392,7 +404,7 @@ defmodule Mud.Engine.Character do
     Ecto.Multi.run(multi, name, fn repo, _changes ->
       area_ids = List.wrap(area_ids)
 
-      base_query()
+      base_no_skills_query()
       |> where(
         [char],
         char.active == true and char.area_id in ^area_ids and
@@ -432,11 +444,23 @@ defmodule Mud.Engine.Character do
     Repo.get!(__MODULE__, character_id)
   end
 
-  @spec list_by_name_in_area(String.t(), String.t()) :: [%__MODULE__{}]
-  def list_by_name_in_area(name, area_id) do
-    base_query()
-    |> where([character], character.name == ^name and character.area_id == ^area_id)
-    |> Repo.all()
+  @doc """
+  Gets a single character.
+
+  Raises `Ecto.NoResultsError` if the Character does not exist.
+
+  ## Examples
+
+      iex> get_with_skills_by_id!(123)
+      %Character{}
+
+      iex> get_with_skills_by_id!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  @spec get_with_skills_by_id!(String.t()) :: %__MODULE__{} | nil
+  def get_with_skills_by_id!(character_id) do
+    Repo.one!(base_skills_query(character_id))
   end
 
   @doc """
@@ -546,7 +570,23 @@ defmodule Mud.Engine.Character do
 
   def prone, do: "prone"
 
-  defp base_query do
+  defp base_no_skills_query() do
     from(character in __MODULE__)
+  end
+
+  defp base_no_skills_query(character_id) do
+    from(
+      character in __MODULE__,
+      where: character.id == ^character_id
+    )
+  end
+
+  defp base_skills_query(character_id) do
+    from(
+      character in __MODULE__,
+      join: skills in assoc(character, :skills),
+      where: character.id == skills.character_id and character.id == ^character_id,
+      preload: [skills: skills]
+    )
   end
 end

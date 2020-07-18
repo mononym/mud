@@ -1,0 +1,12 @@
+<div class="pl-4 min-w-full flex flex-col flex-shrink text-lg">
+  <div phx-click="toggle_expanded" phx-target="<%= @myself %>" class="flex flex-shrink cursor-pointer select-none">
+    <div class="flex-1"><i class="<%= "fas fa-circle" %>"></i>&nbsp;<%= String.capitalize(@skill.name) %></div>
+    <div class="pr-4"><%= @ranks %></div>
+    <div class=""><%= @pool_string %></div>
+  </div>
+  <%= if @expanded do %>
+  <div class="flex-shrink pl-8">
+    <%= @description %>
+  </div>
+  <% end %>
+</div>

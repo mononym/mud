@@ -2,24 +2,11 @@
 
 <div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id) %>
+    <div class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top left", character: @character, panes: ["area"]) %>
     </div>
-    <div class="flex flex-col flex-1 border-4">
-      <ul class="flex">
-        <li class="flex-1 mr-2">
-          <a class="text-center block border border-blue-500 rounded py-2 px-4 bg-blue-500 hover:bg-blue-700 text-white" href="#">Inventory</a>
-        </li>
-        <li class="flex-1 mr-2">
-          <a class="text-center block border border-white rounded hover:border-gray-200 text-blue-500 hover:bg-gray-200 py-2 px-4" href="#">Skills</a>
-        </li>
-        <li class="text-center flex-1">
-          <a class="block py-2 px-4 text-gray-400 cursor-not-allowed" href="#">Settings</a>
-        </li>
-      </ul>
-      <div class="flex flex-1 bg-gray-600 p-2">
-        <%= live_component(@socket, MudWeb.Live.Component.CharacterInventory, id: @character.id) %>
-      </div>
+    <div class="flex flex-col half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom left", character: @character, panes: ["inventory"]) %>
     </div>
   </div>
   <div class="w-3/5 flex flex-col">
@@ -36,10 +23,11 @@
     </div>
   </div>
   <div class="w-1/5 flex flex-col">
-    <div class="flex flex-1 border-4">
-        <%= live_component(@socket, MudWeb.Live.Component.Map, id: @character.id, character: @character) %>
+    <div class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top right", character: @character, panes: ["map"]) %>
     </div>
-    <div class="flex flex-1 border-4">
+    <div class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom right", character: @character, panes: ["skills"]) %>
     </div>
   </div>
 </div>
