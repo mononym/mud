@@ -24,7 +24,7 @@ defmodule MudWeb.Live.Component.CharacterSkill do
 
     assigns =
       assigns
-      |> Map.put(:ranks, Ranks.rank(assigns.skill.points + 897_897))
+      |> Map.put(:ranks, Ranks.rank(assigns.skill.points))
       |> Map.put(:pool_string, pool_string)
       |> Map.put(:description, Skills.describe(assigns.skill.name))
 
@@ -36,10 +36,6 @@ defmodule MudWeb.Live.Component.CharacterSkill do
     hours = Integer.mod(floor(minutes / 60), 24)
     days = Integer.mod(floor(hours / 24), 7)
     weeks = floor(days / 7)
-
-    days = 3
-    hours = 12
-    minutes = 14
 
     if weeks + days + hours + minutes == 0 do
       "Empty"
