@@ -4,7 +4,7 @@ defmodule MudWeb.MudClientLive do
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Event
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
-  alias MudWeb.Live.Component.{AreaOverview, CharacterInventory, Map}
+  alias MudWeb.Live.Component.{AreaOverview, ClientWindow, CharacterInventory, RegionMap}
 
   require Logger
 
@@ -32,7 +32,11 @@ defmodule MudWeb.MudClientLive do
        commands: [],
        command_index: 0,
        viewing_history: false,
-       latest_input: ""
+       latest_input: "",
+       top_left: ["area"],
+       bottom_left: ["inventory"],
+       top_right: ["map"],
+       bottom_right: ["skills"]
      ), temporary_assigns: [messages: []]}
   end
 
@@ -60,6 +64,37 @@ defmodule MudWeb.MudClientLive do
           event: UpdateInventory.new(:update, [primary_container, item])
         )
     end
+
+    {:noreply, socket}
+  end
+
+  def handle_event("move_pane", pane, socket) do
+    IO.inspect(pane)
+    [from_str, pane, to_str] = String.split(pane, ":")
+    IO.inspect(pane)
+    from = String.to_existing_atom(from_str)
+    to = String.to_existing_atom(to_str)
+    IO.inspect(from)
+    IO.inspect(to)
+    IO.inspect(socket.assigns[from])
+    IO.inspect(socket.assigns[to])
+
+    # send_update(ClientWindow,
+    #   id: from_str,
+    #   panes: Enum.filter(socket.assigns[from], &(&1 != pane)) |> IO.inspect(label: :from)
+    # )
+
+    # send_update(ClientWindow,
+    #   id: to_str,
+    #   panes: [pane | socket.assigns[to]] |> IO.inspect(label: :to)
+    # )
+
+    socket =
+      socket
+      |> assign(from, Enum.filter(socket.assigns[from], &(&1 != pane)))
+      |> assign(to, [pane | socket.assigns[to]])
+
+    IO.inspect(socket.assigns)
 
     {:noreply, socket}
   end

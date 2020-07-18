@@ -20,12 +20,33 @@ Hooks.Input = {
     }
 }
 
-// Hooks.Form = {
-//     updated() {
-//         console.log("updated")
-//         input.focus()
-//     }
-// }
+Hooks.draggable_pane = {
+    mounted() {
+        this.el.addEventListener("dragstart", e => {
+            e.dataTransfer.dropEffect = "move";
+            console.log(e)
+            var which = $(this.el).parents('div[name ="window"]').first().data("window")
+            e.dataTransfer.setData("text/plain", which + ":" + e.target.id); // save the elements id as a payload
+        })
+    }
+}
+
+
+Hooks.draggable_pane_drop_zone = {
+    mounted() {
+        this.el.addEventListener("dragover", e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = "move";
+        })
+
+        this.el.addEventListener("drop", e => {
+            e.preventDefault();
+            var data = e.dataTransfer.getData("text/plain");
+            var which = $(this.el).parents('div[name ="window"]').first().data("window")
+            this.pushEvent("move_pane", data + ":" + which)
+        })
+    }
+}
 
 const toggleMenu = command => {
     menu.style.display = command === "show" ? "block" : "none";

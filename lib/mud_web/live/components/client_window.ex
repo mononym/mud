@@ -5,26 +5,21 @@ defmodule MudWeb.Live.Component.ClientWindow do
     {:ok,
      assign(socket,
        active_pane: nil,
-       initialized: false,
        panes: []
      )}
   end
 
   def update(assigns, socket) do
-    socket =
-      if not socket.assigns.initialized do
-        assign(socket,
-          active_pane: (assigns[:panes] || socket.assigns[:panes]) |> List.first(),
-          initialized: true,
-          panes: assigns.panes,
-          id: assigns.id,
-          character: assigns.character
-        )
-      else
-        socket
-      end
+    IO.inspect({assigns, socket.assigns}, label: :window_update)
 
-    {:ok, socket}
+    {:ok,
+     assign(socket,
+       active_pane: (assigns[:panes] || socket.assigns[:panes]) |> List.first(),
+       panes: assigns.panes,
+       id: assigns.id,
+       character: assigns[:character] || socket.assigns.character
+     )
+     |> IO.inspect()}
   end
 
   def render(assigns) do
@@ -35,7 +30,8 @@ defmodule MudWeb.Live.Component.ClientWindow do
     {:noreply,
      assign(socket,
        active_pane: pane
-     )}
+     )
+     |> IO.inspect()}
   end
 
   # def handle_event("expand_all", _, socket) do

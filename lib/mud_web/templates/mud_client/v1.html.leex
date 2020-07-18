@@ -2,11 +2,11 @@
 
 <div name="client" class="w-screen h-screen flex flex-row overflow-hidden max-h-screen" phx-window-keyup="hotkey">
   <div class="w-1/5 flex flex-col">
-    <div class="flex half-height border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top left", character: @character, panes: ["area"]) %>
+    <div name="window" data-window="top_left" class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top_left", character: @character, panes: @top_left) %>
     </div>
-    <div class="flex flex-col half-height border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom left", character: @character, panes: ["inventory"]) %>
+    <div name="window" data-window="bottom_left" class="flex flex-col half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom_left", character: @character, panes: @bottom_left) %>
     </div>
   </div>
   <div class="w-3/5 flex flex-col">
@@ -23,11 +23,11 @@
     </div>
   </div>
   <div class="w-1/5 flex flex-col">
-    <div class="flex half-height border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top right", character: @character, panes: ["map"]) %>
+    <div name="window" data-window="top_right" class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "top_right", character: @character, panes: @top_right) %>
     </div>
-    <div class="flex half-height border-4">
-      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom right", character: @character, panes: ["skills"]) %>
+    <div name="window" data-window="bottom_right" class="flex half-height border-4">
+      <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "bottom_right", character: @character, panes: @bottom_right) %>
     </div>
   </div>
 </div>

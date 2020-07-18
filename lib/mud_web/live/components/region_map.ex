@@ -1,9 +1,8 @@
-defmodule MudWeb.Live.Component.Map do
+defmodule MudWeb.Live.Component.RegionMap do
   use Phoenix.LiveComponent
   alias Mud.Engine.{Area, Link, Region, Script}
   alias Ecto.Multi
 
-  @zoom_coordinate_increment 250
   @zoom_size_increment 500
 
   @viewbox_min_size 500
