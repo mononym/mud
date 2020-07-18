@@ -11,8 +11,6 @@ defmodule MudWeb.Live.Component.ClientWindow do
   end
 
   def update(assigns, socket) do
-    IO.inspect({assigns, socket.assigns}, label: :window_update)
-
     {:ok,
      assign(socket,
        active_pane: (assigns[:panes] || socket.assigns[:panes]) |> List.first(),
@@ -20,8 +18,7 @@ defmodule MudWeb.Live.Component.ClientWindow do
        id: assigns.id,
        character: assigns[:character] || socket.assigns.character,
        client_state: assigns[:client_state]
-     )
-     |> IO.inspect()}
+     )}
   end
 
   def render(assigns) do
@@ -32,7 +29,6 @@ defmodule MudWeb.Live.Component.ClientWindow do
     {:noreply,
      assign(socket,
        active_pane: pane
-     )
-     |> IO.inspect()}
+     )}
   end
 end

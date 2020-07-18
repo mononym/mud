@@ -139,16 +139,13 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_info({:update_client_state, key, value}, socket) do
-    # IO.inspect({:update_client_state, key, value}, label: :updating_client_state_in_mud_client)
-    # IO.inspect(socket.assigns.client_state, label: :updating_client_state_in_mud_client)
-
     state = ClientState.modify(socket.assigns.client_state, key, value)
-    # IO.inspect(state, label: :updating_client_state_in_mud_client)
+
     {:noreply, assign(socket, :client_state, state)}
   end
 
   def terminate(_, socket) do
-    IO.inspect(ClientState.update!(socket.assigns.client_state), label: "terminate")
+    ClientState.update!(socket.assigns.client_state)
   end
 
   def handle_cast(%Event{event: event = %UpdateCharacter{}}, socket) do
@@ -255,64 +252,44 @@ defmodule MudWeb.MudClientLive do
       socket.assigns.viewing_history ->
         new_index = min(socket.assigns.command_index + 1, length(socket.assigns.commands) - 1)
 
-        s =
-          socket
-          |> assign(
-            :command_index,
-            new_index
-          )
-          |> assign(
-            :input,
-            Input.new(
-              Enum.at(
-                socket.assigns.commands,
-                new_index
-              )
+        socket
+        |> assign(
+          :command_index,
+          new_index
+        )
+        |> assign(
+          :input,
+          Input.new(
+            Enum.at(
+              socket.assigns.commands,
+              new_index
             )
           )
-
-        IO.inspect(s.assigns.input, label: :arrow_up)
-        IO.inspect(s.assigns.command_index, label: :arrow_up)
-        s
+        )
 
       true ->
-        s =
-          socket
-          |> assign(:viewing_history, true)
-          |> assign(:input, Input.new(List.first(socket.assigns.commands)))
-
-        IO.inspect(s.assigns.input, label: :arrow_up)
-        IO.inspect(s.assigns.command_index, label: :arrow_up)
-        s
+        socket
+        |> assign(:viewing_history, true)
+        |> assign(:input, Input.new(List.first(socket.assigns.commands)))
     end
   end
 
   defp process_hotkey(%{"code" => "ArrowDown"}, socket) do
     cond do
       socket.assigns.viewing_history and socket.assigns.command_index == 0 ->
-        s =
-          socket
-          |> assign(:viewing_history, false)
-          |> assign(:input, Input.new(socket.assigns.latest_input))
-
-        IO.inspect(s.assigns.input, label: :arrow_down1)
-        IO.inspect(s.assigns.command_index, label: :arrow_down1)
-        s
+        socket
+        |> assign(:viewing_history, false)
+        |> assign(:input, Input.new(socket.assigns.latest_input))
 
       socket.assigns.viewing_history ->
         new_index = socket.assigns.command_index - 1
 
-        s =
-          socket
-          |> assign(
-            :command_index,
-            new_index
-          )
-          |> assign(:input, Input.new(Enum.at(socket.assigns.commands, new_index)))
-
-        IO.inspect(s.assigns.input, label: :arrow_down2)
-        IO.inspect(s.assigns.command_index, label: :arrow_down2)
-        s
+        socket
+        |> assign(
+          :command_index,
+          new_index
+        )
+        |> assign(:input, Input.new(Enum.at(socket.assigns.commands, new_index)))
 
       true ->
         socket

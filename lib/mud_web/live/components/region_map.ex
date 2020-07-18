@@ -24,7 +24,8 @@ defmodule MudWeb.Live.Component.RegionMap do
         initialized: false,
         zoom_in_disabled: true,
         zoom_out_disabled: false,
-        speed: "walk"
+        speed: "walk",
+        follow: "always"
       )
 
     {:ok, socket, temporary_assigns: [event: nil]}
@@ -125,6 +126,91 @@ defmodule MudWeb.Live.Component.RegionMap do
   end
 
   defp center_map(socket) do
+    cond do
+      socket.assigns.follow == "always" ->
+        center_map_on_character(socket)
+
+      socket.assigns.follow == "sometimes" and viewbox_can_contain_everything(socket) ->
+        center_map_in_region(socket)
+
+      socket.assigns.follow == "sometimes" and not viewbox_can_contain_everything(socket) ->
+        center_map_on_character(socket)
+
+      socket.assigns.follow == "never" and viewbox_can_contain_everything(socket) ->
+        center_map_in_region(socket)
+
+      socket.assigns.follow == "never" and not viewbox_can_contain_everything(socket) ->
+        socket
+    end
+  end
+
+  defp viewbox_can_contain_everything(socket) do
+    dimensions = calculate_dimensions_of_region(socket)
+
+    max_size = max(dimensions.max_x - dimensions.min_x, dimensions.max_y - dimensions.min_y)
+
+    max_size <= socket.assigns.viewbox_size * 0.8
+  end
+
+  defp calculate_dimensions_of_region(socket) do
+    Enum.reduce(
+      socket.assigns.areas,
+      %{
+        min_x: @canvas_size,
+        min_y: @canvas_size,
+        max_x: 0,
+        max_y: 0
+      },
+      fn {_id, area}, dimensions ->
+        dimensions =
+          if area.map_x - area.map_size / 2 < dimensions.min_x do
+            Map.put(dimensions, :min_x, area.map_x - area.map_size / 2)
+          else
+            dimensions
+          end
+
+        dimensions =
+          if area.map_x + area.map_size / 2 > dimensions.max_x do
+            Map.put(dimensions, :max_x, area.map_x + area.map_size / 2)
+          else
+            dimensions
+          end
+
+        dimensions =
+          if area.map_y + area.map_size / 2 > dimensions.max_y do
+            Map.put(dimensions, :max_y, area.map_y + area.map_size / 2)
+          else
+            dimensions
+          end
+
+        if area.map_y - area.map_size / 2 < dimensions.min_y do
+          Map.put(dimensions, :min_y, area.map_y - area.map_size / 2)
+        else
+          dimensions
+        end
+      end
+    )
+  end
+
+  defp center_map_in_region(socket) do
+    dimensions = calculate_dimensions_of_region(socket)
+
+    size_x = dimensions.max_x - dimensions.min_x
+    size_y = dimensions.max_y - dimensions.min_y
+
+    center_region_x = size_x / 2 + dimensions.min_x
+    center_region_y = size_y / 2 + dimensions.min_y
+
+    viewbox_x = center_region_x - socket.assigns.viewbox_size / 2
+    viewbox_y = center_region_y - socket.assigns.viewbox_size / 2
+
+    assign(socket,
+      viewbox_x: viewbox_x,
+      viewbox_y: viewbox_y
+    )
+  end
+
+  defp center_map_on_character(socket) do
     {_id, active_area} =
       Enum.find(socket.assigns.areas, fn {id, _area} -> id == socket.assigns.character.area_id end)
 
@@ -148,6 +234,20 @@ defmodule MudWeb.Live.Component.RegionMap do
       )
 
     send(self(), {:update_client_state, "region map", dump_state(socket)})
+
+    {:noreply, socket}
+  end
+
+  def handle_event("set_follow", %{"follow" => follow}, socket) do
+    socket =
+      assign(
+        socket,
+        follow: follow
+      )
+
+    send(self(), {:update_client_state, "region map", dump_state(socket)})
+
+    socket = draw_map(socket)
 
     {:noreply, socket}
   end
@@ -191,7 +291,9 @@ defmodule MudWeb.Live.Component.RegionMap do
       |> assign(
         viewbox_size: size,
         zoom_in_disabled: size == @viewbox_min_size,
-        zoom_out_disabled: size == @viewbox_max_size
+        zoom_out_disabled: size == @viewbox_max_size,
+        viewbox_x: socket.assigns.viewbox_x + @zoom_size_increment / 2,
+        viewbox_y: socket.assigns.viewbox_y + @zoom_size_increment / 2
       )
       |> center_map()
 
@@ -209,7 +311,9 @@ defmodule MudWeb.Live.Component.RegionMap do
       |> assign(
         viewbox_size: size,
         zoom_in_disabled: size == @viewbox_min_size,
-        zoom_out_disabled: size == @viewbox_max_size
+        zoom_out_disabled: size == @viewbox_max_size,
+        viewbox_x: socket.assigns.viewbox_x - @zoom_size_increment / 2,
+        viewbox_y: socket.assigns.viewbox_y - @zoom_size_increment / 2
       )
       |> center_map()
 
@@ -263,13 +367,22 @@ defmodule MudWeb.Live.Component.RegionMap do
   end
 
   defp dump_state(socket) do
-    %{speed: socket.assigns.speed, viewbox_size: socket.assigns.viewbox_size}
+    %{
+      follow: socket.assigns.follow,
+      speed: socket.assigns.speed,
+      viewbox_size: socket.assigns.viewbox_size,
+      zoom_in_disabled: socket.assigns.zoom_in_disabled,
+      zoom_out_disabled: socket.assigns.zoom_out_disabled
+    }
   end
 
   defp load_state(state, socket) do
     assign(socket,
       speed: state.speed,
-      viewbox_size: state.viewbox_size
+      viewbox_size: state.viewbox_size,
+      follow: state.follow,
+      zoom_in_disabled: state.zoom_in_disabled,
+      zoom_out_disabled: state.zoom_out_disabled
     )
   end
 end

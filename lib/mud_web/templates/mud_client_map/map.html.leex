@@ -11,21 +11,41 @@
   <div class="flex">
     <%= if @speed == "walk" do %>
       <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
-        <i class="fas fa-walking"></i>
-      </button>
     <% else %>
       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_auto_travel_speed" phx-value-speed="walk" phx-target="<%= @myself %>">
+    <% end %>
         <i class="fas fa-walking"></i>
       </button>
-    <% end %>
     <%= if @speed == "run" do %>
       <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
-        <i class="fas fa-running"></i>
-      </button>
     <% else %>
       <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_auto_travel_speed" phx-value-speed="run" phx-target="<%= @myself %>">
+    <% end %>
         <i class="fas fa-running"></i>
       </button>
+    <%= if @follow == "always" do %>
+      <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
+    <% else %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_follow" phx-value-follow="always" phx-target="<%= @myself %>">
     <% end %>
+        <%# <i class="fas fa-running"></i> %>
+        Always
+      </button>
+    <%= if @follow == "sometimes" do %>
+      <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
+    <% else %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_follow" phx-value-follow="sometimes" phx-target="<%= @myself %>">
+    <% end %>
+        <%# <i class="fas fa-running"></i> %>
+        Sometimes
+      </button>
+    <%= if @follow == "never" do %>
+      <button class="bg-gray-600 text-gray-800 font-bold rounded-l px-px flex-1 cursor-not-allowed" disabled>
+    <% else %>
+      <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold rounded-l px-px flex-1" phx-click="set_follow" phx-value-follow="never" phx-target="<%= @myself %>">
+    <% end %>
+        <%# <i class="fas fa-running"></i> %>
+        Never
+      </button>
   </div>
 </div>
