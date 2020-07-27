@@ -7,10 +7,18 @@ defmodule MudWeb.Router do
     plug(:fetch_session)
     plug(:fetch_flash)
     plug(:fetch_live_flash)
-    plug(:protect_from_forgery)
+    # plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(MudWeb.Plug.SetPlayer)
   end
+
+  pipeline :api do
+    plug :accepts, ["json"]
+    plug(:fetch_session)
+    plug(:put_secure_browser_headers)
+    plug(MudWeb.Plug.SetPlayer)
+  end
+
 
   pipeline :enforce_authentication do
     plug(MudWeb.Plug.RedirectAnonymousPlayer)
@@ -30,16 +38,19 @@ defmodule MudWeb.Router do
   end
 
   scope "/", MudWeb do
-    pipe_through([:browser])
+    pipe_through([:api])
+
+    post "/csrf-token", CsrfTokenController, :get_token
 
     # Landing / Home page stuff
-    get("/", PageController, :show_landing_page)
+    # get("/", PageController, :show_landing_page)
 
     # Auth related stuff
     post("/authenticate/email", PlayerAuthController, :authenticate_via_email)
-    get("/authenticate/token/:token", PlayerAuthController, :validate_auth_token)
-    get("/authenticate/token", PlayerAuthController, :show_auth_token_form)
+    # get("/authenticate/token/:token", PlayerAuthController, :validate_auth_token)
+    # get("/authenticate/token", PlayerAuthController, :show_auth_token_form)
     post("/authenticate/token", PlayerAuthController, :validate_auth_token)
+
   end
 
   scope "/", MudWeb do

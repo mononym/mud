@@ -35,6 +35,7 @@ defmodule Mud.MixProject do
     [
       {:bamboo, "~> 1.5"},
       {:cloak, "1.0.0"},
+      {:cors_plug, "~> 2.0"},
       {:ecto, "~> 3.4", override: true},
       {:ecto_sql, "~> 3.4"},
       {:ecto_autoslug_field, "~> 2.0"},

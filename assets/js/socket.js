@@ -120,12 +120,12 @@ Hooks.Story = {
 }
 
 Hooks.MessageWrapper = {
-    updated() {
-        if (storyWindowScrolledToBottom) {
+    // updated() {
+        // if (storyWindowScrolledToBottom) {
             // storywindow.scrollTop = storywindow.scrollHeight;
-            scrolltobottom.scrollIntoView(false)
-        }
-    }
+        //     scrolltobottom.scrollIntoView(false)
+        // }
+    // }
 }
 
 function handleIntersect(entries, observer) {
@@ -133,13 +133,13 @@ function handleIntersect(entries, observer) {
 }
 
 Hooks.ScrollToBottom = {
-    mounted() {
-        scrolltobottom = this.el;
+    // mounted() {
+    //     scrolltobottom = this.el;
 
-        const io = new IntersectionObserver(handleIntersect, { threshold: [0, 1] })
+    //     const io = new IntersectionObserver(handleIntersect, { threshold: [0, 1] })
 
-        io.observe(this.el)
-    },
+    //     io.observe(this.el)
+    // },
 }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");

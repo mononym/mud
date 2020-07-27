@@ -1,0 +1,13 @@
+<div class="flex flex-col max-h-full">
+  <div id="story" phx-hook="Story" class="flex flex-col min-w-full p-2 font-extrabold font-story border-4 border-r-0 flex-1 overflow-y-hidden">
+    <div id="story_wrapper" phx-hook="MessageWrapper" phx-update="append">
+    <%= for message <- @messages do %>
+      <%= live_component @socket, MudWeb.Live.Component.StoryMessage, message: message %>
+    <% end %>
+    </div>
+    <div id="scroll-to-bottom" phx-hook="ScrollToBottom" class="h-2"></div>
+  </div>
+  <div class="flex h-8">
+    <%= live_component @socket, MudWeb.Live.Component.CommandPrompt, input: @input %>
+  </div>
+</div>

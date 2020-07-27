@@ -4,23 +4,10 @@ defmodule MudWeb.MudClientLive do
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Event
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
-  alias MudWeb.Live.Component.{AreaOverview, CharacterInventory}
+  alias MudWeb.Live.Component.{AreaOverview, CharacterInventory, Story}
   alias Mud.Engine.Character.ClientState
 
   require Logger
-
-  defmodule Input do
-    use Ecto.Schema
-
-    embedded_schema do
-      field(:content, :string, default: "")
-    end
-
-    def new, do: %__MODULE__{} |> Ecto.Changeset.change(%{id: UUID.uuid4()})
-
-    def new(content),
-      do: %__MODULE__{} |> Ecto.Changeset.change(%{id: UUID.uuid4(), content: content})
-  end
 
   def mount(_params, session, socket) do
     Mud.Engine.Session.subscribe(session["character_id"])
@@ -28,16 +15,12 @@ defmodule MudWeb.MudClientLive do
     {:ok,
      assign(socket,
        character: Character.get_by_id!(session["character_id"]),
-       input: Input.new(),
-       messages: [],
-       commands: [],
-       command_index: 0,
        viewing_history: false,
-       latest_input: "",
        top_left: ["area"],
        bottom_left: ["inventory"],
        top_right: ["map"],
        bottom_right: ["skills"],
+       center: ["story"],
        client_state:
          ClientState.load_or_create(session["character_id"])
          |> Ecto.Changeset.change()
@@ -83,32 +66,6 @@ defmodule MudWeb.MudClientLive do
       |> assign(to, [pane | socket.assigns[to]])
 
     {:noreply, socket}
-  end
-
-  def handle_event("input_change", %{"input" => %{"content" => input}}, socket) do
-    Logger.debug(inspect(input))
-    {:noreply, assign(socket, :latest_input, input)}
-  end
-
-  def handle_event("submit_input", %{"input" => %{"content" => ""}}, socket) do
-    Logger.debug(inspect(socket.assigns.input))
-    {:noreply, socket}
-  end
-
-  # input sent via text box
-  def handle_event("submit_input", %{"input" => %{"content" => input}}, socket) do
-    Logger.debug("Handling input event: #{inspect(input)}")
-    send_command(socket.assigns.character.id, input)
-    Logger.debug("Sent input")
-
-    {:noreply,
-     assign(socket,
-       input: Input.new(),
-       commands: Enum.slice([input | socket.assigns.commands], 0..99),
-       command_index: 0,
-       viewing_history: false,
-       latest_input: ""
-     )}
   end
 
   # input sent from button clicks and the like
@@ -175,7 +132,9 @@ defmodule MudWeb.MudClientLive do
   def handle_cast(%Mud.Engine.Message.Output{} = output, socket) do
     Logger.debug("Received output : #{inspect(output)}")
 
-    {:noreply, assign(socket, messages: [output.text | socket.assigns.messages])}
+    send_update(Story, id: socket.assigns.character.id, messages: [output.text])
+
+    {:noreply, socket}
   end
 
   def handle_cast(event, socket) do
@@ -244,57 +203,57 @@ defmodule MudWeb.MudClientLive do
     socket
   end
 
-  defp process_hotkey(%{"code" => "ArrowUp"}, socket) do
-    cond do
-      Enum.empty?(socket.assigns.commands) ->
-        socket
+  # defp process_hotkey(%{"code" => "ArrowUp"}, socket) do
+  #   cond do
+  #     Enum.empty?(socket.assigns.commands) ->
+  #       socket
 
-      socket.assigns.viewing_history ->
-        new_index = min(socket.assigns.command_index + 1, length(socket.assigns.commands) - 1)
+  #     socket.assigns.viewing_history ->
+  #       new_index = min(socket.assigns.command_index + 1, length(socket.assigns.commands) - 1)
 
-        socket
-        |> assign(
-          :command_index,
-          new_index
-        )
-        |> assign(
-          :input,
-          Input.new(
-            Enum.at(
-              socket.assigns.commands,
-              new_index
-            )
-          )
-        )
+  #       socket
+  #       |> assign(
+  #         :command_index,
+  #         new_index
+  #       )
+  #       |> assign(
+  #         :input,
+  #         Input.new(
+  #           Enum.at(
+  #             socket.assigns.commands,
+  #             new_index
+  #           )
+  #         )
+  #       )
 
-      true ->
-        socket
-        |> assign(:viewing_history, true)
-        |> assign(:input, Input.new(List.first(socket.assigns.commands)))
-    end
-  end
+  #     true ->
+  #       socket
+  #       |> assign(:viewing_history, true)
+  #       |> assign(:input, Input.new(List.first(socket.assigns.commands)))
+  #   end
+  # end
 
-  defp process_hotkey(%{"code" => "ArrowDown"}, socket) do
-    cond do
-      socket.assigns.viewing_history and socket.assigns.command_index == 0 ->
-        socket
-        |> assign(:viewing_history, false)
-        |> assign(:input, Input.new(socket.assigns.latest_input))
+  # defp process_hotkey(%{"code" => "ArrowDown"}, socket) do
+  #   cond do
+  #     socket.assigns.viewing_history and socket.assigns.command_index == 0 ->
+  #       socket
+  #       |> assign(:viewing_history, false)
+  #       |> assign(:input, Input.new(socket.assigns.latest_input))
 
-      socket.assigns.viewing_history ->
-        new_index = socket.assigns.command_index - 1
+  #     socket.assigns.viewing_history ->
+  #       new_index = socket.assigns.command_index - 1
 
-        socket
-        |> assign(
-          :command_index,
-          new_index
-        )
-        |> assign(:input, Input.new(Enum.at(socket.assigns.commands, new_index)))
+  #       socket
+  #       |> assign(
+  #         :command_index,
+  #         new_index
+  #       )
+  #       |> assign(:input, Input.new(Enum.at(socket.assigns.commands, new_index)))
 
-      true ->
-        socket
-    end
-  end
+  #     true ->
+  #       socket
+  #   end
+  # end
 
   defp process_hotkey(_, assigns) do
     assigns

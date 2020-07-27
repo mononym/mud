@@ -22,4 +22,7 @@
   <%= if @active_pane == "area" do %>
     <%= live_component(@socket, MudWeb.Live.Component.AreaOverview, id: @character.area_id, character_id: @character.id, client_state: @client_state) %>
   <% end %>
+  <%= if @active_pane == "story" do %>
+    <%= live_component(@socket, MudWeb.Live.Component.Story, id: @character.id) %>
+  <% end %>
 </div>

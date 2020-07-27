@@ -10,17 +10,7 @@
     </div>
   </div>
   <div class="w-3/5 flex flex-col">
-    <div id="story" phx-hook="Story" class="flex flex-col min-w-full p-2 font-extrabold font-story border-4 border-r-0 flex-1 overflow-y-scroll max-h-screen">
-      <div id="story_wrapper" phx-hook="MessageWrapper" phx-update="append">
-        <%= for message <- @messages do %>
-          <%= live_component @socket, MudWeb.Live.Component.StoryMessage, message: message %>
-        <% end %>
-      </div>
-      <div id="scroll-to-bottom" phx-hook="ScrollToBottom" class="h-2"></div>
-    </div>
-    <div class="flex h-8">
-        <%= live_component @socket, MudWeb.Live.Component.CommandPrompt, input: @input %>
-    </div>
+    <%= live_component(@socket, MudWeb.Live.Component.ClientWindow, id: "center", character: @character, panes: @center, client_state: @client_state) %>
   </div>
   <div class="w-1/5 flex flex-col">
     <div name="window" data-window="top_right" class="flex half-height border-4">
