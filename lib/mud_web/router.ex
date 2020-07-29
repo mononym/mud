@@ -14,8 +14,9 @@ defmodule MudWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug(MudWeb.Plug.PutSecretKeyBase)
     plug(:fetch_session)
-    plug(:put_secure_browser_headers)
+    # plug(:put_secure_browser_headers)
     plug(MudWeb.Plug.SetPlayer)
   end
 
@@ -43,7 +44,7 @@ defmodule MudWeb.Router do
     post "/csrf-token", CsrfTokenController, :get_token
 
     # Landing / Home page stuff
-    # get("/", PageController, :show_landing_page)
+    get("/", PageController, :show_landing_page)
 
     # Auth related stuff
     post("/authenticate/email", PlayerAuthController, :authenticate_via_email)
@@ -51,6 +52,23 @@ defmodule MudWeb.Router do
     # get("/authenticate/token", PlayerAuthController, :show_auth_token_form)
     post("/authenticate/token", PlayerAuthController, :validate_auth_token)
 
+     # Player related stuff
+    post "/players/create", PlayerController, :create
+    post "/players/delete", PlayerController, :delete
+    post "/players/get", PlayerController, :get
+    post "/players/update", PlayerController, :update
+
+    # Authenticated Player stuff
+    get "/player", PlayerController, :get_authenticated_player
+    get "/player/settings", PlayerController, :get_authenticated_player_settings
+    post "/player/settings", PlayerController, :save_authenticated_player_settings
+
+    # Character related stuff
+    post "/characters/list-player-characters", CharacterController, :list_player_characters
+    post "/characters/create", CharacterController, :create
+    post "/characters/delete", CharacterController, :delete
+    post "/characters/get", CharacterController, :get
+    post "/characters/update", CharacterController, :update
   end
 
   scope "/", MudWeb do

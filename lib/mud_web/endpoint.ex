@@ -5,9 +5,12 @@ defmodule MudWeb.Endpoint do
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
-    store: :ets,
+    store: :cookie,
     key: "sid",
-    table: :session
+    encryption_salt: "ADkmDSNE",
+    signing_salt: "auFTRIdU",
+    key_length: 64,
+    log: :debug
   ]
 
   socket("/socket", MudWeb.UserSocket,

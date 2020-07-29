@@ -1,6 +1,6 @@
 defmodule MudWeb.Plug.RedirectAnonymousPlayer do
   import Plug.Conn
-  
+
   def init(path \\ nil) do
     path
   end
@@ -20,8 +20,6 @@ defmodule MudWeb.Plug.RedirectAnonymousPlayer do
             |> halt()
         end
       else
-        path = if path == [], do: "/"
-
         Phoenix.Controller.redirect(conn, to: path)
         |> halt()
       end
