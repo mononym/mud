@@ -38,7 +38,18 @@ defmodule MudWeb.PlayerAuthController do
         conn
         |> resp(404, "The provided token was invalid.")
         |> send_resp()
+    end
+  end
 
+  def sync_status(conn, _) do
+    if conn.assigns.player_authenticated? do
+      conn
+      |> put_status(200)
+      |> put_view(MudWeb.PlayerView)
+      |> render("show.json", player: conn.assigns.player)
+    else
+      conn
+      |> send_resp(201, "New session")
     end
   end
 end

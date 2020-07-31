@@ -10,7 +10,8 @@ defmodule MudWeb.Endpoint do
     encryption_salt: "ADkmDSNE",
     signing_salt: "auFTRIdU",
     key_length: 64,
-    log: :debug
+    log: :debug,
+    max_age: 14 * 24 * 60 * 60
   ]
 
   socket("/socket", MudWeb.UserSocket,
