@@ -37,19 +37,19 @@ const actions: ActionTree<AuthInterface, StateInterface> = {
           commit('setIsAuthenticating', false);
           commit('setIsAuthenticated', true);
           commit('setPlayerId', response.data.id);
-          dispatch('players/putPlayer', response.data)
+          dispatch('players/putPlayer', response.data, {root: true})
             .then(function() {
-              resolve(true);
+              resolve();
             })
             .catch(function() {
-              reject(false);
+              reject();
             });
         })
         .catch(function() {
           commit('setIsAuthenticated', false);
           commit('setIsAuthenticating', false);
           commit('setPlayerId', '');
-          reject(false);
+          reject();
         });
     });
   },
@@ -63,34 +63,34 @@ const actions: ActionTree<AuthInterface, StateInterface> = {
             commit('setIsAuthenticated', true);
             commit('setPlayerId', response.data.id);
 
-            dispatch('players/putPlayer', response.data)
+            dispatch('players/putPlayer', response.data, {root: true})
               .then(function() {
-                resolve(true);
+                resolve();
               })
               .catch(function() {
-                resolve(false);
+                resolve();
               });
           } else {
             commit('setIsAuthenticated', false);
             commit('setIsAuthenticating', false);
             commit('setPlayerId', '');
-            resolve(false);
+            resolve();
           }
         })
         .catch(function() {
           commit('setIsAuthenticated', false);
           commit('setIsAuthenticating', false);
           commit('setPlayerId', '');
-          resolve(false);
+          resolve();
         });
     });
   },
   checkIfAuthenticated({state}) {
     return new Promise((reject, resolve) => {
       if (state.isAuthenticated) {
-        resolve(true);
+        resolve();
       } else {
-        reject(false);
+        reject();
       }
     });
   }

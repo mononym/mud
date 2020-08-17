@@ -83,13 +83,16 @@ export default {
 
             var urlParams = new URLSearchParams(window.location.search);
 
+            console.log(urlParams)
+
             if (urlParams.has('referrer')) {
               self.$router.push(urlParams.get('referrer'));
             } else {
               self.$router.push({ path: '/dashboard' });
             }
           })
-          .catch(function(_error) {
+          .catch(function() {
+            console.log('error')
             self.submitStatus = 'ERROR';
           });
       }

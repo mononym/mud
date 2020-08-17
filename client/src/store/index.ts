@@ -7,6 +7,9 @@ import { AuthInterface } from './auth/state';
 import player from './player';
 import { PlayerInterface } from './player/state';
 
+import players from './player';
+import { PlayersInterface } from './players/state';
+
 import csrf from './csrf';
 import { CsrfInterface } from './csrf/state';
 
@@ -22,6 +25,7 @@ export interface StateInterface {
   auth: AuthInterface;
   csrf: CsrfInterface;
   player: PlayerInterface;
+  players: PlayersInterface;
 }
 
 export default store(function({ Vue }) {
@@ -31,7 +35,8 @@ export default store(function({ Vue }) {
     modules: {
       auth,
       csrf,
-      player
+      player,
+      players
     },
 
     // enable strict mode (adds overhead!)
