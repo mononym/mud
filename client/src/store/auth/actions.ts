@@ -53,36 +53,40 @@ const actions: ActionTree<AuthInterface, StateInterface> = {
         });
     });
   },
-  syncStatus({ commit, dispatch }) {
+  syncStatus({ commit, dispatch, state }) {
     return new Promise(resolve => {
-      axios
-        .post('/authenticate/sync')
-        .then(response => {
-          if (response.status == 200) {
-            commit('setIsAuthenticating', false);
-            commit('setIsAuthenticated', true);
-            commit('setPlayerId', response.data.id);
-
-            dispatch('players/putPlayer', response.data, {root: true})
-              .then(function() {
-                resolve();
-              })
-              .catch(function() {
-                resolve();
-              });
-          } else {
+      if (state.synced) {
+        resolve(state.isAuthenticated)
+      } else {
+        axios
+          .post('/authenticate/sync')
+          .then(response => {
+            if (response.status == 200) {
+              commit('setIsAuthenticating', false);
+              commit('setIsAuthenticated', true);
+              commit('setPlayerId', response.data.id);
+  
+              dispatch('players/putPlayer', response.data, {root: true})
+                .then(function() {
+                  resolve(true);
+                })
+                .catch(function() {
+                  resolve(true);
+                });
+            } else {
+              commit('setIsAuthenticated', false);
+              commit('setIsAuthenticating', false);
+              commit('setPlayerId', '');
+              resolve(false);
+            }
+          })
+          .catch(function() {
             commit('setIsAuthenticated', false);
             commit('setIsAuthenticating', false);
             commit('setPlayerId', '');
-            resolve();
-          }
-        })
-        .catch(function() {
-          commit('setIsAuthenticated', false);
-          commit('setIsAuthenticating', false);
-          commit('setPlayerId', '');
-          resolve();
-        });
+            resolve(false);
+          });
+      }
     });
   },
   checkIfAuthenticated({state}) {

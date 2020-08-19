@@ -17,9 +17,9 @@
             />
             <q-tab
               v-if="showDevTab"
-              name="muds"
+              name="instances"
               icon="fas fa-dice-d20"
-              label="MUDs"
+              label="Instances"
               class="dashboardTab"
             />
             <q-tab
@@ -40,12 +40,18 @@
           >
             <q-tab-panel name="quickActions">
               <q-card flat bordered class="my-card bg-primary">
+
                 <q-card-section>
+                  <div class="text-h6 text-center">Characters</div>
+                </q-card-section>
+                
+                <q-separator />
+                
+                <q-card-section v-if="characters.length > 0">
                   <div class="q-pa-md">
                     <q-table
-                      title="Characters"
                       class="table"
-                      :data="data"
+                      :data="characters"
                       :columns="columns"
                       table-style="max-height: 400px"
                       row-key="index"
@@ -56,7 +62,7 @@
                   </div>
                 </q-card-section>
 
-                <q-separator />
+                <q-separator v-if="characters.length > 0" />
 
                 <q-card-actions align="around" class="action-container">
                   <q-btn flat class="action-button" to="/characters/new"
@@ -73,7 +79,7 @@
                     <q-table
                       title="Quickplay"
                       class="table"
-                      :data="data"
+                      :data="characters"
                       :columns="columns"
                       table-style="max-height: 400px"
                       row-key="index"
@@ -135,38 +141,44 @@ div.action-container a.action-button
 </style>
 
 <script>
-const seed = [
-  {
-    name: 'Khandrish',
-    active: false,
-    race: 'Elf'
-  }
-];
+// const seed = [
+//   {
+//     name: 'Khandrish',
+//     active: false,
+//     race: 'Elf'
+//   }
+// ];
 
 // we generate lots of rows here
-let data = [];
-for (let i = 0; i < 1000; i++) {
-  data = data.concat(seed.slice(0).map(r => ({ ...r })));
-}
-data.forEach((row, index) => {
-  row.index = index;
-});
+let characters = [];
+// for (let i = 0; i < 1000; i++) {
+//   data = data.concat(seed.slice(0).map(r => ({ ...r })));
+// }
+// data.forEach((row, index) => {
+//   row.index = index;
+// });
 
 // we are not going to change this array,
 // so why not freeze it to avoid Vue adding overhead
 // with state change detection
-Object.freeze(data);
+// Object.freeze(data);
 
 export default {
   name: 'DashboardPage',
   computed: {
     showDevTab() {
       return this.$store.getters['settings/getDeveloperFeatureOn'];
-    }
+    },
+    hasCharacters() {
+      return length(this.characters)
+    },
+    characters2() {
+      return this.$store.getters['characters/listByPlayerId'];
+    },
   },
   data() {
     return {
-      data,
+      characters,
       splitterModel: 150,
 
       pagination: {

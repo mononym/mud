@@ -50,8 +50,16 @@ export default route<Store<StateInterface>>(function({ store, Vue }) {
       //   });
       // } else {
       // }
+    } else if(to.matched.some(record => record.meta.requiresNoAuth)) {
+      console.log('requires no auth');
+      store
+        .dispatch('auth/checkIfAuthenticated')
+        .then(() => next({
+            path: '/dashboard'
+          }))
+        .catch(() => next());
     } else {
-      console.log('no auth required');
+      console.log('no auth check');
       next(); // make sure to always call next()!
     }
   });

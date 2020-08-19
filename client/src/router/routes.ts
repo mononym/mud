@@ -4,22 +4,24 @@ const routes: RouteConfig[] = [
   {
     path: '/',
     component: () => import('layouts/EmptyLayout.vue'),
-    children: [{ path: '', component: () => import('pages/LandingPage.vue') }]
-  },
-  {
-    path: '/authenticate',
-    component: () => import('layouts/EmptyLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/AuthenticatePage.vue') }
+      { path: '', name: 'home', component: () => import('pages/LandingPage.vue'), meta: { requiresNoAuth: true } },
+      { path: 'login', name: 'login', component: () => import('pages/LandingPage.vue'), meta: { requiresNoAuth: true } },
+      { path: 'authenticate', name: 'authenticate', component: () => import('pages/AuthenticatePage.vue'), meta: { requiresNoAuth: true } }
     ]
   },
   {
-    path: '/dashboard',
+    path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
       {
-        path: '',
+        path: 'dashboard',
         component: () => import('pages/DashboardPage.vue'),
+        meta: { requiresAuth: true }
+      },
+      {
+        path: 'new',
+        component: () => import('pages/CharacterCreationPage.vue'),
         meta: { requiresAuth: true }
       }
     ]
