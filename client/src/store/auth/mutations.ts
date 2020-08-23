@@ -6,10 +6,13 @@ const mutation: MutationTree<AuthInterface> = {
     state.isAuthenticated = isAuthenticated;
   },
   setIsAuthenticating(state: AuthInterface, isAuthenticating: boolean) {
-    state.isAuthenticated = isAuthenticating;
+    state.isAuthenticating = isAuthenticating;
   },
   setPlayerId(state: AuthInterface, playerId: string) {
     state.playerId = playerId;
+  },
+  setIsSynced(state: AuthInterface, synced: boolean) {
+    state.isSynced = synced;
   }
 };
 

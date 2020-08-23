@@ -8,6 +8,7 @@ declare module 'vue/types/vue' {
 }
 
 axios.defaults.baseURL = 'http://localhost:4000';
+axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
   response => {

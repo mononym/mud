@@ -3,14 +3,17 @@ import { StateInterface } from '../index';
 import { AuthInterface } from './state';
 
 const getters: GetterTree<AuthInterface, StateInterface> = {
-  getIsAuthenticated(context) {
-    context.isAuthenticated;
+  getIsAuthenticated(state) {
+    return state.isAuthenticated;
   },
-  getIsAuthenticating(context) {
-    context.isAuthenticating;
+  getIsAuthenticating(state) {
+    return state.isAuthenticating;
   },
-  getPlayerId(context) {
-    context.playerId;
+  getIsSynced(state) {
+    return state.isSynced;
+  },
+  getPlayerId(state) {
+    return state.playerId;
   }
 };
 

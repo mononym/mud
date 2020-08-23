@@ -2,14 +2,14 @@ export interface AuthInterface {
   isAuthenticating: boolean;
   isAuthenticated: boolean;
   playerId: string;
-  synced: boolean;
+  isSynced: boolean;
 }
 
 const state: AuthInterface = {
   isAuthenticating: false,
   isAuthenticated: false,
   playerId: '',
-  synced: false
+  isSynced: false
 };
 
 export default state;

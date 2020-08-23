@@ -41,11 +41,12 @@ import {
   minLength
 } from 'vuelidate/lib/validators';
 import { templates } from 'vuelidate-error-extractor';
+import { actions } from 'src/store/auth/constants';
 
 const emailRegex = helpers.regex('email', /^.+@.+$/);
 
 export default {
-  name: 'email-form',
+  name: 'email-auth-form',
   mixins: [validationMixin],
   components: {
     FormWrapper: templates.FormWrapper
@@ -83,24 +84,26 @@ export default {
         this.submitStatus = 'ERROR';
       } else {
         this.submitStatus = 'PENDING';
-
-        self = this;
-
-        this.$store
-          .dispatch('auth/startAuthenticationViaEmail', this.form.email)
-          .then(function() {
-            if (window.location.pathname === '/') {
-              self.$router.push({ path: '/authenticate' });
-            } else {
-              self.$router.push({
-                path: '/authenticate',
-                query: { referrer: window.location.pathname }
-              });
-            }
-          })
-          .catch(function() {
-            self.submitStatus = 'ERROR';
-          });
+        
+        this.$store.dispatch(actions.AUTH_START).then(() => {
+          console.log('auth started')
+          return this.$axios
+            .post('/authenticate/email', {
+              email: this.form.email
+            })
+        }).then(
+          response => {
+                console.log(response);
+                // http success, call the mutator and change something in state
+                this.submitStatus = 'SUCCESS';
+                this.$router.push('/authenticate')
+              },
+              error => {
+                console.log(error);
+                // http failed, let the calling function know that action did not work out
+                this.submitStatus = 'ERROR';
+              }
+        );
       }
     }
   }

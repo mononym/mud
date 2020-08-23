@@ -4,27 +4,40 @@ import { AuthInterface } from './state';
 import axios from 'axios';
 
 const actions: ActionTree<AuthInterface, StateInterface> = {
-  startAuthenticationViaEmail({ commit }, email: string) {
-    commit('setIsAuthenticated', false);
-    commit('setIsAuthenticating', true);
+  start({ commit }) {
+    return new Promise((resolve) => {
+      commit('setIsAuthenticated', false);
+      commit('setIsAuthenticating', true);
+      commit('setPlayerId', '');
 
-    return new Promise((resolve, reject) => {
-      axios
-        .post('/authenticate/email', {
-          email: email
-        })
-        .then(
-          response => {
-            console.log(response);
-            // http success, call the mutator and change something in state
-            resolve(response); // Let the calling function know that http is done. You may send some data back
-          },
-          error => {
-            console.log(error);
-            // http failed, let the calling function know that action did not work out
-            reject(error);
-          }
-        );
+      resolve()
+    });
+  },
+  failed({ commit }) {
+    return new Promise((resolve) => {
+      commit('setIsAuthenticated', false);
+      commit('setIsAuthenticating', false);
+      commit('setPlayerId', '');
+
+      resolve()
+    });
+  },
+  logout({ commit }) {
+    return new Promise((resolve) => {
+      commit('setIsAuthenticated', false);
+      commit('setIsAuthenticating', false);
+      commit('setPlayerId', '');
+
+      resolve()
+    });
+  },
+  succeeded({ commit }, playerId: string) {
+    return new Promise((resolve) => {
+      commit('setIsAuthenticated', true);
+      commit('setIsAuthenticating', false);
+      commit('setPlayerId', playerId);
+
+      resolve()
     });
   },
   validateAuthenticationToken({ commit, dispatch }, token: string) {
@@ -52,52 +65,45 @@ const actions: ActionTree<AuthInterface, StateInterface> = {
           reject();
         });
     });
-  },
-  syncStatus({ commit, dispatch, state }) {
-    return new Promise(resolve => {
-      if (state.synced) {
-        resolve(state.isAuthenticated)
-      } else {
-        axios
-          .post('/authenticate/sync')
-          .then(response => {
-            if (response.status == 200) {
-              commit('setIsAuthenticating', false);
-              commit('setIsAuthenticated', true);
-              commit('setPlayerId', response.data.id);
+  }//,
+  // syncStatus({ commit, dispatch, state }) {
+  //   return new Promise(resolve => {
+  //     if (state.synced) {
+  //       resolve(state.isAuthenticated)
+  //     } else {
+  //       axios
+  //         .post('/authenticate/sync')
+  //         .then(response => {
+  //           // commit('setSynced', true);
+  //           commit('setIsAuthenticating', false);
+
+  //           if (response.status == 200) {
+  //             commit('setIsAuthenticated', true);
+  //             commit('setPlayerId', response.data.id);
   
-              dispatch('players/putPlayer', response.data, {root: true})
-                .then(function() {
-                  resolve(true);
-                })
-                .catch(function() {
-                  resolve(true);
-                });
-            } else {
-              commit('setIsAuthenticated', false);
-              commit('setIsAuthenticating', false);
-              commit('setPlayerId', '');
-              resolve(false);
-            }
-          })
-          .catch(function() {
-            commit('setIsAuthenticated', false);
-            commit('setIsAuthenticating', false);
-            commit('setPlayerId', '');
-            resolve(false);
-          });
-      }
-    });
-  },
-  checkIfAuthenticated({state}) {
-    return new Promise((reject, resolve) => {
-      if (state.isAuthenticated) {
-        resolve();
-      } else {
-        reject();
-      }
-    });
-  }
+  //             dispatch('players/putPlayer', response.data, {root: true})
+  //               .then(function() {
+  //                 resolve(true);
+  //               })
+  //               .catch(function() {
+  //                 resolve(true);
+  //               });
+  //           } else {
+  //             commit('setIsAuthenticating', false);
+  //             commit('setPlayerId', '');
+  //             resolve(false);
+  //           }
+  //         })
+  //         .catch(function() {
+  //           commit('setSynced', true);
+  //           commit('setIsAuthenticated', false);
+  //           commit('setIsAuthenticating', false);
+  //           commit('setPlayerId', '');
+  //           resolve(false);
+  //         });
+  //     }
+  //   });
+  // }
 };
 
 export default actions;

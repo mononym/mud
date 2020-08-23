@@ -32,6 +32,7 @@
 import { validationMixin } from 'vuelidate';
 import { helpers, required } from 'vuelidate/lib/validators';
 import { templates } from 'vuelidate-error-extractor';
+import { actions } from 'src/store/auth/constants';
 
 const tokenRegex = helpers.regex(
   'token',
@@ -75,24 +76,32 @@ export default {
         this.submitStatus = 'ERROR';
       } else {
         this.submitStatus = 'PENDING';
+        const self = this;
 
-        this.$store
-          .dispatch('auth/validateAuthenticationToken', this.form.token)
-          .then(function() {
-            self.submitStatus = 'OK';
+        this.$axios
+          .post('/authenticate/token', {
+            token: this.form.token
+          })
+          .then(function(response) {
+            console.log(response)
+                console.log('auth successful now dispatch')
+            return self.$store
+              .dispatch(actions.AUTH_SUCCEEDED, response.data.id)
+              .then(() => {
+                console.log('auth successful')
+                return self.$store.dispatch('players/putPlayer', response.data);
+              })
+              .then(() => {
+                self.submitStatus = 'OK';
 
-            var urlParams = new URLSearchParams(window.location.search);
+                console.log('successful')
 
-            console.log(urlParams)
-
-            if (urlParams.has('referrer')) {
-              self.$router.push(urlParams.get('referrer'));
-            } else {
-              self.$router.push({ path: '/dashboard' });
-            }
+                self.$router.push({ path: '/dashboard' });
+              });
           })
           .catch(function() {
-            console.log('error')
+            self.$store.dispatch(actions.AUTH_FAILED);
+            console.log('error');
             self.submitStatus = 'ERROR';
           });
       }

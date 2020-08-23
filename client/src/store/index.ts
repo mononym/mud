@@ -10,9 +10,6 @@ import { PlayerInterface } from './player/state';
 import players from './players';
 import { PlayersInterface } from './players/state';
 
-import csrf from './csrf';
-import { CsrfInterface } from './csrf/state';
-
 import instance from './instance';
 import { InstanceInterface } from './instance/state';
 
@@ -29,7 +26,6 @@ export interface StateInterface {
   // example: ExampleStateInterface;
   // Declared as unknown to avoid linting issue. Best to strongly type as per the line above.
   auth: AuthInterface;
-  csrf: CsrfInterface;
   player: PlayerInterface;
   players: PlayersInterface;
   instance: InstanceInterface;
@@ -42,7 +38,6 @@ export default store(function({ Vue }) {
   const Store = new Vuex.Store<StateInterface>({
     modules: {
       auth,
-      csrf,
       player,
       players,
       instance,
