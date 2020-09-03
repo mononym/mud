@@ -72,6 +72,7 @@ defmodule MudWeb.Router do
     post "/characters/delete", CharacterController, :delete
     post "/characters/get", CharacterController, :get
     post "/characters/update", CharacterController, :update
+    get "/characters/get-creation-data", CharacterController, :get_creation_data
 
   end
 end

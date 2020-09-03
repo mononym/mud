@@ -49,7 +49,7 @@ defmodule MudWeb.Endpoint do
     json_decoder: Phoenix.json_library()
   )
 
-  plug(CORSPlug)
+  plug(Corsica, max_age: 600, origins: "*", allow_headers: :all, expose_headers: ~w(Set-Token x-csrf-token), allow_credentials: true)
   plug(Plug.MethodOverride)
   plug(Plug.Head)
   plug(Plug.Session, @session_options)

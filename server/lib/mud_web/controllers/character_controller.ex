@@ -41,6 +41,7 @@ defmodule MudWeb.CharacterController do
     end
   end
 
+  @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, %{"id" => id}) do
     character = Character.get_by_id!(id)
     render(conn, "show.html", character: character)
@@ -99,5 +100,13 @@ defmodule MudWeb.CharacterController do
     conn
     |> put_flash(:info, "Character deleted successfully.")
     |> redirect(to: Routes.character_path(conn, :index))
+  end
+
+  def get_creation_data(conn, _) do
+    races = Mud.Engine.Rules.PlayerRaces.races()
+
+    conn
+    |> put_status(200)
+    |> json(races)
   end
 end
