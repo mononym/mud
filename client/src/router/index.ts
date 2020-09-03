@@ -3,14 +3,13 @@ import VueRouter from 'vue-router';
 import { Store } from 'vuex';
 import { StateInterface } from '../store';
 import routes from './routes';
-import store from '../store';
 
 /*
  * If not building with SSR mode, you can
  * directly export the Router instantiation
  */
 
-export default route<Store<StateInterface>>(function({ store, Vue }) {
+export default route<Store<StateInterface>>(function({ Vue }) {
   Vue.use(VueRouter);
 
   const Router = new VueRouter({

@@ -26,17 +26,17 @@ const routes: RouteConfig[] = [
       }
     ]
   },
-  // {
-  //   path: '/characters',
-  //   component: () => import('layouts/AppLayout.vue'),
-  //   children: [
-  //     { path: '', component: () => import('pages/CharactersPage.vue') },
-  //     {
-  //       path: 'new',
-  //       component: () => import('pages/CharacterCreationPage.vue')
-  //     }
-  //   ]
-  // },
+  {
+    path: '/characters',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      // { path: '', component: () => import('pages/CharactersPage.vue') },
+      {
+        path: 'new',
+        component: () => import('pages/CharacterCreationPage.vue')
+      }
+    ]
+  },
 
   // Always leave this as last one,
   // but you can also remove it
