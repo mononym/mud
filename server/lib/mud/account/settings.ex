@@ -6,6 +6,7 @@ defmodule Mud.Account.Settings do
   import Ecto.Changeset
 
   @primary_key {:player_id, :binary_id, autogenerate: false}
+  @derive {Jason.Encoder, only: [:player_id, :developer_feature_on, :inserted_at, :updated_at]}
   schema "player_settings" do
     field(:developer_feature_on, :boolean, default: false)
 

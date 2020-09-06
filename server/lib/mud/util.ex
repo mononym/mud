@@ -11,6 +11,15 @@ defmodule Mud.Util do
     Keyword.has_key?(changeset.errors, field)
   end
 
+  def changeset_has_error?(changeset = %Ecto.Changeset{}, field, desired_error) when is_atom(field) do
+    IO.inspect(Keyword.get(changeset.errors, field), label: "changeset_has_error")
+    actual_error = changeset.errors
+    |> Keyword.get(field)
+    |> elem(0)
+
+    actual_error == desired_error
+  end
+
   def extract_and_normalize_changeset_errors(changeset = %Ecto.Changeset{}) do
     Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
       Enum.reduce(opts, msg, fn {key, value}, acc ->

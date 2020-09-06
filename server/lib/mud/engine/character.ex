@@ -40,10 +40,16 @@ defmodule Mud.Engine.Character do
     field(:wisdom, :integer, default: 10)
 
     # Physical Features
-    field(:eye_color, :string, default: "Brown")
-    field(:hair_color, :string, default: "Brown")
+    field(:age, :integer, default: 18)
+    field(:eye_color, :string, default: "brown")
+    field(:eye_color_type, :string, default: "solid")
+    field(:eye_accent_color, :string, default: "brown")
+    field(:hair_color, :string, default: "brown")
+    field(:hair_length, :string, default: "short")
+    field(:hair_style, :string, default: "loose")
     field(:race, :string, default: "Human")
-    field(:skin_color, :string, default: "Brown")
+    field(:skin_color, :string, default: "brown")
+    field(:height, :string, default: "average")
 
     # Which hand is the primary hand
     field(:handedness, :string, default: "right")
@@ -97,13 +103,19 @@ defmodule Mud.Engine.Character do
     character
     |> cast(attrs, [
       :active,
+      :age,
       :agility,
       :area_id,
       :charisma,
       :constitution,
       :dexterity,
+      :eye_accent_color,
       :eye_color,
+      :eye_color_type,
+      :height,
       :hair_color,
+      :hair_length,
+      :hair_style,
       :intelligence,
       :name,
       :player_id,
@@ -119,10 +131,8 @@ defmodule Mud.Engine.Character do
       :handedness
     ])
     |> validate_required([
-      :active,
       :name,
-      :player_id,
-      :position
+      :player_id
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
@@ -171,14 +181,20 @@ defmodule Mud.Engine.Character do
 
     # TODO: Figure out where to create characters and how to present the options.
     # This random selection is just for prototype.
-    {:ok, character} =
+
+    result =
       %__MODULE__{}
       |> changeset(Map.put(attrs, "area_id", area.id))
       |> Repo.insert()
 
-    :ok = Skill.initialize(character.id)
+    case result do
+      {:ok, character} ->
+        :ok = Skill.initialize(character.id)
 
-    {:ok, character}
+        {:ok, character}
+      error ->
+        error
+    end
   end
 
   def change(character), do: Ecto.Changeset.change(character)

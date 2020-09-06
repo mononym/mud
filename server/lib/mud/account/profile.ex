@@ -7,6 +7,7 @@ defmodule Mud.Account.Profile do
 
   @primary_key {:player_id, :binary_id, autogenerate: false}
   @derive {Phoenix.Param, key: :slug}
+  @derive {Jason.Encoder, only: [:player_id, :email, :email_verified, :nickname, :slug, :inserted_at, :updated_at]}
   schema "profiles" do
     field(:email, :string)
     field(:email_verified, :boolean, default: false)

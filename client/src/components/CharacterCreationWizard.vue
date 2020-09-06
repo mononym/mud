@@ -6,14 +6,14 @@
         title="Select a race"
         icon="fas fa-users"
         :done="step > 1"
-        :caption="race"
+        :caption="selectedRace"
       >
         The choice of character race can impact the experience of playing the
         game, from choice of feats to interactions with NPC's.
 
         <div class="q-pa-md">
           <q-carousel
-            v-model="race"
+            v-model="selectedRace"
             transition-prev="slide-right"
             transition-next="slide-left"
             animated
@@ -94,18 +94,8 @@
           <div class="row justify-center">
             <q-btn-toggle
               glossy
-              v-model="race"
-              :options="[
-                { label: 'Elf', value: 'Elf' },
-                { label: 'Human', value: 'Human' },
-                { label: 'Dwarf', value: 'Dwarf' },
-                { label: 'Gnome', value: 'Gnome' },
-                { label: 'Half Elf', value: 'Half Elf' },
-                { label: 'Half Dwarf', value: 'Half Dwarf' },
-                { label: 'Half Giant', value: 'Half Giant' },
-                { label: 'Shapeshifter', value: 'Shapeshifter' },
-                { label: 'Halfling', value: 'Halfling' }
-              ]"
+              v-model="selectedRace"
+              :options="raceOptions"
             />
           </div>
         </div>
@@ -164,7 +154,7 @@
             <q-select
               v-model="selectedHairColor"
               :options="haircolors"
-              label="Hair Colour"
+              label="Hair Color"
             />
             <q-select
               v-model="selectedHairLength"
@@ -172,19 +162,36 @@
               label="Hair Length"
             />
             <q-select
+              v-show="notBald"
               v-model="selectedHairStyle"
               :options="hairstyles"
               label="Hair Style"
             />
             <q-select
+              v-model="selectedEyeColorType"
+              :options="eyeColorTypes"
+              label="Eye Color Type"
+            />
+            <q-select
               v-model="selectedEyeColor"
               :options="eyecolors"
-              label="Eye Colour"
+              label="Eye Color"
+            />
+            <q-select
+              v-if="showEyeAccentColor"
+              v-model="selectedEyeAccentColor"
+              :options="eyecolors"
+              label="Eye Accent Color"
             />
             <q-select
               v-model="selectedSkinColor"
               :options="skincolors"
-              label="Skin Colour"
+              label="Skin Color"
+            />
+            <q-select
+              v-model="selectedHeight"
+              :options="heights"
+              label="Height"
             />
           </q-form>
         </div>
@@ -260,13 +267,13 @@
         appropriate for a fantasy setting, and please avoid any names belonging
         to an existing IP.
 
-         <q-input v-model="name" label="Standard" />
+         <q-input v-model="name" label="Name" />
 
         <q-stepper-navigation>
-          <q-btn color="primary" label="Finish" />
+          <q-btn color="primary" label="Create" @click="createCharacter" />
           <q-btn
             flat
-            @click="step = 4"
+            @click="step = 5"
             color="primary"
             label="Back"
             class="q-ml-sm"
@@ -279,7 +286,6 @@
 
 <script>
 import { set } from '@vue/composition-api';
-import { defineComponent } from '@vue/composition-api'
 import Vue from 'vue';
 // import { validationMixin } from 'vuelidate'
 // import { helpers, required } from 'vuelidate/lib/validators'
@@ -318,22 +324,22 @@ export default {
     },
     haircolors: function() {
       console.log('computing haircolors');
-      console.log(this.race);
-      if (this.race === '') {
+      console.log(this.selectedRace);
+      if (this.selectedRace === '') {
         return [];
       } else {
-        console.log(this.races[this.race]);
-        return this.races[this.race].hair_colors;
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].hair_colors;
       }
     },
     hairlengths: function() {
       console.log('computing hairlengths');
-      console.log(this.race);
-      if (this.race === '') {
+      console.log(this.selectedRace);
+      if (this.selectedRace === '') {
         return [];
       } else {
-        console.log(this.races[this.race]);
-        return this.races[this.race].hair_lengths;
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].hair_lengths;
       }
     },
     selectedHairLength: {
@@ -402,34 +408,66 @@ export default {
         console.log(this.eyecolor);
       }
     },
-    eyecolors: function() {
-      console.log('computing eyecolors');
-      console.log(this.race);
-      if (this.race === '') {
+    selectedHeight: {
+      // getter
+      get: function() {
+        console.log('computing selectedHeight get');
+        console.log(this.heights);
+        if (this.height === '' && this.heights.length > 0) {
+          return this.randomElement(this.heights);
+        } else if (this.height !== '') {
+          return this.height;
+        } else {
+          return '';
+        }
+      },
+      // setter
+      set: function(selectedHeight) {
+        console.log('computing selectedHeight set');
+        console.log(selectedHeight);
+        console.log(this.selectedHeight);
+        this.height = selectedHeight;
+        console.log(this.height);
+      }
+    },
+    heights: function() {
+      console.log('computing heights');
+      console.log(this.selectedRace);
+      if (this.selectedRace === '') {
         return [];
       } else {
-        console.log(this.races[this.race]);
-        return this.races[this.race].eye_colors;
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].heights;
+      }
+    },
+    eyecolors: function() {
+      console.log('computing eyecolors');
+      console.log(this.selectedRace);
+      if (this.selectedRace === '') {
+        return [];
+      } else {
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].eye_colors;
       }
     },
     skincolors: function() {
       console.log('computing skincolors');
-      console.log(this.race);
-      if (this.race === '') {
+      console.log(this.selectedRace);
+      if (this.selectedRace === '') {
         return [];
       } else {
-        console.log(this.races[this.race]);
-        return this.races[this.race].skin_colors;
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].skin_colors;
       }
     },
     hairstyles: function() {
       console.log('computing hairstyles');
       console.log(this.hairlength);
-      if (this.race === '' || this.hairlength === '') {
+      if (this.selectedRace === '' || this.hairlength === '') {
         return [];
       } else {
-        console.log(this.races[this.race]);
-        let styles = this.races[this.race].hair_styles;
+        console.log(this.races[this.selectedRace]);
+        let styles = this.races[this.selectedRace].hair_styles;
         styles = styles
           .filter(style => style.lengths.includes(this.hairlength))
           .map(style => style.style)
@@ -461,25 +499,42 @@ export default {
     },
     maxAge: function() {
       console.log('computing maxAge');
-      if (this.race === '') {
+      if (this.selectedRace === '') {
         return 60;
       } else {
-        console.log(this.races[this.race]);
-        return this.races[this.race].age_max;
+        console.log(this.races[this.selectedRace]);
+        return this.races[this.selectedRace].age_max;
       }
     },
     minAge: function() {
       console.log('computing minAge');
-      if (this.race === '') {
+      if (this.selectedRace === '') {
         return 18;
       } else {
-        console.log(this.races[this.race]);
-        let age  = this.races[this.race].age_min;
+        console.log(this.races[this.selectedRace]);
+        let age  = this.races[this.selectedRace].age_min;
         return age;
+      }
+    },
+    raceOptions: function() {
+      console.log('computing raceOptions');
+
+      if (this.races != []) {
+        const races = this.races
+        var result = Object.keys(races).map(function (race) {
+            return { label: races[race].singular, value: races[race].singular };
+        });
+  
+        return result
+      } else {
+        return []
       }
     },
     notBald: function() {
       return this.hairlength !== 'bald'
+    },
+    showEyeAccentColor: function() {
+      return this.selectedEyeColorType !== 'solid'
     },
     selectedAge: {
     // getter
@@ -514,6 +569,7 @@ export default {
       haircolor: '',
       // haircolors: [],
       eyecolor: '',
+      selectedEyeAccentColor: '',
       // eyecolors: [],
       hairlength: '',
       // hairlengths: [],
@@ -522,7 +578,10 @@ export default {
       skincolor: '',
       // skincolors: [],
       races: {},
-      race: ''
+      selectedRace: '',
+      eyeColorTypes: ['solid', 'complete heterochromia', 'segmental heterochromia', 'central heterochromia'],
+      selectedEyeColorType: 'solid',
+      height: ''
     };
   },
   validations: {},
@@ -531,20 +590,43 @@ export default {
       void this.$axios.get('characters/get-creation-data').then(result => {
         console.log(result);
         console.log(this.randomElement(result.data));
-        // set(this, 'races', result.data)
         Vue.set(this, 'races', result.data);
         Vue.set(
           this,
-          'race',
+          'selectedRace',
           this.randomElement(Object.values(result.data)).singular
         );
-        // this.races = result.data
       });
 
       return true;
     },
     randomElement(array) {
       return array[Math.floor(Math.random() * array.length)];
+    },
+    createCharacter() {
+      console.log('createCharacter')
+      const values = {
+        age: this.selectedAge,
+        eye_accent_color: this.selectedEyeAccentColor,
+        eye_color: this.selectedEyeColor,
+        eye_color_type: this.selectedEyeColorType,
+        hair_color: this.selectedHairColor,
+        hair_length: this.selectedHairLength,
+        hair_style: this.selectedHairStyle,
+        height: this.selectedHeight,
+        name: this.name,
+        race: this.selectedRace,
+        skin_color: this.selectedSkinColor,
+      }
+
+      void this.$axios.post('characters/create', values).then(result => {
+        console.log(result);
+        // if successful, redirect to the character overview screen which will have a quick link to play the character
+        // effectively it will be the character's dashboard, showing off statistics and information about the character
+        // as well as being able to view inventory and vault contents and quest progress and messages and so on
+      });
+
+      return true;
     }
   }
 };

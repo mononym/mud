@@ -20,7 +20,7 @@ defmodule MudWeb.CharacterController do
     )
   end
 
-  def create(conn, %{"character" => character_params}) do
+  def create(conn, character_params) do
     starting_area =
       Area.list_all()
       |> Enum.random()
@@ -33,11 +33,17 @@ defmodule MudWeb.CharacterController do
     case Character.create(params) do
       {:ok, character} ->
         conn
-        |> put_flash(:info, "Character created successfully.")
-        |> redirect(to: Routes.character_path(conn, :edit, character))
+        |> put_status(201)
+        |> json(character)
 
       {:error, changeset} ->
-        render(conn, "new.html", changeset: changeset)
+        IO.inspect(changeset, label: "CREATE ERROR")
+
+        if Mud.Util.changeset_has_error?(changeset, :player_id, "does not exist") do
+          resp(conn, 401, "invalid session")
+        else
+          resp(conn, 400, "error")
+        end
     end
   end
 

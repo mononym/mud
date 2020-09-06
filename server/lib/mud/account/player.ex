@@ -7,6 +7,7 @@ defmodule Mud.Account.Player do
 
   alias Mud.Account
 
+  @derive {Jason.Encoder, only: [:id, :status, :tos_accepted, :profile, :settings, :inserted_at, :updated_at]}
   schema "players" do
     field(:status, Account.Enums.PlayerStatus)
     field(:tos_accepted, :boolean, default: false)

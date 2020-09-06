@@ -18,7 +18,7 @@ export default boot(async ({ app }) => {
           'auth/setIsAuthenticated',
           response.data.authenticated
         );
-        app.store.commit('auth/setPlayerId', response.data.player_id);
+        app.store.commit('auth/setPlayerId', response.data.player.id);
         return true;
       } else {
         app.store.commit('auth/setIsAuthenticated', false);

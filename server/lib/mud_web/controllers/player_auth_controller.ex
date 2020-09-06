@@ -45,11 +45,11 @@ defmodule MudWeb.PlayerAuthController do
     if conn.assigns.player_authenticated? do
       conn
       |> put_status(200)
-      |> json(%{authenticated: true, player_id: conn.assigns.player.id})
+      |> json(%{authenticated: true, player: conn.assigns.player})
     else
       conn
       |> put_status(200)
-      |> json(%{authenticated: false, player_id: ""})
+      |> json(%{authenticated: false})
     end
   end
 end

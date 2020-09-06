@@ -18,11 +18,6 @@ const routes: RouteConfig[] = [
         path: 'dashboard',
         component: () => import('pages/DashboardPage.vue'),
         meta: { requiresAuth: true }
-      },
-      {
-        path: 'new',
-        component: () => import('pages/CharacterCreationPage.vue'),
-        meta: { requiresAuth: true }
       }
     ]
   },
@@ -33,7 +28,8 @@ const routes: RouteConfig[] = [
       // { path: '', component: () => import('pages/CharactersPage.vue') },
       {
         path: 'new',
-        component: () => import('pages/CharacterCreationPage.vue')
+        component: () => import('pages/CharacterCreationPage.vue'),
+        meta: { requiresAuth: true }
       }
     ]
   },

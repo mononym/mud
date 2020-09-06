@@ -187,6 +187,8 @@ defmodule Mud.Account do
           from(player in Account.Player,
             join: settings in Account.Settings,
             on: settings.player_id == player.id,
+            join: profile in Account.Profile,
+            on: profile.player_id == player.id,
             where: player.id == ^player_id,
             preload: [:profile, :settings]
           )
@@ -204,13 +206,13 @@ defmodule Mud.Account do
 
             IO.inspect(player)
 
-            {:ok, player}
+            {:ok, player |> Repo.preload(:tags)}
 
           "login" ->
             player = Mud.Repo.one!(player_select_query)
             IO.inspect(player)
 
-            {:ok, player}
+            {:ok, player |> Repo.preload(:tags)}
         end
     end
   end
