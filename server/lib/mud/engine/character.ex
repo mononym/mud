@@ -4,7 +4,7 @@ defmodule Mud.Engine.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.{Area, Character, Item}
+  alias Mud.Engine.{Area, Character, Instance, Item}
   alias Mud.Engine.Util
   alias Mud.Engine.Character.Skill
 
@@ -90,6 +90,8 @@ defmodule Mud.Engine.Character do
     #
 
     has_many(:raw_skills, Skill)
+
+    belongs_to(:instance, Instance, type: :binary_id)
   end
 
   ##

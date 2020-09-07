@@ -64,6 +64,9 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:physical_height, :integer, default: 1)
       add(:physical_width, :integer, default: 1)
       add(:physical_weight, :integer, default: 1)
+
+
+      add(:instance_id, references(:instances, on_delete: :delete_all, type: :binary_id))
     end
 
     create(index(:items, [:is_furniture]))
@@ -119,5 +122,7 @@ defmodule Mud.Repo.Migrations.CreateItems do
     create(index(:items, [:physical_height]))
     create(index(:items, [:physical_width]))
     create(index(:items, [:physical_weight]))
+
+    create(index(:items, [:instance_id]))
   end
 end

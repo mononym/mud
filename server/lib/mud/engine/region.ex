@@ -5,7 +5,7 @@ defmodule Mud.Engine.Region do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Area, Link}
+  alias Mud.Engine.{Area, Instance, Link}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -13,6 +13,8 @@ defmodule Mud.Engine.Region do
     field(:name, :string)
 
     has_many(:areas, Area)
+
+    belongs_to(:instance, Instance, type: :binary_id)
 
     timestamps()
   end

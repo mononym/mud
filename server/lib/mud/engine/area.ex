@@ -2,7 +2,7 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Item, Region}
+  alias Mud.Engine.{Character, Link, Instance, Item, Region}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -21,6 +21,7 @@ defmodule Mud.Engine.Area do
     field(:map_size, :integer)
 
     belongs_to(:region, Region, type: :binary_id)
+    belongs_to(:instance, Instance, type: :binary_id)
 
     has_many(:characters, Character)
     has_many(:items, Item)

@@ -11,7 +11,7 @@ defmodule Mud.Engine.Link do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.{Area}
+  alias Mud.Engine.{Area, Instance}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
@@ -31,6 +31,8 @@ defmodule Mud.Engine.Link do
       type: :binary_id,
       foreign_key: :to_id
     )
+
+    belongs_to(:instance, Instance, type: :binary_id)
 
     timestamps()
   end

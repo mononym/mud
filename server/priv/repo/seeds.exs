@@ -9,18 +9,26 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias Mud.Engine.{Region, Area, Link}
+alias Mud.Engine.{Region, Area, Instance, Link}
+
+# Region insertions
+instance =
+  Mud.Repo.insert!(%Instance{
+    name: "Prime",
+    slug: "prime",
+    description: "Roleplay lightly enforced."
+  })
 
 # Region insertions
 region =
   Mud.Repo.insert!(%Region{
-    name: "Royal Gardens"
-  })
+    name: "Royal Gardens",
+    instance_id: instance.id,  })
 
 # Room insertions
 center_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3000,
+    instance_id: instance.id,    map_x: 3000,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
@@ -31,7 +39,7 @@ center_room =
 
 east_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3050,
+    instance_id: instance.id,    map_x: 3050,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
@@ -42,7 +50,7 @@ east_room =
 
 west_room =
   Mud.Repo.insert!(%Area{
-    map_x: 2950,
+    instance_id: instance.id,    map_x: 2950,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
@@ -53,7 +61,7 @@ west_room =
 
 north_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3000,
+    instance_id: instance.id,    map_x: 3000,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
@@ -64,7 +72,7 @@ north_room =
 
 south_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3000,
+    instance_id: instance.id,    map_x: 3000,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
@@ -75,7 +83,7 @@ south_room =
 
 northeast_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3050,
+    instance_id: instance.id,    map_x: 3050,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
@@ -86,7 +94,7 @@ northeast_room =
 
 southeast_room =
   Mud.Repo.insert!(%Area{
-    map_x: 3050,
+    instance_id: instance.id,    map_x: 3050,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
@@ -97,7 +105,7 @@ southeast_room =
 
 northwest_room =
   Mud.Repo.insert!(%Area{
-    map_x: 2950,
+    instance_id: instance.id,    map_x: 2950,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
@@ -108,7 +116,7 @@ northwest_room =
 
 southwest_room =
   Mud.Repo.insert!(%Area{
-    map_x: 2950,
+    instance_id: instance.id,    map_x: 2950,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
@@ -121,7 +129,7 @@ southwest_room =
 
 maze_1 =
   Mud.Repo.insert!(%Area{
-    map_x: 3100,
+    instance_id: instance.id,    map_x: 3100,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
@@ -131,7 +139,7 @@ maze_1 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: east_room.id,
+  instance_id: instance.id,  from_id: east_room.id,
   to_id: maze_1.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -141,7 +149,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_1.id,
+  instance_id: instance.id,  from_id: maze_1.id,
   to_id: east_room.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -152,7 +160,7 @@ Mud.Repo.insert!(%Link{
 
 maze_2 =
   Mud.Repo.insert!(%Area{
-    map_x: 3150,
+    instance_id: instance.id,    map_x: 3150,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
@@ -161,7 +169,7 @@ maze_2 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_1.id,
+  instance_id: instance.id,  from_id: maze_1.id,
   to_id: maze_2.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -171,7 +179,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_2.id,
+  instance_id: instance.id,  from_id: maze_2.id,
   to_id: maze_1.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -182,7 +190,7 @@ Mud.Repo.insert!(%Link{
 
 maze_3 =
   Mud.Repo.insert!(%Area{
-    map_x: 3150,
+    instance_id: instance.id,    map_x: 3150,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
@@ -191,7 +199,7 @@ maze_3 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_2.id,
+  instance_id: instance.id,  from_id: maze_2.id,
   to_id: maze_3.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -201,7 +209,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_3.id,
+  instance_id: instance.id,  from_id: maze_3.id,
   to_id: maze_2.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -212,7 +220,7 @@ Mud.Repo.insert!(%Link{
 
 maze_4 =
   Mud.Repo.insert!(%Area{
-    map_x: 3150,
+    instance_id: instance.id,    map_x: 3150,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
@@ -221,7 +229,7 @@ maze_4 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_3.id,
+  instance_id: instance.id,  from_id: maze_3.id,
   to_id: maze_4.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -231,7 +239,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_4.id,
+  instance_id: instance.id,  from_id: maze_4.id,
   to_id: maze_3.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -242,7 +250,7 @@ Mud.Repo.insert!(%Link{
 
 maze_5 =
   Mud.Repo.insert!(%Area{
-    map_x: 3150,
+    instance_id: instance.id,    map_x: 3150,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -251,7 +259,7 @@ maze_5 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_4.id,
+  instance_id: instance.id,  from_id: maze_4.id,
   to_id: maze_5.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -261,7 +269,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_5.id,
+  instance_id: instance.id,  from_id: maze_5.id,
   to_id: maze_4.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -272,7 +280,7 @@ Mud.Repo.insert!(%Link{
 
 maze_6 =
   Mud.Repo.insert!(%Area{
-    map_x: 3200,
+    instance_id: instance.id,    map_x: 3200,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -281,7 +289,7 @@ maze_6 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_5.id,
+  instance_id: instance.id,  from_id: maze_5.id,
   to_id: maze_6.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -291,7 +299,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_6.id,
+  instance_id: instance.id,  from_id: maze_6.id,
   to_id: maze_5.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -302,7 +310,7 @@ Mud.Repo.insert!(%Link{
 
 maze_7 =
   Mud.Repo.insert!(%Area{
-    map_x: 3250,
+    instance_id: instance.id,    map_x: 3250,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -311,7 +319,7 @@ maze_7 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_6.id,
+  instance_id: instance.id,  from_id: maze_6.id,
   to_id: maze_7.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -321,7 +329,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
+  instance_id: instance.id,  from_id: maze_7.id,
   to_id: maze_6.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -332,7 +340,7 @@ Mud.Repo.insert!(%Link{
 
 maze_8 =
   Mud.Repo.insert!(%Area{
-    map_x: 3250,
+    instance_id: instance.id,    map_x: 3250,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
@@ -341,7 +349,7 @@ maze_8 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
+  instance_id: instance.id,  from_id: maze_7.id,
   to_id: maze_8.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -351,7 +359,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_8.id,
+  instance_id: instance.id,  from_id: maze_8.id,
   to_id: maze_7.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -362,7 +370,7 @@ Mud.Repo.insert!(%Link{
 
 maze_9 =
   Mud.Repo.insert!(%Area{
-    map_x: 3200,
+    instance_id: instance.id,    map_x: 3200,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
@@ -371,7 +379,7 @@ maze_9 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_9.id,
+  instance_id: instance.id,  from_id: maze_9.id,
   to_id: maze_8.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -381,7 +389,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_8.id,
+  instance_id: instance.id,  from_id: maze_8.id,
   to_id: maze_9.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -392,7 +400,7 @@ Mud.Repo.insert!(%Link{
 
 maze_10 =
   Mud.Repo.insert!(%Area{
-    map_x: 3300,
+    instance_id: instance.id,    map_x: 3300,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -401,7 +409,7 @@ maze_10 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
+  instance_id: instance.id,  from_id: maze_7.id,
   to_id: maze_10.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -411,7 +419,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_10.id,
+  instance_id: instance.id,  from_id: maze_10.id,
   to_id: maze_7.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -422,7 +430,7 @@ Mud.Repo.insert!(%Link{
 
 maze_11 =
   Mud.Repo.insert!(%Area{
-    map_x: 3350,
+    instance_id: instance.id,    map_x: 3350,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -431,7 +439,7 @@ maze_11 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_10.id,
+  instance_id: instance.id,  from_id: maze_10.id,
   to_id: maze_11.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -441,7 +449,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_11.id,
+  instance_id: instance.id,  from_id: maze_11.id,
   to_id: maze_10.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -452,7 +460,7 @@ Mud.Repo.insert!(%Link{
 
 maze_12 =
   Mud.Repo.insert!(%Area{
-    map_x: 3400,
+    instance_id: instance.id,    map_x: 3400,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
@@ -461,7 +469,7 @@ maze_12 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_11.id,
+  instance_id: instance.id,  from_id: maze_11.id,
   to_id: maze_12.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -471,7 +479,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_12.id,
+  instance_id: instance.id,  from_id: maze_12.id,
   to_id: maze_11.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -482,7 +490,7 @@ Mud.Repo.insert!(%Link{
 
 maze_13 =
   Mud.Repo.insert!(%Area{
-    map_x: 3400,
+    instance_id: instance.id,    map_x: 3400,
     map_y: 3200,
     map_size: 20,
     region_id: region.id,
@@ -491,7 +499,7 @@ maze_13 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_13.id,
+  instance_id: instance.id,  from_id: maze_13.id,
   to_id: maze_12.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -501,7 +509,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_12.id,
+  instance_id: instance.id,  from_id: maze_12.id,
   to_id: maze_13.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -512,7 +520,7 @@ Mud.Repo.insert!(%Link{
 
 maze_14 =
   Mud.Repo.insert!(%Area{
-    map_x: 3400,
+    instance_id: instance.id,    map_x: 3400,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
@@ -521,7 +529,7 @@ maze_14 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_14.id,
+  instance_id: instance.id,  from_id: maze_14.id,
   to_id: maze_13.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -531,7 +539,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_13.id,
+  instance_id: instance.id,  from_id: maze_13.id,
   to_id: maze_14.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -542,7 +550,7 @@ Mud.Repo.insert!(%Link{
 
 maze_15 =
   Mud.Repo.insert!(%Area{
-    map_x: 3350,
+    instance_id: instance.id,    map_x: 3350,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
@@ -551,7 +559,7 @@ maze_15 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_15.id,
+  instance_id: instance.id,  from_id: maze_15.id,
   to_id: maze_14.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -561,7 +569,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_14.id,
+  instance_id: instance.id,  from_id: maze_14.id,
   to_id: maze_15.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -572,7 +580,7 @@ Mud.Repo.insert!(%Link{
 
 maze_16 =
   Mud.Repo.insert!(%Area{
-    map_x: 3300,
+    instance_id: instance.id,    map_x: 3300,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
@@ -581,7 +589,7 @@ maze_16 =
   })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_16.id,
+  instance_id: instance.id,  from_id: maze_16.id,
   to_id: maze_15.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -591,7 +599,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  from_id: maze_15.id,
+  instance_id: instance.id,  from_id: maze_15.id,
   to_id: maze_16.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -602,7 +610,7 @@ Mud.Repo.insert!(%Link{
 
 maze_17 =
   Mud.Repo.insert!(%Area{
-    map_x: 3250,
+    instance_id: instance.id,    map_x: 3250,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
@@ -611,6 +619,7 @@ maze_17 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_17.id,
   to_id: maze_16.id,
   departure_text: "east",
@@ -621,6 +630,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_16.id,
   to_id: maze_17.id,
   departure_text: "west",
@@ -632,6 +642,7 @@ Mud.Repo.insert!(%Link{
 
 maze_18 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3200,
     map_y: 3250,
     map_size: 20,
@@ -641,6 +652,7 @@ maze_18 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_18.id,
   to_id: maze_17.id,
   departure_text: "east",
@@ -651,6 +663,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_17.id,
   to_id: maze_18.id,
   departure_text: "west",
@@ -662,6 +675,7 @@ Mud.Repo.insert!(%Link{
 
 maze_19 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3150,
     map_y: 3250,
     map_size: 20,
@@ -671,6 +685,7 @@ maze_19 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_19.id,
   to_id: maze_18.id,
   departure_text: "east",
@@ -681,6 +696,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_18.id,
   to_id: maze_19.id,
   departure_text: "west",
@@ -692,6 +708,7 @@ Mud.Repo.insert!(%Link{
 
 maze_20 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3100,
     map_y: 3250,
     map_size: 20,
@@ -701,6 +718,7 @@ maze_20 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_20.id,
   to_id: maze_19.id,
   departure_text: "east",
@@ -711,6 +729,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_19.id,
   to_id: maze_20.id,
   departure_text: "west",
@@ -722,6 +741,7 @@ Mud.Repo.insert!(%Link{
 
 maze_21 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3050,
     map_y: 3250,
     map_size: 20,
@@ -731,6 +751,7 @@ maze_21 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_21.id,
   to_id: maze_20.id,
   departure_text: "east",
@@ -741,6 +762,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_20.id,
   to_id: maze_21.id,
   departure_text: "west",
@@ -752,6 +774,7 @@ Mud.Repo.insert!(%Link{
 
 maze_22 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3000,
     map_y: 3250,
     map_size: 20,
@@ -761,6 +784,7 @@ maze_22 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_22.id,
   to_id: maze_21.id,
   departure_text: "east",
@@ -771,6 +795,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_21.id,
   to_id: maze_22.id,
   departure_text: "west",
@@ -782,6 +807,7 @@ Mud.Repo.insert!(%Link{
 
 maze_23 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3000,
     map_y: 3200,
     map_size: 20,
@@ -791,6 +817,7 @@ maze_23 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_22.id,
   to_id: maze_23.id,
   departure_text: "north",
@@ -801,6 +828,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_23.id,
   to_id: maze_22.id,
   departure_text: "south",
@@ -812,6 +840,7 @@ Mud.Repo.insert!(%Link{
 
 maze_24 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3000,
     map_y: 3150,
     map_size: 20,
@@ -821,6 +850,7 @@ maze_24 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_23.id,
   to_id: maze_24.id,
   departure_text: "north",
@@ -831,6 +861,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_24.id,
   to_id: maze_23.id,
   departure_text: "south",
@@ -842,6 +873,7 @@ Mud.Repo.insert!(%Link{
 
 maze_25 =
   Mud.Repo.insert!(%Area{
+    instance_id: instance.id,
     map_x: 3000,
     map_y: 3100,
     map_size: 20,
@@ -851,6 +883,7 @@ maze_25 =
   })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_24.id,
   to_id: maze_25.id,
   departure_text: "north",
@@ -861,6 +894,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_25.id,
   to_id: maze_24.id,
   departure_text: "south",
@@ -871,6 +905,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: maze_25.id,
   to_id: south_room.id,
   departure_text: "north",
@@ -904,6 +939,7 @@ Mud.Repo.insert!(%Link{
 
 # center room east room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: east_room.id,
   departure_text: "east",
@@ -914,6 +950,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: east_room.id,
   to_id: center_room.id,
   departure_text: "west",
@@ -925,6 +962,7 @@ Mud.Repo.insert!(%Link{
 
 # center room west room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: west_room.id,
   departure_text: "west",
@@ -935,6 +973,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: west_room.id,
   to_id: center_room.id,
   departure_text: "east",
@@ -946,6 +985,7 @@ Mud.Repo.insert!(%Link{
 
 # center room north room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: north_room.id,
   departure_text: "north",
@@ -956,6 +996,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: north_room.id,
   to_id: center_room.id,
   departure_text: "south",
@@ -967,6 +1008,7 @@ Mud.Repo.insert!(%Link{
 
 # center room south room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: south_room.id,
   departure_text: "south",
@@ -977,6 +1019,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: south_room.id,
   to_id: center_room.id,
   departure_text: "north",
@@ -988,6 +1031,7 @@ Mud.Repo.insert!(%Link{
 
 # center room southeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: southeast_room.id,
   departure_text: "southeast",
@@ -998,6 +1042,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southeast_room.id,
   to_id: center_room.id,
   departure_text: "northwest",
@@ -1009,6 +1054,7 @@ Mud.Repo.insert!(%Link{
 
 # center room southwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: southwest_room.id,
   departure_text: "southwest",
@@ -1019,6 +1065,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: center_room.id,
   departure_text: "northeast",
@@ -1030,6 +1077,7 @@ Mud.Repo.insert!(%Link{
 
 # center room northwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: northwest_room.id,
   departure_text: "northwest",
@@ -1040,6 +1088,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northwest_room.id,
   to_id: center_room.id,
   departure_text: "southeast",
@@ -1051,6 +1100,7 @@ Mud.Repo.insert!(%Link{
 
 # center room northeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: center_room.id,
   to_id: northeast_room.id,
   departure_text: "northeast",
@@ -1061,6 +1111,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northeast_room.id,
   to_id: center_room.id,
   departure_text: "southwest",
@@ -1072,6 +1123,7 @@ Mud.Repo.insert!(%Link{
 
 # north room northeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: north_room.id,
   to_id: northeast_room.id,
   departure_text: "east",
@@ -1082,6 +1134,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northeast_room.id,
   to_id: north_room.id,
   departure_text: "west",
@@ -1093,6 +1146,7 @@ Mud.Repo.insert!(%Link{
 
 # north room northwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: north_room.id,
   to_id: northwest_room.id,
   departure_text: "west",
@@ -1103,6 +1157,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northwest_room.id,
   to_id: north_room.id,
   departure_text: "east",
@@ -1114,6 +1169,7 @@ Mud.Repo.insert!(%Link{
 
 # south room southeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: south_room.id,
   to_id: southeast_room.id,
   departure_text: "east",
@@ -1124,6 +1180,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southeast_room.id,
   to_id: south_room.id,
   departure_text: "west",
@@ -1135,6 +1192,7 @@ Mud.Repo.insert!(%Link{
 
 # south room southwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: south_room.id,
   to_id: southwest_room.id,
   departure_text: "west",
@@ -1145,6 +1203,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: south_room.id,
   departure_text: "east",
@@ -1156,6 +1215,7 @@ Mud.Repo.insert!(%Link{
 
 # east room northeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: east_room.id,
   to_id: northeast_room.id,
   departure_text: "north",
@@ -1166,6 +1226,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northeast_room.id,
   to_id: east_room.id,
   departure_text: "south",
@@ -1177,6 +1238,7 @@ Mud.Repo.insert!(%Link{
 
 # east room southeast room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: east_room.id,
   to_id: southeast_room.id,
   departure_text: "south",
@@ -1187,6 +1249,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southeast_room.id,
   to_id: east_room.id,
   departure_text: "north",
@@ -1198,6 +1261,7 @@ Mud.Repo.insert!(%Link{
 
 # west room northwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: west_room.id,
   to_id: northwest_room.id,
   departure_text: "north",
@@ -1208,6 +1272,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northwest_room.id,
   to_id: west_room.id,
   departure_text: "south",
@@ -1219,6 +1284,7 @@ Mud.Repo.insert!(%Link{
 
 # west room southwest room links
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: west_room.id,
   to_id: southwest_room.id,
   departure_text: "south",
@@ -1229,6 +1295,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: west_room.id,
   departure_text: "north",
@@ -1240,6 +1307,7 @@ Mud.Repo.insert!(%Link{
 
 # Portals
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: northeast_room.id,
   departure_text: "into a shimmering portal",
@@ -1251,6 +1319,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: northwest_room.id,
   departure_text: "into a glimmering portal",
@@ -1262,6 +1331,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northwest_room.id,
   to_id: southwest_room.id,
   departure_text: "into a glimmering portal",
@@ -1273,6 +1343,7 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
   from_id: northeast_room.id,
   to_id: southwest_room.id,
   departure_text: "into a shimmering portal",
@@ -1286,6 +1357,7 @@ Mud.Repo.insert!(%Link{
 # Object insertions
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "rock",
   is_scenery: false,
   area_id: north_room.id,
@@ -1298,6 +1370,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "rock",
   is_scenery: false,
   area_id: north_room.id,
@@ -1310,6 +1383,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "branch",
   is_scenery: false,
   area_id: north_room.id,
@@ -1324,6 +1398,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "fountain",
   is_scenery: true,
   area_id: center_room.id,
@@ -1336,6 +1411,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "bench",
   is_scenery: true,
   is_furniture: true,
@@ -1348,6 +1424,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "chest",
   area_id: center_room.id,
   short_description: "a simple wooden chest",
@@ -1372,6 +1449,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "backpack",
   area_id: center_room.id,
   short_description: "a ragged leather backpack",
@@ -1394,6 +1472,7 @@ Mud.Engine.Item.create(%{
 })
 
 Mud.Engine.Item.create(%{
+  instance_id: instance.id,
   key: "rock",
   area_id: center_room.id,
   short_description: "a rough round rock",

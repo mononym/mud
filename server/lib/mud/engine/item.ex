@@ -8,6 +8,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Instance
   require Logger
 
   @type id :: String.t()
@@ -23,6 +24,8 @@ defmodule Mud.Engine.Item do
     belongs_to(:area, Mud.Engine.Area, type: :binary_id)
 
     timestamps()
+
+    belongs_to(:instance, Instance, type: :binary_id)
 
     # The state of the item
     field(:is_hidden, :boolean, default: false)
