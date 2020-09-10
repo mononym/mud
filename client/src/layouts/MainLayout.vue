@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpr lFf">
+  <q-layout view="hHh lpr lFf" class="layout">
     <q-header>
       <q-toolbar>
         <q-btn
@@ -15,13 +15,20 @@
           Quasar App
         </q-toolbar-title>
 
+        <q-btn 
+          stretch 
+          flat
+          label="Build" 
+          to="/build"
+        />
+
         <q-btn color="purple" label="Account Settings">
           <q-menu>
             <div class="row no-wrap q-pa-md">
               <div class="column">
                 <div class="text-h6 q-mb-md">Settings</div>
-                <q-toggle v-model="mobileData" label="Use Mobile Data" />
-                <q-toggle v-model="bluetooth" label="Bluetooth" />
+                <!-- <q-toggle v-model="true" label="Use Mobile Data" />
+                <q-toggle v-model="true" label="Bluetooth" /> -->
               </div>
 
               <q-separator vertical inset class="q-mx-lg" />
@@ -54,6 +61,12 @@
   </q-layout>
 </template>
 
+<style lang="sass">
+.layout
+  /* max height is important */
+  max-height: 100%
+</style>
+
 <script lang="ts">
 import { defineComponent } from '@vue/composition-api';
 
@@ -62,7 +75,7 @@ export default defineComponent({
   components: {  },
   methods: {
     logout() {
-      
+
     }
   }
 });

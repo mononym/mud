@@ -74,5 +74,7 @@ defmodule MudWeb.Router do
     post "/characters/update", CharacterController, :update
     get "/characters/get-creation-data", CharacterController, :get_creation_data
 
+    get "/instances", InstanceController, :list_all
+
   end
 end
