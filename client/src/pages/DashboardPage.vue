@@ -1,107 +1,105 @@
 <template>
-  <q-page class="dashboardPage">
-    <div class="dashboardContainer row full-width">
-      <q-splitter
-        class="dashboardSplitter full-width"
-        v-model="splitterModel"
-        unit="px"
-        disable
-      >
-        <template v-slot:before>
-          <q-tabs v-model="tab" vertical class="dashboardTabs text-teal">
-            <q-tab
-              name="quickActions"
-              icon="fas fa-stopwatch"
-              label="Quick Actions"
-              class="dashboardTab"
-            />
-            <q-tab
-              v-if="showDevTab"
-              name="instances"
-              icon="fas fa-dice-d20"
-              label="Instances"
-              class="dashboardTab"
-            />
-            <q-tab
-              name="muds"
-              icon="fas fa-comments"
-              label="Forums"
-              class="dashboardTab"
-            />
-          </q-tabs>
-        </template>
+  <q-page class="dashboardPage column">
+    <q-splitter
+      class="dashboardSplitter fit"
+      v-model="splitterModel"
+      unit="px"
+      disable
+    >
+      <template v-slot:before>
+        <q-tabs v-model="tab" vertical class="dashboardTabs text-teal fit">
+          <q-tab
+            name="quickActions"
+            icon="fas fa-stopwatch"
+            label="Quick Actions"
+            class="dashboardTab"
+          />
+          <q-tab
+            v-if="showDevTab"
+            name="instances"
+            icon="fas fa-dice-d20"
+            label="Instances"
+            class="dashboardTab"
+          />
+          <q-tab
+            name="muds"
+            icon="fas fa-comments"
+            label="Forums"
+            class="dashboardTab"
+          />
+        </q-tabs>
+      </template>
 
-        <template v-slot:after>
-          <q-tab-panels
-            v-model="tab"
-            animated
-            transition-prev="jump-up"
-            transition-next="jump-up"
-          >
-            <q-tab-panel name="quickActions">
-              <q-card flat bordered class="my-card bg-primary">
+      <template v-slot:after>
+        <q-tab-panels
+          v-model="tab"
+          animated
+          transition-prev="jump-up"
+          transition-next="jump-up"
+        >
+          <q-tab-panel name="quickActions">
+            <q-card flat bordered class="my-card bg-primary">
 
-                <q-card-section>
-                  <div class="text-h6 text-center">Characters</div>
-                </q-card-section>
-                
-                <q-separator />
-                
-                <q-card-section v-if="characters.length > 0">
-                  <div class="q-pa-md">
-                    <q-table
-                      class="table"
-                      :data="characters"
-                      :columns="columns"
-                      table-style="max-height: 400px"
-                      row-key="index"
-                      virtual-scroll
-                      :pagination.sync="pagination"
-                      :rows-per-page-options="[0]"
-                    />
-                  </div>
-                </q-card-section>
+              <q-card-section>
+                <div class="text-h6 text-center">Characters</div>
+              </q-card-section>
+              
+              <q-separator />
+              
+              <q-card-section v-if="characters.length > 0">
+                <div class="q-pa-md">
+                  <q-table
+                    class="table"
+                    :data="characters"
+                    :columns="columns"
+                    table-style="max-height: 400px"
+                    row-key="index"
+                    virtual-scroll
+                    :pagination.sync="pagination"
+                    :rows-per-page-options="[0]"
+                  />
+                </div>
+              </q-card-section>
 
-                <q-separator v-if="characters.length > 0" />
+              <q-separator v-if="characters.length > 0" />
 
-                <q-card-actions align="around" class="action-container">
-                  <q-btn flat class="action-button" to="/characters/new"
-                    >Create Character</q-btn
-                  >
-                </q-card-actions>
-              </q-card>
-            </q-tab-panel>
+              <q-card-actions align="around" class="action-container">
+                <q-btn flat class="action-button" to="/characters/new"
+                  >Create Character</q-btn
+                >
+              </q-card-actions>
+            </q-card>
+          </q-tab-panel>
 
-            <q-tab-panel name="muds">
-              <q-card flat bordered class="my-card bg-primary">
-                <q-card-section>
-                  <div class="q-pa-md">
-                    <q-table
-                      title="Quickplay"
-                      class="table"
-                      :data="characters"
-                      :columns="columns"
-                      table-style="max-height: 400px"
-                      row-key="index"
-                      virtual-scroll
-                      :pagination.sync="pagination"
-                      :rows-per-page-options="[0]"
-                    />
-                  </div>
-                </q-card-section>
+          <q-tab-panel name="muds">
+            <q-card flat bordered class="my-card bg-primary">
+              <q-card-section>
+                <div class="q-pa-md">
+                  <q-table
+                    title="Quickplay"
+                    class="table"
+                    :data="characters"
+                    :columns="columns"
+                    table-style="max-height: 400px"
+                    row-key="index"
+                    virtual-scroll
+                    :pagination.sync="pagination"
+                    :rows-per-page-options="[0]"
+                  />
+                </div>
+              </q-card-section>
 
-                <q-separator />
+              <q-separator />
 
-                <q-card-actions align="around" class="action-container">
-                  <q-btn flat class="action-button">Create MUD</q-btn>
-                  <q-btn flat class="action-button">Dismiss</q-btn>
-                </q-card-actions>
-              </q-card>
-            </q-tab-panel>
-          </q-tab-panels>
-        </template>
-      </q-splitter>
-    </div>
+              <q-card-actions align="around" class="action-container">
+                <q-btn flat class="action-button">Create MUD</q-btn>
+                <q-btn flat class="action-button">Dismiss</q-btn>
+              </q-card-actions>
+            </q-card>
+          </q-tab-panel>
+        </q-tab-panels>
+      </template>
+    </q-splitter>
   </q-page>
 </template>
 

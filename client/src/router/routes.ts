@@ -72,11 +72,11 @@ const routes: RouteConfig[] = [
       //   component: () => import('pages/BuildInstancePage.vue'),
       //   meta: { requiresAuth: true }
       // },
-      {
-        path: ':instance/region/:region/build',
-        component: () => import('pages/BuildRegionPage.vue'),
-        meta: { requiresAuth: true }
-      },
+      // {
+      //   path: ':instance/region/:region/build',
+      //   component: () => import('pages/BuildRegionPage.vue'),
+      //   meta: { requiresAuth: true }
+      // },
     ]
   },
 
