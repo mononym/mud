@@ -11,7 +11,7 @@ const actions: ActionTree<MapsInterface, StateInterface> = {
         resolve(state.maps.get(mapId))
       } else {
         axios
-          .get('/map/' + mapId)
+          .get('/maps/' + mapId)
           .then(function(response: AxiosResponse) {
             commit('putMap', response.data);
 
@@ -19,6 +19,30 @@ const actions: ActionTree<MapsInterface, StateInterface> = {
           })
           .catch(function() {
             commit('removeMapById', mapId);
+  
+            reject()
+          });
+      }
+    })
+  },
+  fetchMaps ({ commit, state }) {
+    return new Promise((resolve, reject) => {
+      if (state.fetched) {
+        resolve(state.maps.values())
+      } else {
+        axios
+          .get('/maps')
+          .then(function(response: AxiosResponse) {
+            console.log('loaded maps')
+            console.log(response.data)
+            // console.log(response.data.reduce((map, obj) => (map.set(map.id, map), obj), new Map()))
+            commit('setFetched', true);
+            commit('putMaps', response.data.reduce((map, obj)=> (map.set(obj.id, obj)), new Map()));
+
+            resolve(Array.from(state.maps.values()))
+          })
+          .catch(function() {
+            alert('Error when fetching maps')
   
             reject()
           });

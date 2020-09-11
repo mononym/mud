@@ -13,7 +13,7 @@
         <q-input v-model="name" label="Name" />
 
         <q-stepper-navigation>
-          <q-btn @click="step = 2" color="primary" label="Continue" />
+          <q-btn :disabled="nameContinueDisabled" @click="step = 2" color="primary" label="Continue" />
         </q-stepper-navigation>
       </q-step>
 
@@ -23,14 +23,14 @@
         icon="fas fa-signature"
         :done="step > 2"
       >
-        
         <q-input v-model="description" label="Description" type="textarea" />
 
         <q-stepper-navigation>
           <q-btn color="primary" label="Save" @click="saveMap" />
           <q-btn
+            :disabled="saveDisabled"
             flat
-            @click="step = 2"
+            @click="step = 1"
             color="primary"
             label="Back"
             class="q-ml-sm"
@@ -55,39 +55,65 @@ export default {
     // if data needs to be loaded make a call to server to fetch the data and have it set the map data once loaded
     // If there is no id the values can be left blank and nothing needs to be done
     if (this.id !== '') {
-      this.$store.dispatch('maps/fetchMap', this.id)
-        .then((map) => {
-          this.id = map.id
-          this.name = map.name
-          this.description = map.description
-          this.areas = map.areas
+      this.$store
+        .dispatch('maps/fetchMap', this.id)
+        .then(map => {
+          this.id = map.id;
+          this.name = map.name;
+          this.description = map.description;
         })
         .catch(() => {
-          alert('Something went wrong attemping to load the selected map')
-          this.id = ''
-        })
+          alert('Something went wrong attemping to load the selected map.');
+          this.id = '';
+        });
     }
   },
-  computed: {  
+  computed: {
+    nameContinueDisabled() {
+      return this.name === '';
+    },
+    saveDisabled() {
+      return this.description === '';
+    }
   },
   data() {
     return {
-      id: 'asd',
+      id: '',
       name: '',
       description: '',
-      areas: [],
       step: 1
     };
   },
   validations: {},
   methods: {
     saveMap() {
-      console.log('saveMap()')
+      console.log('saveMap()');
+      const params = { map: { name: this.name, description: this.description } };
+
+      if (this.id === '') {
+        this.$axios
+          .post('/maps', params)
+          .then(result => {
+            this.$store.commit('maps/putMap', result.data);
+            this.$emit('saved', result.data.id);
+          })
+          .catch(function() {
+            alert('Error saving');
+          });
+      } else {
+        this.$axios
+          .patch('/maps/' + this.id, params)
+          .then(result => {
+            this.$store.commit('maps/putMap', result.data);
+            this.$emit('saved', result.data.id);
+          })
+          .catch(function() {
+            alert('Error saving');
+          });
+      }
     }
   }
 };
 </script>
 
-<style>
-
-</style>
+<style></style>

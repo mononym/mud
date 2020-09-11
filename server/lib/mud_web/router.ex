@@ -76,5 +76,8 @@ defmodule MudWeb.Router do
 
     get "/instances", InstanceController, :list_all
 
+    # Map related stuff
+    resources "/maps", MapController, except: [:new, :edit]
+
   end
 end
