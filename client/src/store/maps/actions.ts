@@ -7,8 +7,10 @@ import axios, { AxiosResponse } from 'axios';
 const actions: ActionTree<MapsInterface, StateInterface> = {
   fetchMap ({ commit, state }, mapId: string) {
     return new Promise((resolve, reject) => {
-      if (state.maps.has(mapId)) {
-        resolve(state.maps.get(mapId))
+      if (state.mapsMap.has(mapId)) {
+        console.log('map is local')
+        console.log(state.mapsMap.has(mapId))
+        resolve(state.mapsMap.get(mapId))
       } else {
         axios
           .get('/maps/' + mapId)
@@ -28,7 +30,7 @@ const actions: ActionTree<MapsInterface, StateInterface> = {
   fetchMaps ({ commit, state }) {
     return new Promise((resolve, reject) => {
       if (state.fetched) {
-        resolve(state.maps.values())
+        resolve(state.mapsList)
       } else {
         axios
           .get('/maps')
@@ -39,7 +41,7 @@ const actions: ActionTree<MapsInterface, StateInterface> = {
             commit('setFetched', true);
             commit('putMaps', response.data.reduce((map, obj)=> (map.set(obj.id, obj)), new Map()));
 
-            resolve(Array.from(state.maps.values()))
+            resolve(state.mapsList)
           })
           .catch(function() {
             alert('Error when fetching maps')

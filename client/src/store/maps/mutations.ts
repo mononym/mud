@@ -1,22 +1,29 @@
 import { MutationTree } from 'vuex';
 import { MapsInterface } from './state';
 import { MapInterface } from '../map/state';
-import Vue from 'vue';
 
 const mutation: MutationTree<MapsInterface> = {
   putMap(state: MapsInterface, map: MapInterface) {
-    Vue.set(state.maps, map.id, map);
+    console.log('putting map')
+    console.log(map)
+    console.log(state.mapsMap)
+    state.mapsMap.set(map.id, map)
+    state.mapsList = Array.from(state.mapsMap.values())
+    console.log(state.mapsMap)
+    console.log(state.mapsList)
   },
   putMaps(state: MapsInterface, maps: Map<string, MapInterface>) {
     console.log('putting maps')
     console.log(maps)
-    state.maps = maps;
+    state.mapsMap = maps;
+    state.mapsList = Array.from(state.mapsMap.values())
   },
   setFetched(state: MapsInterface, fetched: boolean) {
     state.fetched = fetched;
   },
   removeMapById(state: MapsInterface, mapId: string) {
-    Vue.delete(state.maps, mapId);
+    state.mapsMap.delete(mapId)
+    state.mapsList = Array.from(state.mapsMap.values())
   }
 };
 

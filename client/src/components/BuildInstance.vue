@@ -8,7 +8,7 @@
       <template v-slot:before>
         <div class="column full-height">
           <div class="col">
-            <region-map />
+            <region-map :id="selectedMap" />
           </div>
           <div class="col">
             <q-tab-panels
@@ -17,11 +17,11 @@
               class="shadow-2 rounded-borders fit"
             >
               <q-tab-panel class="overflow-hidden" name="table">
-                <map-table @saved="mapSaved" />
+                <map-table @saved="mapSaved" @selected="mapSelected" @editMap="editMap" :id="selectedMap" />
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
-                <map-wizard @saved="mapSaved" />
+                <map-wizard :id="selectedMap" @saved="mapSaved" />
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -171,7 +171,14 @@ export default {
     },
     selectedAreaDescription() {
       return 'Test Description';
-    }
+    },
+    selectedMaps() {
+      if (this.selectedMap === '') {
+        return []
+      } else {
+        return [this.selectedMap]
+      }
+    },
   },
   components: { AreaWizard, MapTable, MapWizard, RegionMap },
   data() {
@@ -197,6 +204,23 @@ export default {
     mapSaved(mapId) {
       this.selectedMap = mapId;
       this.mapPanel = 'table';
+    },
+    mapSelected(mapId) {
+      if (mapId !== this.selectedMap) {
+        this.selectedMap = mapId;
+        this.areaPanel = 'table';
+        console.log('changing selected map')
+        console.log(this.selectedMap)
+      }
+    },
+    editMap(mapId) {
+      if (mapId !== this.selectedMap) {
+        this.selectedMap = mapId;
+        this.areaPanel = 'table';
+      }
+        console.log('editing selected map')
+        console.log(this.selectedMap)
+        this.mapPanel = 'wizard';
     },
     areaSaved(areaId) {
       this.selectedArea = areaId;

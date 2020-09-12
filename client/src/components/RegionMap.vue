@@ -1,6 +1,6 @@
 <template>
   <div class="fit column">
-    <div class="text-h6 text-center col-auto">{{ regionName }}</div>
+    <div class="text-h6 text-center col-auto">{{ selectedMapName }}</div>
     
     <q-separator />
     
@@ -24,6 +24,15 @@
 
 export default {
   name: 'WorldMap',
+  props: ['id'],
+  created() {
+    // look at values to see if there is an id for the map
+    // if there is an id check the database by using a getter to see if the data needs to be loaded
+    // if data needs to be loaded make a call to server to fetch the data and have it set the map data once loaded
+    // If there is no id the values can be left blank and nothing needs to be done
+    console.log('map id')
+    console.log(this.id)
+  },
   data() {
     return {
       viewBoxX: 0,
@@ -33,11 +42,31 @@ export default {
       lines: [{id: 1, x1: 500, y1: 500, x2: 520, y2: 500}],
       squares: [{id: 2, x: 500, y: 500, size: 20, color: 'blue', name: 'Placeholder'},{id: 3, x: 530, y: 530, size: 20, color: 'red', name: 'Foo'}],
       mapSize: 500,
+      map: null
     };
   },
   computed: {
     viewbox: function() {
       return this.viewBoxX + ' ' + this.viewBoxY + ' ' + this.viewBoxSize + ' ' + this.viewBoxSize;
+    },
+    selectedMapName: function() {
+      if (this.map !== null) {
+        return this.map.name
+      } else {
+        return ''
+      }
+    },
+    selectedMap: function() {
+      console.log('selected map has changed')
+      this.$store.dispatch('maps/fetchMap', this.id).then((map) => {return map})
+    },
+  },
+  watch: {
+    id(value, previousValue) {
+      console.log('id has changed')
+      console.log(previousValue)
+      console.log(value)
+      this.$store.dispatch('maps/fetchMap', value).then((map) => {this.map = map})
     }
   },
   mounted() {

@@ -13,7 +13,12 @@
         <q-input v-model="name" label="Name" />
 
         <q-stepper-navigation>
-          <q-btn :disabled="nameContinueDisabled" @click="step = 2" color="primary" label="Continue" />
+          <q-btn
+            :disabled="nameContinueDisabled"
+            @click="step = 2"
+            color="primary"
+            label="Continue"
+          />
         </q-stepper-navigation>
       </q-step>
 
@@ -48,6 +53,7 @@ import { isNull } from 'util';
 
 export default {
   name: 'MapWizard',
+  props: ['id'],
   components: {},
   created() {
     // look at values to see if there is an id for the map
@@ -78,7 +84,6 @@ export default {
   },
   data() {
     return {
-      id: '',
       name: '',
       description: '',
       step: 1
@@ -88,29 +93,38 @@ export default {
   methods: {
     saveMap() {
       console.log('saveMap()');
-      const params = { map: { name: this.name, description: this.description } };
+      const params = {
+        map: { name: this.name, description: this.description }
+      };
+
+      let request;
 
       if (this.id === '') {
-        this.$axios
-          .post('/maps', params)
-          .then(result => {
-            this.$store.commit('maps/putMap', result.data);
-            this.$emit('saved', result.data.id);
-          })
-          .catch(function() {
-            alert('Error saving');
-          });
+        request = this.$axios.post('/maps', params);
       } else {
-        this.$axios
-          .patch('/maps/' + this.id, params)
-          .then(result => {
-            this.$store.commit('maps/putMap', result.data);
-            this.$emit('saved', result.data.id);
-          })
-          .catch(function() {
-            alert('Error saving');
-          });
+        request = this.$axios.patch('/maps/' + this.id, params);
       }
+
+      request
+        .then(result => {
+          this.$store.commit('maps/putMap', result.data);
+          this.$emit('saved', result.data.id);
+        })
+        .catch(function() {
+          alert('Error saving');
+        });
+    }
+  },
+  watch: {
+    id(value, previousValue) {
+      console.log('map wizard id has changed');
+      console.log(previousValue);
+      console.log(value);
+      this.$store.dispatch('maps/fetchMap', value).then(map => {
+        this.name = map.name;
+        this.description = map.description;
+        this.id = map.id;
+      });
     }
   }
 };
