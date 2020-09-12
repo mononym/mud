@@ -129,6 +129,7 @@ import Vue from 'vue';
 
 export default {
   name: 'AreaWizard',
+  props: ['mapId'],
   components: {},
   created() {
     // this.fetchCharacterCreationData();

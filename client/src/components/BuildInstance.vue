@@ -17,7 +17,7 @@
               class="shadow-2 rounded-borders fit"
             >
               <q-tab-panel class="overflow-hidden" name="table">
-                <map-table @saved="mapSaved" @selected="mapSelected" @editMap="editMap" :id="selectedMap" />
+                <map-table @saved="mapSaved" @selected="mapSelected" @editMap="editMap" @addMap="addMap" :id="selectedMap" />
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
@@ -88,7 +88,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
-                <area-wizard @saved="areaSaved" />
+                <area-wizard @saved="areaSaved" :mapId="selectedMap" />
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -196,6 +196,7 @@ export default {
   },
   methods: {
     addMap() {
+      console.log('got emitted addMap')
       this.mapPanel = 'wizard';
     },
     addArea() {

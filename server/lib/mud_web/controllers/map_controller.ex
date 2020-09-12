@@ -26,9 +26,11 @@ defmodule MudWeb.MapController do
   end
 
   def update(conn, %{"id" => id, "map" => map_params}) do
+    IO.inspect(id, label: "getting")
     map = Map.get!(id)
-
+    IO.inspect(map, label: "gotmap")
     with {:ok, %Map{} = map} <- Map.update(map, map_params) do
+      IO.inspect(map, label: "updated")
       render(conn, "show.json", map: map)
     end
   end

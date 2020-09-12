@@ -18,5 +18,7 @@ defmodule Mud.Repo.Migrations.CreateAreas do
 
     create(index(:areas, [:instance_id]))
     create(index(:areas, [:name]))
+    create(index(:areas, [:map_x]))
+    create(index(:areas, [:map_y]))
   end
 end

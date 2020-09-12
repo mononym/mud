@@ -122,6 +122,7 @@ export default {
   validations: {},
   methods: {
     addMap() {
+      console.log('emitting addMap')
       this.$emit('addMap');
     },
     editMap(mapId) {

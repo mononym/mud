@@ -2,7 +2,7 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Instance, Item, Region}
+  alias Mud.Engine.{Character, Link, Instance, Item, Map, Region}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -20,6 +20,7 @@ defmodule Mud.Engine.Area do
     field(:map_y, :integer)
     field(:map_size, :integer)
 
+    belongs_to(:map, Map, type: :binary_id)
     belongs_to(:region, Region, type: :binary_id)
     belongs_to(:instance, Instance, type: :binary_id)
 
@@ -147,8 +148,8 @@ defmodule Mud.Engine.Area do
   @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
   defp changeset(area, attrs) do
     area
-    |> cast(attrs, [:name, :description])
-    |> validate_required([:name, :description])
+    |> cast(attrs, [:name, :description, :map_id, :instance_id, :region_id])
+    |> validate_required([:name, :description, :instance_id])
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
