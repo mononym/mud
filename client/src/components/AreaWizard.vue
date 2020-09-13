@@ -6,14 +6,19 @@
         title="Name"
         icon="fas fa-signature"
         :done="step > 1"
-        :caption="name"
+        :caption="area.name"
       >
         Choose the name of the area. Does not have to be unique.
 
-        <q-input v-model="name" label="Name" />
+        <q-input v-model="area.name" label="Name" />
 
         <q-stepper-navigation>
-          <q-btn @click="step = 2" color="primary" label="Continue" />
+          <q-btn
+            :disabled="nameContinueButtonDisabled"
+            @click="step = 2"
+            color="primary"
+            label="Continue"
+          />
         </q-stepper-navigation>
       </q-step>
 
@@ -25,11 +30,11 @@
         :caption="selectedMapName"
       >
         <q-form class="q-gutter-md">
-            <q-select
-              v-model="selectedMap"
-              :options="mapOptions"
-              label="Map"
-            />
+          <q-select
+            v-model="selectedMapOption"
+            :options="mapOptions"
+            label="Map"
+          />
         </q-form>
 
         <q-stepper-navigation>
@@ -50,69 +55,23 @@
         icon="fas fa-signature"
         :done="step > 3"
       >
-        The description is what the players see
+        <q-input
+          v-model="area.description"
+          label="Description"
+          type="textarea"
+        />
 
         <q-stepper-navigation>
-          <q-btn @click="step = 4" color="primary" label="Continue" />
+          <q-btn
+            :disabled="saveButtonDisabled"
+            color="primary"
+            label="Save"
+            @click="saveArea"
+          />
+
           <q-btn
             flat
             @click="step = 2"
-            color="primary"
-            label="Back"
-            class="q-ml-sm"
-          />
-        </q-stepper-navigation>
-      </q-step>
-
-      <q-step
-        :name="4"
-        title="Scenery"
-        icon="fas fa-mountain"
-        :done="step > 4"
-      >
-        Pieces of scenery are special items that belong to a room.
-
-        <q-stepper-navigation>
-          <q-btn @click="step = 5" color="primary" label="Continue" />
-          <q-btn
-            flat
-            @click="step = 3"
-            color="primary"
-            label="Back"
-            class="q-ml-sm"
-          />
-        </q-stepper-navigation>
-      </q-step>
-
-      <q-step
-        :name="5"
-        title="Links"
-        icon="fas fa-link"
-        :done="step > 5"
-      >
-        Set up connections between rooms, such as obvious exits, audio/visual links, portals, and so on.
-
-        <q-stepper-navigation>
-          <q-btn @click="step = 6" color="primary" label="Continue" />
-          <q-btn
-            flat
-            @click="step = 4"
-            color="primary"
-            label="Back"
-            class="q-ml-sm"
-          />
-        </q-stepper-navigation>
-      </q-step>
-
-      <q-step :name="6" title="Scripts" icon="fas fa-code">
-
-        Scripts
-
-        <q-stepper-navigation>
-          <q-btn color="primary" label="Create" @click="createCharacter" />
-          <q-btn
-            flat
-            @click="step = 5"
             color="primary"
             label="Back"
             class="q-ml-sm"
@@ -124,52 +83,82 @@
 </template>
 
 <script>
-import { set } from '@vue/composition-api';
 import Vue from 'vue';
 
 export default {
   name: 'AreaWizard',
-  props: ['mapId'],
+  props: ['id', 'mapId'],
   components: {},
   created() {
-    // this.fetchCharacterCreationData();
+    if (this.id !== '') {
+      this.$store
+        .dispatch('areas/fetchArea', this.id)
+        .then(area => {
+          this.area = area;
+        })
+        .catch(() => {
+          alert('Something went wrong attemping to load the selected area.');
+        });
+    }
+
+    if (this.mapId !== '') {
+      this.area.mapId = this.mapId
+    }
   },
   computed: {
-    selectedMap: {
+    selectedMapOption: {
       // getter
       get: function() {
-        // console.log(this.haircolors);
-        // if (this.map === '' && this.maps.length > 0) {
-        //   return this.randomElement(this.haircolors);
-        // } else if (this.haircolor !== '') {
-        //   return this.haircolor;
-        // } else {
-        //   return '';
-        // }
-        return this.map;
+        if (this.selectedMapOptionValue !== '') {
+          return this.selectedMapOptionValue;
+        } else {
+          const map = this.$store.getters['maps/getMapById'](this.mapId);
+          return { label: map.name, value: map.id };
+        }
       },
       // setter
-      set: function(selectedMap) {
-        this.map = selectedMap;
+      set: function(selectedOption) {
+        this.area.mapId = selectedOption.value;
+        this.selectedMapOptionValue = selectedOption;
+        this.$emit('mapSelected', selectedOption.value);
       }
+    },
+    nameContinueButtonDisabled: function() {
+      return this.area.name === '';
+    },
+    saveButtonDisabled: function() {
+      return this.area.name === '' || this.area.description === '';
+    },
+    selectedMapName: function() {
+      if (this.mapId !== '') {
+        const map = this.$store.getters['maps/getMapById'](this.mapId);
+
+        return map.name;
+      } else {
+        return '';
+      }
+    },
+    mapOptions: function() {
+      console.log('computing mapOptions');
+
+      let mapOptions = this.$store.getters['maps/listAll'];
+
+      mapOptions = mapOptions.map(map => ({ label: map.name, value: map.id }));
+
+      return mapOptions;
     }
-   },
+  },
   data() {
     return {
-      age: '0',
-      name: '',
-      haircolor: '',
-      eyecolor: '',
-      selectedEyeAccentColor: '',
-      hairlength: '',
-      hairstyle: '',
-      skincolor: '',
-      races: {},
-      selectedRace: '',
-      eyeColorTypes: ['solid', 'complete heterochromia', 'segmental heterochromia', 'central heterochromia'],
-      selectedEyeColorType: 'solid',
-      height: '',
-      map: ''
+      map: '',
+      step: 1,
+      selectedMapOptionValue: '',
+      area: {
+        id: '',
+        name: '',
+        mapId: '',
+        description: ''
+      }
     };
   },
   validations: {},
@@ -187,11 +176,39 @@ export default {
       });
 
       return true;
+    },
+    saveArea() {
+      console.log('saveArea()');
+      const params = {
+        area: {id: this.area.id, name: this.area.name, map_id: this.area.mapId, description: this.area.description}
+      };
+
+      let request;
+
+      if (this.id === '') {
+        request = this.$axios.post('/areas', params);
+      } else {
+        request = this.$axios.patch('/areas/' + this.id, params);
+      }
+
+      request
+        .then(result => {
+          this.$store.commit('areas/putArea', result.data);
+          this.$emit('saved', result.data.id);
+        })
+        .catch(function() {
+          alert('Error saving');
+        });
+    }
+  },
+  watch: {
+    mapId(value) {
+      if (this.selectedMapOptionValue !== '' && value !== this.selectedMapOptionValue.value) {
+        this.selectedMapOptionValue = '';
+      }
     }
   }
 };
 </script>
 
-<style>
-
-</style>
+<style></style>

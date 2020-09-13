@@ -1,6 +1,6 @@
 defmodule MudWeb.AreaView do
   use MudWeb, :view
-  alias MudWeb.{AreaView}
+  alias MudWeb.AreaView
 
   def render("index.json", %{areas: areas}) do
     render_many(areas, AreaView, "area.json")
@@ -14,7 +14,12 @@ defmodule MudWeb.AreaView do
     %{id: area.id,
       name: area.name,
       description: area.description,
-      inserted_at: area.inserted_at,
-      updated_at: area.updated_at}
+      mapX: area.map_x,
+      mapY: area.map_y,
+      mapSize: area.map_size,
+      mapId: area.map_id,
+      instanceId: area.instance_id,
+      insertedAt: area.inserted_at,
+      updatedAt: area.updated_at}
   end
 end

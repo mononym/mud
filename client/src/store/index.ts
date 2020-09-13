@@ -22,6 +22,12 @@ import { MapInterface } from './map/state';
 import maps from './maps';
 import { MapsInterface } from './maps/state';
 
+import area from './area';
+import { AreaInterface } from './area/state';
+
+import areas from './areas';
+import { AreasInterface } from './areas/state';
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation
@@ -38,6 +44,8 @@ export interface StateInterface {
   instances: InstancesInterface;
   map: MapInterface;
   maps: MapsInterface;
+  area: AreaInterface;
+  areas: AreasInterface;
 }
 
 export default store(function({ Vue }) {
@@ -51,7 +59,9 @@ export default store(function({ Vue }) {
       instance,
       instances,
       map,
-      maps
+      maps,
+      area,
+      areas
     },
 
     // enable strict mode (adds overhead!)

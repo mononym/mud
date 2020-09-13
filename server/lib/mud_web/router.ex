@@ -79,5 +79,8 @@ defmodule MudWeb.Router do
     # Map related stuff
     resources "/maps", MapController, except: [:new, :edit]
 
+    # Area related stuff
+    resources "/areas", AreaController, except: [:new, :edit]
+    get "/areas/map/:map_id", AreaController, :get_areas_for_map
   end
 end

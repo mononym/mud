@@ -137,6 +137,16 @@ export default {
       this.$emit('selected', row.id);
     }
   },
+  watch: {
+    id(value) {
+      if (value !== this.selectedMapId) {
+        this.$store.dispatch('maps/fetchMap', value).then(map => {
+        this.selected = [];
+        this.selected.push(map)
+      });
+      }
+    }
+  }
 };
 </script>
 

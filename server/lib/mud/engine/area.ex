@@ -61,24 +61,42 @@ defmodule Mud.Engine.Area do
   end
 
   @doc """
+  Returns a list of areas that all belong to a specific map.
+
+  ## Examples
+
+      iex> list_by_map(42)
+      [%__MODULE__{}, ...]
+
+  """
+  def list_by_map(map_id) do
+    Repo.all(
+      from(
+        area in __MODULE__,
+        where: area.map_id == ^map_id
+      )
+    )
+  end
+
+  @doc """
   Gets a single area.
 
   Raises `Ecto.NoResultsError` if the Area does not exist.
 
   ## Examples
 
-      iex> get_area!("123")
+      iex> get!("123")
       %__MODULE__{}
 
-      iex> get_area!("456")w
+      iex> get!("456")w
       ** (Ecto.NoResultsError)
 
   """
-  @spec get_area!(id :: String.t()) :: %__MODULE__{}
-  def get_area!(id), do: Repo.get!(__MODULE__, id)
+  @spec get!(id :: String.t()) :: %__MODULE__{}
+  def get!(id), do: Repo.get!(__MODULE__, id)
 
-  @spec get_area!(Ecto.Multi.t(), atom(), String.t()) :: Ecto.Multi.t()
-  def get_area!(multi, name, area_id) do
+  @spec get!(Ecto.Multi.t(), atom(), String.t()) :: Ecto.Multi.t()
+  def get!(multi, name, area_id) do
     Ecto.Multi.run(multi, name, fn repo, _changes ->
       {:ok, repo.get!(__MODULE__, area_id)}
     end)
@@ -89,15 +107,15 @@ defmodule Mud.Engine.Area do
 
   ## Examples
 
-      iex> create_area(%{field: value})
+      iex> create(%{field: value})
       {:ok, %__MODULE__{}}
 
-      iex> create_area(%{field: bad_value})
+      iex> create(%{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec create_area(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def create_area(attrs \\ %{}) do
+  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  def create(attrs \\ %{}) do
     %__MODULE__{}
     |> changeset(attrs)
     |> Repo.insert()
@@ -108,16 +126,16 @@ defmodule Mud.Engine.Area do
 
   ## Examples
 
-      iex> update_area(area, %{field: new_value})
+      iex> update(area, %{field: new_value})
       {:ok, %__MODULE__{}}
 
-      iex> update_area(area, %{field: bad_value})
+      iex> update(area, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update_area(area :: %__MODULE__{}, attributes :: map()) ::
+  @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def update_area(area, attrs) do
+  def update(area, attrs) do
     area
     |> changeset(attrs)
     |> Repo.update()
@@ -128,15 +146,15 @@ defmodule Mud.Engine.Area do
 
   ## Examples
 
-      iex> delete_area(area)
+      iex> delete(area)
       {:ok, %__MODULE__{}}
 
-      iex> delete_area(area)
+      iex> delete(area)
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete_area(area :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def delete_area(area) do
+  @spec delete(area :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  def delete(area) do
     Repo.delete(area)
   end
 
@@ -149,14 +167,14 @@ defmodule Mud.Engine.Area do
   defp changeset(area, attrs) do
     area
     |> cast(attrs, [:name, :description, :map_id, :instance_id, :region_id])
-    |> validate_required([:name, :description, :instance_id])
+    |> validate_required([:name, :description, :map_id])
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
   @spec long_description(area_id :: String.t(), character :: Character.t()) ::
           description :: String.t()
   def long_description(area_id, character) do
-    area = get_area!(area_id)
+    area = get!(area_id)
 
     build_area_name(area)
     |> build_area_desc(area)

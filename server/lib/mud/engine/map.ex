@@ -27,7 +27,7 @@ defmodule Mud.Engine.Map do
   """
   @spec list_all :: [%__MODULE__{}]
   def list_all do
-    Repo.all(base_all_map_query())
+    Repo.all(__MODULE__)
   end
 
   @doc """
@@ -44,7 +44,7 @@ defmodule Mud.Engine.Map do
       ** (Ecto.NoResultsError)
 
   """
-  def get!(id), do: Repo.one!(base_single_map_query(id))
+  def get!(id), do: Repo.get!(__MODULE__, id)
 
   @doc """
   Creates a map.
@@ -86,19 +86,9 @@ defmodule Mud.Engine.Map do
 
   """
   def update(%__MODULE__{} = map, attrs) do
-    result =
       map
       |> changeset(attrs)
       |> Repo.update()
-      |> IO.inspect(label: "update")
-
-    case result do
-      {:ok, map} ->
-        {:ok, Repo.preload(map, :areas)} |> IO.inspect()
-
-      error ->
-        error
-    end
   end
 
   @doc """
@@ -130,22 +120,5 @@ defmodule Mud.Engine.Map do
     map
     |> cast(attrs, [:name, :description])
     |> validate_required([:name, :description])
-  end
-
-  defp base_single_map_query(map_id) do
-    from(
-      map in __MODULE__,
-      left_join: area in assoc(map, :areas),
-      where: map.id == ^map_id,
-      preload: [areas: area]
-    )
-  end
-
-  defp base_all_map_query() do
-    from(
-      map in __MODULE__,
-      left_join: area in assoc(map, :areas),
-      preload: [areas: area]
-    )
   end
 end
