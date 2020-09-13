@@ -22,7 +22,6 @@
                   @selected="mapSelected"
                   @editMap="editMap"
                   @addMap="addMap"
-                  :id="selectedMap"
                 />
               </q-tab-panel>
 
@@ -138,11 +137,12 @@ export default {
       }
     },
     editMap(mapId) {
-      if (mapId !== this.selectedMap) {
-        this.selectedMap = mapId;
-        this.areaPanel = 'table';
-        this.selectedArea = '';
+      if (this.$store.getters('builder/selectedArea').mapId !== this.$store.getters('builder/selectedMapId')) {
+        this.$store.dispatch('builder/selectArea', '')
       }
+        
+      this.areaPanel = 'table';
+        
       this.mapPanel = 'wizard';
     },
     editArea(areaId) {
@@ -156,8 +156,7 @@ export default {
         this.areaPanel = 'wizard';
       }
     },
-    areaSaved(areaId) {
-      this.selectedArea = areaId;
+    areaSaved() {
       this.areaPanel = 'table';
     }
   }

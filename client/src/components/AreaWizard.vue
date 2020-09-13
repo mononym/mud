@@ -84,43 +84,28 @@
 
 <script>
 import Vue from 'vue';
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'AreaWizard',
-  props: ['id', 'mapId'],
+  props: [],
   components: {},
   created() {
-    if (this.id !== '') {
-      this.$store
-        .dispatch('areas/fetchArea', this.id)
-        .then(area => {
-          this.area = area;
-        })
-        .catch(() => {
-          alert('Something went wrong attemping to load the selected area.');
-        });
-    }
-
-    if (this.mapId !== '') {
-      this.area.mapId = this.mapId
+    if (this.$store.getters['builder/isAreaSelected']) {
+      this.area = {...this.$store.getters['builder/selectedArea']}
     }
   },
   computed: {
     selectedMapOption: {
       // getter
       get: function() {
-        if (this.selectedMapOptionValue !== '') {
-          return this.selectedMapOptionValue;
-        } else {
-          const map = this.$store.getters['maps/getMapById'](this.mapId);
+          const map = this.$store.getters['builder/selectedMap']
           return { label: map.name, value: map.id };
-        }
       },
       // setter
       set: function(selectedOption) {
-        this.area.mapId = selectedOption.value;
-        this.selectedMapOptionValue = selectedOption;
-        this.$emit('mapSelected', selectedOption.value);
+        this.$store.dispatch('builder/selectMap', selectedOption.value)
+        this.area.mapId = selectedOption.value
       }
     },
     nameContinueButtonDisabled: function() {
@@ -131,7 +116,7 @@ export default {
     },
     selectedMapName: function() {
       if (this.mapId !== '') {
-        const map = this.$store.getters['maps/getMapById'](this.mapId);
+        const map = this.$store.getters['maps/getMapById'];
 
         return map.name;
       } else {
@@ -139,14 +124,11 @@ export default {
       }
     },
     mapOptions: function() {
-      console.log('computing mapOptions');
-
-      let mapOptions = this.$store.getters['maps/listAll'];
-
-      mapOptions = mapOptions.map(map => ({ label: map.name, value: map.id }));
-
-      return mapOptions;
-    }
+      return this.maps.map(map => ({ label: map.name, value: map.id }));
+    },
+    ...mapGetters({
+      maps: 'builder/maps'
+    })
   },
   data() {
     return {
@@ -178,23 +160,25 @@ export default {
       return true;
     },
     saveArea() {
-      console.log('saveArea()');
       const params = {
-        area: {id: this.area.id, name: this.area.name, map_id: this.area.mapId, description: this.area.description}
+        area: {name: this.area.name, map_id: this.$store.getters['builder/selectedMapId'], description: this.area.description}
       };
 
       let request;
 
-      if (this.id === '') {
+      if (this.$store.getters['builder/isAreaSelected']) {
+        request = this.$axios.patch('/areas/' + this.area.id, params);
+        } else {
         request = this.$axios.post('/areas', params);
-      } else {
-        request = this.$axios.patch('/areas/' + this.id, params);
       }
 
       request
         .then(result => {
-          this.$store.commit('areas/putArea', result.data);
-          this.$emit('saved', result.data.id);
+          this.$store.dispatch('builder/putArea', result.data).then(() => {
+            this.$store.dispatch('builder/selectArea', result.data.id).then(() => {
+              this.$emit('saved')
+            })
+          })
         })
         .catch(function() {
           alert('Error saving');
@@ -202,10 +186,14 @@ export default {
     }
   },
   watch: {
-    mapId(value) {
-      if (this.selectedMapOptionValue !== '' && value !== this.selectedMapOptionValue.value) {
-        this.selectedMapOptionValue = '';
-      }
+    area: {
+      handler(area){
+        console.log('watch area')
+        console.log({...area})
+        this.$store.dispatch('builder/putAreaUnderConstruction', {...area})
+        console.log('dispatched')
+      },
+      deep: true
     }
   }
 };

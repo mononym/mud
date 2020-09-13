@@ -8,13 +8,12 @@
       flat
       bordered
       class="full-height"
-      :selected.sync="selected"
+      :selected.sync="selectedRow"
       selection="single"
     >
       <template v-slot:top>
         <q-btn
           color="primary"
-          :disable="loading"
           label="Add Map"
           @click="addMap"
         />
@@ -66,6 +65,7 @@
 import { set } from '@vue/composition-api';
 import Vue from 'vue';
 import { isNull } from 'util';
+import { mapGetters } from 'vuex'
 
 const mapTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -80,71 +80,41 @@ const mapTableColumns = [
 
 export default {
   name: 'MapTable',
-  props: ['id'],
   components: {},
   created() {
-    this.$store
-      .dispatch('maps/fetchMaps')
-      .then(maps => {
-        console.log('fetch result');
-        console.log(maps);
-        this.maps = maps;
-      })
-      .catch(() => {
-        alert('Something went wrong attemping to load the maps.');
-        this.maps = [];
-      })
-      .finally(() => {
-        this.loading = false;
-      })
-
-    if (this.id !== '') {
-      this.selected = [];
-      this.selected.push({id: this.id, description: this.description, name: this.name});
-      this.selectedMapId = this.id
-    }
+    this.$store.dispatch('builder/fetchMaps')
   },
   computed: {
-    // selected() {
-    //   return 'Test Name';
-    // }
+    selectedRow: function() {
+      if (this.$store.getters['builder/isMapSelected']) {
+        return [this.$store.getters['builder/selectedMap']]
+      } else {
+        return []
+      }
+    },
+    ...mapGetters({
+      maps: 'builder/maps'
+    })
   },
   data() {
     return {
-      loading: false,
-      maps: [],
       mapTableColumns,
-      mapTableFilter: '',
-      selectedMapId: '',
-      selected: []
+      mapTableFilter: ''
     };
   },
   validations: {},
   methods: {
     addMap() {
-      console.log('emitting addMap')
-      this.$emit('addMap');
+      this.$store.dispatch('builder/clearAreas').then(() => this.$emit('addMap'))
     },
     editMap(mapId) {
-      console.log('emitting edit')
-      this.$emit('editMap', mapId);
+      this.$store.dispatch('builder/fetchAreasForMap', mapId)
+      this.$store.dispatch('builder/selectMap', mapId).then(() => this.$emit('editMap'))
+      
     },
     toggleSingleRow(row) {
-      console.log(row)
-      this.selectedMapId = row.id
-      this.selected = [];
-      this.selected.push(row);
-      this.$emit('selected', row.id);
-    }
-  },
-  watch: {
-    id(value) {
-      if (value !== this.selectedMapId) {
-        this.$store.dispatch('maps/fetchMap', value).then(map => {
-        this.selected = [];
-        this.selected.push(map)
-      });
-      }
+      this.$store.dispatch('builder/selectMap', row.id)
+      this.$store.dispatch('builder/fetchAreasForMap', row.id)
     }
   }
 };

@@ -2,11 +2,11 @@
   <div class="q-pa-md fit">
     <q-card flat bordered class="fit column">
       <q-card-section>
-        <div class="text-h6">{{ this.area.name }}</div>
+        <div v-if="isAreaSelected || isAreaUnderConstruction" class="text-h6">{{ selectedArea.name }}</div>
       </q-card-section>
 
       <q-card-section class="q-pt-none col">
-        {{ this.area.description }}
+        <p v-if="isAreaSelected || isAreaUnderConstruction">{{ selectedArea.description }}</p>
       </q-card-section>
 
       <q-separator inset />
@@ -20,42 +20,41 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import defaultArea from '../store/area/state';
 
 export default {
   name: 'AreaDetails',
-  props: ['id'],
-  components: {
-  },
-  created() {
-    if (this.id !== '') {
-      this.loadArea()
-    }
-  },
   data() {
     return {
-      area: {id: '', name: '', description: '', mapId: ''}
+      selectedArea: defaultArea
     };
   },
   computed: {
     buttonsDisabled() {
-      return this.id === ''
-    }
+      return !this.isAreaSelected
+    },
+    ...mapGetters({
+      area: 'builder/selectedArea',
+      isAreaSelected: 'builder/isAreaSelected',
+      isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
+      areaUnderConstruction: 'builder/areaUnderConstruction'
+    })
   },
   methods: {
-    loadArea() {
-      console.log('loadArea()');
-      console.log(this.id);
-
-      this.$store.dispatch('areas/fetchArea', this.id).then(area => this.area = area)
-    },
-    editArea(areaId) {
-      this.$emit('editArea', this.id);
-    },
+    editArea() {
+      this.$emit('editArea');
+    }
   },
   watch: {
-    id(value) {
-      if (value !== '') {
-        this.loadArea()
+    areaUnderConstruction: function (area) {
+      if (this.isAreaUnderConstruction) {
+        this.selectedArea = area
+      }
+    },
+    area: function (area) {
+      if (this.isAreaSelected) {
+        this.selectedArea = area
       }
     }
   }

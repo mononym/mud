@@ -8,7 +8,7 @@
       flat
       bordered
       class="full-height"
-      :selected.sync="selected"
+      :selected.sync="selectedRow"
       selection="single"
     >
       <template v-slot:top>
@@ -68,6 +68,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 const areaTableColumns = [
   { name: 'name', label: 'Name', field: 'name', sortable: true },
   {
@@ -81,77 +83,48 @@ const areaTableColumns = [
 
 export default {
   name: 'AreaTable',
-  props: ['id', 'mapId'],
+  props: [],
   components: {},
-  created() {
-    if (this.mapId !== '') {
-      this.populate();
-    }
-
-    // if (this.id !== '') {
-    //   this.selected = [];
-    //   this.selected.push({id: this.id, description: this.description, name: this.name});
-    //   this.selectedAreaId = this.id
-    // }
-  },
+  created() {},
   computed: {
     addAreaButtonDisabled: function() {
-      return this.mapId === '';
-    }
+      return !this.$store.getters['builder/isMapSelected'];
+    },
+    selectedRow: function() {
+      if (this.$store.getters['builder/isAreaSelected']) {
+        return [this.$store.getters['builder/selectedArea']];
+      } else {
+        return [];
+      }
+    },
+    ...mapGetters({
+      areas: 'builder/areas'
+    })
   },
   data() {
     return {
-      areas: [],
       areaTableColumns,
-      areaTableFilter: '',
-      selectedAreaId: '',
-      selected: []
+      areaTableFilter: ''
     };
   },
   validations: {},
   methods: {
-    populate() {
-      this.$store
-        .dispatch('areas/fetchAreasForMap', this.mapId)
-        .then(areas => {
-          this.areas = areas;
-          this.selected = [];
-        })
-        .catch(() => {
-          alert('Something went wrong attemping to load the areas.');
-          this.areas = [];
-        });
-    },
     addArea() {
-      console.log('emitting addArea');
-      this.$emit('addArea');
+      this.$store
+        .dispatch('builder/selectArea', '')
+        .then(() =>
+          this.$store
+            .dispatch('builder/putIsAreaUnderConstruction', true)
+            .then(() => this.$emit('addArea'))
+        );
     },
     editArea(areaId) {
-      console.log('emitting edit');
-      this.$emit('editArea', areaId);
+      this.$store
+        .dispatch('builder/selectArea', areaId)
+        .then(() => this.$emit('editArea'));
     },
     toggleSingleRow(row) {
-      console.log(row);
-      this.selectedAreaId = row.id;
-      this.selected = [];
-      this.selected.push(row);
-      this.$emit('selected', row.id);
-    }
-  },
-  watch: {
-    mapId(value, previousValue) {
-      console.log('area table map id has changed');
-      console.log(previousValue);
-      console.log(value);
-      this.populate();
-    },
-    id(value) {
-      if (value !== this.selectedAreaId) {
-        this.$store.dispatch('areas/fetchArea', value).then(area => {
-          this.selected = [];
-          this.selected.push(area);
-        });
-      }
+      this.$store.dispatch('builder/selectArea', row.id);
     }
   }
 };

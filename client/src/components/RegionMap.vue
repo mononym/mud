@@ -21,6 +21,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'WorldMap',
@@ -50,22 +51,20 @@ export default {
       return this.viewBoxX + ' ' + this.viewBoxY + ' ' + this.viewBoxSize + ' ' + this.viewBoxSize;
     },
     selectedMapName: function() {
-      if (this.map !== null) {
-        return this.map.name
+      console.log('selected')
+      console.log(this.selectedMap)
+      if (this.selectedMap !== undefined) {
+        return this.selectedMap.name
       } else {
         return ''
       }
     },
-    selectedMap: function() {
-      console.log('selected map has changed')
-      this.$store.dispatch('maps/fetchMap', this.id).then((map) => {return map})
-    },
+    ...mapGetters({
+      selectedMap: 'builder/selectedMap'
+    })
   },
   watch: {
     id(value, previousValue) {
-      console.log('id has changed')
-      console.log(previousValue)
-      console.log(value)
       this.$store.dispatch('maps/fetchMap', value).then((map) => {this.map = map})
     }
   },
