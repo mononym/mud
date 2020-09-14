@@ -13,9 +13,23 @@
 
       <q-card-actions>
         <q-btn flat @click="editArea" :disabled="buttonsDisabled">Edit</q-btn>
-        <q-btn flat :disabled="buttonsDisabled">Delete</q-btn>
+        <q-btn flat :disabled="buttonsDisabled" @click="confirmDelete = true">Delete</q-btn>
       </q-card-actions>
     </q-card>
+
+    <q-dialog v-model="confirmDelete" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
+          <span class="q-ml-sm">Confirm deletion of room: {{ selectedArea.name }}</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Delete" color="primary" v-close-popup @click="deleteArea"/>
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -27,7 +41,8 @@ export default {
   name: 'AreaDetails',
   data() {
     return {
-      selectedArea: defaultArea
+      selectedArea: defaultArea,
+      confirmDelete: false
     };
   },
   computed: {
@@ -44,6 +59,10 @@ export default {
   methods: {
     editArea() {
       this.$emit('editArea');
+    },
+    deleteArea() {
+      this.selectedArea = defaultArea
+      this.$store.dispatch('builder/deleteArea')
     }
   },
   watch: {
@@ -59,12 +78,12 @@ export default {
     },
     isAreaSelected: function () {
       if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
-        this.selectedArea = this.defaultArea
+        this.selectedArea = defaultArea
       }
     },
     isAreaUnderConstruction: function () {
       if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
-        this.selectedArea = this.defaultArea
+        this.selectedArea = defaultArea
       }
     },
   }

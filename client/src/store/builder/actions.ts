@@ -8,7 +8,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchAreasForMap({ commit }, mapId: string) {
     return new Promise((resolve, reject) => {
       commit('putSelectedAreaId', '')
-      
+
       axios
         .get('/areas/map/' + mapId)
         .then(function(response: AxiosResponse) {
@@ -29,6 +29,23 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
           .get('/maps')
           .then(function(response: AxiosResponse) {
             commit('putMaps', response.data);
+
+            resolve()
+          })
+          .catch(function() {
+            alert('Error when fetching maps')
+  
+            reject()
+          });
+    })
+  },
+  deleteArea ({ commit, state }) {
+    return new Promise((resolve, reject) => {
+        axios
+          .delete('/areas/' + state.selectedAreaId)
+          .then(function() {
+            commit('deleteArea', state.selectedAreaId);
+            commit('putSelectedAreaId', '');
 
             resolve()
           })
