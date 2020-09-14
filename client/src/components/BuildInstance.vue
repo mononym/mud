@@ -113,7 +113,7 @@ export default {
     areaMapSelected() {
       // this.areaPanel = 'table';
     },
-    editMap(mapId) {
+    editMap() {
       if (
         this.$store.getters('builder/selectedArea').mapId !==
         this.$store.getters('builder/selectedMapId')
@@ -125,15 +125,10 @@ export default {
 
       this.mapPanel = 'wizard';
     },
-    editArea(areaId) {
-      console.log(areaId);
-      console.log(this.areaPanel);
-      // if (areaId === this.selectedArea && this.areaPanel !== 'wizard') {
-      this.areaPanel = 'wizard';
-      // } else if (areaId !== this.selectedArea) {
-      //   this.selectedArea = areaId;
-      // this.areaPanel = 'wizard';
-      // }
+    editArea() {
+      this.$store
+        .dispatch('builder/putIsAreaUnderConstruction', true)
+        .then(() => (this.areaPanel = 'wizard'));
     },
     areaSaved() {
       this.areaPanel = 'table';

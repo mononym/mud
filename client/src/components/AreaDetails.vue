@@ -22,7 +22,7 @@
       <q-card>
         <q-card-section class="row items-center">
           <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
-          <span class="q-ml-sm">Confirm deletion of room: {{ selectedArea.name }}</span>
+          <span class="q-ml-sm">Confirm deletion of room: {{ area.name }}</span>
         </q-card-section>
 
         <q-card-actions align="right">
@@ -79,20 +79,22 @@ export default {
       }
     },
     area: function (area) {
-      if (this.isAreaSelected) {
+      if (this.isAreaSelected && !this.isAreaUnderConstruction) {
         this.selectedArea = area
-      }
-    },
-    isAreaSelected: function () {
-      if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
+      } else {
         this.selectedArea = defaultArea
       }
     },
-    isAreaUnderConstruction: function () {
-      if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
-        this.selectedArea = defaultArea
-      }
-    },
+    // isAreaSelected: function () {
+    //   if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
+    //     this.selectedArea = defaultArea
+    //   }
+    // },
+    // isAreaUnderConstruction: function () {
+    //   if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
+    //     this.selectedArea = defaultArea
+    //   }
+    // },
   }
 };
 </script>

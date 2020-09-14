@@ -12,7 +12,8 @@ export interface BuilderInterface {
   areas: AreaInterface[],
   isAreaUnderConstruction: boolean,
   cloneSelectedArea: boolean,
-  areaUnderConstruction: AreaInterface
+  areaUnderConstruction: AreaInterface,
+  selectedArea: AreaInterface
 }
 
 const state: BuilderInterface = {
@@ -24,7 +25,8 @@ const state: BuilderInterface = {
   areas: [],
   isAreaUnderConstruction: false,
   cloneSelectedArea: false,
-  areaUnderConstruction: areaState
+  areaUnderConstruction: {...areaState},
+  selectedArea: {...areaState}
 };
 
 export default state;

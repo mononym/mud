@@ -4,13 +4,13 @@ import { BuilderInterface } from './state';
 
 const getters: GetterTree<BuilderInterface, StateInterface> = {
   selectedAreaId(state: BuilderInterface) {
-    return state.selectedAreaId;
+    return state.selectedArea.id;
   },
   selectedMapId(state: BuilderInterface) {
     return state.selectedMapId;
   },
   selectedArea(state: BuilderInterface) {
-    return state.areas[state.areaIndex[state.selectedAreaId]];
+    return state.selectedArea;
   },
   cloneSelectedArea(state: BuilderInterface) {
     return state.cloneSelectedArea;
@@ -25,7 +25,7 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     return state.maps;
   },
   isAreaSelected(state: BuilderInterface) {
-    return state.selectedAreaId !== '';
+    return state.selectedArea.id != '';
   },
   isMapSelected(state: BuilderInterface) {
     return state.selectedMapId !== '';

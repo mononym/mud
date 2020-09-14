@@ -63,9 +63,6 @@
 </template>
 
 <script>
-import { set } from '@vue/composition-api';
-import Vue from 'vue';
-import { isNull } from 'util';
 import { mapGetters } from 'vuex';
 
 const mapTableColumns = [

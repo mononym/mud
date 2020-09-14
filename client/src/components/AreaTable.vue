@@ -48,12 +48,19 @@
         >
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.name === 'actions'">
-              <q-btn-group flat>
+              <q-btn-group flat spread>
                 <q-btn
                   flat
                   label="Edit"
                   icon="fas fa-pencil"
                   @click="editArea(props.row.id)"
+                />
+                <q-btn
+                  flat
+                  label="Link"
+                  icon="fas fa-link"
+                  v-on:click.stop="linkArea(props.row.id)"
+                  v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
                 />
               </q-btn-group>
             </span>
@@ -91,14 +98,18 @@ export default {
       return !this.$store.getters['builder/isMapSelected'];
     },
     selectedRow: function() {
-      if (this.$store.getters['builder/isAreaSelected']) {
-        return [this.$store.getters['builder/selectedArea']];
+      const area = this.$store.getters['builder/selectedArea']
+      console.log('selectedRow')
+      console.log(area)
+      if (area !== undefined) {
+        return [area];
       } else {
         return [];
       }
     },
     ...mapGetters({
-      areas: 'builder/areas'
+      areas: 'builder/areas',
+      selectedAreaId: 'builder/selectedAreaId'
     })
   },
   data() {
@@ -126,6 +137,9 @@ export default {
             .dispatch('builder/putIsAreaUnderConstruction', true)
             .then(() => this.$emit('editArea'))
         );
+    },
+    linkArea(areaId) {
+      console.log('link to area: ' + areaId)
     },
     toggleSingleRow(row) {
       this.$store.dispatch('builder/selectArea', row.id);

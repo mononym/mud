@@ -5,18 +5,12 @@ import { AreaInterface } from '../area/state';
 import axios, { AxiosResponse } from 'axios';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
-  fetchAreasForMap({ commit, state }, mapId: string) {
+  fetchAreasForMap({ commit }, mapId: string) {
     return new Promise((resolve, reject) => {
       axios
         .get('/areas/map/' + mapId)
         .then(function(response: AxiosResponse) {
           commit('putAreas', response.data);
-
-          const areaIds = response.data.map(area => area.id);
-
-          if (!areaIds.includes(state.selectedAreaId)) {
-            commit('putSelectedAreaId', '');
-          }
 
           resolve();
         })
@@ -49,7 +43,6 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
         .delete('/areas/' + state.selectedAreaId)
         .then(function() {
           commit('deleteArea', state.selectedAreaId);
-          commit('putSelectedAreaId', '');
 
           resolve();
         })
@@ -64,10 +57,13 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     commit('updateArea', area);
   },
   selectArea({ commit }, areaId: string) {
-    commit('putSelectedAreaId', areaId);
+    return new Promise((resolve) => {
+      commit('putSelectedArea', areaId);
+
+      resolve()
+    });
   },
   clearAreas({ commit }) {
-    commit('putSelectedAreaId', '');
     commit('putAreas', []);
   },
   selectMap({ commit }, mapId: string) {

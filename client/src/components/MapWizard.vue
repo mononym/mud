@@ -6,11 +6,11 @@
         title="Name"
         icon="fas fa-signature"
         :done="step > 1"
-        :caption="name"
+        :caption="map.name"
       >
         Choose the name of the map. Must be a unique name.
 
-        <q-input v-model="name" label="Name" />
+        <q-input v-model="map.name" label="Name" />
 
         <q-stepper-navigation>
           <q-btn
@@ -28,14 +28,47 @@
         icon="fas fa-signature"
         :done="step > 2"
       >
-        <q-input v-model="description" label="Description" type="textarea" />
+        <q-input v-model="map.description" label="Description" type="textarea" />
+
+        <q-stepper-navigation>
+          <q-btn
+            :disabled="descriptionButtonsDisabled"
+            @click="step = 3"
+            color="primary"
+            label="Continue"
+          />
+          <q-btn
+            flat
+            @click="step = 1"
+            color="primary"
+            label="Back"
+            class="q-ml-sm"
+          />
+        </q-stepper-navigation>
+      </q-step>
+
+      <q-step
+        :name="3"
+        title="Config"
+        icon="fas fa-gear"
+        :done="step > 3"
+      >
+
+        <q-slider
+          v-model="map.mapSize"
+          :min="0"
+          :max="1000000"
+          :step="100"
+          snap
+          label
+          color="purple"
+        />
 
         <q-stepper-navigation>
           <q-btn color="primary" label="Save" @click="saveMap" />
           <q-btn
-            :disabled="saveDisabled"
             flat
-            @click="step = 1"
+            @click="step = 2"
             color="primary"
             label="Back"
             class="q-ml-sm"
@@ -86,7 +119,17 @@ export default {
     return {
       name: '',
       description: '',
-      step: 1
+      step: 1,
+      map: {
+        id: '',
+        name: '',
+        description: '',
+        mapSize: 0,
+        gridSize: 0,
+        maxZoom: 0,
+        minZoom: 0,
+        defaultZoom: 0,
+      }
     };
   },
   validations: {},

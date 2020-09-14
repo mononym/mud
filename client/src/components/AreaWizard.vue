@@ -94,9 +94,7 @@ export default {
   props: [],
   components: {},
   created() {
-    if (this.$store.getters['builder/isAreaSelected']) {
-      this.area = { ...this.$store.getters['builder/selectedArea'] };
-    }
+    this.$store.dispatch('builder/putAreaUnderConstruction', { ...this.$store.getters['builder/selectedArea'] });
   },
   computed: {
     selectedMapOption: {
@@ -149,6 +147,7 @@ export default {
     },
     ...mapGetters({
       maps: 'builder/maps',
+      areaUnderConstruction: 'builder/areaUnderConstruction',
       cloneSelectedArea: 'builder/cloneSelectedArea'
     })
   },
@@ -242,10 +241,15 @@ export default {
   watch: {
     area: {
       handler(area) {
-        console.log('watch area');
-        console.log({ ...area });
         this.$store.dispatch('builder/putAreaUnderConstruction', { ...area });
-        console.log('dispatched');
+      },
+      deep: true
+    },
+    areaUnderConstruction: {
+      handler(area) {
+        if (area.id !== this.area.id) {
+          this.area = { ...area }
+        }
       },
       deep: true
     }
