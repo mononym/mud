@@ -7,6 +7,8 @@ import axios, { AxiosResponse } from 'axios';
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchAreasForMap({ commit }, mapId: string) {
     return new Promise((resolve, reject) => {
+      commit('putSelectedAreaId', '')
+      
       axios
         .get('/areas/map/' + mapId)
         .then(function(response: AxiosResponse) {

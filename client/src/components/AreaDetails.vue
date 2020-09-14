@@ -56,7 +56,17 @@ export default {
       if (this.isAreaSelected) {
         this.selectedArea = area
       }
-    }
+    },
+    isAreaSelected: function () {
+      if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
+        this.selectedArea = this.defaultArea
+      }
+    },
+    isAreaUnderConstruction: function () {
+      if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
+        this.selectedArea = this.defaultArea
+      }
+    },
   }
 };
 </script>

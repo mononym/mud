@@ -12,11 +12,7 @@
       selection="single"
     >
       <template v-slot:top>
-        <q-btn
-          color="primary"
-          label="Add Map"
-          @click="addMap"
-        />
+        <q-btn color="primary" label="Add Map" @click="addMap" />
         <q-space />
         <q-input
           borderless
@@ -48,7 +44,12 @@
           <q-td v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.name === 'actions'">
               <q-btn-group flat>
-                <q-btn flat label="Edit" icon="fas fa-pencil" @click="editMap(props.row.id)" />
+                <q-btn
+                  flat
+                  label="Edit"
+                  icon="fas fa-pencil"
+                  @click="editMap(props.row.id)"
+                />
               </q-btn-group>
             </span>
             <span v-else>
@@ -65,7 +66,7 @@
 import { set } from '@vue/composition-api';
 import Vue from 'vue';
 import { isNull } from 'util';
-import { mapGetters } from 'vuex'
+import { mapGetters } from 'vuex';
 
 const mapTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -82,14 +83,14 @@ export default {
   name: 'MapTable',
   components: {},
   created() {
-    this.$store.dispatch('builder/fetchMaps')
+    this.$store.dispatch('builder/fetchMaps');
   },
   computed: {
     selectedRow: function() {
       if (this.$store.getters['builder/isMapSelected']) {
-        return [this.$store.getters['builder/selectedMap']]
+        return [this.$store.getters['builder/selectedMap']];
       } else {
-        return []
+        return [];
       }
     },
     ...mapGetters({
@@ -105,16 +106,26 @@ export default {
   validations: {},
   methods: {
     addMap() {
-      this.$store.dispatch('builder/clearAreas').then(() => this.$emit('addMap'))
+      this.$store
+        .dispatch('builder/clearAreas')
+        .then(() => this.$emit('addMap'));
     },
     editMap(mapId) {
-      this.$store.dispatch('builder/fetchAreasForMap', mapId)
-      this.$store.dispatch('builder/selectMap', mapId).then(() => this.$emit('editMap'))
-      
+      this.$store.dispatch('builder/fetchAreasForMap', mapId);
+      this.$store
+        .dispatch('builder/selectMap', mapId)
+        .then(() => this.$emit('editMap'));
     },
     toggleSingleRow(row) {
-      this.$store.dispatch('builder/selectMap', row.id)
-      this.$store.dispatch('builder/fetchAreasForMap', row.id)
+      // this.$store
+      //   .dispatch('builder/clearAreas')
+      //   .then(() =>
+          this.$store
+            .dispatch('builder/selectMap', row.id)
+            .then(() =>
+              this.$store.dispatch('builder/fetchAreasForMap', row.id)
+            )
+        // );
     }
   }
 };
