@@ -1,11 +1,12 @@
 <template>
   <div class="q-pa-md">
-    <q-stepper v-model="step" vertical color="primary" animated>
+    <q-stepper v-model="step" vertical color="primary" animated header-nav>
       <q-step
         :name="1"
         title="Name"
         icon="fas fa-signature"
         :done="step > 1"
+        :header-nav="step > 1 || !isNew"
         :caption="area.name"
       >
         Choose the name of the area. Does not have to be unique.
@@ -27,6 +28,7 @@
         title="Map Settings"
         icon="fas fa-globe"
         :done="step > 2"
+        :header-nav="step > 2 || !isNew"
         :caption="selectedMapName"
       >
         <q-form class="q-gutter-md">
@@ -54,6 +56,7 @@
         title="Description"
         icon="fas fa-signature"
         :done="step > 3"
+        :header-nav="step > 3 || !isNew"
       >
         <q-input
           v-model="area.description"
@@ -126,6 +129,12 @@ export default {
     saveButtonDisabled: function() {
       return this.area.name === '' || this.area.description === '';
     },
+    isNew: function() {
+      return !this.$store.getters['builder/isAreaSelected'];
+    },
+    allowNameHeaderSelect: function() {
+      return !this.isNew || this.cloneSelectedArea;
+    },
     selectedMapName: function() {
       if (this.mapId !== '') {
         const map = this.$store.getters['maps/getMapById'];
@@ -184,9 +193,8 @@ export default {
       };
 
       let request;
-      const isNew = !this.$store.getters['builder/isAreaSelected'];
 
-      if (isNew || this.cloneSelectedArea) {
+      if (this.isNew || this.cloneSelectedArea) {
         request = this.$axios.post('/areas', params);
       } else {
         request = this.$axios.patch('/areas/' + this.area.id, params);
@@ -207,7 +215,7 @@ export default {
       } else {
         request
           .then(result => {
-            if (isNew || this.cloneSelectedArea) {
+            if (this.isNew || this.cloneSelectedArea) {
               this.$store.dispatch('builder/putCloneSelectedArea', false);
 
               this.$store.dispatch('builder/putArea', result.data).then(() => {
