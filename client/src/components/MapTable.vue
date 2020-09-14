@@ -112,20 +112,14 @@ export default {
         .then(() => this.$emit('addMap'));
     },
     editMap(mapId) {
-      this.$store.dispatch('builder/selectMap', row.id).then(() => {
-          this.$store.dispatch('builder/fetchAreasForMap', row.id)
+      this.$store.dispatch('builder/selectMap', mapId).then(() => {
+          this.$store.dispatch('builder/fetchAreasForMap', mapId).then(() => this.$emit('editMap'))
         });
-
-
-      this.$store.dispatch('builder/fetchAreasForMap', mapId);
-      this.$store
-        .dispatch('builder/selectMap', mapId)
-        .then(() => this.$emit('editMap'));
     },
     toggleSingleRow(row) {
       if (this.selectedMapId !== row.id) {
         this.$store.dispatch('builder/selectMap', row.id).then(() => {
-          this.$store.dispatch('builder/fetchAreasForMap', row.id)
+          this.$store.dispatch('builder/fetchAreasForMap', row.id).then(() => this.$emit('selected'))
         });
       }
     }

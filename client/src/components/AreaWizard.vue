@@ -84,7 +84,7 @@
 
 <script>
 import Vue from 'vue';
-import { mapGetters } from 'vuex'
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'AreaWizard',
@@ -92,29 +92,31 @@ export default {
   components: {},
   created() {
     if (this.$store.getters['builder/isAreaSelected']) {
-      this.area = {...this.$store.getters['builder/selectedArea']}
+      this.area = { ...this.$store.getters['builder/selectedArea'] };
     }
   },
   computed: {
     selectedMapOption: {
       // getter
       get: function() {
-          const map = this.$store.getters['builder/selectedMap']
-          return { label: map.name, value: map.id };
+        const map = this.$store.getters['builder/selectedMap'];
+        return { label: map.name, value: map.id };
       },
       // setter
       set: function(selectedOption) {
-        this.$store.dispatch('builder/selectMap', selectedOption.value).then(() => {
-          // this.$store.dispatch('builder/fetchAreasForMap', selectedOption.value)
-        })
-        this.area.mapId = selectedOption.value
+        this.$store
+          .dispatch('builder/selectMap', selectedOption.value)
+          .then(() => {
+            // this.$store.dispatch('builder/fetchAreasForMap', selectedOption.value)
+          });
+        this.area.mapId = selectedOption.value;
 
         if (this.originalMapId === '') {
-          this.originalMapId = selectedOption.value
-          this.mapChanged = true
+          this.originalMapId = selectedOption.value;
+          this.mapChanged = true;
         } else if (this.originalMapId === selectedOption.value) {
-          this.originalMapId = ''
-          this.mapChanged = false
+          this.originalMapId = '';
+          this.mapChanged = false;
         }
       }
     },
@@ -137,7 +139,8 @@ export default {
       return this.maps.map(map => ({ label: map.name, value: map.id }));
     },
     ...mapGetters({
-      maps: 'builder/maps'
+      maps: 'builder/maps',
+      cloneSelectedArea: 'builder/cloneSelectedArea'
     })
   },
   data() {
@@ -173,35 +176,53 @@ export default {
     },
     saveArea() {
       const params = {
-        area: {name: this.area.name, map_id: this.area.mapId, description: this.area.description}
+        area: {
+          name: this.area.name,
+          map_id: this.area.mapId,
+          description: this.area.description
+        }
       };
 
       let request;
-      const isNew = !this.$store.getters['builder/isAreaSelected']
+      const isNew = !this.$store.getters['builder/isAreaSelected'];
 
-      if (isNew) {
+      if (isNew || this.cloneSelectedArea) {
         request = this.$axios.post('/areas', params);
-        } else {
+      } else {
         request = this.$axios.patch('/areas/' + this.area.id, params);
       }
 
+      this.$store.dispatch('builder/putIsAreaUnderConstruction', false);
+
       if (this.mapChanged) {
-        request.then(() => {
-          this.$store.dispatch('builder/fetchAreasForMap', this.area.mapId).then(() => this.$emit('saved'))
-        })
+        request.then((result) => {
+          this.$store
+            .dispatch('builder/fetchAreasForMap', this.area.mapId)
+            .then(() =>
+              this.$store
+                .dispatch('builder/selectArea', result.data.id)
+                .then(() => this.$emit('saved'))
+            );
+        });
       } else {
         request
           .then(result => {
-            if (isNew) {
+            if (isNew || this.cloneSelectedArea) {
+              this.$store.dispatch('builder/putCloneSelectedArea', false);
+
               this.$store.dispatch('builder/putArea', result.data).then(() => {
-                this.$store.dispatch('builder/selectArea', result.data.id).then(() => {
-                  this.$emit('saved')
-                })
-              })
+                this.$store
+                  .dispatch('builder/selectArea', result.data.id)
+                  .then(() => {
+                    this.$emit('saved');
+                  });
+              });
             } else {
-              this.$store.dispatch('builder/updateArea', result.data).then(() => {
-                this.$emit('saved')
-              })
+              this.$store
+                .dispatch('builder/updateArea', result.data)
+                .then(() => {
+                  this.$emit('saved');
+                });
             }
           })
           .catch(function() {
@@ -212,11 +233,11 @@ export default {
   },
   watch: {
     area: {
-      handler(area){
-        console.log('watch area')
-        console.log({...area})
-        this.$store.dispatch('builder/putAreaUnderConstruction', {...area})
-        console.log('dispatched')
+      handler(area) {
+        console.log('watch area');
+        console.log({ ...area });
+        this.$store.dispatch('builder/putAreaUnderConstruction', { ...area });
+        console.log('dispatched');
       },
       deep: true
     }

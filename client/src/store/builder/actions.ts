@@ -82,6 +82,9 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   putIsAreaUnderConstruction({ commit }, isIt: boolean) {
     commit('putIsAreaUnderConstruction', isIt);
   },
+  putCloneSelectedArea({ commit }, clone: boolean) {
+    commit('putCloneSelectedArea', clone);
+  },
   putAreaUnderConstruction({ commit }, area: AreaInterface) {
     commit('putAreaUnderConstruction', area);
   }

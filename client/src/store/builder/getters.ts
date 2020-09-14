@@ -12,6 +12,9 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   selectedArea(state: BuilderInterface) {
     return state.areas[state.areaIndex[state.selectedAreaId]];
   },
+  cloneSelectedArea(state: BuilderInterface) {
+    return state.cloneSelectedArea;
+  },
   selectedMap(state: BuilderInterface) {
     return state.maps[state.mapIndex[state.selectedMapId]];
   },

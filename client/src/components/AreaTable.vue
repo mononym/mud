@@ -78,8 +78,7 @@ const areaTableColumns = [
     label: 'Description',
     field: 'description',
     sortable: false
-  },
-  { name: 'area', label: 'Area', field: 'area', sortable: true }
+  }
 ];
 
 export default {
@@ -122,7 +121,11 @@ export default {
     editArea(areaId) {
       this.$store
         .dispatch('builder/selectArea', areaId)
-        .then(() => this.$emit('editArea'));
+        .then(() =>
+          this.$store
+            .dispatch('builder/putIsAreaUnderConstruction', true)
+            .then(() => this.$emit('editArea'))
+        );
     },
     toggleSingleRow(row) {
       this.$store.dispatch('builder/selectArea', row.id);

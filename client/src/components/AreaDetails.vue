@@ -13,6 +13,7 @@
 
       <q-card-actions>
         <q-btn flat @click="editArea" :disabled="buttonsDisabled">Edit</q-btn>
+        <q-btn flat @click="cloneArea" :disabled="buttonsDisabled">Clone</q-btn>
         <q-btn flat :disabled="buttonsDisabled" @click="confirmDelete = true">Delete</q-btn>
       </q-card-actions>
     </q-card>
@@ -58,6 +59,12 @@ export default {
   },
   methods: {
     editArea() {
+      this.$emit('editArea');
+    },
+    cloneArea() {
+      this.$store.dispatch('builder/putCloneSelectedArea', true)
+      this.$store.dispatch('builder/putIsAreaUnderConstruction', true)
+      this.$store.dispatch('builder/putAreaUnderConstruction', {...this.selectedArea})
       this.$emit('editArea');
     },
     deleteArea() {

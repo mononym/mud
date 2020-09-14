@@ -8,7 +8,7 @@
       <template v-slot:before>
         <div class="column full-height">
           <div class="col">
-            <region-map :id="selectedMap" />
+            <region-map />
           </div>
           <div class="col">
             <q-tab-panels
@@ -26,7 +26,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
-                <map-wizard :id="selectedMap" @saved="mapSaved" />
+                <map-wizard @saved="mapSaved" />
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -36,7 +36,7 @@
       <template v-slot:after>
         <div class="column full-height">
           <div class="col">
-            <area-details :id="selectedArea" @editArea="editArea" />
+            <area-details @editArea="editArea" />
           </div>
           <div class="col">
             <q-tab-panels
@@ -50,17 +50,13 @@
                   @selected="areaSelected"
                   @editArea="editArea"
                   @addArea="addArea"
-                  :mapId="selectedMap"
-                  :id="selectedArea"
                 />
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
                 <area-wizard
-                  :id="selectedArea"
                   @saved="areaSaved"
                   @mapSelected="areaMapSelected"
-                  :mapId="selectedMap"
                 />
               </q-tab-panel>
             </q-tab-panels>
@@ -81,15 +77,7 @@ import AreaDetails from '../components/AreaDetails.vue';
 
 export default {
   name: 'BuildInstance',
-  computed: {
-    // selectedMaps() {
-    //   if (this.selectedMap === '') {
-    //     return []
-    //   } else {
-    //     return [this.selectedMap]
-    //   }
-    // },
-  },
+  computed: {},
   components: {
     AreaDetails,
     AreaTable,
@@ -103,9 +91,7 @@ export default {
       areaPanel: 'table',
       loading: false,
       mapPanel: 'table',
-      splitterModel: 50,
-      selectedArea: '',
-      selectedMap: ''
+      splitterModel: 50
     };
   },
   methods: {
@@ -115,46 +101,39 @@ export default {
     addArea() {
       this.areaPanel = 'wizard';
     },
-    mapSaved(mapId) {
-      this.selectedMap = mapId;
+    mapSaved() {
       this.mapPanel = 'table';
     },
-    areaMapSelected(mapId) {
-      if (mapId !== this.selectedMap) {
-        this.selectedMap = mapId;
-      }
+    mapSelected() {
+      this.areaPanel = 'table';
     },
-    mapSelected(mapId) {
-      if (mapId !== this.selectedMap) {
-        this.selectedMap = mapId;
-        this.selectedArea = '';
-        this.areaPanel = 'table';
-      }
+    areaSelected() {
+      // this.areaPanel = 'table';
     },
-    areaSelected(areaId) {
-      if (areaId !== this.selectedArea) {
-        this.selectedArea = areaId;
-      }
+    areaMapSelected() {
+      // this.areaPanel = 'table';
     },
     editMap(mapId) {
-      if (this.$store.getters('builder/selectedArea').mapId !== this.$store.getters('builder/selectedMapId')) {
-        this.$store.dispatch('builder/selectArea', '')
+      if (
+        this.$store.getters('builder/selectedArea').mapId !==
+        this.$store.getters('builder/selectedMapId')
+      ) {
+        this.$store.dispatch('builder/selectArea', '');
       }
-        
+
       this.areaPanel = 'table';
-        
+
       this.mapPanel = 'wizard';
     },
     editArea(areaId) {
-      console.log(areaId)
-      console.log(this.selectedArea)
-      console.log(this.areaPanel)
-      if (areaId === this.selectedArea && this.areaPanel !== 'wizard') {
-        this.areaPanel = 'wizard';
-      } else if (areaId !== this.selectedArea) {
-        this.selectedArea = areaId;
-        this.areaPanel = 'wizard';
-      }
+      console.log(areaId);
+      console.log(this.areaPanel);
+      // if (areaId === this.selectedArea && this.areaPanel !== 'wizard') {
+      this.areaPanel = 'wizard';
+      // } else if (areaId !== this.selectedArea) {
+      //   this.selectedArea = areaId;
+      // this.areaPanel = 'wizard';
+      // }
     },
     areaSaved() {
       this.areaPanel = 'table';

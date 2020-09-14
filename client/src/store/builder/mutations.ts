@@ -14,6 +14,9 @@ const mutation: MutationTree<BuilderInterface> = {
   putIsAreaUnderConstruction(state: BuilderInterface, isIt: boolean) {
     state.isAreaUnderConstruction = isIt
   },
+  putCloneSelectedArea(state: BuilderInterface, clone: boolean) {
+    state.cloneSelectedArea = clone
+  },
   putAreaUnderConstruction(state: BuilderInterface, area: AreaInterface) {
     state.areaUnderConstruction = area
   },
