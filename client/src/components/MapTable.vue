@@ -94,7 +94,8 @@ export default {
       }
     },
     ...mapGetters({
-      maps: 'builder/maps'
+      maps: 'builder/maps',
+      selectedMapId: 'builder/selectedMapId'
     })
   },
   data() {
@@ -111,21 +112,22 @@ export default {
         .then(() => this.$emit('addMap'));
     },
     editMap(mapId) {
+      this.$store.dispatch('builder/selectMap', row.id).then(() => {
+          this.$store.dispatch('builder/fetchAreasForMap', row.id)
+        });
+
+
       this.$store.dispatch('builder/fetchAreasForMap', mapId);
       this.$store
         .dispatch('builder/selectMap', mapId)
         .then(() => this.$emit('editMap'));
     },
     toggleSingleRow(row) {
-      // this.$store
-      //   .dispatch('builder/clearAreas')
-      //   .then(() =>
-          this.$store
-            .dispatch('builder/selectMap', row.id)
-            .then(() =>
-              this.$store.dispatch('builder/fetchAreasForMap', row.id)
-            )
-        // );
+      if (this.selectedMapId !== row.id) {
+        this.$store.dispatch('builder/selectMap', row.id).then(() => {
+          this.$store.dispatch('builder/fetchAreasForMap', row.id)
+        });
+      }
     }
   }
 };

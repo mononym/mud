@@ -3,7 +3,6 @@ import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
 import Vue from 'vue'
-import { isObject } from 'util';
 
 const mutation: MutationTree<BuilderInterface> = {
   putSelectedMapId(state: BuilderInterface, id: string) {
@@ -22,6 +21,9 @@ const mutation: MutationTree<BuilderInterface> = {
     Vue.set(state.areaIndex, area.id, state.areas.length)
 
     state.areas.push(area)
+  },
+  updateArea(state: BuilderInterface, area: AreaInterface) {
+    Vue.set(state.areas, state.areaIndex[area.id], area)
   },
   deleteArea(state: BuilderInterface) {
     console.log('deleteArea')

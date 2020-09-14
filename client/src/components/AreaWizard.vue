@@ -104,8 +104,18 @@ export default {
       },
       // setter
       set: function(selectedOption) {
-        this.$store.dispatch('builder/selectMap', selectedOption.value)
+        this.$store.dispatch('builder/selectMap', selectedOption.value).then(() => {
+          // this.$store.dispatch('builder/fetchAreasForMap', selectedOption.value)
+        })
         this.area.mapId = selectedOption.value
+
+        if (this.originalMapId === '') {
+          this.originalMapId = selectedOption.value
+          this.mapChanged = true
+        } else if (this.originalMapId === selectedOption.value) {
+          this.originalMapId = ''
+          this.mapChanged = false
+        }
       }
     },
     nameContinueButtonDisabled: function() {
@@ -132,6 +142,8 @@ export default {
   },
   data() {
     return {
+      originalMapId: '',
+      mapChanged: false,
       map: '',
       step: 1,
       selectedMapOptionValue: '',
@@ -161,28 +173,41 @@ export default {
     },
     saveArea() {
       const params = {
-        area: {name: this.area.name, map_id: this.$store.getters['builder/selectedMapId'], description: this.area.description}
+        area: {name: this.area.name, map_id: this.area.mapId, description: this.area.description}
       };
 
       let request;
+      const isNew = !this.$store.getters['builder/isAreaSelected']
 
-      if (this.$store.getters['builder/isAreaSelected']) {
-        request = this.$axios.patch('/areas/' + this.area.id, params);
-        } else {
+      if (isNew) {
         request = this.$axios.post('/areas', params);
+        } else {
+        request = this.$axios.patch('/areas/' + this.area.id, params);
       }
 
-      request
-        .then(result => {
-          this.$store.dispatch('builder/putArea', result.data).then(() => {
-            this.$store.dispatch('builder/selectArea', result.data.id).then(() => {
-              this.$emit('saved')
-            })
-          })
+      if (this.mapChanged) {
+        request.then(() => {
+          this.$store.dispatch('builder/fetchAreasForMap', this.area.mapId).then(() => this.$emit('saved'))
         })
-        .catch(function() {
-          alert('Error saving');
-        });
+      } else {
+        request
+          .then(result => {
+            if (isNew) {
+              this.$store.dispatch('builder/putArea', result.data).then(() => {
+                this.$store.dispatch('builder/selectArea', result.data.id).then(() => {
+                  this.$emit('saved')
+                })
+              })
+            } else {
+              this.$store.dispatch('builder/updateArea', result.data).then(() => {
+                this.$emit('saved')
+              })
+            }
+          })
+          .catch(function() {
+            alert('Error saving');
+          });
+      }
     }
   },
   watch: {

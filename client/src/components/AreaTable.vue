@@ -71,6 +71,7 @@
 import { mapGetters } from 'vuex';
 
 const areaTableColumns = [
+  { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
   { name: 'name', label: 'Name', field: 'name', sortable: true },
   {
     name: 'description',

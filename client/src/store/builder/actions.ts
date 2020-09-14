@@ -5,15 +5,19 @@ import { AreaInterface } from '../area/state';
 import axios, { AxiosResponse } from 'axios';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
-  fetchAreasForMap({ commit }, mapId: string) {
+  fetchAreasForMap({ commit, state }, mapId: string) {
     return new Promise((resolve, reject) => {
-      commit('putSelectedAreaId', '')
-
       axios
         .get('/areas/map/' + mapId)
         .then(function(response: AxiosResponse) {
           commit('putAreas', response.data);
-          
+
+          const areaIds = response.data.map(area => area.id);
+
+          if (!areaIds.includes(state.selectedAreaId)) {
+            commit('putSelectedAreaId', '');
+          }
+
           resolve();
         })
         .catch(function() {
@@ -23,38 +27,41 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
         });
     });
   },
-  fetchMaps ({ commit }) {
+  fetchMaps({ commit }) {
     return new Promise((resolve, reject) => {
-        axios
-          .get('/maps')
-          .then(function(response: AxiosResponse) {
-            commit('putMaps', response.data);
+      axios
+        .get('/maps')
+        .then(function(response: AxiosResponse) {
+          commit('putMaps', response.data);
 
-            resolve()
-          })
-          .catch(function() {
-            alert('Error when fetching maps')
-  
-            reject()
-          });
-    })
+          resolve();
+        })
+        .catch(function() {
+          alert('Error when fetching maps');
+
+          reject();
+        });
+    });
   },
-  deleteArea ({ commit, state }) {
+  deleteArea({ commit, state }) {
     return new Promise((resolve, reject) => {
-        axios
-          .delete('/areas/' + state.selectedAreaId)
-          .then(function() {
-            commit('deleteArea', state.selectedAreaId);
-            commit('putSelectedAreaId', '');
+      axios
+        .delete('/areas/' + state.selectedAreaId)
+        .then(function() {
+          commit('deleteArea', state.selectedAreaId);
+          commit('putSelectedAreaId', '');
 
-            resolve()
-          })
-          .catch(function() {
-            alert('Error when fetching maps')
-  
-            reject()
-          });
-    })
+          resolve();
+        })
+        .catch(function() {
+          alert('Error when fetching maps');
+
+          reject();
+        });
+    });
+  },
+  updateArea({ commit }, area: AreaInterface) {
+    commit('updateArea', area);
   },
   selectArea({ commit }, areaId: string) {
     commit('putSelectedAreaId', areaId);
@@ -77,7 +84,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   putAreaUnderConstruction({ commit }, area: AreaInterface) {
     commit('putAreaUnderConstruction', area);
-  },
+  }
 };
 
 export default actions;
