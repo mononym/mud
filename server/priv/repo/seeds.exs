@@ -9,7 +9,7 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias Mud.Engine.{Region, Area, Instance, Link}
+alias Mud.Engine.{Map, Region, Area, Instance, Link}
 
 # Region insertions
 instance =
@@ -23,103 +23,135 @@ instance =
 region =
   Mud.Repo.insert!(%Region{
     name: "Royal Gardens",
-    instance_id: instance.id,  })
+    instance_id: instance.id
+  })
+
+# Region insertions
+{:ok, map} =
+  Map.create(%{
+    instance_id: instance.id,
+    name: "Torinthian Royal Palace Exterior",
+    description: "The complete grounds of the Torinthian Royal Palace",
+    map_size: 5000,
+    min_zoom: 5000,
+    max_zoom: 500,
+    default_zoom: 1000,
+    grid_size: 50
+  })
 
 # Room insertions
-center_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3000,
+{:ok, center_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3000,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Water Fountain",
     description:
       "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors."
   })
 
-east_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3050,
+{:ok, east_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3050,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "East Garden Path",
     description:
       "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
-west_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 2950,
+{:ok, west_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 2950,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "West Garden Path",
     description:
       "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
-north_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3000,
+{:ok, north_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3000,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "North Garden Path",
     description:
       "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
   })
 
-south_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3000,
+{:ok, south_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3000,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "South Garden Path",
     description:
       "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle."
   })
 
-northeast_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3050,
+{:ok, northeast_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3050,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "NorthEast Garden Path",
     description:
       "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
-southeast_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3050,
+{:ok, southeast_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3050,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "SouthEast Garden Path",
     description:
       "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
-northwest_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 2950,
+{:ok, northwest_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 2950,
     map_y: 2950,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "NorthWest Garden Path",
     description:
       "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
   })
 
-southwest_room =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 2950,
+{:ok, southwest_room} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 2950,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "SouthWest Garden Path",
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
@@ -127,19 +159,22 @@ southwest_room =
 
 # Maze
 
-maze_1 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3100,
+{:ok, maze_1} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3100,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze Entrance",
     description:
       "The openness of the gardens to the west are in contrast to the confinement of the maze to the east."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: east_room.id,
+  instance_id: instance.id,
+  from_id: east_room.id,
   to_id: maze_1.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -149,7 +184,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_1.id,
+  instance_id: instance.id,
+  from_id: maze_1.id,
   to_id: east_room.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -158,18 +194,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_2 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3150,
+{:ok, maze_2} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3150,
     map_y: 3000,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "The entrance from the west is the only break in the otherwise endless hegerows."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_1.id,
+  instance_id: instance.id,
+  from_id: maze_1.id,
   to_id: maze_2.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -179,7 +218,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_2.id,
+  instance_id: instance.id,
+  from_id: maze_2.id,
   to_id: maze_1.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -188,18 +228,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_3 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3150,
+{:ok, maze_3} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3150,
     map_y: 3050,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_2.id,
+  instance_id: instance.id,
+  from_id: maze_2.id,
   to_id: maze_3.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -209,7 +252,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_3.id,
+  instance_id: instance.id,
+  from_id: maze_3.id,
   to_id: maze_2.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -218,18 +262,21 @@ Mud.Repo.insert!(%Link{
   long_description: "north"
 })
 
-maze_4 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3150,
+{:ok, maze_4} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3150,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_3.id,
+  instance_id: instance.id,
+  from_id: maze_3.id,
   to_id: maze_4.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -239,7 +286,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_4.id,
+  instance_id: instance.id,
+  from_id: maze_4.id,
   to_id: maze_3.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -248,18 +296,21 @@ Mud.Repo.insert!(%Link{
   long_description: "north"
 })
 
-maze_5 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3150,
+{:ok, maze_5} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3150,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_4.id,
+  instance_id: instance.id,
+  from_id: maze_4.id,
   to_id: maze_5.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -269,7 +320,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_5.id,
+  instance_id: instance.id,
+  from_id: maze_5.id,
   to_id: maze_4.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -278,18 +330,21 @@ Mud.Repo.insert!(%Link{
   long_description: "north"
 })
 
-maze_6 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3200,
+{:ok, maze_6} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3200,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_5.id,
+  instance_id: instance.id,
+  from_id: maze_5.id,
   to_id: maze_6.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -299,7 +354,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_6.id,
+  instance_id: instance.id,
+  from_id: maze_6.id,
   to_id: maze_5.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -308,18 +364,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_7 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3250,
+{:ok, maze_7} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3250,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_6.id,
+  instance_id: instance.id,
+  from_id: maze_6.id,
   to_id: maze_7.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -329,7 +388,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_7.id,
+  instance_id: instance.id,
+  from_id: maze_7.id,
   to_id: maze_6.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -338,18 +398,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_8 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3250,
+{:ok, maze_8} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3250,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_7.id,
+  instance_id: instance.id,
+  from_id: maze_7.id,
   to_id: maze_8.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -359,7 +422,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_8.id,
+  instance_id: instance.id,
+  from_id: maze_8.id,
   to_id: maze_7.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -368,18 +432,21 @@ Mud.Repo.insert!(%Link{
   long_description: "south"
 })
 
-maze_9 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3200,
+{:ok, maze_9} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3200,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_9.id,
+  instance_id: instance.id,
+  from_id: maze_9.id,
   to_id: maze_8.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -389,7 +456,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_8.id,
+  instance_id: instance.id,
+  from_id: maze_8.id,
   to_id: maze_9.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -398,18 +466,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_10 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3300,
+{:ok, maze_10} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3300,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_7.id,
+  instance_id: instance.id,
+  from_id: maze_7.id,
   to_id: maze_10.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -419,7 +490,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_10.id,
+  instance_id: instance.id,
+  from_id: maze_10.id,
   to_id: maze_7.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -428,18 +500,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_11 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3350,
+{:ok, maze_11} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3350,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_10.id,
+  instance_id: instance.id,
+  from_id: maze_10.id,
   to_id: maze_11.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -449,7 +524,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_11.id,
+  instance_id: instance.id,
+  from_id: maze_11.id,
   to_id: maze_10.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -458,18 +534,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_12 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3400,
+{:ok, maze_12} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3400,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_11.id,
+  instance_id: instance.id,
+  from_id: maze_11.id,
   to_id: maze_12.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -479,7 +558,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_12.id,
+  instance_id: instance.id,
+  from_id: maze_12.id,
   to_id: maze_11.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -488,18 +568,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_13 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3400,
+{:ok, maze_13} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3400,
     map_y: 3200,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_13.id,
+  instance_id: instance.id,
+  from_id: maze_13.id,
   to_id: maze_12.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -509,7 +592,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_12.id,
+  instance_id: instance.id,
+  from_id: maze_12.id,
   to_id: maze_13.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -518,18 +602,21 @@ Mud.Repo.insert!(%Link{
   long_description: "south"
 })
 
-maze_14 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3400,
+{:ok, maze_14} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3400,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_14.id,
+  instance_id: instance.id,
+  from_id: maze_14.id,
   to_id: maze_13.id,
   departure_text: "north",
   arrival_text: "the south",
@@ -539,7 +626,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_13.id,
+  instance_id: instance.id,
+  from_id: maze_13.id,
   to_id: maze_14.id,
   departure_text: "south",
   arrival_text: "the north",
@@ -548,18 +636,21 @@ Mud.Repo.insert!(%Link{
   long_description: "south"
 })
 
-maze_15 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3350,
+{:ok, maze_15} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3350,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_15.id,
+  instance_id: instance.id,
+  from_id: maze_15.id,
   to_id: maze_14.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -569,7 +660,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_14.id,
+  instance_id: instance.id,
+  from_id: maze_14.id,
   to_id: maze_15.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -578,18 +670,21 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_16 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3300,
+{:ok, maze_16} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3300,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_16.id,
+  instance_id: instance.id,
+  from_id: maze_16.id,
   to_id: maze_15.id,
   departure_text: "east",
   arrival_text: "the west",
@@ -599,7 +694,8 @@ Mud.Repo.insert!(%Link{
 })
 
 Mud.Repo.insert!(%Link{
-  instance_id: instance.id,  from_id: maze_15.id,
+  instance_id: instance.id,
+  from_id: maze_15.id,
   to_id: maze_16.id,
   departure_text: "west",
   arrival_text: "the east",
@@ -608,12 +704,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_17 =
-  Mud.Repo.insert!(%Area{
-    instance_id: instance.id,    map_x: 3250,
+{:ok, maze_17} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 3250,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -640,13 +738,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_18 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_18} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3200,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -673,13 +772,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_19 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_19} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3150,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -706,13 +806,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_20 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_20} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3100,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -739,13 +840,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_21 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_21} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3050,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -772,13 +874,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_22 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_22} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3000,
     map_y: 3250,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -805,13 +908,14 @@ Mud.Repo.insert!(%Link{
   long_description: "west"
 })
 
-maze_23 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_23} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3000,
     map_y: 3200,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -838,13 +942,14 @@ Mud.Repo.insert!(%Link{
   long_description: "south"
 })
 
-maze_24 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_24} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3000,
     map_y: 3150,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -871,13 +976,14 @@ Mud.Repo.insert!(%Link{
   long_description: "south"
 })
 
-maze_25 =
-  Mud.Repo.insert!(%Area{
+{:ok, maze_25} =
+  Area.create(%{
     instance_id: instance.id,
     map_x: 3000,
     map_y: 3100,
     map_size: 20,
     region_id: region.id,
+    map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
   })
@@ -916,21 +1022,23 @@ Mud.Repo.insert!(%Link{
 })
 
 # maze_26 =
-#   Mud.Repo.insert!(%Area{
+#   Area.create(%{
 #     map_x: 3050,
 #     map_y: 3100,
 #     map_size: 20,
 #     region_id: region.id,
+# map_id: map.id,
 #     name: "Maze",
 #     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
 #   })
 
 # maze_27 =
-#   Mud.Repo.insert!(%Area{
+#   Area.create(%{
 #     map_x: 3150,
 #     map_y: 3100,
 #     map_size: 20,
 #     region_id: region.id,
+# map_id: map.id,
 #     name: "Maze",
 #     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
 #   })

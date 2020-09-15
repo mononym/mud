@@ -8,7 +8,7 @@
       <template v-slot:before>
         <div class="column full-height">
           <div class="col">
-            <region-map />
+            <builder-map />
           </div>
           <div class="col">
             <q-tab-panels
@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import RegionMap from '../components/RegionMap.vue';
+import BuilderMap from '../components/BuilderMap.vue';
 import AreaWizard from '../components/AreaWizard.vue';
 import AreaTable from '../components/AreaTable.vue';
 import MapWizard from '../components/MapWizard.vue';
@@ -118,7 +118,7 @@ export default {
     AreaWizard,
     MapTable,
     MapWizard,
-    RegionMap
+    BuilderMap
   },
   data() {
     return {

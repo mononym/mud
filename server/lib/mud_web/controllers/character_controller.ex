@@ -85,28 +85,28 @@ defmodule MudWeb.CharacterController do
     end
   end
 
-  def update(conn, %{"id" => id, "character" => character_params}) do
-    character = Character.get_by_id!(id)
+  # def update(conn, %{"id" => id, "character" => character_params}) do
+  #   character = Character.get_by_id!(id)
 
-    case Character.update(character, character_params) do
-      {:ok, character} ->
-        conn
-        |> put_flash(:info, "Character updated successfully.")
-        |> redirect(to: Routes.character_path(conn, :show, character))
+  #   case Character.update(character, character_params) do
+  #     {:ok, character} ->
+  #       conn
+  #       |> put_flash(:info, "Character updated successfully.")
+  #       |> redirect(to: Routes.character_path(conn, :show, character))
 
-      {:error, %Ecto.Changeset{} = changeset} ->
-        render(conn, "edit.html", character: character, changeset: changeset)
-    end
-  end
+  #     {:error, %Ecto.Changeset{} = changeset} ->
+  #       render(conn, "edit.html", character: character, changeset: changeset)
+  #   end
+  # end
 
-  def delete(conn, %{"id" => id}) do
-    character = Character.get_by_id!(id)
-    {:ok, _character} = Character.delete(character)
+  # def delete(conn, %{"id" => id}) do
+  #   character = Character.get_by_id!(id)
+  #   {:ok, _character} = Character.delete(character)
 
-    conn
-    |> put_flash(:info, "Character deleted successfully.")
-    |> redirect(to: Routes.character_path(conn, :index))
-  end
+  #   conn
+  #   |> put_flash(:info, "Character deleted successfully.")
+  #   |> redirect(to: Routes.character_path(conn, :index))
+  # end
 
   def get_creation_data(conn, _) do
     races = Mud.Engine.Rules.PlayerRaces.races()

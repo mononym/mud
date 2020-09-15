@@ -166,8 +166,26 @@ defmodule Mud.Engine.Area do
   @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
   defp changeset(area, attrs) do
     area
-    |> cast(attrs, [:name, :description, :map_id, :instance_id, :region_id])
-    |> validate_required([:name, :description, :map_id])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :map_id,
+      :instance_id,
+      :region_id,
+      :map_x,
+      :map_y,
+      :map_size
+    ])
+    |> validate_required([
+      :name,
+      :description,
+      :map_id,
+      :instance_id,
+      :region_id,
+      :map_x,
+      :map_y,
+      :map_size
+    ])
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data

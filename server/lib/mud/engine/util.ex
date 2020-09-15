@@ -120,7 +120,7 @@ defmodule Mud.Engine.Util do
   def refresh_thing(%Item{id: id}), do: Item.get!(id)
   def refresh_thing(%Character{id: id}), do: Character.get_by_id!(id)
   def refresh_thing(%Link{id: id}), do: Link.get!(id)
-  def refresh_thing(%Area{id: id}), do: Area.get_area!(id)
+  def refresh_thing(%Area{id: id}), do: Area.get!(id)
 
   @doc """
   Given a param which is either a string, for equivalancy check, or a Regex see if it matches the passed in string.

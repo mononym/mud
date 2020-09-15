@@ -69,9 +69,9 @@ defmodule MudWeb.Router do
     # Character related stuff
     post "/characters/list-player-characters", CharacterController, :list_player_characters
     post "/characters/create", CharacterController, :create
-    post "/characters/delete", CharacterController, :delete
+    # post "/characters/delete", CharacterController, :delete
     post "/characters/get", CharacterController, :get
-    post "/characters/update", CharacterController, :update
+    # post "/characters/update", CharacterController, :update
     get "/characters/get-creation-data", CharacterController, :get_creation_data
 
     get "/instances", InstanceController, :list_all

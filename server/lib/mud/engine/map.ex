@@ -3,7 +3,6 @@ defmodule Mud.Engine.Map do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.Area
-  import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id

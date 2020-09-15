@@ -37,7 +37,7 @@ defmodule Mud.Engine.Command.Travel do
       )
     else
       if Util.is_uuid4(context.command.ast.thing.input) do
-        area = Area.get_area!(ast.thing.input)
+        area = Area.get!(ast.thing.input)
 
         raw_data = Region.list_area_and_link_ids(area.region_id)
 
