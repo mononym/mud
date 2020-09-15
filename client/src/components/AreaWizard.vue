@@ -28,11 +28,7 @@
             @click="saveArea"
           />
 
-          <q-btn
-            color="primary"
-            label="Cancel"
-            @click="cancel"
-          />
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
 
@@ -69,11 +65,7 @@
             @click="saveArea"
           />
 
-          <q-btn
-            color="primary"
-            label="Cancel"
-            @click="cancel"
-          />
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
 
@@ -106,11 +98,7 @@
             class="q-ml-sm"
           />
 
-          <q-btn
-            color="primary"
-            label="Cancel"
-            @click="cancel"
-          />
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
     </q-stepper>
@@ -158,13 +146,17 @@ export default {
       return this.area.name === '';
     },
     saveButtonDisabled: function() {
-      return this.area.name === '' || this.area.description === '' || this.area.mapId === '';
+      return (
+        this.area.name === '' ||
+        this.area.description === '' ||
+        this.area.mapId === ''
+      );
     },
     allowNameHeaderSelect: function() {
       return !this.isNew;
     },
     selectedMapName: function() {
-      return this.selectedMap.name
+      return this.selectedMap.name;
     },
     mapOptions: function() {
       return this.maps.map(map => ({ label: map.name, value: map.id }));
@@ -196,10 +188,9 @@ export default {
       this.$store
         .dispatch('builder/putIsAreaUnderConstruction', false)
         .then(() =>
-          this.$store.dispatch(
-            'builder/putAreaUnderConstruction',
-            this.selectedArea
-          ).then(() => this.$emit('canceled'))
+          this.$store
+            .dispatch('builder/putAreaUnderConstruction', this.selectedArea)
+            .then(() => this.$emit('canceled'))
         );
     },
     saveArea() {
@@ -222,7 +213,7 @@ export default {
       this.$store.dispatch('builder/putIsAreaUnderConstruction', false);
 
       if (this.mapChanged) {
-        request.then((result) => {
+        request.then(result => {
           this.$store
             .dispatch('builder/fetchAreasForMap', this.area.mapId)
             .then(() =>
@@ -235,8 +226,6 @@ export default {
         request
           .then(result => {
             if (this.isNew) {
-              this.$store.dispatch('builder/putCloneSelectedArea', false);
-
               this.$store.dispatch('builder/putArea', result.data).then(() => {
                 this.$store
                   .dispatch('builder/selectArea', result.data.id)
@@ -259,8 +248,11 @@ export default {
     }
   },
   watch: {
-    step: function () {
-      this.$store.dispatch('builder/putAreaUnderConstruction', Object.assign({}, this.area))
+    step: function() {
+      this.$store.dispatch(
+        'builder/putAreaUnderConstruction',
+        Object.assign({}, this.area)
+      );
     }
   }
 };

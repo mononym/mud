@@ -113,6 +113,10 @@ export default {
             .then(() =>
               this.$store
                 .dispatch('builder/putMapUnderConstruction', { ...mapState })
+                .then(() =>
+              this.$store
+                .dispatch('builder/clearAreas', { ...mapState })
+                )
                 .then(() => this.$emit('addMap'))
             )
         );

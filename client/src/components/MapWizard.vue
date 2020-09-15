@@ -19,6 +19,8 @@
             color="primary"
             label="Continue"
           />
+
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
 
@@ -28,7 +30,11 @@
         icon="fas fa-signature"
         :done="step > 2"
       >
-        <q-input v-model="map.description" label="Description" type="textarea" />
+        <q-input
+          v-model="map.description"
+          label="Description"
+          type="textarea"
+        />
 
         <q-stepper-navigation>
           <q-btn
@@ -44,16 +50,12 @@
             label="Back"
             class="q-ml-sm"
           />
+
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
 
-      <q-step
-        :name="3"
-        title="Config"
-        icon="fas fa-gear"
-        :done="step > 3"
-      >
-
+      <q-step :name="3" title="Config" icon="fas fa-gear" :done="step > 3">
         <q-slider
           v-model="map.mapSize"
           :min="500"
@@ -73,6 +75,8 @@
             label="Back"
             class="q-ml-sm"
           />
+
+          <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
     </q-stepper>
@@ -119,16 +123,24 @@ export default {
         gridSize: 0,
         maxZoom: 0,
         minZoom: 0,
-        defaultZoom: 0,
+        defaultZoom: 0
       }
     };
   },
   methods: {
+    cancel() {
+      this.$store
+        .dispatch('builder/putIsMapUnderConstruction', false)
+        .then(() =>
+          this.$store.dispatch('builder/fetchAreasForMap', this.selectedMap.id)
+        )
+        .then(() => this.$emit('canceled'));
+    },
     saveMap() {
       const params = {
         map: {
           name: this.map.name,
-          description: this.map.description,
+          description: this.map.description
           // map_size: this.map.map_size,
           // grid_size: this.map.grid_size,
           // max_zoom: this.map.max_zoom
@@ -154,8 +166,11 @@ export default {
     }
   },
   watch: {
-    step: function () {
-      this.$store.dispatch('builder/putMapUnderConstruction', Object.assign({}, this.map))
+    step: function() {
+      this.$store.dispatch(
+        'builder/putMapUnderConstruction',
+        Object.assign({}, this.map)
+      );
     }
   }
 };

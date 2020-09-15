@@ -58,66 +58,70 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     commit('updateArea', area);
   },
   selectArea({ commit, state }, areaId: string) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (state.selectedArea.id !== areaId) {
         commit('putSelectedArea', areaId);
       }
 
-      resolve()
+      resolve();
     });
   },
   putIsAreaUnderConstructionNew({ commit }, isIt: boolean) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putIsAreaUnderConstructionNew', isIt);
 
-      resolve()
+      resolve();
     });
   },
   putIsMapUnderConstructionNew({ commit }, isIt: boolean) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putIsMapUnderConstructionNew', isIt);
 
-      resolve()
+      resolve();
     });
   },
   putIsMapUnderConstruction({ commit }, isIt: boolean) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putIsMapUnderConstruction', isIt);
 
-      resolve()
+      resolve();
     });
   },
   putIsAreaUnderConstruction({ commit }, isIt: boolean) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putIsAreaUnderConstruction', isIt);
 
-      resolve()
+      resolve();
     });
   },
   putAreaUnderConstruction({ commit }, area: AreaInterface) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putAreaUnderConstruction', area);
 
-      resolve()
+      resolve();
     });
   },
   putMapUnderConstruction({ commit }, map: MapInterface) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       commit('putMapUnderConstruction', map);
 
-      resolve()
+      resolve();
     });
   },
   clearAreas({ commit }) {
-    commit('putAreas', []);
+    return new Promise(resolve => {
+      commit('putAreas', []);
+
+      resolve();
+    });
   },
   selectMap({ commit, state }, mapId: string) {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (state.selectedMap.id !== mapId) {
         commit('putSelectedMap', mapId);
       }
 
-      resolve()
+      resolve();
     });
   },
   putArea({ commit }, area: AreaInterface) {
@@ -125,7 +129,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   removeAreaById({ commit }, areaId: string) {
     commit('removeArea', areaId);
-  },
+  }
 };
 
 export default actions;
