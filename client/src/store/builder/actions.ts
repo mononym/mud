@@ -2,6 +2,7 @@ import { ActionTree } from 'vuex';
 import { StateInterface } from '../index';
 import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
+import { MapInterface } from '../map/state';
 import axios, { AxiosResponse } from 'axios';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
@@ -40,9 +41,9 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   deleteArea({ commit, state }) {
     return new Promise((resolve, reject) => {
       axios
-        .delete('/areas/' + state.selectedAreaId)
+        .delete('/areas/' + state.selectedArea.id)
         .then(function() {
-          commit('deleteArea', state.selectedAreaId);
+          commit('deleteArea', state.selectedArea.id);
 
           resolve();
         })
@@ -56,9 +57,53 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   updateArea({ commit }, area: AreaInterface) {
     commit('updateArea', area);
   },
-  selectArea({ commit }, areaId: string) {
+  selectArea({ commit, state }, areaId: string) {
     return new Promise((resolve) => {
-      commit('putSelectedArea', areaId);
+      if (state.selectedArea.id !== areaId) {
+        commit('putSelectedArea', areaId);
+      }
+
+      resolve()
+    });
+  },
+  putIsAreaUnderConstructionNew({ commit }, isIt: boolean) {
+    return new Promise((resolve) => {
+      commit('putIsAreaUnderConstructionNew', isIt);
+
+      resolve()
+    });
+  },
+  putIsMapUnderConstructionNew({ commit }, isIt: boolean) {
+    return new Promise((resolve) => {
+      commit('putIsMapUnderConstructionNew', isIt);
+
+      resolve()
+    });
+  },
+  putIsMapUnderConstruction({ commit }, isIt: boolean) {
+    return new Promise((resolve) => {
+      commit('putIsMapUnderConstruction', isIt);
+
+      resolve()
+    });
+  },
+  putIsAreaUnderConstruction({ commit }, isIt: boolean) {
+    return new Promise((resolve) => {
+      commit('putIsAreaUnderConstruction', isIt);
+
+      resolve()
+    });
+  },
+  putAreaUnderConstruction({ commit }, area: AreaInterface) {
+    return new Promise((resolve) => {
+      commit('putAreaUnderConstruction', area);
+
+      resolve()
+    });
+  },
+  putMapUnderConstruction({ commit }, map: MapInterface) {
+    return new Promise((resolve) => {
+      commit('putMapUnderConstruction', map);
 
       resolve()
     });
@@ -66,8 +111,14 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   clearAreas({ commit }) {
     commit('putAreas', []);
   },
-  selectMap({ commit }, mapId: string) {
-    commit('putSelectedMapId', mapId);
+  selectMap({ commit, state }, mapId: string) {
+    return new Promise((resolve) => {
+      if (state.selectedMap.id !== mapId) {
+        commit('putSelectedMap', mapId);
+      }
+
+      resolve()
+    });
   },
   putArea({ commit }, area: AreaInterface) {
     commit('putArea', area);
@@ -75,15 +126,6 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   removeAreaById({ commit }, areaId: string) {
     commit('removeArea', areaId);
   },
-  putIsAreaUnderConstruction({ commit }, isIt: boolean) {
-    commit('putIsAreaUnderConstruction', isIt);
-  },
-  putCloneSelectedArea({ commit }, clone: boolean) {
-    commit('putCloneSelectedArea', clone);
-  },
-  putAreaUnderConstruction({ commit }, area: AreaInterface) {
-    commit('putAreaUnderConstruction', area);
-  }
 };
 
 export default actions;

@@ -14,23 +14,9 @@
       <q-card-actions>
         <q-btn flat @click="editArea" :disabled="buttonsDisabled">Edit</q-btn>
         <q-btn flat @click="cloneArea" :disabled="buttonsDisabled">Clone</q-btn>
-        <q-btn flat :disabled="buttonsDisabled" @click="confirmDelete = true">Delete</q-btn>
+        <q-btn flat :disabled="buttonsDisabled" @click="deleteArea">Delete</q-btn>
       </q-card-actions>
     </q-card>
-
-    <q-dialog v-model="confirmDelete" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
-          <span class="q-ml-sm">Confirm deletion of room: {{ area.name }}</span>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn flat label="Delete" color="primary" v-close-popup @click="deleteArea"/>
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
   </div>
 </template>
 
@@ -48,7 +34,7 @@ export default {
   },
   computed: {
     buttonsDisabled() {
-      return !this.isAreaSelected
+      return !this.isAreaSelected || this.isAreaUnderConstruction
     },
     ...mapGetters({
       area: 'builder/selectedArea',
@@ -59,20 +45,27 @@ export default {
   },
   methods: {
     editArea() {
+      this.$store.dispatch('builder/putIsAreaUnderConstructionNew', false)
+      this.$store.dispatch('builder/putIsAreaUnderConstruction', true)
+      this.$store.dispatch('builder/putAreaUnderConstruction', {...this.selectedArea})
       this.$emit('editArea');
     },
     cloneArea() {
-      this.$store.dispatch('builder/putCloneSelectedArea', true)
+      this.$store.dispatch('builder/putIsAreaUnderConstructionNew', true)
       this.$store.dispatch('builder/putIsAreaUnderConstruction', true)
       this.$store.dispatch('builder/putAreaUnderConstruction', {...this.selectedArea})
       this.$emit('editArea');
     },
     deleteArea() {
-      this.selectedArea = defaultArea
-      this.$store.dispatch('builder/deleteArea')
+      this.$emit('deleteArea');
     }
   },
   watch: {
+    isAreaUnderConstruction: function (isIt) {
+      if (!isIt) {
+        this.selectedArea = this.area
+      }
+    },
     areaUnderConstruction: function (area) {
       if (this.isAreaUnderConstruction) {
         this.selectedArea = area
@@ -85,16 +78,6 @@ export default {
         this.selectedArea = defaultArea
       }
     },
-    // isAreaSelected: function () {
-    //   if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
-    //     this.selectedArea = defaultArea
-    //   }
-    // },
-    // isAreaUnderConstruction: function () {
-    //   if (!this.isAreaSelected && !this.isAreaUnderConstruction) {
-    //     this.selectedArea = defaultArea
-    //   }
-    // },
   }
 };
 </script>

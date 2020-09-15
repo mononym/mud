@@ -64,6 +64,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import mapState from '../store/map/state';
 
 const mapTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -92,7 +93,7 @@ export default {
     },
     ...mapGetters({
       maps: 'builder/maps',
-      selectedMapId: 'builder/selectedMapId'
+      selectedMap: 'builder/selectedMap'
     })
   },
   data() {
@@ -105,18 +106,41 @@ export default {
   methods: {
     addMap() {
       this.$store
-        .dispatch('builder/clearAreas')
-        .then(() => this.$emit('addMap'));
+        .dispatch('builder/putIsMapUnderConstructionNew', true)
+        .then(() =>
+          this.$store
+            .dispatch('builder/putIsMapUnderConstruction', true)
+            .then(() =>
+              this.$store
+                .dispatch('builder/putMapUnderConstruction', { ...mapState })
+                .then(() => this.$emit('addMap'))
+            )
+        );
     },
     editMap(mapId) {
-      this.$store.dispatch('builder/selectMap', mapId).then(() => {
-          this.$store.dispatch('builder/fetchAreasForMap', mapId).then(() => this.$emit('editMap'))
-        });
+      this.$store.dispatch('builder/selectMap', mapId).then(() =>
+        this.$store
+          .dispatch('builder/putIsMapUnderConstructionNew', false)
+          .then(() =>
+            this.$store
+              .dispatch('builder/putIsMapUnderConstruction', true)
+              .then(() =>
+                this.$store
+                  .dispatch('builder/putMapUnderConstruction', this.selectedMap)
+                  .then(() =>
+                    this.$store.dispatch('builder/fetchAreasForMap', mapId)
+                  )
+                  .then(() => this.$emit('editMap'))
+              )
+          )
+      );
     },
     toggleSingleRow(row) {
-      if (this.selectedMapId !== row.id) {
+      if (this.selectedMap.id !== row.id) {
         this.$store.dispatch('builder/selectMap', row.id).then(() => {
-          this.$store.dispatch('builder/fetchAreasForMap', row.id).then(() => this.$emit('selected'))
+          this.$store
+            .dispatch('builder/fetchAreasForMap', row.id)
+            .then(() => this.$emit('selected'));
         });
       }
     }

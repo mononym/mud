@@ -26,7 +26,7 @@
               </q-tab-panel>
 
               <q-tab-panel name="wizard">
-                <map-wizard @saved="mapSaved" />
+                <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
               </q-tab-panel>
             </q-tab-panels>
           </div>
@@ -50,6 +50,7 @@
                   @selected="areaSelected"
                   @editArea="editArea"
                   @addArea="addArea"
+                  @deleteArea="showDeleteAreaConfirmation"
                 />
               </q-tab-panel>
 
@@ -57,6 +58,8 @@
                 <area-wizard
                   @saved="areaSaved"
                   @mapSelected="areaMapSelected"
+                  @deleteArea="showDeleteAreaConfirmation"
+                  @canceled="cancelAreaEdit"
                 />
               </q-tab-panel>
             </q-tab-panels>
@@ -64,6 +67,28 @@
         </div>
       </template>
     </q-splitter>
+
+    <q-dialog v-model="confirmDeleteArea" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
+          <span class="q-ml-sm"
+            >Confirm deletion of room: {{ selectedArea.name }}</span
+          >
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            label="Delete"
+            color="primary"
+            v-close-popup
+            @click="deleteArea"
+          />
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -74,10 +99,16 @@ import AreaTable from '../components/AreaTable.vue';
 import MapWizard from '../components/MapWizard.vue';
 import MapTable from '../components/MapTable.vue';
 import AreaDetails from '../components/AreaDetails.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuildInstance',
-  computed: {},
+  computed: {
+    ...mapGetters({
+      selectedArea: 'builder/selectedArea',
+      selectedMap: 'builder/selectedMap'
+    })
+  },
   components: {
     AreaDetails,
     AreaTable,
@@ -91,7 +122,8 @@ export default {
       areaPanel: 'table',
       loading: false,
       mapPanel: 'table',
-      splitterModel: 50
+      splitterModel: 50,
+      confirmDeleteArea: false
     };
   },
   methods: {
@@ -100,6 +132,12 @@ export default {
     },
     addArea() {
       this.areaPanel = 'wizard';
+    },
+    cancelAreaEdit() {
+      this.areaPanel = 'table';
+    },
+    cancelMapEdit() {
+      this.mapPanel = 'table';
     },
     mapSaved() {
       this.mapPanel = 'table';
@@ -113,11 +151,14 @@ export default {
     areaMapSelected() {
       // this.areaPanel = 'table';
     },
+    showDeleteAreaConfirmation() {
+      this.confirmDeleteArea = true;
+    },
+    deleteArea() {
+      this.$store.dispatch('builder/deleteArea');
+    },
     editMap() {
-      if (
-        this.$store.getters('builder/selectedArea').mapId !==
-        this.$store.getters('builder/selectedMapId')
-      ) {
+      if (this.selectedArea.mapId !== this.selectedMap.id) {
         this.$store.dispatch('builder/selectArea', '');
       }
 

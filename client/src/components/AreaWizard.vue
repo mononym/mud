@@ -20,6 +20,19 @@
             color="primary"
             label="Continue"
           />
+
+          <q-btn
+            v-if="!saveButtonDisabled"
+            color="primary"
+            label="Save"
+            @click="saveArea"
+          />
+
+          <q-btn
+            color="primary"
+            label="Cancel"
+            @click="cancel"
+          />
         </q-stepper-navigation>
       </q-step>
 
@@ -47,6 +60,19 @@
             color="primary"
             label="Back"
             class="q-ml-sm"
+          />
+
+          <q-btn
+            v-if="!saveButtonDisabled"
+            color="primary"
+            label="Save"
+            @click="saveArea"
+          />
+
+          <q-btn
+            color="primary"
+            label="Cancel"
+            @click="cancel"
           />
         </q-stepper-navigation>
       </q-step>
@@ -79,6 +105,12 @@
             label="Back"
             class="q-ml-sm"
           />
+
+          <q-btn
+            color="primary"
+            label="Cancel"
+            @click="cancel"
+          />
         </q-stepper-navigation>
       </q-step>
     </q-stepper>
@@ -86,22 +118,23 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 export default {
   name: 'AreaWizard',
-  props: [],
   components: {},
   created() {
-    this.$store.dispatch('builder/putAreaUnderConstruction', { ...this.$store.getters['builder/selectedArea'] });
+    if (this.isNew) {
+      this.area = Object.assign({}, this.areaUnderConstruction);
+    } else {
+      this.area = Object.assign({}, this.selectedArea);
+    }
   },
   computed: {
     selectedMapOption: {
       // getter
       get: function() {
-        const map = this.$store.getters['builder/selectedMap'];
-        return { label: map.name, value: map.id };
+        return { label: this.selectedMap.name, value: this.selectedMap.id };
       },
       // setter
       set: function(selectedOption) {
@@ -125,22 +158,13 @@ export default {
       return this.area.name === '';
     },
     saveButtonDisabled: function() {
-      return this.area.name === '' || this.area.description === '';
-    },
-    isNew: function() {
-      return !this.$store.getters['builder/isAreaSelected'];
+      return this.area.name === '' || this.area.description === '' || this.area.mapId === '';
     },
     allowNameHeaderSelect: function() {
-      return !this.isNew || this.cloneSelectedArea;
+      return !this.isNew;
     },
     selectedMapName: function() {
-      if (this.mapId !== '') {
-        const map = this.$store.getters['maps/getMapById'];
-
-        return map.name;
-      } else {
-        return '';
-      }
+      return this.selectedMap.name
     },
     mapOptions: function() {
       return this.maps.map(map => ({ label: map.name, value: map.id }));
@@ -148,7 +172,9 @@ export default {
     ...mapGetters({
       maps: 'builder/maps',
       areaUnderConstruction: 'builder/areaUnderConstruction',
-      cloneSelectedArea: 'builder/cloneSelectedArea'
+      selectedArea: 'builder/selectedArea',
+      selectedMap: 'builder/selectedMap',
+      isNew: 'builder/isAreaUnderConstructionNew'
     })
   },
   data() {
@@ -159,28 +185,22 @@ export default {
       step: 1,
       selectedMapOptionValue: '',
       area: {
-        id: '',
         name: '',
         mapId: '',
         description: ''
       }
     };
   },
-  validations: {},
   methods: {
-    fetchCharacterCreationData() {
-      void this.$axios.get('characters/get-creation-data').then(result => {
-        console.log(result);
-        console.log(this.randomElement(result.data));
-        Vue.set(this, 'races', result.data);
-        Vue.set(
-          this,
-          'selectedRace',
-          this.randomElement(Object.values(result.data)).singular
+    cancel() {
+      this.$store
+        .dispatch('builder/putIsAreaUnderConstruction', false)
+        .then(() =>
+          this.$store.dispatch(
+            'builder/putAreaUnderConstruction',
+            this.selectedArea
+          ).then(() => this.$emit('canceled'))
         );
-      });
-
-      return true;
     },
     saveArea() {
       const params = {
@@ -193,7 +213,7 @@ export default {
 
       let request;
 
-      if (this.isNew || this.cloneSelectedArea) {
+      if (this.isNew) {
         request = this.$axios.post('/areas', params);
       } else {
         request = this.$axios.patch('/areas/' + this.area.id, params);
@@ -214,7 +234,7 @@ export default {
       } else {
         request
           .then(result => {
-            if (this.isNew || this.cloneSelectedArea) {
+            if (this.isNew) {
               this.$store.dispatch('builder/putCloneSelectedArea', false);
 
               this.$store.dispatch('builder/putArea', result.data).then(() => {
@@ -239,19 +259,8 @@ export default {
     }
   },
   watch: {
-    area: {
-      handler(area) {
-        this.$store.dispatch('builder/putAreaUnderConstruction', { ...area });
-      },
-      deep: true
-    },
-    areaUnderConstruction: {
-      handler(area) {
-        if (area.id !== this.area.id) {
-          this.area = { ...area }
-        }
-      },
-      deep: true
+    step: function () {
+      this.$store.dispatch('builder/putAreaUnderConstruction', Object.assign({}, this.area))
     }
   }
 };

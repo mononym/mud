@@ -2,31 +2,36 @@ import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
 
 import areaState from '../area/state';
+import mapState from '../map/state';
 
 export interface BuilderInterface {
-  selectedAreaId: string;
-  selectedMapId: string;
-  mapIndex: Record<string, number>;
   areaIndex: Record<string, number>;
-  maps: MapInterface[],
   areas: AreaInterface[],
-  isAreaUnderConstruction: boolean,
-  cloneSelectedArea: boolean,
   areaUnderConstruction: AreaInterface,
-  selectedArea: AreaInterface
+  isAreaUnderConstruction: boolean,
+  isAreaUnderConstructionNew: boolean,
+  selectedArea: AreaInterface,
+  isMapUnderConstruction: boolean,
+  isMapUnderConstructionNew: boolean,
+  mapIndex: Record<string, number>;
+  maps: MapInterface[],
+  mapUnderConstruction: MapInterface,
+  selectedMap: MapInterface,
 }
 
 const state: BuilderInterface = {
-  selectedAreaId: '',
-  selectedMapId: '',
-  mapIndex: {},
   areaIndex: {},
-  maps: [],
   areas: [],
-  isAreaUnderConstruction: false,
-  cloneSelectedArea: false,
   areaUnderConstruction: {...areaState},
-  selectedArea: {...areaState}
+  isAreaUnderConstruction: false,
+  isAreaUnderConstructionNew: true,
+  selectedArea: {...areaState},
+  isMapUnderConstruction: false,
+  isMapUnderConstructionNew: true,
+  mapIndex: {},
+  maps: [],
+  mapUnderConstruction: {...mapState},
+  selectedMap: {...mapState},
 };
 
 export default state;

@@ -56,7 +56,7 @@
 
         <q-slider
           v-model="map.mapSize"
-          :min="0"
+          :min="500"
           :max="1000000"
           :step="100"
           snap
@@ -80,45 +80,36 @@
 </template>
 
 <script>
-import { set } from '@vue/composition-api';
-import Vue from 'vue';
-import { isNull } from 'util';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'MapWizard',
-  props: ['id'],
   components: {},
   created() {
-    // look at values to see if there is an id for the map
-    // if there is an id check the database by using a getter to see if the data needs to be loaded
-    // if data needs to be loaded make a call to server to fetch the data and have it set the map data once loaded
-    // If there is no id the values can be left blank and nothing needs to be done
-    if (this.id !== '') {
-      this.$store
-        .dispatch('maps/fetchMap', this.id)
-        .then(map => {
-          this.id = map.id;
-          this.name = map.name;
-          this.description = map.description;
-        })
-        .catch(() => {
-          alert('Something went wrong attemping to load the selected map.');
-          this.id = '';
-        });
+    if (this.isNew) {
+      this.map = Object.assign({}, this.mapUnderConstruction);
+    } else {
+      this.map = Object.assign({}, this.selectedMap);
     }
   },
   computed: {
     nameContinueDisabled() {
-      return this.name === '';
+      return this.map.name === '';
+    },
+    descriptionButtonsDisabled() {
+      return this.map.description === '';
     },
     saveDisabled() {
-      return this.description === '';
-    }
+      return this.map.description === '';
+    },
+    ...mapGetters({
+      mapUnderConstruction: 'builder/mapUnderConstruction',
+      selectedMap: 'builder/selectedMap',
+      isNew: 'builder/isMapUnderConstructionNew'
+    })
   },
   data() {
     return {
-      name: '',
-      description: '',
       step: 1,
       map: {
         id: '',
@@ -132,26 +123,30 @@ export default {
       }
     };
   },
-  validations: {},
   methods: {
     saveMap() {
-      console.log('saveMap()');
       const params = {
-        map: { name: this.name, description: this.description }
+        map: {
+          name: this.map.name,
+          description: this.map.description,
+          // map_size: this.map.map_size,
+          // grid_size: this.map.grid_size,
+          // max_zoom: this.map.max_zoom
+        }
       };
 
       let request;
 
-      if (this.id === '') {
+      if (this.isNew) {
         request = this.$axios.post('/maps', params);
       } else {
-        request = this.$axios.patch('/maps/' + this.id, params);
+        request = this.$axios.patch('/maps/' + this.map.id, params);
       }
 
       request
         .then(result => {
           this.$store.commit('maps/putMap', result.data);
-          this.$emit('saved', result.data.id);
+          this.$emit('saved');
         })
         .catch(function() {
           alert('Error saving');
@@ -159,15 +154,8 @@ export default {
     }
   },
   watch: {
-    id(value, previousValue) {
-      console.log('map wizard id has changed');
-      console.log(previousValue);
-      console.log(value);
-      this.$store.dispatch('maps/fetchMap', value).then(map => {
-        this.name = map.name;
-        this.description = map.description;
-        this.id = map.id;
-      });
+    step: function () {
+      this.$store.dispatch('builder/putMapUnderConstruction', Object.assign({}, this.map))
     }
   }
 };

@@ -62,6 +62,12 @@
                   v-on:click.stop="linkArea(props.row.id)"
                   v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
                 />
+                <q-btn
+                  flat
+                  label="Delete"
+                  icon="fas fa-trash"
+                  @click="deleteArea"
+                />
               </q-btn-group>
             </span>
             <span v-else>
@@ -76,6 +82,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
+import areaState from '../store/area/state';
 
 const areaTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -97,10 +104,16 @@ export default {
     addAreaButtonDisabled: function() {
       return !this.$store.getters['builder/isMapSelected'];
     },
+    selectedAreaId: function() {
+      return this.selectedArea.id;
+    },
+    selectedMapId: function() {
+      return this.selectedMap.id;
+    },
     selectedRow: function() {
-      const area = this.$store.getters['builder/selectedArea']
-      console.log('selectedRow')
-      console.log(area)
+      const area = this.$store.getters['builder/selectedArea'];
+      console.log('selectedRow');
+      console.log(area);
       if (area !== undefined) {
         return [area];
       } else {
@@ -109,7 +122,8 @@ export default {
     },
     ...mapGetters({
       areas: 'builder/areas',
-      selectedAreaId: 'builder/selectedAreaId'
+      selectedArea: 'builder/selectedArea',
+      selectedMap: 'builder/selectedMap'
     })
   },
   data() {
@@ -121,28 +135,44 @@ export default {
   validations: {},
   methods: {
     addArea() {
-      this.$store
-        .dispatch('builder/selectArea', '')
-        .then(() =>
-          this.$store
-            .dispatch('builder/putIsAreaUnderConstruction', true)
-            .then(() => this.$emit('addArea'))
-        );
+      const newArea = { ...areaState };
+      newArea.mapId = this.selectedMapId;
+      console.log('newarea');
+      console.log(newArea);
+      this.$store.dispatch('builder/putIsAreaUnderConstructionNew', true);
+      this.$store.dispatch('builder/putIsAreaUnderConstruction', true);
+      this.$store.dispatch('builder/putAreaUnderConstruction', newArea);
+
+      this.$emit('addArea');
     },
     editArea(areaId) {
       this.$store
         .dispatch('builder/selectArea', areaId)
         .then(() =>
           this.$store
-            .dispatch('builder/putIsAreaUnderConstruction', true)
-            .then(() => this.$emit('editArea'))
+            .dispatch('builder/putIsAreaUnderConstructionNew', false)
+            .then(() =>
+              this.$store
+                .dispatch('builder/putIsAreaUnderConstruction', true)
+                .then(() =>
+                  this.$store.dispatch(
+                    'builder/putAreaUnderConstruction',
+                    this.selectedArea
+                  )
+                )
+            )
         );
+
+      this.$emit('editArea');
     },
     linkArea(areaId) {
-      console.log('link to area: ' + areaId)
+      console.log('link to area: ' + areaId);
     },
     toggleSingleRow(row) {
       this.$store.dispatch('builder/selectArea', row.id);
+    },
+    deleteArea() {
+      this.$emit('deleteArea');
     }
   }
 };

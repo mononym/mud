@@ -3,16 +3,14 @@ import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
 import Vue from 'vue';
+import areaState from '../area/state';
 
 const mutation: MutationTree<BuilderInterface> = {
-  putSelectedMapId(state: BuilderInterface, id: string) {
-    state.selectedMapId = id;
-  },
   putIsAreaUnderConstruction(state: BuilderInterface, isIt: boolean) {
     state.isAreaUnderConstruction = isIt;
   },
-  putCloneSelectedArea(state: BuilderInterface, clone: boolean) {
-    state.cloneSelectedArea = clone;
+  putIsAreaUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
+    state.isAreaUnderConstructionNew = isIt;
   },
   putAreaUnderConstruction(state: BuilderInterface, area: AreaInterface) {
     state.areaUnderConstruction = area;
@@ -22,16 +20,28 @@ const mutation: MutationTree<BuilderInterface> = {
 
     state.areas.push(area);
   },
+  putIsMapUnderConstruction(state: BuilderInterface, isIt: boolean) {
+    state.isMapUnderConstruction = isIt;
+  },
+  putIsMapUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
+    state.isMapUnderConstructionNew = isIt;
+  },
+  putMapUnderConstruction(state: BuilderInterface, map: MapInterface) {
+    state.mapUnderConstruction = map;
+  },
+  putSelectedMap(state: BuilderInterface, mapId: string) {
+    Vue.set(state, 'selectedMap', state.maps[state.mapIndex[mapId]])
+  },
   putSelectedArea(state: BuilderInterface, areaId: string) {
-    state.selectedArea = state.areas[state.areaIndex[areaId]];
+    Vue.set(state, 'selectedArea', state.areas[state.areaIndex[areaId]])
   },
   updateArea(state: BuilderInterface, area: AreaInterface) {
     Vue.set(state.areas, state.areaIndex[area.id], area);
   },
   deleteArea(state: BuilderInterface) {
-    state.areas.splice(state.areaIndex[state.selectedAreaId], 1);
+    state.areas.splice(state.areaIndex[state.selectedArea.id], 1);
 
-    state.selectedAreaId = '';
+    state.selectedArea = {...areaState};
     state.areaIndex = {};
     state.areas.forEach((area, index) => {
       Vue.set(state.areaIndex, area.id, index);

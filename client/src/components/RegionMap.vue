@@ -1,6 +1,6 @@
 <template>
   <div class="fit column">
-    <div class="text-h6 text-center col-auto">{{ selectedMapName }}</div>
+    <div class="text-h6 text-center col-auto">{{ selectedMap.name }}</div>
     
     <q-separator />
     
@@ -50,15 +50,13 @@ export default {
     viewbox: function() {
       return this.viewBoxX + ' ' + this.viewBoxY + ' ' + this.viewBoxSize + ' ' + this.viewBoxSize;
     },
-    selectedMapName: function() {
-      console.log('selected')
-      console.log(this.selectedMap)
-      if (this.selectedMap !== undefined) {
-        return this.selectedMap.name
-      } else {
-        return ''
-      }
-    },
+    // selectedMapName: function() {
+    //   if (this.selectedMap !== undefined) {
+    //     return this.selectedMap.name
+    //   } else {
+    //     return ''
+    //   }
+    // },
     ...mapGetters({
       selectedMap: 'builder/selectedMap'
     })
