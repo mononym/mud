@@ -80,16 +80,9 @@ const mapTableColumns = [
 export default {
   name: 'MapTable',
   components: {},
-  created() {
-    this.$store.dispatch('builder/fetchMaps');
-  },
   computed: {
     selectedRow: function() {
-      if (this.$store.getters['builder/isMapSelected']) {
-        return [this.$store.getters['builder/selectedMap']];
-      } else {
-        return [];
-      }
+      return [this.$store.getters['builder/selectedMap']];
     },
     ...mapGetters({
       maps: 'builder/maps',
@@ -114,8 +107,7 @@ export default {
               this.$store
                 .dispatch('builder/putMapUnderConstruction', { ...mapState })
                 .then(() =>
-              this.$store
-                .dispatch('builder/clearAreas', { ...mapState })
+                  this.$store.dispatch('builder/resetAreas', { ...mapState })
                 )
                 .then(() => this.$emit('addMap'))
             )
@@ -140,8 +132,12 @@ export default {
       );
     },
     toggleSingleRow(row) {
+      // console.log('togglesingle');
+      // console.log(row);
+      // console.log(this.selectedMap);
+      // console.log(this.selectedMap.id !== row.id);
       if (this.selectedMap.id !== row.id) {
-        this.$store.dispatch('builder/selectMap', row.id).then(() => {
+        this.$store.dispatch('builder/selectMap', row).then(() => {
           this.$store
             .dispatch('builder/fetchAreasForMap', row.id)
             .then(() => this.$emit('selected'));

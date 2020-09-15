@@ -10,6 +10,11 @@ defmodule Mud.Engine.Map do
   schema "maps" do
     field(:description, :string)
     field(:name, :string)
+    field(:map_size, :integer)
+    field(:grid_size, :integer)
+    field(:max_zoom, :integer)
+    field(:min_zoom, :integer)
+    field(:default_zoom, :integer)
 
     has_many(:areas, Area)
 
@@ -118,7 +123,7 @@ defmodule Mud.Engine.Map do
   """
   def changeset(%__MODULE__{} = map, attrs \\ %{}) do
     map
-    |> cast(attrs, [:name, :description])
-    |> validate_required([:name, :description])
+    |> cast(attrs, [:name, :description, :map_size, :grid_size, :max_zoom, :min_zoom, :default_zoom])
+    |> validate_required([:name, :description, :map_size, :grid_size, :max_zoom, :min_zoom, :default_zoom])
   end
 end

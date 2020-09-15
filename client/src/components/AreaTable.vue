@@ -111,14 +111,7 @@ export default {
       return this.selectedMap.id;
     },
     selectedRow: function() {
-      const area = this.$store.getters['builder/selectedArea'];
-      console.log('selectedRow');
-      console.log(area);
-      if (area !== undefined) {
-        return [area];
-      } else {
-        return [];
-      }
+      return [this.$store.getters['builder/selectedArea']];
     },
     ...mapGetters({
       areas: 'builder/areas',
@@ -145,9 +138,9 @@ export default {
 
       this.$emit('addArea');
     },
-    editArea(areaId) {
+    editArea(area) {
       this.$store
-        .dispatch('builder/selectArea', areaId)
+        .dispatch('builder/selectArea', area)
         .then(() =>
           this.$store
             .dispatch('builder/putIsAreaUnderConstructionNew', false)
@@ -169,7 +162,7 @@ export default {
       console.log('link to area: ' + areaId);
     },
     toggleSingleRow(row) {
-      this.$store.dispatch('builder/selectArea', row.id);
+      this.$store.dispatch('builder/selectArea', row);
     },
     deleteArea() {
       this.$emit('deleteArea');

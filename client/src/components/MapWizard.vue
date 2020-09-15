@@ -59,11 +59,61 @@
         <q-slider
           v-model="map.mapSize"
           :min="500"
-          :max="1000000"
+          :max="10000"
           :step="100"
           snap
           label
-          color="purple"
+          label-always
+          :label-value="'Map Size: ' + map.mapSize"
+          color="blue"
+        />
+
+        <q-slider
+          v-model="map.minZoom"
+          :min="500"
+          :max="10000"
+          :step="100"
+          snap
+          label
+          label-always
+          :label-value="'Min Zoom: ' + map.minZoom"
+          color="blue"
+        />
+
+        <q-slider
+          v-model="map.maxZoom"
+          :min="500"
+          :max="10000"
+          :step="100"
+          snap
+          label
+          label-always
+          :label-value="'Max Zoom: ' + map.maxZoom"
+          color="blue"
+        />
+
+        <q-slider
+          v-model="map.defaultZoom"
+          :min="500"
+          :max="10000"
+          :step="100"
+          snap
+          label
+          label-always
+          :label-value="'Default Zoom: ' + map.defaultZoom"
+          color="blue"
+        />
+
+        <q-slider
+          v-model="map.gridSize"
+          :min="10"
+          :max="1000"
+          :step="10"
+          snap
+          label
+          label-always
+          :label-value="'Grid Size: ' + map.gridSize"
+          color="blue"
         />
 
         <q-stepper-navigation>
@@ -140,10 +190,12 @@ export default {
       const params = {
         map: {
           name: this.map.name,
-          description: this.map.description
-          // map_size: this.map.map_size,
-          // grid_size: this.map.grid_size,
-          // max_zoom: this.map.max_zoom
+          description: this.map.description,
+          map_size: this.map.map_size,
+          grid_size: this.map.grid_size,
+          max_zoom: this.map.max_zoom,
+          min_zoom: this.map.min_zoom,
+          default_zoom: this.map.min_zoom
         }
       };
 
@@ -155,10 +207,17 @@ export default {
         request = this.$axios.patch('/maps/' + this.map.id, params);
       }
 
+      this.$store.dispatch('builder/putIsMapUnderConstruction', false);
+
       request
         .then(result => {
-          this.$store.commit('maps/putMap', result.data);
-          this.$emit('saved');
+          this.$store.dispatch('builder/addMap', result.data).then(() =>
+            this.$store
+              .dispatch('builder/selectMap', result.data)
+              .then(() => {
+                this.$emit('saved');
+              })
+          );
         })
         .catch(function() {
           alert('Error saving');

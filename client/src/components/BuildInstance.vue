@@ -109,6 +109,9 @@ export default {
       selectedMap: 'builder/selectedMap'
     })
   },
+  created() {
+    this.$store.dispatch('builder/fetchMaps');
+  },
   components: {
     AreaDetails,
     AreaTable,

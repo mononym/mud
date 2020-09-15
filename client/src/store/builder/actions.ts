@@ -4,6 +4,7 @@ import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
 import axios, { AxiosResponse } from 'axios';
+import areaState from '../area/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchAreasForMap({ commit }, mapId: string) {
@@ -57,10 +58,10 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   updateArea({ commit }, area: AreaInterface) {
     commit('updateArea', area);
   },
-  selectArea({ commit, state }, areaId: string) {
+  selectArea({ commit, state }, area: AreaInterface) {
     return new Promise(resolve => {
-      if (state.selectedArea.id !== areaId) {
-        commit('putSelectedArea', areaId);
+      if (state.selectedArea.id !== area.id) {
+        commit('putSelectedArea', area);
       }
 
       resolve();
@@ -108,18 +109,26 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
-  clearAreas({ commit }) {
+  resetAreas({ commit }) {
     return new Promise(resolve => {
       commit('putAreas', []);
+      commit('putSelectedArea', { ...areaState });
 
       resolve();
     });
   },
-  selectMap({ commit, state }, mapId: string) {
+  selectMap({ commit, state }, map: MapInterface) {
     return new Promise(resolve => {
-      if (state.selectedMap.id !== mapId) {
-        commit('putSelectedMap', mapId);
+      if (state.selectedMap.id !== map.id) {
+        commit('putSelectedMap', map);
       }
+
+      resolve();
+    });
+  },
+  addMap({ commit }, map: string) {
+    return new Promise(resolve => {
+      commit('addMap', map);
 
       resolve();
     });

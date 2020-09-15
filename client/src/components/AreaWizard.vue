@@ -45,6 +45,7 @@
             v-model="selectedMapOption"
             :options="mapOptions"
             label="Map"
+            option-label="name"
           />
         </q-form>
 
@@ -127,10 +128,8 @@ export default {
       // setter
       set: function(selectedOption) {
         this.$store
-          .dispatch('builder/selectMap', selectedOption.value)
-          .then(() => {
-            // this.$store.dispatch('builder/fetchAreasForMap', selectedOption.value)
-          });
+          .dispatch('builder/selectMap', selectedOption)
+          
         this.area.mapId = selectedOption.value;
 
         if (this.originalMapId === '') {
@@ -159,7 +158,10 @@ export default {
       return this.selectedMap.name;
     },
     mapOptions: function() {
-      return this.maps.map(map => ({ label: map.name, value: map.id }));
+      return this.maps.map(map => {
+        map.label = map.name
+        map.value =  map.id
+      });
     },
     ...mapGetters({
       maps: 'builder/maps',
@@ -218,7 +220,7 @@ export default {
             .dispatch('builder/fetchAreasForMap', this.area.mapId)
             .then(() =>
               this.$store
-                .dispatch('builder/selectArea', result.data.id)
+                .dispatch('builder/selectArea', result.data)
                 .then(() => this.$emit('saved'))
             );
         });
@@ -228,7 +230,7 @@ export default {
             if (this.isNew) {
               this.$store.dispatch('builder/putArea', result.data).then(() => {
                 this.$store
-                  .dispatch('builder/selectArea', result.data.id)
+                  .dispatch('builder/selectArea', result.data)
                   .then(() => {
                     this.$emit('saved');
                   });

@@ -29,11 +29,11 @@ const mutation: MutationTree<BuilderInterface> = {
   putMapUnderConstruction(state: BuilderInterface, map: MapInterface) {
     state.mapUnderConstruction = map;
   },
-  putSelectedMap(state: BuilderInterface, mapId: string) {
-    Vue.set(state, 'selectedMap', state.maps[state.mapIndex[mapId]])
+  putSelectedMap(state: BuilderInterface, map: MapInterface) {
+    state.selectedMap = map;
   },
-  putSelectedArea(state: BuilderInterface, areaId: string) {
-    Vue.set(state, 'selectedArea', state.areas[state.areaIndex[areaId]])
+  putSelectedArea(state: BuilderInterface, area: AreaInterface) {
+    state.selectedArea = area;
   },
   updateArea(state: BuilderInterface, area: AreaInterface) {
     Vue.set(state.areas, state.areaIndex[area.id], area);
@@ -41,7 +41,7 @@ const mutation: MutationTree<BuilderInterface> = {
   deleteArea(state: BuilderInterface) {
     state.areas.splice(state.areaIndex[state.selectedArea.id], 1);
 
-    state.selectedArea = {...areaState};
+    state.selectedArea = { ...areaState };
     state.areaIndex = {};
     state.areas.forEach((area, index) => {
       Vue.set(state.areaIndex, area.id, index);
@@ -56,6 +56,11 @@ const mutation: MutationTree<BuilderInterface> = {
     });
   },
   putMap(state: BuilderInterface, map: MapInterface) {
+    Vue.set(state.mapIndex, map.id, state.maps.length);
+
+    state.maps.push(map);
+  },
+  addMap(state: BuilderInterface, map: MapInterface) {
     Vue.set(state.mapIndex, map.id, state.maps.length);
 
     state.maps.push(map);
