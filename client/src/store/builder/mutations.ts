@@ -38,6 +38,9 @@ const mutation: MutationTree<BuilderInterface> = {
   updateArea(state: BuilderInterface, area: AreaInterface) {
     Vue.set(state.areas, state.areaIndex[area.id], area);
   },
+  updateMap(state: BuilderInterface, map: MapInterface) {
+    Vue.set(state.maps, state.mapIndex[map.id], map);
+  },
   deleteArea(state: BuilderInterface) {
     state.areas.splice(state.areaIndex[state.selectedArea.id], 1);
 

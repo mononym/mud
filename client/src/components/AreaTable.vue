@@ -53,13 +53,13 @@
                   flat
                   label="Edit"
                   icon="fas fa-pencil"
-                  @click="editArea(props.row.id)"
+                  @click="editArea(props.row)"
                 />
                 <q-btn
                   flat
                   label="Link"
                   icon="fas fa-link"
-                  v-on:click.stop="linkArea(props.row.id)"
+                  v-on:click.stop="linkArea(props.row)"
                   v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
                 />
                 <q-btn
@@ -139,24 +139,21 @@ export default {
       this.$emit('addArea');
     },
     editArea(area) {
-      this.$store
-        .dispatch('builder/selectArea', area)
-        .then(() =>
-          this.$store
-            .dispatch('builder/putIsAreaUnderConstructionNew', false)
-            .then(() =>
-              this.$store
-                .dispatch('builder/putIsAreaUnderConstruction', true)
-                .then(() =>
-                  this.$store.dispatch(
-                    'builder/putAreaUnderConstruction',
-                    this.selectedArea
-                  )
-                )
-            )
-        );
-
-      this.$emit('editArea');
+      this.$store.dispatch('builder/selectArea', area).then(() =>
+        this.$store
+          .dispatch('builder/putIsAreaUnderConstructionNew', false)
+          .then(() =>
+            this.$store
+              .dispatch('builder/putIsAreaUnderConstruction', true)
+              .then(() =>
+                this.$store
+                  .dispatch('builder/putAreaUnderConstruction', {
+                    ...this.selectedArea
+                  })
+                  .then(() => this.$emit('editArea'))
+              )
+          )
+      );
     },
     linkArea(areaId) {
       console.log('link to area: ' + areaId);

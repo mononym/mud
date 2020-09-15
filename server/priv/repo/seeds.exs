@@ -43,8 +43,8 @@ region =
 {:ok, center_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3000,
+    map_x: 0,
+    map_y: 0,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -56,8 +56,8 @@ region =
 {:ok, east_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3050,
-    map_y: 3000,
+    map_x: 1,
+    map_y: 0,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -69,8 +69,8 @@ region =
 {:ok, west_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 2950,
-    map_y: 3000,
+    map_x: -1,
+    map_y: 0,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -82,8 +82,8 @@ region =
 {:ok, north_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 2950,
+    map_x: 0,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -95,8 +95,8 @@ region =
 {:ok, south_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3050,
+    map_x: 0,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -108,8 +108,8 @@ region =
 {:ok, northeast_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3050,
-    map_y: 2950,
+    map_x: 1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -121,8 +121,8 @@ region =
 {:ok, southeast_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3050,
-    map_y: 3050,
+    map_x: 1,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -134,8 +134,8 @@ region =
 {:ok, northwest_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 2950,
-    map_y: 2950,
+    map_x: -1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -147,8 +147,8 @@ region =
 {:ok, southwest_room} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 2950,
-    map_y: 3050,
+    map_x: -1,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -162,8 +162,8 @@ region =
 {:ok, maze_1} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3100,
-    map_y: 3000,
+    map_x: 2,
+    map_y: 0,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -197,8 +197,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_2} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3150,
-    map_y: 3000,
+    map_x: 3,
+    map_y: 0,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -231,8 +231,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_3} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3150,
-    map_y: 3050,
+    map_x: 3,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -265,8 +265,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_4} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3150,
-    map_y: 3100,
+    map_x: 3,
+    map_y: 2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -299,8 +299,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_5} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3150,
-    map_y: 3150,
+    map_x: 3,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -333,8 +333,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_6} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3200,
-    map_y: 3150,
+    map_x: 4,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -367,8 +367,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_7} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3250,
-    map_y: 3150,
+    map_x: 5,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -401,8 +401,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_8} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3250,
-    map_y: 3100,
+    map_x: 5,
+    map_y: 2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -435,8 +435,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_9} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3200,
-    map_y: 3100,
+    map_x: 4,
+    map_y: 2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -469,8 +469,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_10} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3300,
-    map_y: 3150,
+    map_x: 6,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -503,8 +503,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_11} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3350,
-    map_y: 3150,
+    map_x: 7,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -537,8 +537,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_12} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3400,
-    map_y: 3150,
+    map_x: 8,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -571,8 +571,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_13} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3400,
-    map_y: 3200,
+    map_x: 8,
+    map_y: 4,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -605,8 +605,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_14} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3400,
-    map_y: 3250,
+    map_x: 8,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -639,8 +639,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_15} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3350,
-    map_y: 3250,
+    map_x: 7,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -673,8 +673,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_16} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3300,
-    map_y: 3250,
+    map_x: 6,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -707,8 +707,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_17} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3250,
-    map_y: 3250,
+    map_x: 5,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -741,8 +741,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_18} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3200,
-    map_y: 3250,
+    map_x: 4,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -775,8 +775,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_19} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3150,
-    map_y: 3250,
+    map_x: 3,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -809,8 +809,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_20} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3100,
-    map_y: 3250,
+    map_x: 2,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -843,8 +843,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_21} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3050,
-    map_y: 3250,
+    map_x: 1,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -877,8 +877,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_22} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3250,
+    map_x: 0,
+    map_y: 5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -911,8 +911,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_23} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3200,
+    map_x: 0,
+    map_y: 4,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -945,8 +945,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_24} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3150,
+    map_x: 0,
+    map_y: 3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -979,8 +979,8 @@ Mud.Repo.insert!(%Link{
 {:ok, maze_25} =
   Area.create(%{
     instance_id: instance.id,
-    map_x: 3000,
-    map_y: 3100,
+    map_x: 0,
+    map_y: 2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -1023,8 +1023,8 @@ Mud.Repo.insert!(%Link{
 
 # maze_26 =
 #   Area.create(%{
-#     map_x: 3050,
-#     map_y: 3100,
+#     map_x: 1,
+#     map_y: 2,
 #     map_size: 20,
 #     region_id: region.id,
 # map_id: map.id,
@@ -1034,8 +1034,8 @@ Mud.Repo.insert!(%Link{
 
 # maze_27 =
 #   Area.create(%{
-#     map_x: 3150,
-#     map_y: 3100,
+#     map_x: 3,
+#     map_y: 2,
 #     map_size: 20,
 #     region_id: region.id,
 # map_id: map.id,

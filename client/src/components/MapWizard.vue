@@ -191,11 +191,11 @@ export default {
         map: {
           name: this.map.name,
           description: this.map.description,
-          map_size: this.map.map_size,
-          grid_size: this.map.grid_size,
-          max_zoom: this.map.max_zoom,
-          min_zoom: this.map.min_zoom,
-          default_zoom: this.map.min_zoom
+          map_size: this.map.mapSize,
+          grid_size: this.map.gridSize,
+          max_zoom: this.map.maxZoom,
+          min_zoom: this.map.minZoom,
+          default_zoom: this.map.minZoom
         }
       };
 
@@ -211,13 +211,19 @@ export default {
 
       request
         .then(result => {
-          this.$store.dispatch('builder/addMap', result.data).then(() =>
-            this.$store
-              .dispatch('builder/selectMap', result.data)
-              .then(() => {
-                this.$emit('saved');
-              })
-          );
+          if (this.isNew) {
+            this.$store.dispatch('builder/putMap', result.data).then(() => {
+              this.$store
+                .dispatch('builder/selectMap', result.data)
+                .then(() => {
+                  this.$emit('saved');
+                });
+            });
+          } else {
+            this.$store.dispatch('builder/updateMap', result.data).then(() => {
+              this.$emit('saved');
+            });
+          }
         })
         .catch(function() {
           alert('Error saving');

@@ -48,7 +48,7 @@
                   flat
                   label="Edit"
                   icon="fas fa-pencil"
-                  @click="editMap(props.row.id)"
+                  @click="editMap(props.row)"
                 />
               </q-btn-group>
             </span>
@@ -113,8 +113,8 @@ export default {
             )
         );
     },
-    editMap(mapId) {
-      this.$store.dispatch('builder/selectMap', mapId).then(() =>
+    editMap(map) {
+      this.$store.dispatch('builder/selectMap', map).then(() =>
         this.$store
           .dispatch('builder/putIsMapUnderConstructionNew', false)
           .then(() =>
@@ -124,7 +124,7 @@ export default {
                 this.$store
                   .dispatch('builder/putMapUnderConstruction', this.selectedMap)
                   .then(() =>
-                    this.$store.dispatch('builder/fetchAreasForMap', mapId)
+                    this.$store.dispatch('builder/fetchAreasForMap', map.id)
                   )
                   .then(() => this.$emit('editMap'))
               )
@@ -132,10 +132,6 @@ export default {
       );
     },
     toggleSingleRow(row) {
-      // console.log('togglesingle');
-      // console.log(row);
-      // console.log(this.selectedMap);
-      // console.log(this.selectedMap.id !== row.id);
       if (this.selectedMap.id !== row.id) {
         this.$store.dispatch('builder/selectMap', row).then(() => {
           this.$store

@@ -11,10 +11,17 @@ defmodule MudWeb.MapView do
   end
 
   def render("map.json", %{map: map}) do
-    %{id: map.id,
+    %{
+      id: map.id,
       name: map.name,
       description: map.description,
+      mapSize: map.map_size,
+      gridSize: map.grid_size,
+      maxZoom: map.min_zoom,
+      minZoom: map.min_zoom,
+      defaultZoom: map.default_zoom,
       inserted_at: map.inserted_at,
-      updated_at: map.updated_at}
+      updated_at: map.updated_at
+    }
   end
 end

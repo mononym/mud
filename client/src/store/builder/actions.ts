@@ -7,28 +7,38 @@ import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
-  fetchAreasForMap({ commit }, mapId: string) {
+  fetchAreasForMap({ commit, getters }, mapId: string) {
     return new Promise((resolve, reject) => {
       axios
         .get('/areas/map/' + mapId)
         .then(function(response: AxiosResponse) {
           commit('putAreas', response.data);
 
+          if (!getters['builder/isAreaSelected'] && response.data.length > 0) {
+            commit('putSelectedArea', response.data[0]);
+          }
+
           resolve();
         })
-        .catch(function() {
+        .catch(function(e) {
           alert('Error when fetching areas');
+          alert(e);
 
           reject();
         });
     });
   },
-  fetchMaps({ commit }) {
+  fetchMaps({ commit, dispatch }) {
     return new Promise((resolve, reject) => {
       axios
         .get('/maps')
         .then(function(response: AxiosResponse) {
           commit('putMaps', response.data);
+
+          if (response.data.length > 0) {
+            commit('putSelectedMap', response.data[0]);
+            void dispatch('fetchAreasForMap', response.data[0].id);
+          }
 
           resolve();
         })
@@ -56,7 +66,18 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     });
   },
   updateArea({ commit }, area: AreaInterface) {
-    commit('updateArea', area);
+    return new Promise(resolve => {
+      commit('updateArea', area);
+
+      resolve();
+    });
+  },
+  updateMap({ commit }, map: MapInterface) {
+    return new Promise(resolve => {
+      commit('updateMap', map);
+
+      resolve();
+    });
   },
   selectArea({ commit, state }, area: AreaInterface) {
     return new Promise(resolve => {
@@ -134,7 +155,18 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     });
   },
   putArea({ commit }, area: AreaInterface) {
-    commit('putArea', area);
+    return new Promise(resolve => {
+      commit('putArea', area);
+
+      resolve();
+    });
+  },
+  putMap({ commit }, map: MapInterface) {
+    return new Promise(resolve => {
+      commit('putMap', map);
+
+      resolve();
+    });
   },
   removeAreaById({ commit }, areaId: string) {
     commit('removeArea', areaId);
