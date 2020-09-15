@@ -158,10 +158,6 @@ export default {
       this.$store.dispatch('builder/deleteArea');
     },
     editMap() {
-      if (this.selectedArea.mapId !== this.selectedMap.id) {
-        this.$store.dispatch('builder/selectArea', '');
-      }
-
       this.areaPanel = 'table';
 
       this.mapPanel = 'wizard';
