@@ -24,7 +24,16 @@ module.exports = configure(function(ctx) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://quasar.dev/quasar-cli/boot-files
-    boot: ['composition-api', 'i18n', 'axios', 'fontawesome-pro', 'csrf', 'session', 'router', 'fontawesome-pro'],
+    boot: [
+      'composition-api',
+      'i18n',
+      'axios',
+      'fontawesome-pro',
+      'csrf',
+      'session',
+      'router',
+      'fontawesome-pro'
+    ],
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-css
     css: ['app.sass'],
@@ -89,7 +98,12 @@ module.exports = configure(function(ctx) {
       iconSet: 'fontawesome-v5-pro', // Quasar icon set
       lang: 'en-us', // Quasar language pack
       config: {
-        dark: true
+        dark: true,
+        loadingBar: {
+          color: 'purple',
+          size: '15px',
+          position: 'bottom'
+        }
       },
 
       // Possible values for "importStrategy":
@@ -105,7 +119,7 @@ module.exports = configure(function(ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: ['LoadingBar']
     },
 
     // animations: 'all', // --- includes all animations
