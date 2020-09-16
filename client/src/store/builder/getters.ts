@@ -44,6 +44,20 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   },
   mapUnderConstruction(state: BuilderInterface) {
     return state.mapUnderConstruction;
+  },
+  workingArea(state: BuilderInterface) {
+    if (state.isAreaUnderConstruction) {
+      return state.areaUnderConstruction;
+    } else {
+      return state.selectedArea;
+    }
+  },
+  workingMap(state: BuilderInterface) {
+    if (state.isMapUnderConstruction) {
+      return state.mapUnderConstruction;
+    } else {
+      return state.selectedMap;
+    }
   }
 };
 

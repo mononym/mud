@@ -74,7 +74,7 @@ export default {
     return {
       aspectRatio: { x: 16, y: 9 },
       lines: [{ id: 1, x1: 500, y1: 500, x2: 520, y2: 500 }],
-      zoomMultipliers: [0.25, 0.5, 1, 2],
+      zoomMultipliers: [0.06, 0.125, 0.25, 0.5, 1, 2],
       zoomMultierIndex: 2
     };
   },

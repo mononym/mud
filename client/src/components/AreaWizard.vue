@@ -229,6 +229,12 @@ export default {
                   .then(() => {
                     this.$store
                       .dispatch('builder/selectArea', result.data)
+                      .then(() =>
+                        this.$store.dispatch(
+                          'builder/putIsAreaUnderConstruction',
+                          false
+                        )
+                      )
                       .then(() => {
                         this.$emit('saved');
                       });
@@ -236,6 +242,12 @@ export default {
               } else {
                 this.$store
                   .dispatch('builder/updateArea', result.data)
+                  .then(() =>
+                    this.$store.dispatch(
+                      'builder/putIsAreaUnderConstruction',
+                      false
+                    )
+                  )
                   .then(() => {
                     this.$emit('saved');
                   });
@@ -243,16 +255,13 @@ export default {
             })
             .catch(function() {
               alert('Error saving');
-            })
-            .finally(function() {
-              this.$store.dispatch('builder/putIsAreaUnderConstruction', false);
             });
         }
       }
     }
   },
   watch: {
-    map: {
+    area: {
       // This will let Vue know to look inside the array
       deep: true,
 
