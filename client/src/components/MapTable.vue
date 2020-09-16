@@ -98,20 +98,12 @@ export default {
   validations: {},
   methods: {
     addMap() {
-      this.$store
-        .dispatch('builder/putIsMapUnderConstructionNew', true)
-        .then(() =>
-          this.$store
-            .dispatch('builder/putIsMapUnderConstruction', true)
-            .then(() =>
-              this.$store
-                .dispatch('builder/putMapUnderConstruction', { ...mapState })
-                .then(() =>
-                  this.$store.dispatch('builder/resetAreas', { ...mapState })
-                )
-                .then(() => this.$emit('addMap'))
-            )
-        );
+      this.$store.dispatch('builder/putIsMapUnderConstruction', true).then(() =>
+        this.$store
+          .dispatch('builder/putMapUnderConstruction', { ...mapState })
+          .then(() => this.$store.dispatch('builder/resetAreas'))
+          .then(() => this.$emit('addMap'))
+      );
     },
     editMap(map) {
       this.$store.dispatch('builder/selectMap', map).then(() =>

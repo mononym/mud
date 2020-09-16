@@ -127,9 +127,8 @@ export default {
       },
       // setter
       set: function(selectedOption) {
-        this.$store
-          .dispatch('builder/selectMap', selectedOption)
-          
+        this.$store.dispatch('builder/selectMap', selectedOption);
+
         this.area.mapId = selectedOption.value;
 
         if (this.originalMapId === '') {
@@ -159,8 +158,8 @@ export default {
     },
     mapOptions: function() {
       return this.maps.map(map => {
-        map.label = map.name
-        map.value =  map.id
+        map.label = map.name;
+        map.value = map.id;
       });
     },
     ...mapGetters({
@@ -210,51 +209,60 @@ export default {
         request = this.$axios.post('/areas', params);
       } else {
         request = this.$axios.patch('/areas/' + this.area.id, params);
-      }
 
-      this.$store.dispatch('builder/putIsAreaUnderConstruction', false);
-
-      if (this.mapChanged) {
-        request.then(result => {
-          this.$store
-            .dispatch('builder/fetchAreasForMap', this.area.mapId)
-            .then(() =>
-              this.$store
-                .dispatch('builder/selectArea', result.data)
-                .then(() => this.$emit('saved'))
-            );
-        });
-      } else {
-        request
-          .then(result => {
-            if (this.isNew) {
-              this.$store.dispatch('builder/putArea', result.data).then(() => {
+        if (this.mapChanged) {
+          request.then(result => {
+            this.$store
+              .dispatch('builder/fetchAreasForMap', this.area.mapId)
+              .then(() =>
                 this.$store
                   .dispatch('builder/selectArea', result.data)
+                  .then(() => this.$emit('saved'))
+              );
+          });
+        } else {
+          request
+            .then(result => {
+              if (this.isNew) {
+                this.$store
+                  .dispatch('builder/putArea', result.data)
+                  .then(() => {
+                    this.$store
+                      .dispatch('builder/selectArea', result.data)
+                      .then(() => {
+                        this.$emit('saved');
+                      });
+                  });
+              } else {
+                this.$store
+                  .dispatch('builder/updateArea', result.data)
                   .then(() => {
                     this.$emit('saved');
                   });
-              });
-            } else {
-              this.$store
-                .dispatch('builder/updateArea', result.data)
-                .then(() => {
-                  this.$emit('saved');
-                });
-            }
-          })
-          .catch(function() {
-            alert('Error saving');
-          });
+              }
+            })
+            .catch(function() {
+              alert('Error saving');
+            })
+            .finally(function() {
+              this.$store.dispatch('builder/putIsAreaUnderConstruction', false);
+            });
+        }
       }
     }
   },
   watch: {
-    step: function() {
-      this.$store.dispatch(
-        'builder/putAreaUnderConstruction',
-        Object.assign({}, this.area)
-      );
+    map: {
+      // This will let Vue know to look inside the array
+      deep: true,
+
+      // We have to move our method to a handler field
+      handler() {
+        this.$store.dispatch(
+          'builder/putAreaUnderConstruction',
+          Object.assign({}, this.area)
+        );
+      }
     }
   }
 };

@@ -1,6 +1,6 @@
 <template>
   <div class="fit column">
-    <div class="text-h6 text-center col-auto">{{ selectedMap.name }}</div>
+    <div class="text-h6 text-center col-auto">{{ mapName }}</div>
 
     <q-separator />
 
@@ -143,13 +143,17 @@ export default {
       );
     },
     mapName: function() {
-      return this.selectedMap.name;
+      if (this.isMapUnderConstruction) {
+        return this.mapUnderConstruction.name;
+      } else {
+        return this.selectedMap.name;
+      }
     },
     workingArea: function() {
       if (this.isAreaUnderConstruction) {
-        return this.areaUnderConstruction
+        return this.areaUnderConstruction;
       } else {
-        return this.selectedArea
+        return this.selectedArea;
       }
     },
     squares: function() {
@@ -169,7 +173,9 @@ export default {
       selectedArea: 'builder/selectedArea',
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
-      areaUnderConstruction: 'builder/areaUnderConstruction'
+      areaUnderConstruction: 'builder/areaUnderConstruction',
+      isMapUnderConstruction: 'builder/isMapUnderConstruction',
+      mapUnderConstruction: 'builder/mapUnderConstruction'
     })
   }
 };

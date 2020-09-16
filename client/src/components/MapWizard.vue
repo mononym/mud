@@ -207,17 +207,13 @@ export default {
         request = this.$axios.patch('/maps/' + this.map.id, params);
       }
 
-      this.$store.dispatch('builder/putIsMapUnderConstruction', false);
-
       request
         .then(result => {
           if (this.isNew) {
-            this.$store.dispatch('builder/putMap', result.data).then(() => {
-              this.$store
-                .dispatch('builder/selectMap', result.data)
-                .then(() => {
-                  this.$emit('saved');
-                });
+            this.$store.dispatch('builder/selectMap', result.data).then(() => {
+              this.$store.dispatch('builder/putMap', result.data).then(() => {
+                this.$emit('saved');
+              });
             });
           } else {
             this.$store.dispatch('builder/updateMap', result.data).then(() => {
@@ -227,15 +223,24 @@ export default {
         })
         .catch(function() {
           alert('Error saving');
+        })
+        .finally(function() {
+          this.$store.dispatch('builder/putIsMapUnderConstruction', false);
         });
     }
   },
   watch: {
-    step: function() {
-      this.$store.dispatch(
-        'builder/putMapUnderConstruction',
-        Object.assign({}, this.map)
-      );
+    map: {
+      // This will let Vue know to look inside the array
+      deep: true,
+
+      // We have to move our method to a handler field
+      handler() {
+        this.$store.dispatch(
+          'builder/putMapUnderConstruction',
+          Object.assign({}, this.map)
+        );
+      }
     }
   }
 };
