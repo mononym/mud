@@ -37,11 +37,19 @@
     </template>
 
     <template v-slot:after>
-      <div class="col flex column full-height">
-        <div class="col">
-          <area-details @editArea="editArea" />
-        </div>
-        <div class="col">
+      <q-splitter
+        class="dashboardSplitter col-grow row"
+        v-model="mapSplitterModel"
+        unit="%"
+        horizontal
+      >
+        <template v-slot:before>
+          <div class="col full-height column">
+            <area-details @editArea="editArea" />
+          </div>
+        </template>
+
+        <template v-slot:after>
           <q-tab-panels
             v-model="areaPanel"
             animated
@@ -66,8 +74,8 @@
               />
             </q-tab-panel>
           </q-tab-panels>
-        </div>
-      </div>
+        </template>
+      </q-splitter>
     </template>
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
