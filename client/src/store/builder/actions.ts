@@ -68,6 +68,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   updateArea({ commit }, area: AreaInterface) {
     return new Promise(resolve => {
       commit('updateArea', area);
+      commit('putSelectedArea', area);
 
       resolve();
     });
