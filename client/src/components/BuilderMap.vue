@@ -61,15 +61,7 @@ import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuilderMap',
-  props: ['id'],
-  created() {
-    // look at values to see if there is an id for the map
-    // if there is an id check the database by using a getter to see if the data needs to be loaded
-    // if data needs to be loaded make a call to server to fetch the data and have it set the map data once loaded
-    // If there is no id the values can be left blank and nothing needs to be done
-    console.log('map id');
-    console.log(this.id);
-  },
+  created() {},
   data() {
     return {
       aspectRatio: { x: 16, y: 9 },
@@ -120,7 +112,7 @@ export default {
       return this.aspectRatio.y / this.aspectRatio.x;
     },
     gridSize: function() {
-      return this.selectedMap.gridSize;
+      return this.workingMap.gridSize;
     },
     viewBoxXSize: function() {
       return this.mapSize * this.zoomMultiplier;
@@ -129,7 +121,7 @@ export default {
       return this.mapSize * this.aspectRatioMultiplier * this.zoomMultiplier;
     },
     mapSize: function() {
-      return this.selectedMap.mapSize;
+      return this.workingMap.mapSize;
     },
     viewbox: function() {
       return (
@@ -143,18 +135,7 @@ export default {
       );
     },
     mapName: function() {
-      if (this.isMapUnderConstruction) {
-        return this.mapUnderConstruction.name;
-      } else {
-        return this.selectedMap.name;
-      }
-    },
-    workingArea: function() {
-      if (this.isAreaUnderConstruction) {
-        return this.areaUnderConstruction;
-      } else {
-        return this.selectedArea;
-      }
+        return this.workingMap.name;
     },
     squares: function() {
       return this.areas.map(area => ({
@@ -163,19 +144,17 @@ export default {
         y: area.mapY * this.gridSize + this.mapSize / 2,
         width: area.mapSize,
         height: area.mapSize,
-        fill: area.id === this.selectedArea.id ? 'green' : 'blue',
+        fill: area.id === this.workingArea.id ? 'green' : 'blue',
         name: area.name
       }));
     },
     ...mapGetters({
       areas: 'builder/areas',
-      selectedMap: 'builder/selectedMap',
-      selectedArea: 'builder/selectedArea',
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
-      areaUnderConstruction: 'builder/areaUnderConstruction',
       isMapUnderConstruction: 'builder/isMapUnderConstruction',
-      mapUnderConstruction: 'builder/mapUnderConstruction'
+      workingArea: 'builder/workingArea',
+      workingMap: 'builder/workingMap'
     })
   }
 };

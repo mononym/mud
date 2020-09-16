@@ -3,6 +3,7 @@ defmodule Mud.Engine.Map do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.Area
+  import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -31,7 +32,12 @@ defmodule Mud.Engine.Map do
   """
   @spec list_all :: [%__MODULE__{}]
   def list_all do
-    Repo.all(__MODULE__)
+    Repo.all(
+      from(
+        map in __MODULE__,
+        order_by: [desc: map.updated_at]
+      )
+    )
   end
 
   @doc """
@@ -90,9 +96,9 @@ defmodule Mud.Engine.Map do
 
   """
   def update(%__MODULE__{} = map, attrs) do
-      map
-      |> changeset(attrs)
-      |> Repo.update()
+    map
+    |> changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
@@ -122,7 +128,23 @@ defmodule Mud.Engine.Map do
   """
   def changeset(%__MODULE__{} = map, attrs \\ %{}) do
     map
-    |> cast(attrs, [:name, :description, :map_size, :grid_size, :max_zoom, :min_zoom, :default_zoom])
-    |> validate_required([:name, :description, :map_size, :grid_size, :max_zoom, :min_zoom, :default_zoom])
+    |> cast(attrs, [
+      :name,
+      :description,
+      :map_size,
+      :grid_size,
+      :max_zoom,
+      :min_zoom,
+      :default_zoom
+    ])
+    |> validate_required([
+      :name,
+      :description,
+      :map_size,
+      :grid_size,
+      :max_zoom,
+      :min_zoom,
+      :default_zoom
+    ])
   end
 end
