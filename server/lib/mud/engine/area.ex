@@ -73,7 +73,8 @@ defmodule Mud.Engine.Area do
     Repo.all(
       from(
         area in __MODULE__,
-        where: area.map_id == ^map_id
+        where: area.map_id == ^map_id,
+        order_by: [desc: area.updated_at]
       )
     )
   end
