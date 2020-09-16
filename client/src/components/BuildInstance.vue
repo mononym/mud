@@ -1,22 +1,22 @@
 <template>
   <div class="q-pa-md fit">
     <q-splitter
-      class="dashboardSplitter col full-height"
+      class="dashboardSplitter col fit"
       v-model="splitterModel"
       unit="%"
     >
       <template v-slot:before>
-        <div class="column full-height">
-          <div class="col">
+        <div class="column fit">
+          <div class="col fit">
             <builder-map />
           </div>
-          <div class="col">
+          <div class="col fit">
             <q-tab-panels
               v-model="mapPanel"
               animated
               class="shadow-2 rounded-borders fit"
             >
-              <q-tab-panel class="overflow-hidden" name="table">
+              <q-tab-panel class="overflow-hidden fit" name="table">
                 <map-table
                   @saved="mapSaved"
                   @selected="mapSelected"
@@ -25,7 +25,7 @@
                 />
               </q-tab-panel>
 
-              <q-tab-panel name="wizard">
+              <q-tab-panel class="fit" name="wizard">
                 <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
               </q-tab-panel>
             </q-tab-panels>
@@ -34,17 +34,17 @@
       </template>
 
       <template v-slot:after>
-        <div class="column full-height">
-          <div class="col">
+        <div class="column fit">
+          <div class="col fit">
             <area-details @editArea="editArea" />
           </div>
-          <div class="col">
+          <div class="col fit">
             <q-tab-panels
               v-model="areaPanel"
               animated
               class="shadow-2 rounded-borders fit row"
             >
-              <q-tab-panel name="table" class="col">
+              <q-tab-panel name="table" class="col fit">
                 <area-table
                   @saved="areaSaved"
                   @selected="areaSelected"
@@ -54,7 +54,7 @@
                 />
               </q-tab-panel>
 
-              <q-tab-panel name="wizard">
+              <q-tab-panel class="fit" name="wizard">
                 <area-wizard
                   @saved="areaSaved"
                   @mapSelected="areaMapSelected"

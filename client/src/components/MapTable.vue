@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md fit">
     <q-table
       title="Maps"
       :data="maps"
@@ -7,7 +7,7 @@
       row-key="id"
       flat
       bordered
-      class="full-height"
+      class="fit"
       :selected.sync="selectedRow"
       selection="single"
     >

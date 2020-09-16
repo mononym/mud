@@ -1,58 +1,60 @@
 <template>
-  <div class="fit column">
-    <div class="text-h6 text-center col-auto">{{ mapName }}</div>
+  <div class="q-pa-md fit">
+    <q-card flat bordered class="fit">
+      <q-card-section>
+        <div class="text-h6 text-center">{{ mapName }}</div>
+      </q-card-section>
 
-    <q-separator />
-
-    <div class="col">
-      <svg
-        width="100%"
-        height="100%"
-        class=""
-        :viewBox="viewbox"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        <line
-          v-for="line in lines"
-          :key="line.id"
-          :x1="line.x1"
-          :y1="line.y1"
-          :x2="line.x2"
-          :y2="line.y2"
-          stroke="black"
-        />
-        <rect
-          v-for="square in squares"
-          :key="square.key"
-          :x="square.x"
-          :y="square.y"
-          :width="square.width"
-          :height="square.height"
-          :fill="square.fill"
+      <q-card-section>
+        <svg
+          width="100%"
+          height="100%"
+          class=""
+          :viewBox="viewbox"
+          preserveAspectRatio="xMidYMid meet"
         >
-          <title>{{ square.name }}</title>
-        </rect>
-      </svg>
-    </div>
+          <line
+            v-for="line in lines"
+            :key="line.id"
+            :x1="line.x1"
+            :y1="line.y1"
+            :x2="line.x2"
+            :y2="line.y2"
+            stroke="black"
+          />
+          <rect
+            v-for="square in squares"
+            :key="square.key"
+            :x="square.x"
+            :y="square.y"
+            :width="square.width"
+            :height="square.height"
+            :fill="square.fill"
+          >
+            <title>{{ square.name }}</title>
+          </rect>
+        </svg>
+      </q-card-section>
 
-    <q-separator />
+      <q-separator dark />
 
-    <q-btn-group flat spread>
-      <q-btn
-        flat
-        class="action-button"
-        icon="fas fa-minus"
-        @click="zoomOut"
-        :disabled="zoomOutButtonDisabled"
-      />
-      <q-btn
-        flat
-        class="action-button"
-        icon="fas fa-plus"
-        @click="zoomIn"
-        :disabled="zoomInButtonDisabled"
-      />
-    </q-btn-group>
+      <q-card-actions>
+        <q-btn
+          flat
+          class="action-button"
+          icon="fas fa-minus"
+          @click="zoomOut"
+          :disabled="zoomOutButtonDisabled"
+        />
+        <q-btn
+          flat
+          class="action-button"
+          icon="fas fa-plus"
+          @click="zoomIn"
+          :disabled="zoomInButtonDisabled"
+        />
+      </q-card-actions>
+    </q-card>
   </div>
 </template>
 

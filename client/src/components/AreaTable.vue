@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md fit">
     <q-table
       title="Areas"
       :data="areas"
@@ -7,7 +7,7 @@
       row-key="id"
       flat
       bordered
-      class="full-height"
+      class="fit"
       :selected.sync="selectedRow"
       selection="single"
     >
@@ -168,4 +168,9 @@ export default {
 };
 </script>
 
-<style></style>
+<style>
+.q-table td, .q-table th {
+    /* don't shorten cell contents */
+    white-space: normal !important;
+}
+</style>
