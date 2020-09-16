@@ -1,11 +1,11 @@
 <template>
-  <div class="q-pa-md fit">
-    <q-card flat bordered class="fit">
-      <q-card-section>
+  <div class="q-pa-md col row">
+    <q-card flat bordered class="col column">
+      <q-card-section class="col-shrink">
         <div class="text-h6 text-center">{{ mapName }}</div>
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="col-grow">
         <svg
           width="100%"
           height="100%"
@@ -36,19 +36,19 @@
         </svg>
       </q-card-section>
 
-      <q-separator dark />
+      <q-separator class="col-1px full-width" dark />
 
-      <q-card-actions>
+      <q-card-actions class="col-shrink row">
         <q-btn
           flat
-          class="action-button"
+          class="action-button col"
           icon="fas fa-minus"
           @click="zoomOut"
           :disabled="zoomOutButtonDisabled"
         />
         <q-btn
           flat
-          class="action-button"
+          class="action-button col"
           icon="fas fa-plus"
           @click="zoomIn"
           :disabled="zoomInButtonDisabled"

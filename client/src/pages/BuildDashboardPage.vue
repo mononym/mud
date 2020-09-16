@@ -1,26 +1,26 @@
 <template>
-  <q-page class="dashboardPage">
+  <q-page class="dashboardPage fit">
     <q-card flat bordered class="my-card bg-primary">
-
       <q-card-section>
         <div class="text-h6 text-center">Instances</div>
       </q-card-section>
-      
+
       <q-separator />
-      
+
       <q-card-section v-if="instances.length > 0">
         <div class="q-pa-md">
           <li v-for="instance in instances" :key="instance.id">
             <q-card flat bordered class="my-card bg-primary">
-
               <q-card-section>
                 <div class="text-h6 text-center">{{ instance.name }}</div>
               </q-card-section>
-              
+
               <q-separator />
-              
+
               <q-card-section>
-                <div class="text-h6 text-center">{{ instance.description }} </div>
+                <div class="text-h6 text-center">
+                  {{ instance.description }}
+                </div>
               </q-card-section>
 
               <q-separator />
@@ -106,10 +106,8 @@ let instances = [];
 // Object.freeze(data);
 
 export default {
-  name: 'DashboardPage',
-  computed: {
-    
-   },
+  name: 'BuildDashboardPage',
+  computed: {},
   data() {
     return {
       instances,
@@ -136,14 +134,14 @@ export default {
       tab: 'quickActions'
     };
   },
-  mounted: function () {
-    this.$axios.get('/instances').then((response) => {
+  mounted: function() {
+    this.$axios.get('/instances').then(response => {
       this.instances = response.data.map(function(instance) {
-        instance['buildLink'] = 'build/' + instance.slug
-        
+        instance['buildLink'] = 'build/' + instance.slug;
+
         return instance;
-      })
-    })
+      });
+    });
   }
 };
 </script>

@@ -1,73 +1,74 @@
 <template>
-  <div class="q-pa-md fit">
-    <q-splitter
-      class="dashboardSplitter col fit"
-      v-model="splitterModel"
-      unit="%"
-    >
-      <template v-slot:before>
-        <div class="column fit">
-          <div class="col fit">
+  <q-splitter class="dashboardSplitter col" v-model="splitterModel" unit="%">
+    <template v-slot:before>
+      <q-splitter
+        class="dashboardSplitter col-grow row"
+        v-model="mapSplitterModel"
+        unit="%"
+        horizontal
+      >
+        <template v-slot:before>
+          <div class="col full-height column">
             <builder-map />
           </div>
-          <div class="col fit">
-            <q-tab-panels
-              v-model="mapPanel"
-              animated
-              class="shadow-2 rounded-borders fit"
-            >
-              <q-tab-panel class="overflow-hidden fit" name="table">
-                <map-table
-                  @saved="mapSaved"
-                  @selected="mapSelected"
-                  @editMap="editMap"
-                  @addMap="addMap"
-                />
-              </q-tab-panel>
+        </template>
 
-              <q-tab-panel class="fit" name="wizard">
-                <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
-              </q-tab-panel>
-            </q-tab-panels>
-          </div>
+        <template v-slot:after>
+          <q-tab-panels
+            v-model="mapPanel"
+            animated
+            class="rounded-borders full-height column"
+          >
+            <q-tab-panel id="table-panel" class="col column flex" name="table">
+              <map-table
+                @saved="mapSaved"
+                @selected="mapSelected"
+                @editMap="editMap"
+                @addMap="addMap"
+              />
+            </q-tab-panel>
+
+            <q-tab-panel class="col column" name="wizard">
+              <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
+            </q-tab-panel>
+          </q-tab-panels>
+        </template>
+      </q-splitter>
+    </template>
+
+    <template v-slot:after>
+      <div class="col flex column full-height">
+        <div class="col">
+          <area-details @editArea="editArea" />
         </div>
-      </template>
+        <div class="col">
+          <q-tab-panels
+            v-model="areaPanel"
+            animated
+            class="rounded-borders flex row full-height"
+          >
+            <q-tab-panel name="table" class="col column flex">
+              <area-table
+                @saved="areaSaved"
+                @selected="areaSelected"
+                @editArea="editArea"
+                @addArea="addArea"
+                @deleteArea="showDeleteAreaConfirmation"
+              />
+            </q-tab-panel>
 
-      <template v-slot:after>
-        <div class="column fit">
-          <div class="col fit">
-            <area-details @editArea="editArea" />
-          </div>
-          <div class="col fit">
-            <q-tab-panels
-              v-model="areaPanel"
-              animated
-              class="shadow-2 rounded-borders fit row"
-            >
-              <q-tab-panel name="table" class="col fit">
-                <area-table
-                  @saved="areaSaved"
-                  @selected="areaSelected"
-                  @editArea="editArea"
-                  @addArea="addArea"
-                  @deleteArea="showDeleteAreaConfirmation"
-                />
-              </q-tab-panel>
-
-              <q-tab-panel class="fit" name="wizard">
-                <area-wizard
-                  @saved="areaSaved"
-                  @mapSelected="areaMapSelected"
-                  @deleteArea="showDeleteAreaConfirmation"
-                  @canceled="cancelAreaEdit"
-                />
-              </q-tab-panel>
-            </q-tab-panels>
-          </div>
+            <q-tab-panel class="col flex" name="wizard">
+              <area-wizard
+                @saved="areaSaved"
+                @mapSelected="areaMapSelected"
+                @deleteArea="showDeleteAreaConfirmation"
+                @canceled="cancelAreaEdit"
+              />
+            </q-tab-panel>
+          </q-tab-panels>
         </div>
-      </template>
-    </q-splitter>
-
+      </div>
+    </template>
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -89,8 +90,12 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-  </div>
+  </q-splitter>
 </template>
+
+<style lang="sass">
+#map-table { padding-bottom: 0px !important; padding-top: 0px !important }
+</style>
 
 <script>
 import BuilderMap from '../components/BuilderMap.vue';
@@ -125,6 +130,7 @@ export default {
       areaPanel: 'table',
       loading: false,
       mapPanel: 'table',
+      mapSplitterModel: 50,
       splitterModel: 50,
       confirmDeleteArea: false
     };

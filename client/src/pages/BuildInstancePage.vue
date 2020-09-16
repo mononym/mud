@@ -1,13 +1,17 @@
 <template>
-  <q-page class="dashboardPage row">
+  <q-page class="build-instance-page col column">
     <q-splitter
-      class="dashboardSplitter col"
+      class="dashboardSplitter col-grow row"
       v-model="splitterModel"
       unit="px"
       disable
     >
       <template v-slot:before>
-        <q-tabs v-model="tab" vertical class="dashboardTabs text-teal">
+        <q-tabs
+          v-model="tab"
+          vertical
+          class="dashboardTabs text-teal col-shrink"
+        >
           <q-tab
             name="world"
             icon="fas fa-globe"
@@ -29,10 +33,10 @@
           animated
           transition-prev="jump-up"
           transition-next="jump-up"
-          class="fit"
+          class="col-grow full-height row"
         >
-          <q-tab-panel name="world">
-            <build-instance/>
+          <q-tab-panel class="col row p-a-none" name="world">
+            <build-instance />
           </q-tab-panel>
 
           <q-tab-panel name="lua">
@@ -54,7 +58,8 @@
 </template>
 
 <style lang="sass">
-
+.build-instance-page
+  max-height: calc(100vh - 50px) !important
 </style>
 
 <script>

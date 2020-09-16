@@ -1,6 +1,6 @@
 <template>
-  <q-layout view="hHh lpr lFf" class="layout">
-    <q-header>
+  <q-layout view="hHh lpr lFf" class="layout flex column">
+    <q-header class="col-shrink">
       <q-toolbar>
         <q-btn
           flat
@@ -55,7 +55,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-page-container>
+    <q-page-container class="flex col">
       <router-view />
     </q-page-container>
   </q-layout>
@@ -64,7 +64,7 @@
 <style lang="sass">
 .layout
   /* max height is important */
-  max-height: 100%
+  max-height: 100vh
 </style>
 
 <script lang="ts">

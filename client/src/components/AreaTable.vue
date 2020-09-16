@@ -42,7 +42,7 @@
 
       <template v-slot:body="props">
         <q-tr
-          class="cursor-pointer"
+          class="cursor-pointer map-table-row"
           :props="props"
           @click.exact="toggleSingleRow(props.row)"
         >
@@ -168,9 +168,8 @@ export default {
 };
 </script>
 
-<style>
-.q-table td, .q-table th {
-    /* don't shorten cell contents */
-    white-space: normal !important;
-}
+<style lang="sass">
+.q-table td, .q-table th {  white-space: normal !important; }
+
+.area-table-row {  border-bottom-width: 1 !important; }
 </style>

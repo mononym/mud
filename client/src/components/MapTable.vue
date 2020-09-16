@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md fit">
+  <div class="q-pa-md col column">
     <q-table
       title="Maps"
       :data="maps"
@@ -7,7 +7,7 @@
       row-key="id"
       flat
       bordered
-      class="fit"
+      class="col"
       :selected.sync="selectedRow"
       selection="single"
     >
@@ -37,11 +37,16 @@
 
       <template v-slot:body="props">
         <q-tr
-          class="cursor-pointer"
+          class="cursor-pointer map-table-row"
           :props="props"
           @click.exact="toggleSingleRow(props.row)"
         >
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+          <q-td
+            class="map-table-cell"
+            v-for="col in props.cols"
+            :key="col.name"
+            :props="props"
+          >
             <span v-if="col.name === 'actions'">
               <q-btn-group flat>
                 <q-btn
@@ -136,4 +141,6 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="sass">
+td.map-table-cell {  border-bottom-width: 1 !important; }
+</style>
