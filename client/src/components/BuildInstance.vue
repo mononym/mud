@@ -19,7 +19,7 @@
 
         <template v-slot:after>
           <q-tab-panels
-            v-model="mapPanel"
+            v-model="bottomLeftPanel"
             animated
             class="rounded-borders full-height column"
           >
@@ -55,11 +55,11 @@
 
         <template v-slot:after>
           <q-tab-panels
-            v-model="areaPanel"
+            v-model="bottomRightPanel"
             animated
             class="rounded-borders full-height column"
           >
-            <q-tab-panel name="table" class="col column flex q-pa-none">
+            <q-tab-panel name="areaTable" class="col column flex q-pa-none">
               <area-table
                 @saved="areaSaved"
                 @selected="areaSelected"
@@ -69,12 +69,22 @@
               />
             </q-tab-panel>
 
-            <q-tab-panel class="col column flex" name="wizard">
+            <q-tab-panel class="col column flex" name="areaWizard">
               <area-wizard
                 @saved="areaSaved"
                 @mapSelected="areaMapSelected"
                 @deleteArea="showDeleteAreaConfirmation"
                 @canceled="cancelAreaEdit"
+              />
+            </q-tab-panel>
+
+            <q-tab-panel class="col column flex" name="linkTable">
+              <link-table
+                @saved="linkSaved"
+                @selected="linkSelected"
+                @editLink="editLink"
+                @addLink="addLink"
+                @deleteLink="showDeleteLinkConfirmation"
               />
             </q-tab-panel>
           </q-tab-panels>
@@ -135,9 +145,9 @@ export default {
   },
   data() {
     return {
-      areaPanel: 'table',
+      bottomRightPanel: 'table',
       loading: false,
-      mapPanel: 'table',
+      bottomLeftPanel: 'table',
       areaSplitterModel: 50,
       mapSplitterModel: 50,
       splitterModel: 50,
@@ -152,28 +162,25 @@ export default {
   },
   methods: {
     addMap() {
-      this.mapPanel = 'wizard';
+      this.bottomLeftPanel = 'wizard';
     },
     addArea() {
-      this.areaPanel = 'wizard';
+      this.bottomRightPanel = 'areaWizard';
     },
     cancelAreaEdit() {
-      this.areaPanel = 'table';
+      this.bottomRightPanel = 'areaTable';
     },
     cancelMapEdit() {
-      this.mapPanel = 'table';
+      this.bottomLeftPanel = 'table';
     },
     mapSaved() {
-      this.mapPanel = 'table';
+      this.bottomLeftPanel = 'table';
     },
     mapSelected() {
-      this.areaPanel = 'table';
+      this.bottomRightPanel = 'areaTable';
     },
     areaSelected() {
-      // this.areaPanel = 'table';
-    },
-    areaMapSelected() {
-      // this.areaPanel = 'table';
+      // this.bottomRightPanel = 'table';
     },
     showDeleteAreaConfirmation() {
       this.confirmDeleteArea = true;
@@ -182,17 +189,17 @@ export default {
       this.$store.dispatch('builder/deleteArea');
     },
     editMap() {
-      this.areaPanel = 'table';
+      this.bottomRightPanel = 'areaTable';
 
-      this.mapPanel = 'wizard';
+      this.bottomLeftPanel = 'wizard';
     },
     editArea() {
       this.$store
         .dispatch('builder/putIsAreaUnderConstruction', true)
-        .then(() => (this.areaPanel = 'wizard'));
+        .then(() => (this.bottomRightPanel = 'areaWizard'));
     },
     areaSaved() {
-      this.areaPanel = 'table';
+      this.bottomRightPanel = 'areaTable';
     }
   }
 };
