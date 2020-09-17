@@ -7,12 +7,14 @@ import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
-  fetchAreasForMap({ commit, getters }, mapId: string) {
+  fetchDataForMap({ commit, getters }, mapId: string) {
     return new Promise((resolve, reject) => {
       axios
-        .get('/areas/map/' + mapId)
+        .get('/maps/' + mapId + '/data/')
         .then(function(response: AxiosResponse) {
-          commit('putAreas', response.data);
+          commit('putInternalAreas', response.data.internalAreas);
+          commit('putExternalAreas', response.data.externalAreas);
+          commit('putLinks', response.data.links);
 
           if (!getters['builder/isAreaSelected'] && response.data.length > 0) {
             commit('putSelectedArea', response.data[0]);
@@ -37,7 +39,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
 
           if (response.data.length > 0) {
             commit('putSelectedMap', response.data[0]);
-            void dispatch('fetchAreasForMap', response.data[0].id);
+            void dispatch('fetchDataForMap', response.data[0].id);
           }
 
           resolve();
@@ -133,7 +135,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   resetAreas({ commit }) {
     return new Promise(resolve => {
-      commit('putAreas', []);
+      commit('putInternalAreas', []);
       commit('putSelectedArea', { ...areaState });
 
       resolve();
@@ -171,7 +173,14 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   removeAreaById({ commit }, areaId: string) {
     commit('removeArea', areaId);
-  }
+  },
+  getArea({ state }, areaId: string) {
+    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, areaId)) {
+      return state.internalAreas[state.internalAreaIndex[areaId]]
+    } else {
+      return state.externalAreas[state.externalAreaIndex[areaId]]
+    }
+  },
 };
 
 export default actions;

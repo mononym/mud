@@ -3,15 +3,10 @@ defmodule MudWeb.AreaController do
 
   alias Mud.Engine.Area
 
-  action_fallback MudWeb.FallbackController
+  action_fallback(MudWeb.FallbackController)
 
   def index(conn, _params) do
     areas = Area.list_all()
-    render(conn, "index.json", areas: areas)
-  end
-
-  def get_areas_for_map(conn, %{"map_id" => map_id}) do
-    areas = Area.list_by_map(map_id)
     render(conn, "index.json", areas: areas)
   end
 
@@ -33,6 +28,7 @@ defmodule MudWeb.AreaController do
     IO.inspect(id, label: "getting")
     area = Area.get!(id)
     IO.inspect(area, label: "gotarea")
+
     with {:ok, %Area{} = area} <- Area.update(area, area_params) do
       IO.inspect(area, label: "updated")
       render(conn, "show.json", area: area)

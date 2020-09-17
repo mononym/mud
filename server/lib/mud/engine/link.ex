@@ -87,6 +87,21 @@ defmodule Mud.Engine.Link do
     )
   end
 
+  def list_map_links(map) when is_struct(map) do
+    list_in_region(map.id)
+  end
+
+  def list_map_links(map_id) do
+    Repo.all(
+      from(
+        link in __MODULE__,
+        join: area in Area,
+        on: area.id == link.to_id or area.id == link.from_id,
+        where: area.map_id == ^map_id
+      )
+    )
+  end
+
   @doc """
   Returns the list of links "from" a room where the type of the link is "obvious".
 

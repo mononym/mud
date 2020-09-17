@@ -2,7 +2,7 @@ defmodule Mud.Engine.Map do
   use Ecto.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.Area
+  alias Mud.Engine.{Area, Link}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -81,6 +81,55 @@ defmodule Mud.Engine.Map do
       error ->
         error
     end
+  end
+
+  @doc """
+  Returns a list of areas that are all related to a specific map.
+
+  This includes areas that are linked to the areas that actually belong to the map
+
+  ## Examples
+
+      iex> list_map_areas(42)
+      %{internal: [%Map{}], external: [%Map{}], links: [%Link{}]}
+
+  """
+  def fetch_data(map_id) do
+    internal_areas =
+      Repo.all(
+        from(
+          area in Area,
+          where: area.map_id == ^map_id
+        )
+      )
+
+    internal_ids = Enum.map(internal_areas, & &1.id) |> IO.inspect()
+
+    links =
+      Repo.all(
+        from(
+          link in Link,
+          where: link.to_id in ^internal_ids or link.from_id in ^internal_ids
+        )
+      )
+      |> IO.inspect()
+
+    external_ids =
+      links
+      |> Stream.flat_map(&[&1.to_id, &1.from_id])
+      |> Stream.uniq()
+      |> Enum.filter(&(&1 not in internal_ids))
+      |> IO.inspect()
+
+    external_areas =
+      Repo.all(
+        from(
+          area in Area,
+          where: area.id in ^external_ids
+        )
+      )
+
+    %{external_areas: external_areas, internal_areas: internal_areas, links: links}
   end
 
   @doc """

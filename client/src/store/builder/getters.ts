@@ -15,11 +15,20 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   selectedMap(state: BuilderInterface) {
     return state.selectedMap;
   },
-  areas(state: BuilderInterface) {
-    return state.areas;
+  internalAreas(state: BuilderInterface) {
+    return state.internalAreas;
+  },
+  externalAreas(state: BuilderInterface) {
+    return state.externalAreas;
   },
   maps(state: BuilderInterface) {
     return state.maps;
+  },
+  links(state: BuilderInterface) {
+    return state.links;
+  },
+  allAreas(state: BuilderInterface) {
+    return state.internalAreas.concat(state.externalAreas);
   },
   isAreaSelected(state: BuilderInterface) {
     return state.selectedArea.id !== '';

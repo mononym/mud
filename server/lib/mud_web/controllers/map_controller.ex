@@ -2,7 +2,7 @@ defmodule MudWeb.MapController do
   use MudWeb, :controller
 
   alias Mud.Engine
-  alias Mud.Engine.Map
+  alias Mud.Engine.{Area, Link, Map}
 
   action_fallback MudWeb.FallbackController
 
@@ -41,5 +41,9 @@ defmodule MudWeb.MapController do
     with {:ok, %Map{}} <- Map.delete(map) do
       send_resp(conn, :no_content, "")
     end
+  end
+
+  def fetch_data(conn, %{"map_id" => map_id}) do
+    render(conn, "data.json", Map.fetch_data(map_id))
   end
 end

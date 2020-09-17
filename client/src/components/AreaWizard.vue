@@ -213,7 +213,7 @@ export default {
         if (this.mapChanged) {
           request.then(result => {
             this.$store
-              .dispatch('builder/fetchAreasForMap', this.area.mapId)
+              .dispatch('builder/fetchDataForMap', this.area.mapId)
               .then(() =>
                 this.$store
                   .dispatch('builder/selectArea', result.data)

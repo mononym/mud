@@ -1,5 +1,7 @@
 defmodule MudWeb.MapView do
   use MudWeb, :view
+  alias MudWeb.AreaView
+  alias MudWeb.LinkView
   alias MudWeb.MapView
 
   def render("index.json", %{maps: maps}) do
@@ -22,6 +24,20 @@ defmodule MudWeb.MapView do
       defaultZoom: map.default_zoom,
       inserted_at: map.inserted_at,
       updated_at: map.updated_at
+    }
+  end
+
+  def render("data.json", data) do
+    %{
+      external_areas: external_areas,
+      internal_areas: internal_areas,
+      links: links
+    } = data
+
+    %{
+      externalAreas: render_many(external_areas, AreaView, "area.json"),
+      internalAreas: render_many(internal_areas, AreaView, "area.json"),
+      links: render_many(links, LinkView, "link.json")
     }
   end
 end

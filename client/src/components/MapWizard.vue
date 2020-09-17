@@ -182,7 +182,7 @@ export default {
       this.$store
         .dispatch('builder/putIsMapUnderConstruction', false)
         .then(() =>
-          this.$store.dispatch('builder/fetchAreasForMap', this.selectedMap.id)
+          this.$store.dispatch('builder/fetchDataForMap', this.selectedMap.id)
         )
         .then(() => this.$emit('canceled'));
     },

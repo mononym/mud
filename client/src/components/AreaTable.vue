@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md fit">
+  <div class="q-pa-md col column">
     <q-table
       title="Areas"
       :data="areas"
@@ -7,7 +7,7 @@
       row-key="id"
       flat
       bordered
-      class="fit"
+      class="col"
       :selected.sync="selectedRow"
       selection="single"
     >
@@ -42,11 +42,11 @@
 
       <template v-slot:body="props">
         <q-tr
-          class="cursor-pointer map-table-row"
+          class="cursor-pointer"
           :props="props"
           @click.exact="toggleSingleRow(props.row)"
         >
-          <q-td v-for="col in props.cols" :key="col.name" :props="props">
+          <q-td class="area-table-row" v-for="col in props.cols" :key="col.name" :props="props">
             <span v-if="col.name === 'actions'">
               <q-btn-group flat spread>
                 <q-btn
@@ -114,7 +114,7 @@ export default {
       return [this.$store.getters['builder/selectedArea']];
     },
     ...mapGetters({
-      areas: 'builder/areas',
+      areas: 'builder/internalAreas',
       selectedArea: 'builder/selectedArea',
       selectedMap: 'builder/selectedMap'
     })
@@ -171,5 +171,5 @@ export default {
 <style lang="sass">
 .q-table td, .q-table th {  white-space: normal !important; }
 
-.area-table-row {  border-bottom-width: 1 !important; }
+td.area-table-cell {  border-bottom-width: 1 !important; }
 </style>

@@ -19,7 +19,7 @@
             animated
             class="rounded-borders full-height column"
           >
-            <q-tab-panel id="table-panel" class="col column flex" name="table">
+            <q-tab-panel class="col column flex" name="table">
               <map-table
                 @saved="mapSaved"
                 @selected="mapSelected"
@@ -28,7 +28,7 @@
               />
             </q-tab-panel>
 
-            <q-tab-panel class="col column" name="wizard">
+            <q-tab-panel class="col column flex" name="wizard">
               <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
             </q-tab-panel>
           </q-tab-panels>
@@ -53,7 +53,7 @@
           <q-tab-panels
             v-model="areaPanel"
             animated
-            class="rounded-borders flex row full-height"
+            class="rounded-borders full-height column"
           >
             <q-tab-panel name="table" class="col column flex">
               <area-table
@@ -65,7 +65,7 @@
               />
             </q-tab-panel>
 
-            <q-tab-panel class="col flex" name="wizard">
+            <q-tab-panel class="col column flex" name="wizard">
               <area-wizard
                 @saved="areaSaved"
                 @mapSelected="areaMapSelected"

@@ -121,7 +121,7 @@ export default {
                 this.$store
                   .dispatch('builder/putMapUnderConstruction', this.selectedMap)
                   .then(() =>
-                    this.$store.dispatch('builder/fetchAreasForMap', map.id)
+                    this.$store.dispatch('builder/fetchDataForMap', map.id)
                   )
                   .then(() => this.$emit('editMap'))
               )
@@ -132,7 +132,7 @@ export default {
       if (this.selectedMap.id !== row.id) {
         this.$store.dispatch('builder/selectMap', row).then(() => {
           this.$store
-            .dispatch('builder/fetchAreasForMap', row.id)
+            .dispatch('builder/fetchDataForMap', row.id)
             .then(() => this.$emit('selected'));
         });
       }

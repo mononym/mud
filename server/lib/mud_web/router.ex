@@ -13,14 +13,13 @@ defmodule MudWeb.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug(:accepts, ["json"])
     plug(MudWeb.Plug.PutSecretKeyBase)
     plug(:fetch_session)
     # plug(:put_secure_browser_headers)
-    plug MudWeb.Plug.SlidingSessionTimeout, timeout_after_seconds: 604800
+    plug(MudWeb.Plug.SlidingSessionTimeout, timeout_after_seconds: 604_800)
     plug(MudWeb.Plug.SetPlayer)
   end
-
 
   pipeline :enforce_authentication do
     plug(MudWeb.Plug.RedirectAnonymousPlayer)
@@ -42,7 +41,7 @@ defmodule MudWeb.Router do
   scope "/", MudWeb do
     pipe_through([:api])
 
-    post "/csrf-token", CsrfTokenController, :get_token
+    post("/csrf-token", CsrfTokenController, :get_token)
 
     # Landing / Home page stuff
     # get("/", PageController, :show_landing_page)
@@ -55,32 +54,32 @@ defmodule MudWeb.Router do
     post("/authenticate/sync", PlayerAuthController, :sync_status)
     post("/authenticate/logout", PlayerAuthController, :logout)
 
-     # Player related stuff
-    post "/players/create", PlayerController, :create
-    post "/players/delete", PlayerController, :delete
-    post "/players/get", PlayerController, :get
-    post "/players/update", PlayerController, :update
+    # Player related stuff
+    post("/players/create", PlayerController, :create)
+    post("/players/delete", PlayerController, :delete)
+    post("/players/get", PlayerController, :get)
+    post("/players/update", PlayerController, :update)
 
     # Authenticated Player stuff
-    get "/player", PlayerController, :get_authenticated_player
-    get "/player/settings", PlayerController, :get_authenticated_player_settings
-    post "/player/settings", PlayerController, :save_authenticated_player_settings
+    get("/player", PlayerController, :get_authenticated_player)
+    get("/player/settings", PlayerController, :get_authenticated_player_settings)
+    post("/player/settings", PlayerController, :save_authenticated_player_settings)
 
     # Character related stuff
-    post "/characters/list-player-characters", CharacterController, :list_player_characters
-    post "/characters/create", CharacterController, :create
+    post("/characters/list-player-characters", CharacterController, :list_player_characters)
+    post("/characters/create", CharacterController, :create)
     # post "/characters/delete", CharacterController, :delete
-    post "/characters/get", CharacterController, :get
+    post("/characters/get", CharacterController, :get)
     # post "/characters/update", CharacterController, :update
-    get "/characters/get-creation-data", CharacterController, :get_creation_data
+    get("/characters/get-creation-data", CharacterController, :get_creation_data)
 
-    get "/instances", InstanceController, :list_all
+    get("/instances", InstanceController, :list_all)
 
     # Map related stuff
-    resources "/maps", MapController, except: [:new, :edit]
+    resources("/maps", MapController, except: [:new, :edit])
+    get("/maps/:map_id/data", MapController, :fetch_data)
 
     # Area related stuff
-    resources "/areas", AreaController, except: [:new, :edit]
-    get "/areas/map/:map_id", AreaController, :get_areas_for_map
+    resources("/areas", AreaController, except: [:new, :edit])
   end
 end

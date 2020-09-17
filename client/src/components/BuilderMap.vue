@@ -20,7 +20,7 @@
             :y1="line.y1"
             :x2="line.x2"
             :y2="line.y2"
-            stroke="black"
+            :stroke="line.stroke"
           />
           <rect
             v-for="square in squares"
@@ -67,7 +67,6 @@ export default {
   data() {
     return {
       aspectRatio: { x: 16, y: 9 },
-      lines: [{ id: 1, x1: 500, y1: 500, x2: 520, y2: 500 }],
       zoomMultipliers: [0.06, 0.125, 0.25, 0.5, 1, 2],
       zoomMultierIndex: 2
     };
@@ -81,6 +80,15 @@ export default {
     }
   },
   computed: {
+    areaIndex: function() {
+      const areaIndex = {};
+
+      this.areas.forEach((area, index) => {
+        areaIndex[area.id] = index;
+      });
+
+      return areaIndex;
+    },
     zoomOutButtonDisabled: function() {
       return this.zoomMultierIndex == this.zoomMultipliers.length - 1;
     },
@@ -137,21 +145,51 @@ export default {
       );
     },
     mapName: function() {
-        return this.workingMap.name;
+      return this.workingMap.name;
+    },
+    lines: function() {
+      const areaIndex = this.areaIndex;
+      const gridSize = this.gridSize;
+      const mapSize = this.mapSize;
+      const areas = this.areas;
+
+      return this.links.map(function(link) {
+        const toArea = areas[areaIndex[link.toId]];
+        const fromArea = areas[areaIndex[link.fromId]];
+
+        console.log(toArea);
+        console.log(fromArea);
+
+        return {
+          id: link.id,
+          x1: fromArea.mapX * gridSize + mapSize / 2,
+          y1: fromArea.mapY * gridSize + mapSize / 2,
+          x2: toArea.mapX * gridSize + mapSize / 2,
+          y2: toArea.mapY * gridSize + mapSize / 2,
+          stroke: 'white'
+        };
+      });
     },
     squares: function() {
+      const areaIndex = this.areaIndex;
+      const gridSize = this.gridSize;
+      const mapSize = this.mapSize;
+      const areas = this.areas;
+      const workingArea = this.workingArea;
+
       return this.areas.map(area => ({
         key: area.id,
-        x: area.mapX * this.gridSize + this.mapSize / 2,
-        y: area.mapY * this.gridSize + this.mapSize / 2,
+        x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
+        y: area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
         width: area.mapSize,
         height: area.mapSize,
-        fill: area.id === this.workingArea.id ? 'green' : 'blue',
+        fill: area.id === workingArea.id ? 'green' : 'blue',
         name: area.name
       }));
     },
     ...mapGetters({
-      areas: 'builder/areas',
+      links: 'builder/links',
+      areas: 'builder/allAreas',
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
       isMapUnderConstruction: 'builder/isMapUnderConstruction',
