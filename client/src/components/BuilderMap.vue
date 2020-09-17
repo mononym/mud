@@ -30,6 +30,8 @@
             :width="square.width"
             :height="square.height"
             :fill="square.fill"
+            class="cursor-pointer"
+            @click="selectArea(square.key)"
           >
             <title>{{ square.name }}</title>
           </rect>
@@ -77,6 +79,12 @@ export default {
     },
     zoomOut() {
       this.zoomMultierIndex++;
+    },
+    selectArea(areaId) {
+      this.$store.dispatch(
+        'builder/selectArea',
+        this.areas[this.areaIndex[areaId]]
+      );
     }
   },
   computed: {

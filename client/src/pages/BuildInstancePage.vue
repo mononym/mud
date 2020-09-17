@@ -64,12 +64,10 @@
 
 <script>
 import BuildInstance from '../components/BuildInstance.vue';
-import WorldMap from '../components/WorldMap.vue';
 
 export default {
   name: 'BuildInstancePage',
-  computed: {},
-  components: { BuildInstance, WorldMap },
+  components: { BuildInstance },
   data() {
     return {
       scripts: [],

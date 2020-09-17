@@ -23,7 +23,7 @@
             animated
             class="rounded-borders full-height column"
           >
-            <q-tab-panel class="col column flex" name="table">
+            <q-tab-panel class="col column flex q-pa-none" name="table">
               <map-table
                 @saved="mapSaved"
                 @selected="mapSelected"
@@ -43,7 +43,7 @@
     <template v-slot:after>
       <q-splitter
         class="areaSplitter col-grow row"
-        v-model="mapSplitterModel"
+        v-model="areaSplitterModel"
         unit="%"
         horizontal
       >
@@ -59,7 +59,7 @@
             animated
             class="rounded-borders full-height column"
           >
-            <q-tab-panel name="table" class="col column flex">
+            <q-tab-panel name="table" class="col column flex q-pa-none">
               <area-table
                 @saved="areaSaved"
                 @selected="areaSelected"
@@ -122,12 +122,6 @@ import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuildInstance',
-  computed: {
-    ...mapGetters({
-      selectedArea: 'builder/selectedArea',
-      selectedMap: 'builder/selectedMap'
-    })
-  },
   created() {
     this.$store.dispatch('builder/fetchMaps');
   },
@@ -144,10 +138,17 @@ export default {
       areaPanel: 'table',
       loading: false,
       mapPanel: 'table',
+      areaSplitterModel: 50,
       mapSplitterModel: 50,
       splitterModel: 50,
       confirmDeleteArea: false
     };
+  },
+  computed: {
+    ...mapGetters({
+      selectedArea: 'builder/selectedArea',
+      selectedMap: 'builder/selectedMap'
+    })
   },
   methods: {
     addMap() {

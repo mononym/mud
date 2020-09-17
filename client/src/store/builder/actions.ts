@@ -16,8 +16,11 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
           commit('putExternalAreas', response.data.externalAreas);
           commit('putLinks', response.data.links);
 
-          if (!getters['builder/isAreaSelected'] && response.data.length > 0) {
-            commit('putSelectedArea', response.data[0]);
+          if (
+            !getters['builder/isAreaSelected'] &&
+            response.data.internalAreas.length > 0
+          ) {
+            commit('putSelectedArea', response.data.internalAreas[0]);
           }
 
           resolve();
@@ -176,11 +179,11 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   getArea({ state }, areaId: string) {
     if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, areaId)) {
-      return state.internalAreas[state.internalAreaIndex[areaId]]
+      return state.internalAreas[state.internalAreaIndex[areaId]];
     } else {
-      return state.externalAreas[state.externalAreaIndex[areaId]]
+      return state.externalAreas[state.externalAreaIndex[areaId]];
     }
-  },
+  }
 };
 
 export default actions;
