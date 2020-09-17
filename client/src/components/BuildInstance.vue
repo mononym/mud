@@ -1,8 +1,12 @@
 <template>
-  <q-splitter class="dashboardSplitter col" v-model="splitterModel" unit="%">
+  <q-splitter
+    class="buildInstanceSplitter col"
+    v-model="splitterModel"
+    unit="%"
+  >
     <template v-slot:before>
       <q-splitter
-        class="dashboardSplitter col-grow row"
+        class="mapSplitter col-grow row"
         v-model="mapSplitterModel"
         unit="%"
         horizontal
@@ -38,7 +42,7 @@
 
     <template v-slot:after>
       <q-splitter
-        class="dashboardSplitter col-grow row"
+        class="areaSplitter col-grow row"
         v-model="mapSplitterModel"
         unit="%"
         horizontal
@@ -103,6 +107,8 @@
 
 <style lang="sass">
 #map-table { padding-bottom: 0px !important; padding-top: 0px !important }
+
+.buildInstanceSplitter { max-height: calc(100vh - 50px) }
 </style>
 
 <script>

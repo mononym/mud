@@ -35,7 +35,7 @@
           transition-next="jump-up"
           class="col-grow full-height row"
         >
-          <q-tab-panel class="col row p-a-none" name="world">
+          <q-tab-panel class="col row q-pa-none" name="world">
             <build-instance />
           </q-tab-panel>
 
