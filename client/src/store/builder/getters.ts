@@ -6,14 +6,8 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   selectedAreaId(state: BuilderInterface) {
     return state.selectedArea.id;
   },
-  selectedMapId(state: BuilderInterface) {
-    return state.selectedMap.id;
-  },
   selectedArea(state: BuilderInterface) {
     return state.selectedArea;
-  },
-  selectedMap(state: BuilderInterface) {
-    return state.selectedMap;
   },
   internalAreas(state: BuilderInterface) {
     return state.internalAreas;
@@ -21,20 +15,18 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   externalAreas(state: BuilderInterface) {
     return state.externalAreas;
   },
-  maps(state: BuilderInterface) {
-    return state.maps;
-  },
-  links(state: BuilderInterface) {
-    return state.links;
-  },
   allAreas(state: BuilderInterface) {
     return state.internalAreas.concat(state.externalAreas);
   },
   isAreaSelected(state: BuilderInterface) {
     return state.selectedArea.id !== '';
   },
-  isMapSelected(state: BuilderInterface) {
-    return state.selectedMap.id !== '';
+  workingArea(state: BuilderInterface) {
+    if (state.isAreaUnderConstruction) {
+      return state.areaUnderConstruction;
+    } else {
+      return state.selectedArea;
+    }
   },
   isAreaUnderConstruction(state: BuilderInterface) {
     return state.isAreaUnderConstruction;
@@ -45,6 +37,49 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   areaUnderConstruction(state: BuilderInterface) {
     return state.areaUnderConstruction;
   },
+  internalLinks(state: BuilderInterface) {
+    return state.internalLinks;
+  },
+  externalLinks(state: BuilderInterface) {
+    return state.externalLinks;
+  },
+  allLinks(state: BuilderInterface) {
+    return state.internalLinks.concat(state.externalLinks);
+  },
+  isLinkSelected(state: BuilderInterface) {
+    return state.selectedLink.id !== '';
+  },
+  workingLink(state: BuilderInterface) {
+    if (state.isLinkUnderConstruction) {
+      return state.linkUnderConstruction;
+    } else {
+      return state.selectedLink;
+    }
+  },
+  selectedLink(state: BuilderInterface) {
+    return state.selectedLink;
+  },
+  isLinkUnderConstruction(state: BuilderInterface) {
+    return state.isLinkUnderConstruction;
+  },
+  isLinkUnderConstructionNew(state: BuilderInterface) {
+    return state.isLinkUnderConstructionNew;
+  },
+  linkUnderConstruction(state: BuilderInterface) {
+    return state.linkUnderConstruction;
+  },
+  maps(state: BuilderInterface) {
+    return state.maps;
+  },
+  selectedMap(state: BuilderInterface) {
+    return state.selectedMap;
+  },
+  selectedMapId(state: BuilderInterface) {
+    return state.selectedMap.id;
+  },
+  isMapSelected(state: BuilderInterface) {
+    return state.selectedMap.id !== '';
+  },
   isMapUnderConstruction(state: BuilderInterface) {
     return state.isMapUnderConstruction;
   },
@@ -53,13 +88,6 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   },
   mapUnderConstruction(state: BuilderInterface) {
     return state.mapUnderConstruction;
-  },
-  workingArea(state: BuilderInterface) {
-    if (state.isAreaUnderConstruction) {
-      return state.areaUnderConstruction;
-    } else {
-      return state.selectedArea;
-    }
   },
   workingMap(state: BuilderInterface) {
     if (state.isMapUnderConstruction) {

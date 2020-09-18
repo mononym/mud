@@ -3,8 +3,10 @@ import { StateInterface } from '../index';
 import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
+import { LinkInterface } from '../link/state';
 import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
+import linkState from '../area/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchDataForMap({ commit, getters }, mapId: string) {
@@ -14,7 +16,8 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
         .then(function(response: AxiosResponse) {
           commit('putInternalAreas', response.data.internalAreas);
           commit('putExternalAreas', response.data.externalAreas);
-          commit('putLinks', response.data.links);
+          commit('putInternalLinks', response.data.internalLinks);
+          commit('putExternalLinks', response.data.externalLinks);
 
           if (
             !getters['builder/isAreaSelected'] &&
@@ -54,6 +57,57 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
         });
     });
   },
+  updateMap({ commit }, map: MapInterface) {
+    return new Promise(resolve => {
+      commit('updateMap', map);
+
+      resolve();
+    });
+  },
+  putIsMapUnderConstructionNew({ commit }, isIt: boolean) {
+    return new Promise(resolve => {
+      commit('putIsMapUnderConstructionNew', isIt);
+
+      resolve();
+    });
+  },
+  putIsMapUnderConstruction({ commit }, isIt: boolean) {
+    return new Promise(resolve => {
+      commit('putIsMapUnderConstruction', isIt);
+
+      resolve();
+    });
+  },
+  selectMap({ commit, state }, map: MapInterface) {
+    return new Promise(resolve => {
+      if (state.selectedMap.id !== map.id) {
+        commit('putSelectedMap', map);
+      }
+
+      resolve();
+    });
+  },
+  addMap({ commit }, map: string) {
+    return new Promise(resolve => {
+      commit('addMap', map);
+
+      resolve();
+    });
+  },
+  putMap({ commit }, map: MapInterface) {
+    return new Promise(resolve => {
+      commit('putMap', map);
+
+      resolve();
+    });
+  },
+  putMapUnderConstruction({ commit }, map: MapInterface) {
+    return new Promise(resolve => {
+      commit('putMapUnderConstruction', map);
+
+      resolve();
+    });
+  },
   deleteArea({ commit, state }) {
     return new Promise((resolve, reject) => {
       axios
@@ -78,13 +132,6 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
-  updateMap({ commit }, map: MapInterface) {
-    return new Promise(resolve => {
-      commit('updateMap', map);
-
-      resolve();
-    });
-  },
   selectArea({ commit, state }, area: AreaInterface) {
     return new Promise(resolve => {
       if (state.selectedArea.id !== area.id) {
@@ -97,20 +144,6 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   putIsAreaUnderConstructionNew({ commit }, isIt: boolean) {
     return new Promise(resolve => {
       commit('putIsAreaUnderConstructionNew', isIt);
-
-      resolve();
-    });
-  },
-  putIsMapUnderConstructionNew({ commit }, isIt: boolean) {
-    return new Promise(resolve => {
-      commit('putIsMapUnderConstructionNew', isIt);
-
-      resolve();
-    });
-  },
-  putIsMapUnderConstruction({ commit }, isIt: boolean) {
-    return new Promise(resolve => {
-      commit('putIsMapUnderConstruction', isIt);
 
       resolve();
     });
@@ -129,13 +162,6 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
-  putMapUnderConstruction({ commit }, map: MapInterface) {
-    return new Promise(resolve => {
-      commit('putMapUnderConstruction', map);
-
-      resolve();
-    });
-  },
   resetAreas({ commit }) {
     return new Promise(resolve => {
       commit('putInternalAreas', []);
@@ -144,32 +170,9 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
-  selectMap({ commit, state }, map: MapInterface) {
-    return new Promise(resolve => {
-      if (state.selectedMap.id !== map.id) {
-        commit('putSelectedMap', map);
-      }
-
-      resolve();
-    });
-  },
-  addMap({ commit }, map: string) {
-    return new Promise(resolve => {
-      commit('addMap', map);
-
-      resolve();
-    });
-  },
   putArea({ commit }, area: AreaInterface) {
     return new Promise(resolve => {
       commit('putArea', area);
-
-      resolve();
-    });
-  },
-  putMap({ commit }, map: MapInterface) {
-    return new Promise(resolve => {
-      commit('putMap', map);
 
       resolve();
     });
@@ -183,6 +186,67 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     } else {
       return state.externalAreas[state.externalAreaIndex[areaId]];
     }
+  },
+  deleteLink({ commit, state }) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/links/' + state.selectedLink.id)
+        .then(function() {
+          commit('deleteLink', state.selectedLink.id);
+
+          resolve();
+        })
+        .catch(function() {
+          alert('Error when fetching maps');
+
+          reject();
+        });
+    });
+  },
+  updateLink({ commit }, link: LinkInterface) {
+    return new Promise(resolve => {
+      commit('updateLink', link);
+      commit('putSelectedLink', link);
+
+      resolve();
+    });
+  },
+  selectLink({ commit, state }, link: LinkInterface) {
+    return new Promise(resolve => {
+      if (state.selectedLink.id !== link.id) {
+        commit('putSelectedLink', link);
+      }
+
+      resolve();
+    });
+  },
+  putIsLinkUnderConstructionNew({ commit }, isIt: boolean) {
+    return new Promise(resolve => {
+      commit('putIsLinkUnderConstructionNew', isIt);
+
+      resolve();
+    });
+  },
+  putIsLinkUnderConstruction({ commit }, isIt: boolean) {
+    return new Promise(resolve => {
+      commit('putIsLinkUnderConstruction', isIt);
+
+      resolve();
+    });
+  },
+  putLinkUnderConstruction({ commit }, link: LinkInterface) {
+    return new Promise(resolve => {
+      commit('putLinkUnderConstruction', link);
+
+      resolve();
+    });
+  },
+  addLink({ commit }, link: LinkInterface) {
+    return new Promise(resolve => {
+      commit('addLink', link);
+
+      resolve();
+    });
   }
 };
 

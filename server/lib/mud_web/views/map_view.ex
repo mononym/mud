@@ -31,13 +31,15 @@ defmodule MudWeb.MapView do
     %{
       external_areas: external_areas,
       internal_areas: internal_areas,
-      links: links
+      external_links: external_links,
+      internal_links: internal_links
     } = data
 
     %{
       externalAreas: render_many(external_areas, AreaView, "area.json"),
       internalAreas: render_many(internal_areas, AreaView, "area.json"),
-      links: render_many(links, LinkView, "link.json")
+      externalLinks: render_many(external_links, LinkView, "link.json"),
+      internalLinks: render_many(internal_links, LinkView, "link.json")
     }
   end
 end

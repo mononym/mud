@@ -26,59 +26,11 @@ const mutation: MutationTree<BuilderInterface> = {
 
     state.externalAreas.push(area);
   },
-  putIsMapUnderConstruction(state: BuilderInterface, isIt: boolean) {
-    state.isMapUnderConstruction = isIt;
-  },
-  putIsMapUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
-    state.isMapUnderConstructionNew = isIt;
-  },
-  putMapUnderConstruction(state: BuilderInterface, map: MapInterface) {
-    state.mapUnderConstruction = map;
-  },
-  putSelectedMap(state: BuilderInterface, map: MapInterface) {
-    state.selectedMap = map;
-  },
   putSelectedArea(state: BuilderInterface, area: AreaInterface) {
     state.selectedArea = area;
   },
   updateArea(state: BuilderInterface, area: AreaInterface) {
     Vue.set(state.internalAreas, state.internalAreaIndex[area.id], area);
-  },
-  updateMap(state: BuilderInterface, map: MapInterface) {
-    Vue.set(state.maps, state.mapIndex[map.id], map);
-  },
-  putIsLinkUnderConstruction(state: BuilderInterface, isIt: boolean) {
-    state.isLinkUnderConstruction = isIt;
-  },
-  putIsLinkUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
-    state.isLinkUnderConstructionNew = isIt;
-  },
-  putLinkUnderConstruction(state: BuilderInterface, link: LinkInterface) {
-    state.linkUnderConstruction = link;
-  },
-  putSelectedLink(state: BuilderInterface, link: LinkInterface) {
-    state.selectedLink = link;
-  },
-  updateLink(state: BuilderInterface, link: LinkInterface) {
-    Vue.set(state.links, state.linkIndex[link.id], link);
-  },
-  putLink(state: BuilderInterface, link: LinkInterface) {
-    Vue.set(state.linkIndex, link.id, state.links.length);
-
-    state.links.push(link);
-  },
-  addLink(state: BuilderInterface, link: LinkInterface) {
-    Vue.set(state.linkIndex, link.id, state.links.length);
-
-    state.links.push(link);
-  },
-  putLinks(state: BuilderInterface, links: LinkInterface[]) {
-    state.links = links;
-    state.linkIndex = {};
-
-    state.links.forEach((link, index) => {
-      Vue.set(state.linkIndex, link.id, index);
-    });
   },
   deleteArea(state: BuilderInterface) {
     state.internalAreas.splice(
@@ -107,6 +59,64 @@ const mutation: MutationTree<BuilderInterface> = {
     state.externalAreas.forEach((area, index) => {
       Vue.set(state.externalAreaIndex, area.id, index);
     });
+  },
+  putIsLinkUnderConstruction(state: BuilderInterface, isIt: boolean) {
+    state.isLinkUnderConstruction = isIt;
+  },
+  putIsLinkUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
+    state.isLinkUnderConstructionNew = isIt;
+  },
+  putLinkUnderConstruction(state: BuilderInterface, link: LinkInterface) {
+    state.linkUnderConstruction = link;
+  },
+  putSelectedLink(state: BuilderInterface, link: LinkInterface) {
+    state.selectedLink = link;
+  },
+  updateLink(state: BuilderInterface, link: LinkInterface) {
+    if (
+      Object.prototype.hasOwnProperty.call(state.internalLinkIndex, link.id)
+    ) {
+      Vue.set(state.internalLinks, state.internalLinkIndex[link.id], link);
+    } else {
+      Vue.set(state.externalLinks, state.externalLinkIndex[link.id], link);
+    }
+  },
+  // TODO: This function is going to need to deal with internal/external links and how to insert them
+  addLink(state: BuilderInterface, link: LinkInterface) {
+    Vue.set(state.internalLinkIndex, link.id, state.internalLinks.length);
+
+    state.internalLinks.push(link);
+  },
+  putInternalLinks(state: BuilderInterface, links: LinkInterface[]) {
+    state.internalLinks = links;
+    state.internalLinkIndex = {};
+
+    state.internalLinks.forEach((link, index) => {
+      Vue.set(state.internalLinkIndex, link.id, index);
+    });
+  },
+  putExternalLinks(state: BuilderInterface, links: LinkInterface[]) {
+    state.externalLinks = links;
+    state.externalLinkIndex = {};
+
+    state.externalLinks.forEach((link, index) => {
+      Vue.set(state.externalLinkIndex, link.id, index);
+    });
+  },
+  putIsMapUnderConstruction(state: BuilderInterface, isIt: boolean) {
+    state.isMapUnderConstruction = isIt;
+  },
+  putIsMapUnderConstructionNew(state: BuilderInterface, isIt: boolean) {
+    state.isMapUnderConstructionNew = isIt;
+  },
+  putMapUnderConstruction(state: BuilderInterface, map: MapInterface) {
+    state.mapUnderConstruction = map;
+  },
+  putSelectedMap(state: BuilderInterface, map: MapInterface) {
+    state.selectedMap = map;
+  },
+  updateMap(state: BuilderInterface, map: MapInterface) {
+    Vue.set(state.maps, state.mapIndex[map.id], map);
   },
   putMap(state: BuilderInterface, map: MapInterface) {
     Vue.set(state.mapIndex, map.id, state.maps.length);

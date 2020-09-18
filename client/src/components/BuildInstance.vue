@@ -1,13 +1,13 @@
 <template>
   <q-splitter
-    class="buildInstanceSplitter col"
     v-model="splitterModel"
+    class="buildInstanceSplitter col"
     unit="%"
   >
     <template v-slot:before>
       <q-splitter
-        class="mapSplitter col-grow row"
         v-model="mapSplitterModel"
+        class="mapSplitter col-grow row"
         unit="%"
         horizontal
       >
@@ -42,8 +42,8 @@
 
     <template v-slot:after>
       <q-splitter
-        class="areaSplitter col-grow row"
         v-model="areaSplitterModel"
+        class="areaSplitter col-grow row"
         unit="%"
         horizontal
       >
@@ -72,7 +72,6 @@
             <q-tab-panel class="col column flex" name="areaWizard">
               <area-wizard
                 @saved="areaSaved"
-                @mapSelected="areaMapSelected"
                 @deleteArea="showDeleteAreaConfirmation"
                 @canceled="cancelAreaEdit"
               />
@@ -102,13 +101,13 @@
 
         <q-card-actions align="right">
           <q-btn
+            v-close-popup
             flat
             label="Delete"
             color="primary"
-            v-close-popup
             @click="deleteArea"
           />
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn v-close-popup flat label="Cancel" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -125,6 +124,7 @@
 import BuilderMap from '../components/BuilderMap.vue';
 import AreaWizard from '../components/AreaWizard.vue';
 import AreaTable from '../components/AreaTable.vue';
+import LinkTable from '../components/LinkTable.vue';
 import MapWizard from '../components/MapWizard.vue';
 import MapTable from '../components/MapTable.vue';
 import AreaDetails from '../components/AreaDetails.vue';
@@ -132,20 +132,18 @@ import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuildInstance',
-  created() {
-    this.$store.dispatch('builder/fetchMaps');
-  },
   components: {
     AreaDetails,
     AreaTable,
     AreaWizard,
+    LinkTable,
     MapTable,
     MapWizard,
     BuilderMap
   },
   data() {
     return {
-      bottomRightPanel: 'table',
+      bottomRightPanel: 'areaTable',
       loading: false,
       bottomLeftPanel: 'table',
       areaSplitterModel: 50,
@@ -159,6 +157,9 @@ export default {
       selectedArea: 'builder/selectedArea',
       selectedMap: 'builder/selectedMap'
     })
+  },
+  created() {
+    this.$store.dispatch('builder/fetchMaps');
   },
   methods: {
     addMap() {
@@ -181,6 +182,21 @@ export default {
     },
     areaSelected() {
       // this.bottomRightPanel = 'table';
+    },
+    linkSelected() {
+      // this.bottomRightPanel = 'table';
+    },
+    linkSaved() {
+      // this.bottomRightPanel = 'linkWizard';
+    },
+    addLink() {
+      this.bottomRightPanel = 'linkWizard';
+    },
+    editLink() {
+      // this.bottomRightPanel = 'table';
+    },
+    showDeleteLinkConfirmation() {
+      this.confirmDeleteArea = true;
     },
     showDeleteAreaConfirmation() {
       this.confirmDeleteArea = true;

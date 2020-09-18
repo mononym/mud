@@ -45,15 +45,15 @@
           flat
           class="action-button col"
           icon="fas fa-minus"
-          @click="zoomOut"
           :disabled="zoomOutButtonDisabled"
+          @click="zoomOut"
         />
         <q-btn
           flat
           class="action-button col"
           icon="fas fa-plus"
-          @click="zoomIn"
           :disabled="zoomInButtonDisabled"
+          @click="zoomIn"
         />
       </q-card-actions>
     </q-card>
@@ -65,27 +65,12 @@ import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuilderMap',
-  created() {},
   data() {
     return {
       aspectRatio: { x: 16, y: 9 },
       zoomMultipliers: [0.06, 0.125, 0.25, 0.5, 1, 2],
       zoomMultierIndex: 2
     };
-  },
-  methods: {
-    zoomIn() {
-      this.zoomMultierIndex--;
-    },
-    zoomOut() {
-      this.zoomMultierIndex++;
-    },
-    selectArea(areaId) {
-      this.$store.dispatch(
-        'builder/selectArea',
-        this.areas[this.areaIndex[areaId]]
-      );
-    }
   },
   computed: {
     areaIndex: function() {
@@ -165,9 +150,6 @@ export default {
         const toArea = areas[areaIndex[link.toId]];
         const fromArea = areas[areaIndex[link.fromId]];
 
-        console.log(toArea);
-        console.log(fromArea);
-
         return {
           id: link.id,
           x1: fromArea.mapX * gridSize + mapSize / 2,
@@ -179,10 +161,8 @@ export default {
       });
     },
     squares: function() {
-      const areaIndex = this.areaIndex;
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
-      const areas = this.areas;
       const workingArea = this.workingArea;
 
       return this.areas.map(area => ({
@@ -196,7 +176,7 @@ export default {
       }));
     },
     ...mapGetters({
-      links: 'builder/links',
+      links: 'builder/allLinks',
       areas: 'builder/allAreas',
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
@@ -204,6 +184,20 @@ export default {
       workingArea: 'builder/workingArea',
       workingMap: 'builder/workingMap'
     })
+  },
+  methods: {
+    zoomIn() {
+      this.zoomMultierIndex--;
+    },
+    zoomOut() {
+      this.zoomMultierIndex++;
+    },
+    selectArea(areaId) {
+      this.$store.dispatch(
+        'builder/selectArea',
+        this.areas[this.areaIndex[areaId]]
+      );
+    }
   }
 };
 </script>
