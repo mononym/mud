@@ -206,13 +206,13 @@ defmodule Mud.Account do
 
             IO.inspect(player)
 
-            {:ok, player |> Repo.preload(:tags)}
+            {:ok, player}
 
           "login" ->
             player = Mud.Repo.one!(player_select_query)
             IO.inspect(player)
 
-            {:ok, player |> Repo.preload(:tags)}
+            {:ok, player}
         end
     end
   end
