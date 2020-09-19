@@ -6,7 +6,6 @@ import { MapInterface } from '../map/state';
 import { LinkInterface } from '../link/state';
 import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
-import linkState from '../area/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchDataForMap({ commit, getters }, mapId: string) {

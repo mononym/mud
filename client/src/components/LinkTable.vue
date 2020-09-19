@@ -1,13 +1,14 @@
 <template>
-  <div class="q-pa-md col column">
+  <div class="q-pa-md col column link-table-wrapper">
     <q-table
       title="Links"
-      :data="links"
+      :data="normalizedLinks"
       :columns="linkTableColumns"
       row-key="id"
       flat
       bordered
-      class="col"
+      dense
+      class="col sticky-header-table"
       :selected.sync="selectedRow"
       selection="single"
     >
@@ -62,19 +63,17 @@
                 />
                 <q-btn
                   flat
-                  label="Link"
-                  icon="fas fa-link"
-                  v-on:click.stop="linkLink(props.row)"
-                  v-if="props.row.id !== selectedLinkId && selectedLinkId != ''"
-                />
-                <q-btn
-                  flat
                   label="Delete"
                   icon="fas fa-trash"
                   @click="deleteLink"
                 />
               </q-btn-group>
             </span>
+
+            <span v-else-if="col.name === 'icon'">
+              <q-icon :name="props.row.icon" />
+            </span>
+
             <span v-else>
               {{ col.value }}
             </span>
@@ -116,8 +115,8 @@ const linkTableColumns = [
     sortable: true
   },
   { name: 'icon', label: 'Icon', field: 'icon', sortable: false },
-  { name: 'toId', label: 'To', field: 'toId', sortable: false },
-  { name: 'fromId', label: 'From', field: 'fromId', sortable: false }
+  { name: 'to', label: 'To', field: 'toName', sortable: true },
+  { name: 'from', label: 'From', field: 'fromName', sortable: true }
 ];
 
 export default {
@@ -131,7 +130,7 @@ export default {
   },
   computed: {
     addLinkButtonDisabled: function() {
-      return !this.$store.getters['builder/isMapSelected'];
+      return !this.$store.getters['builder/isAreaSelected'];
     },
     selectedLinkId: function() {
       return this.selectedLink.id;
@@ -142,20 +141,34 @@ export default {
     selectedRow: function() {
       return [this.$store.getters['builder/selectedLink']];
     },
+    normalizedLinks: function() {
+      const areaIndex = {};
+
+      this.areas.forEach((area, index) => {
+        areaIndex[area.id] = index;
+      });
+
+      const areas = this.areas;
+
+      const links = this.links.map(link => {
+        link['toName'] = areas[areaIndex[link.toId]].name;
+        link['fromName'] = areas[areaIndex[link.fromId]].name;
+
+        return link;
+      });
+
+      return links;
+    },
     ...mapGetters({
-      links: 'builder/allLinks',
+      links: 'builder/workingAreaLinks',
       selectedLink: 'builder/selectedLink',
-      selectedMap: 'builder/selectedMap'
+      areas: 'builder/allAreas'
     })
   },
-  created() {},
-  validations: {},
   methods: {
     addLink() {
       const newLink = { ...linkState };
       newLink.mapId = this.selectedMapId;
-      console.log('newlink');
-      console.log(newLink);
       this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
       this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
       this.$store.dispatch('builder/putLinkUnderConstruction', newLink);
@@ -196,4 +209,27 @@ export default {
 .q-table td, .q-table th {  white-space: normal !important; }
 
 td.link-table-cell {  border-bottom-width: 1 !important; }
+
+.link-table-wrapper {  max-height: 100% }
+
+.sticky-header-table
+  /* height or max-height is important */
+  height: 310px
+
+  .q-table__top,
+  .q-table__bottom,
+  thead tr:first-child th
+    /* bg color is important for th; just specify one */
+    background-color: #1D1D1D
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
+
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th
+    /* height of all previous header rows */
+    top: 48px
 </style>

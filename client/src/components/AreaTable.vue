@@ -97,9 +97,13 @@ const areaTableColumns = [
 
 export default {
   name: 'AreaTable',
-  props: [],
   components: {},
-  created() {},
+  data() {
+    return {
+      areaTableColumns,
+      areaTableFilter: ''
+    };
+  },
   computed: {
     addAreaButtonDisabled: function() {
       return !this.$store.getters['builder/isMapSelected'];
@@ -119,12 +123,7 @@ export default {
       selectedMap: 'builder/selectedMap'
     })
   },
-  data() {
-    return {
-      areaTableColumns,
-      areaTableFilter: ''
-    };
-  },
+  created() {},
   validations: {},
   methods: {
     addArea() {

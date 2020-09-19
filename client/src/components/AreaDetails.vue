@@ -2,15 +2,34 @@
   <div class="q-pa-md fit">
     <q-card flat bordered class="fit column">
       <q-card-section>
-        <div v-if="isAreaSelected || isAreaUnderConstruction" class="text-h6">
+        <p class="text-h6 text-center">
           {{ workingArea.name }}
-        </div>
+        </p>
+      </q-card-section>
+
+      <q-card-section>
+        <q-tabs v-model="tab" class="text-teal" dense align="justify">
+          <q-tab name="description" label="Description" />
+          <q-tab name="links" label="Links" />
+        </q-tabs>
       </q-card-section>
 
       <q-card-section class="q-pt-none col">
-        <p v-if="isAreaSelected || isAreaUnderConstruction">
-          {{ workingArea.description }}
-        </p>
+        <q-tab-panels
+          v-model="tab"
+          animated
+          transition-prev="jump-up"
+          transition-next="jump-up"
+          class="col-grow full-height row"
+        >
+          <q-tab-panel class="col row q-pa-none" name="description">
+            <p>{{ workingArea.description }}</p>
+          </q-tab-panel>
+
+          <q-tab-panel class="col row q-pa-none" name="links">
+            <link-table />
+          </q-tab-panel>
+        </q-tab-panels>
       </q-card-section>
 
       <q-separator inset />
@@ -29,13 +48,16 @@
 <script>
 import { mapGetters } from 'vuex';
 import defaultArea from '../store/area/state';
+import LinkTable from '../components/LinkTable.vue';
 
 export default {
   name: 'AreaDetails',
+  components: { LinkTable },
   data() {
     return {
       selectedArea: defaultArea,
-      confirmDelete: false
+      confirmDelete: false,
+      tab: 'description'
     };
   },
   computed: {

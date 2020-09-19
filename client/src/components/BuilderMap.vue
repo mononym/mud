@@ -21,6 +21,7 @@
             :x2="line.x2"
             :y2="line.y2"
             :stroke="line.stroke"
+            stroke-width="2"
           />
           <rect
             v-for="square in squares"
@@ -145,20 +146,56 @@ export default {
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
       const areas = this.areas;
+      const workingLink = this.workingLink;
 
-      return this.links.map(function(link) {
-        const toArea = areas[areaIndex[link.toId]];
-        const fromArea = areas[areaIndex[link.fromId]];
+      return this.links
+        .map(function(link) {
+          const toArea = areas[areaIndex[link.toId]];
+          const fromArea = areas[areaIndex[link.fromId]];
+          let stroke;
 
-        return {
-          id: link.id,
-          x1: fromArea.mapX * gridSize + mapSize / 2,
-          y1: fromArea.mapY * gridSize + mapSize / 2,
-          x2: toArea.mapX * gridSize + mapSize / 2,
-          y2: toArea.mapY * gridSize + mapSize / 2,
-          stroke: 'white'
-        };
-      });
+          if (
+            (workingLink.toId == link.fromId &&
+              workingLink.fromId == link.toId) ||
+            link.id == workingLink.id
+          ) {
+            stroke = 'red';
+          } else {
+            stroke = 'white';
+          }
+
+          return {
+            id: link.id,
+            x1: fromArea.mapX * gridSize + mapSize / 2,
+            y1: fromArea.mapY * gridSize + mapSize / 2,
+            x2: toArea.mapX * gridSize + mapSize / 2,
+            y2: toArea.mapY * gridSize + mapSize / 2,
+            stroke: stroke
+          };
+        })
+        .sort(function(firstLink, secondLink) {
+          const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
+          const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
+          const firstCLength = Math.sqrt(firstALength + firstBLength);
+
+          const secondALength = Math.pow(secondLink.x2 - secondLink.x1, 2);
+          const secondBLength = Math.pow(secondLink.y2 - secondLink.y1, 2);
+          const secondCLength = Math.sqrt(secondALength + secondBLength);
+
+          if (
+            firstLink.id !== workingLink.id &&
+            (firstCLength < secondCLength || secondLink.id == workingLink.id)
+          ) {
+            return -1;
+          } else if (
+            firstCLength == secondCLength &&
+            firstLink.id !== workingLink.id
+          ) {
+            return 0;
+          } else {
+            return 1;
+          }
+        });
     },
     squares: function() {
       const gridSize = this.gridSize;
@@ -182,7 +219,8 @@ export default {
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
       isMapUnderConstruction: 'builder/isMapUnderConstruction',
       workingArea: 'builder/workingArea',
-      workingMap: 'builder/workingMap'
+      workingMap: 'builder/workingMap',
+      workingLink: 'builder/workingLink'
     })
   },
   methods: {

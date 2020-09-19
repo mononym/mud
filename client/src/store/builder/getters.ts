@@ -1,4 +1,5 @@
 import { GetterTree } from 'vuex';
+import { AreaInterface } from '../area/state';
 import { StateInterface } from '../index';
 import { BuilderInterface } from './state';
 
@@ -45,6 +46,24 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   },
   allLinks(state: BuilderInterface) {
     return state.internalLinks.concat(state.externalLinks);
+  },
+  workingAreaLinks(state: BuilderInterface) {
+    let workingArea: AreaInterface;
+    if (state.isAreaUnderConstruction) {
+      workingArea = state.areaUnderConstruction;
+    } else {
+      workingArea = state.selectedArea;
+    }
+
+    const someLinks = state.internalLinks.filter(
+      link => link.toId == workingArea.id || link.fromId == workingArea.id
+    );
+
+    const moreLinks = state.externalLinks.filter(
+      link => link.toId == workingArea.id || link.fromId == workingArea.id
+    );
+
+    return someLinks.concat(moreLinks)
   },
   isLinkSelected(state: BuilderInterface) {
     return state.selectedLink.id !== '';
