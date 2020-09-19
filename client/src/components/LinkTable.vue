@@ -91,9 +91,11 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from 'vuex';
 import linkState from '../store/link/state';
+import { LinkInterface } from 'src/store/link/state';
+import { AreaInterface } from 'src/store/area/state';
 
 const linkTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -140,27 +142,24 @@ export default {
     };
   },
   computed: {
-    addLinkButtonDisabled: function() {
+    addLinkButtonDisabled: function(): boolean {
       return !this.$store.getters['builder/isAreaSelected'];
     },
-    workingLinkId: function() {
+    workingLinkId: function(): string {
       return this.workingLink.id;
     },
-    selectedMapId: function() {
-      return this.selectedMap.id;
-    },
-    normalizedLinks: function() {
-      const areaIndex = {};
+    normalizedLinks: function(): Record<string, unknown>[] {
+      const areaIndex: Record<string, number> = {};
 
-      this.areas.forEach((area, index) => {
+      this.areas.forEach((area: AreaInterface, index: number) => {
         areaIndex[area.id] = index;
       });
 
       const areas = this.areas;
 
-      const links = this.links.map(link => {
-        link['toName'] = areas[areaIndex[link.toId]].name;
-        link['fromName'] = areas[areaIndex[link.fromId]].name;
+      const links = this.links.map((link: Record<string, string>) => {
+        link.toName = areas[areaIndex[link.toId]].name;
+        link.fromName = areas[areaIndex[link.fromId]].name;
 
         return link;
       });
@@ -176,14 +175,13 @@ export default {
   methods: {
     addLink() {
       const newLink = { ...linkState };
-      newLink.mapId = this.selectedMapId;
       this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
       this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
       this.$store.dispatch('builder/putLinkUnderConstruction', newLink);
 
       this.$emit('addLink');
     },
-    editLink(link) {
+    editLink(link: LinkInterface) {
       this.$store.dispatch('builder/selectLink', link).then(() =>
         this.$store
           .dispatch('builder/putIsLinkUnderConstructionNew', false)
@@ -200,15 +198,15 @@ export default {
           )
       );
     },
-    cloneLink() {
+    cloneLink(link: LinkInterface) {
       this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
       this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
       this.$store.dispatch('builder/putLinkUnderConstruction', {
-        ...this.workingLink
+        ...link
       });
       this.$emit('editArea');
     },
-    toggleSingleRow(row) {
+    toggleSingleRow(row: LinkInterface) {
       this.selectedRow = [row];
       this.$store.dispatch('builder/selectLink', row);
     },
