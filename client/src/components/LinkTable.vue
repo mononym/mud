@@ -11,21 +11,22 @@
       class="col sticky-header-table"
       :selected.sync="selectedRow"
       selection="single"
+      :pagination="initialPagination"
     >
       <template v-slot:top>
         <q-btn
           color="primary"
           label="Add Link"
-          @click="addLink"
           :disabled="addLinkButtonDisabled"
+          @click="addLink"
         />
         <q-space />
         <q-input
+          v-model="linkTableFilter"
           borderless
           dense
           debounce="300"
           color="primary"
-          v-model="linkTableFilter"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -48,9 +49,9 @@
           @click.exact="toggleSingleRow(props.row)"
         >
           <q-td
-            class="link-table-row"
             v-for="col in props.cols"
             :key="col.name"
+            class="link-table-row"
             :props="props"
           >
             <span v-if="col.name === 'actions'">
@@ -125,7 +126,11 @@ export default {
   data() {
     return {
       linkTableColumns,
-      linkTableFilter: ''
+      linkTableFilter: '',
+      selectedRow: [],
+       initialPagination: {
+        rowsPerPage: 0
+      },
     };
   },
   computed: {
@@ -137,9 +142,6 @@ export default {
     },
     selectedMapId: function() {
       return this.selectedMap.id;
-    },
-    selectedRow: function() {
-      return [this.$store.getters['builder/selectedLink']];
     },
     normalizedLinks: function() {
       const areaIndex = {};
@@ -196,6 +198,7 @@ export default {
       console.log('link to link: ' + linkId);
     },
     toggleSingleRow(row) {
+      this.selectedRow = [row]
       this.$store.dispatch('builder/selectLink', row);
     },
     deleteLink() {
