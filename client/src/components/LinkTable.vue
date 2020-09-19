@@ -64,6 +64,12 @@
                 />
                 <q-btn
                   flat
+                  label="Clone"
+                  icon="fas fa-pencil"
+                  @click="cloneLink(props.row)"
+                />
+                <q-btn
+                  flat
                   label="Delete"
                   icon="fas fa-trash"
                   @click="deleteLink"
@@ -137,8 +143,8 @@ export default {
     addLinkButtonDisabled: function() {
       return !this.$store.getters['builder/isAreaSelected'];
     },
-    selectedLinkId: function() {
-      return this.selectedLink.id;
+    workingLinkId: function() {
+      return this.workingLink.id;
     },
     selectedMapId: function() {
       return this.selectedMap.id;
@@ -163,7 +169,7 @@ export default {
     },
     ...mapGetters({
       links: 'builder/workingAreaLinks',
-      selectedLink: 'builder/selectedLink',
+      workingLink: 'builder/workingLink',
       areas: 'builder/allAreas'
     })
   },
@@ -187,15 +193,20 @@ export default {
               .then(() =>
                 this.$store
                   .dispatch('builder/putLinkUnderConstruction', {
-                    ...this.selectedLink
+                    ...this.workingLink
                   })
                   .then(() => this.$emit('editLink'))
               )
           )
       );
     },
-    linkLink(linkId) {
-      console.log('link to link: ' + linkId);
+    cloneLink() {
+      this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
+      this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
+      this.$store.dispatch('builder/putLinkUnderConstruction', {
+        ...this.workingLink
+      });
+      this.$emit('editArea');
     },
     toggleSingleRow(row) {
       this.selectedRow = [row];

@@ -77,10 +77,9 @@
               />
             </q-tab-panel>
 
-            <q-tab-panel class="col column flex" name="linkTable">
-              <link-table
+            <q-tab-panel class="col column flex" name="linkDetails">
+              <link-details
                 @saved="linkSaved"
-                @selected="linkSelected"
                 @editLink="editLink"
                 @addLink="addLink"
                 @deleteLink="showDeleteLinkConfirmation"
@@ -124,10 +123,10 @@
 import BuilderMap from '../components/BuilderMap.vue';
 import AreaWizard from '../components/AreaWizard.vue';
 import AreaTable from '../components/AreaTable.vue';
-import LinkTable from '../components/LinkTable.vue';
 import MapWizard from '../components/MapWizard.vue';
 import MapTable from '../components/MapTable.vue';
 import AreaDetails from '../components/AreaDetails.vue';
+import LinkDetails from '../components/LinkDetails.vue';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -136,10 +135,10 @@ export default {
     AreaDetails,
     AreaTable,
     AreaWizard,
-    LinkTable,
     MapTable,
     MapWizard,
-    BuilderMap
+    BuilderMap,
+    LinkDetails
   },
   data() {
     return {

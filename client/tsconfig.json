@@ -5,6 +5,18 @@
     "target": "es2020",
     "strict": true,
     "module": "es2020",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "noImplicitThis": true,
+    "allowJs": true,
+    "checkJs": true
   }
+  // "parserOptions": {
+  //   "extraFileExtensions": [".vue"]
+  // }
+  // "include": [
+  //   "src/**/*.(ts|js|vue)"
+  // "test/**/*.ts",
+  // "typings/**/*.ts"
+  // etc
+  // ]
 }

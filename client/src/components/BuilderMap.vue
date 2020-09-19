@@ -61,7 +61,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { AreaInterface } from 'src/store/area/state';
+import { LinkInterface } from 'src/store/link/state';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -74,74 +76,66 @@ export default {
     };
   },
   computed: {
-    areaIndex: function() {
-      const areaIndex = {};
+    areaIndex: function(): Record<string, number> {
+      const areaIndex: Record<string, number> = {};
 
-      this.areas.forEach((area, index) => {
+      this.areas.forEach((area: AreaInterface, index: number) => {
         areaIndex[area.id] = index;
       });
 
       return areaIndex;
     },
-    zoomOutButtonDisabled: function() {
+    zoomOutButtonDisabled: function(): boolean {
       return this.zoomMultierIndex == this.zoomMultipliers.length - 1;
     },
-    zoomInButtonDisabled: function() {
+    zoomInButtonDisabled: function(): boolean {
       return this.zoomMultierIndex == 0;
     },
-    zoomMultiplier: function() {
+    zoomMultiplier: function(): number {
       return this.zoomMultipliers[this.zoomMultierIndex];
     },
-    viewBoxX: function() {
-      return this.xCenterPoint - this.viewBoxXSize / 2;
+    viewBoxX: function(): string {
+      return (this.xCenterPoint - this.viewBoxXSize / 2).toString();
     },
-    viewBoxY: function() {
-      return this.yCenterPoint - this.viewBoxYSize / 2;
+    viewBoxY: function(): string {
+      return (this.yCenterPoint - this.viewBoxYSize / 2).toString();
     },
-    xCenterPoint: function() {
+    xCenterPoint: function(): number {
       if (this.isAreaSelected || this.isAreaUnderConstruction) {
         return this.workingArea.mapX * this.gridSize + this.mapSize / 2;
       } else {
         return this.mapSize / 2;
       }
     },
-    yCenterPoint: function() {
+    yCenterPoint: function(): number {
       if (this.isAreaSelected || this.isAreaUnderConstruction) {
         return this.workingArea.mapY * this.gridSize + this.mapSize / 2;
       } else {
         return this.mapSize / 2;
       }
     },
-    aspectRatioMultiplier: function() {
+    aspectRatioMultiplier: function(): number {
       return this.aspectRatio.y / this.aspectRatio.x;
     },
-    gridSize: function() {
+    gridSize: function(): number {
       return this.workingMap.gridSize;
     },
-    viewBoxXSize: function() {
+    viewBoxXSize: function(): number {
       return this.mapSize * this.zoomMultiplier;
     },
-    viewBoxYSize: function() {
+    viewBoxYSize: function(): number {
       return this.mapSize * this.aspectRatioMultiplier * this.zoomMultiplier;
     },
-    mapSize: function() {
+    mapSize: function(): number {
       return this.workingMap.mapSize;
     },
-    viewbox: function() {
-      return (
-        this.viewBoxX +
-        ' ' +
-        this.viewBoxY +
-        ' ' +
-        this.viewBoxXSize +
-        ' ' +
-        this.viewBoxYSize
-      );
+    viewbox: function(): string {
+      return `${this.viewBoxX.toString()} ${this.viewBoxY.toString()} ${this.viewBoxXSize.toString()} ${this.viewBoxYSize.toString()}`;
     },
-    mapName: function() {
+    mapName: function(): string {
       return this.workingMap.name;
     },
-    lines: function() {
+    lines: function(): Record<string, unknown>[] {
       const areaIndex = this.areaIndex;
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
@@ -149,7 +143,7 @@ export default {
       const workingLink = this.workingLink;
 
       return this.links
-        .map(function(link) {
+        .map(function(link: LinkInterface) {
           const toArea = areas[areaIndex[link.toId]];
           const fromArea = areas[areaIndex[link.fromId]];
           let stroke;
@@ -173,7 +167,8 @@ export default {
             stroke: stroke
           };
         })
-        .sort(function(firstLink, secondLink) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .sort(function(firstLink: any, secondLink: any) {
           const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
           const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
           const firstCLength = Math.sqrt(firstALength + firstBLength);
@@ -197,20 +192,22 @@ export default {
           }
         });
     },
-    squares: function() {
+    squares: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
       const workingArea = this.workingArea;
 
-      return this.areas.map(area => ({
-        key: area.id,
-        x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
-        y: area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
-        width: area.mapSize,
-        height: area.mapSize,
-        fill: area.id === workingArea.id ? 'green' : 'blue',
-        name: area.name
-      }));
+      return this.areas.map(function(area: AreaInterface) {
+        return {
+          key: area.id,
+          x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
+          y: area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
+          width: area.mapSize,
+          height: area.mapSize,
+          fill: area.id === workingArea.id ? 'green' : 'blue',
+          name: area.name
+        };
+      });
     },
     ...mapGetters({
       links: 'builder/allLinks',
@@ -224,16 +221,18 @@ export default {
     })
   },
   methods: {
-    zoomIn() {
+    zoomIn(): void {
       this.zoomMultierIndex--;
     },
     zoomOut() {
       this.zoomMultierIndex++;
     },
-    selectArea(areaId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    selectArea(areaId: any) {
+      const id: string = areaId.toString();
       this.$store.dispatch(
         'builder/selectArea',
-        this.areas[this.areaIndex[areaId]]
+        this.areas[this.areaIndex[id]]
       );
     }
   }
