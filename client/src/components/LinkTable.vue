@@ -128,9 +128,9 @@ export default {
       linkTableColumns,
       linkTableFilter: '',
       selectedRow: [],
-       initialPagination: {
+      initialPagination: {
         rowsPerPage: 0
-      },
+      }
     };
   },
   computed: {
@@ -198,7 +198,7 @@ export default {
       console.log('link to link: ' + linkId);
     },
     toggleSingleRow(row) {
-      this.selectedRow = [row]
+      this.selectedRow = [row];
       this.$store.dispatch('builder/selectLink', row);
     },
     deleteLink() {

@@ -10,6 +10,7 @@
       class="col"
       :selected.sync="selectedRow"
       selection="single"
+      :pagination="initialPagination"
     >
       <template v-slot:top>
         <q-btn
@@ -101,7 +102,10 @@ export default {
   data() {
     return {
       areaTableColumns,
-      areaTableFilter: ''
+      areaTableFilter: '',
+      initialPagination: {
+        rowsPerPage: 0
+      }
     };
   },
   computed: {

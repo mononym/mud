@@ -10,6 +10,7 @@
       class="col"
       :selected.sync="selectedRow"
       selection="single"
+      :pagination="initialPagination"
     >
       <template v-slot:top>
         <q-btn color="primary" label="Add Map" @click="addMap" />
@@ -97,7 +98,10 @@ export default {
   data() {
     return {
       mapTableColumns,
-      mapTableFilter: ''
+      mapTableFilter: '',
+      initialPagination: {
+        rowsPerPage: 0
+      }
     };
   },
   validations: {},
