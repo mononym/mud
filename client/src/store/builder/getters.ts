@@ -1,53 +1,55 @@
 import { GetterTree } from 'vuex';
 import { AreaInterface } from '../area/state';
 import { StateInterface } from '../index';
+import { LinkInterface } from '../link/state';
+import { MapInterface } from '../map/state';
 import { BuilderInterface } from './state';
 
 const getters: GetterTree<BuilderInterface, StateInterface> = {
-  selectedAreaId(state: BuilderInterface) {
+  selectedAreaId(state: BuilderInterface): string {
     return state.selectedArea.id;
   },
-  selectedArea(state: BuilderInterface) {
+  selectedArea(state: BuilderInterface): AreaInterface {
     return state.selectedArea;
   },
-  internalAreas(state: BuilderInterface) {
+  internalAreas(state: BuilderInterface): AreaInterface[] {
     return state.internalAreas;
   },
-  externalAreas(state: BuilderInterface) {
+  externalAreas(state: BuilderInterface): AreaInterface[] {
     return state.externalAreas;
   },
-  allAreas(state: BuilderInterface) {
+  allAreas(state: BuilderInterface): AreaInterface[] {
     return state.internalAreas.concat(state.externalAreas);
   },
-  isAreaSelected(state: BuilderInterface) {
+  isAreaSelected(state: BuilderInterface): boolean {
     return state.selectedArea.id !== '';
   },
-  workingArea(state: BuilderInterface) {
+  workingArea(state: BuilderInterface): AreaInterface {
     if (state.isAreaUnderConstruction) {
       return state.areaUnderConstruction;
     } else {
       return state.selectedArea;
     }
   },
-  isAreaUnderConstruction(state: BuilderInterface) {
+  isAreaUnderConstruction(state: BuilderInterface): boolean {
     return state.isAreaUnderConstruction;
   },
-  isAreaUnderConstructionNew(state: BuilderInterface) {
+  isAreaUnderConstructionNew(state: BuilderInterface): boolean {
     return state.isAreaUnderConstructionNew;
   },
-  areaUnderConstruction(state: BuilderInterface) {
+  areaUnderConstruction(state: BuilderInterface): AreaInterface {
     return state.areaUnderConstruction;
   },
-  internalLinks(state: BuilderInterface) {
+  internalLinks(state: BuilderInterface): LinkInterface[] {
     return state.internalLinks;
   },
-  externalLinks(state: BuilderInterface) {
+  externalLinks(state: BuilderInterface): LinkInterface[] {
     return state.externalLinks;
   },
-  allLinks(state: BuilderInterface) {
+  allLinks(state: BuilderInterface): LinkInterface[] {
     return state.internalLinks.concat(state.externalLinks);
   },
-  workingAreaLinks(state: BuilderInterface) {
+  workingAreaLinks(state: BuilderInterface): LinkInterface[] {
     let workingArea: AreaInterface;
     if (state.isAreaUnderConstruction) {
       workingArea = state.areaUnderConstruction;
@@ -63,52 +65,52 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
       link => link.toId == workingArea.id || link.fromId == workingArea.id
     );
 
-    return someLinks.concat(moreLinks)
+    return someLinks.concat(moreLinks);
   },
-  isLinkSelected(state: BuilderInterface) {
+  isLinkSelected(state: BuilderInterface): boolean {
     return state.selectedLink.id !== '';
   },
-  workingLink(state: BuilderInterface) {
+  workingLink(state: BuilderInterface): LinkInterface {
     if (state.isLinkUnderConstruction) {
       return state.linkUnderConstruction;
     } else {
       return state.selectedLink;
     }
   },
-  selectedLink(state: BuilderInterface) {
+  selectedLink(state: BuilderInterface): LinkInterface {
     return state.selectedLink;
   },
-  isLinkUnderConstruction(state: BuilderInterface) {
+  isLinkUnderConstruction(state: BuilderInterface): boolean {
     return state.isLinkUnderConstruction;
   },
-  isLinkUnderConstructionNew(state: BuilderInterface) {
+  isLinkUnderConstructionNew(state: BuilderInterface): boolean {
     return state.isLinkUnderConstructionNew;
   },
-  linkUnderConstruction(state: BuilderInterface) {
+  linkUnderConstruction(state: BuilderInterface): LinkInterface {
     return state.linkUnderConstruction;
   },
-  maps(state: BuilderInterface) {
+  maps(state: BuilderInterface): MapInterface[] {
     return state.maps;
   },
-  selectedMap(state: BuilderInterface) {
+  selectedMap(state: BuilderInterface): MapInterface {
     return state.selectedMap;
   },
-  selectedMapId(state: BuilderInterface) {
+  selectedMapId(state: BuilderInterface): string {
     return state.selectedMap.id;
   },
-  isMapSelected(state: BuilderInterface) {
+  isMapSelected(state: BuilderInterface): boolean {
     return state.selectedMap.id !== '';
   },
-  isMapUnderConstruction(state: BuilderInterface) {
+  isMapUnderConstruction(state: BuilderInterface): boolean {
     return state.isMapUnderConstruction;
   },
-  isMapUnderConstructionNew(state: BuilderInterface) {
+  isMapUnderConstructionNew(state: BuilderInterface): boolean {
     return state.isMapUnderConstructionNew;
   },
-  mapUnderConstruction(state: BuilderInterface) {
+  mapUnderConstruction(state: BuilderInterface): MapInterface {
     return state.mapUnderConstruction;
   },
-  workingMap(state: BuilderInterface) {
+  workingMap(state: BuilderInterface): MapInterface {
     if (state.isMapUnderConstruction) {
       return state.mapUnderConstruction;
     } else {

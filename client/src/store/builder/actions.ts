@@ -6,6 +6,7 @@ import { MapInterface } from '../map/state';
 import { LinkInterface } from '../link/state';
 import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
+import linkState from '../link/state';
 
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchDataForMap({ commit, getters }, mapId: string) {
@@ -206,6 +207,13 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     return new Promise(resolve => {
       commit('updateLink', link);
       commit('putSelectedLink', link);
+
+      resolve();
+    });
+  },
+  clearSelectedLink({ commit }) {
+    return new Promise(resolve => {
+      commit('putSelectedLink', {...linkState});
 
       resolve();
     });

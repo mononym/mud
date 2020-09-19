@@ -14,18 +14,18 @@
     >
       <template v-slot:top>
         <q-btn
+          :disabled="addAreaButtonDisabled"
           color="primary"
           label="Add Area"
           @click="addArea"
-          :disabled="addAreaButtonDisabled"
         />
         <q-space />
         <q-input
+          v-model="areaTableFilter"
           borderless
           dense
           debounce="300"
           color="primary"
-          v-model="areaTableFilter"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -47,7 +47,12 @@
           :props="props"
           @click.exact="toggleSingleRow(props.row)"
         >
-          <q-td class="area-table-row" v-for="col in props.cols" :key="col.name" :props="props">
+          <q-td
+            v-for="col in props.cols"
+            :key="col.name"
+            class="area-table-row"
+            :props="props"
+          >
             <span v-if="col.name === 'actions'">
               <q-btn-group flat spread>
                 <q-btn
@@ -57,11 +62,11 @@
                   @click="editArea(props.row)"
                 />
                 <q-btn
+                  v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
                   flat
                   label="Link"
                   icon="fas fa-link"
-                  v-on:click.stop="linkArea(props.row)"
-                  v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
+                  @click.stop="linkArea(props.row)"
                 />
                 <q-btn
                   flat
@@ -81,8 +86,9 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from 'vuex';
+import { AreaInterface } from 'src/store/area/state';
 import areaState from '../store/area/state';
 
 const areaTableColumns = [
@@ -109,16 +115,16 @@ export default {
     };
   },
   computed: {
-    addAreaButtonDisabled: function() {
+    addAreaButtonDisabled: function(): boolean {
       return !this.$store.getters['builder/isMapSelected'];
     },
-    selectedAreaId: function() {
+    selectedAreaId: function(): string {
       return this.selectedArea.id;
     },
-    selectedMapId: function() {
+    selectedMapId: function(): string {
       return this.selectedMap.id;
     },
-    selectedRow: function() {
+    selectedRow: function(): AreaInterface[] {
       return [this.$store.getters['builder/selectedArea']];
     },
     ...mapGetters({
@@ -127,8 +133,6 @@ export default {
       selectedMap: 'builder/selectedMap'
     })
   },
-  created() {},
-  validations: {},
   methods: {
     addArea() {
       const newArea = { ...areaState };
@@ -141,7 +145,7 @@ export default {
 
       this.$emit('addArea');
     },
-    editArea(area) {
+    editArea(area: AreaInterface) {
       this.$store.dispatch('builder/selectArea', area).then(() =>
         this.$store
           .dispatch('builder/putIsAreaUnderConstructionNew', false)
@@ -158,11 +162,12 @@ export default {
           )
       );
     },
-    linkArea(areaId) {
-      console.log('link to area: ' + areaId);
+    linkArea(area: AreaInterface) {
+      console.log(area.id);
     },
-    toggleSingleRow(row) {
+    toggleSingleRow(row: AreaInterface) {
       this.$store.dispatch('builder/selectArea', row);
+      this.$store.dispatch('builder/clearSelectedLink');
     },
     deleteArea() {
       this.$emit('deleteArea');

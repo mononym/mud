@@ -10,13 +10,4 @@
     "allowJs": true,
     "checkJs": true
   }
-  // "parserOptions": {
-  //   "extraFileExtensions": [".vue"]
-  // }
-  // "include": [
-  //   "src/**/*.(ts|js|vue)"
-  // "test/**/*.ts",
-  // "typings/**/*.ts"
-  // etc
-  // ]
 }

@@ -142,55 +142,57 @@ export default {
       const areas = this.areas;
       const workingLink = this.workingLink;
 
-      return this.links
-        .map(function(link: LinkInterface) {
-          const toArea = areas[areaIndex[link.toId]];
-          const fromArea = areas[areaIndex[link.fromId]];
-          let stroke;
+      return (
+        this.links
+          .map(function(link: LinkInterface) {
+            const toArea = areas[areaIndex[link.toId]];
+            const fromArea = areas[areaIndex[link.fromId]];
+            let stroke;
 
-          if (
-            (workingLink.toId == link.fromId &&
-              workingLink.fromId == link.toId) ||
-            link.id == workingLink.id
-          ) {
-            stroke = 'red';
-          } else {
-            stroke = 'white';
-          }
+            if (
+              (workingLink.toId == link.fromId &&
+                workingLink.fromId == link.toId) ||
+              link.id == workingLink.id
+            ) {
+              stroke = 'red';
+            } else {
+              stroke = 'white';
+            }
 
-          return {
-            id: link.id,
-            x1: fromArea.mapX * gridSize + mapSize / 2,
-            y1: fromArea.mapY * gridSize + mapSize / 2,
-            x2: toArea.mapX * gridSize + mapSize / 2,
-            y2: toArea.mapY * gridSize + mapSize / 2,
-            stroke: stroke
-          };
-        })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .sort(function(firstLink: any, secondLink: any) {
-          const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
-          const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
-          const firstCLength = Math.sqrt(firstALength + firstBLength);
+            return {
+              id: link.id,
+              x1: fromArea.mapX * gridSize + mapSize / 2,
+              y1: fromArea.mapY * gridSize + mapSize / 2,
+              x2: toArea.mapX * gridSize + mapSize / 2,
+              y2: toArea.mapY * gridSize + mapSize / 2,
+              stroke: stroke
+            };
+          })
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .sort(function(firstLink: any, secondLink: any) {
+            const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
+            const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
+            const firstCLength = Math.sqrt(firstALength + firstBLength);
 
-          const secondALength = Math.pow(secondLink.x2 - secondLink.x1, 2);
-          const secondBLength = Math.pow(secondLink.y2 - secondLink.y1, 2);
-          const secondCLength = Math.sqrt(secondALength + secondBLength);
+            const secondALength = Math.pow(secondLink.x2 - secondLink.x1, 2);
+            const secondBLength = Math.pow(secondLink.y2 - secondLink.y1, 2);
+            const secondCLength = Math.sqrt(secondALength + secondBLength);
 
-          if (
-            firstLink.id !== workingLink.id &&
-            (firstCLength < secondCLength || secondLink.id == workingLink.id)
-          ) {
-            return -1;
-          } else if (
-            firstCLength == secondCLength &&
-            firstLink.id !== workingLink.id
-          ) {
-            return 0;
-          } else {
-            return 1;
-          }
-        });
+            if (
+              firstLink.id !== workingLink.id &&
+              (firstCLength < secondCLength || secondLink.id == workingLink.id)
+            ) {
+              return -1;
+            } else if (
+              firstCLength == secondCLength &&
+              firstLink.id !== workingLink.id
+            ) {
+              return 0;
+            } else {
+              return 1;
+            }
+          })
+      );
     },
     squares: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
@@ -229,11 +231,15 @@ export default {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selectArea(areaId: any) {
-      const id: string = areaId.toString();
-      this.$store.dispatch(
-        'builder/selectArea',
-        this.areas[this.areaIndex[id]]
-      );
+      if (areaId !== this.workingArea.id) {
+        const id: string = areaId.toString();
+        this.$store.dispatch(
+          'builder/selectArea',
+          this.areas[this.areaIndex[id]]
+        );
+
+        this.$store.dispatch('builder/clearSelectedLink');
+      }
     }
   }
 };

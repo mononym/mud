@@ -16,11 +16,11 @@
         <q-btn color="primary" label="Add Map" @click="addMap" />
         <q-space />
         <q-input
+          v-model="mapTableFilter"
           borderless
           dense
           debounce="300"
           color="primary"
-          v-model="mapTableFilter"
         >
           <template v-slot:append>
             <q-icon name="search" />
@@ -43,9 +43,9 @@
           @click.exact="toggleSingleRow(props.row)"
         >
           <q-td
-            class="map-table-cell"
             v-for="col in props.cols"
             :key="col.name"
+            class="map-table-cell"
             :props="props"
           >
             <span v-if="col.name === 'actions'">
@@ -68,7 +68,8 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
+import { MapInterface } from 'src/store/map/state';
 import { mapGetters } from 'vuex';
 import mapState from '../store/map/state';
 
@@ -85,16 +86,6 @@ const mapTableColumns = [
 
 export default {
   name: 'MapTable',
-  components: {},
-  computed: {
-    selectedRow: function() {
-      return [this.$store.getters['builder/selectedMap']];
-    },
-    ...mapGetters({
-      maps: 'builder/maps',
-      selectedMap: 'builder/selectedMap'
-    })
-  },
   data() {
     return {
       mapTableColumns,
@@ -104,7 +95,15 @@ export default {
       }
     };
   },
-  validations: {},
+  computed: {
+    selectedRow: function(): MapInterface[] {
+      return [this.$store.getters['builder/selectedMap']];
+    },
+    ...mapGetters({
+      maps: 'builder/maps',
+      selectedMap: 'builder/selectedMap'
+    })
+  },
   methods: {
     addMap() {
       this.$store.dispatch('builder/putIsMapUnderConstruction', true).then(() =>
@@ -114,7 +113,7 @@ export default {
           .then(() => this.$emit('addMap'))
       );
     },
-    editMap(map) {
+    editMap(map: MapInterface) {
       this.$store.dispatch('builder/selectMap', map).then(() =>
         this.$store
           .dispatch('builder/putIsMapUnderConstructionNew', false)
@@ -132,11 +131,14 @@ export default {
           )
       );
     },
-    toggleSingleRow(row) {
+    toggleSingleRow(row: MapInterface) {
       if (this.selectedMap.id !== row.id) {
         this.$store.dispatch('builder/selectMap', row).then(() => {
           this.$store
             .dispatch('builder/fetchDataForMap', row.id)
+            .then(() => {
+              this.$store.dispatch('builder/clearSelectedLink');
+            })
             .then(() => this.$emit('selected'));
         });
       }
