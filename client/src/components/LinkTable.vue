@@ -1,5 +1,4 @@
 <template>
-  <div class="q-pa-md col column link-table-wrapper">
     <q-table
       title="Links"
       :data="normalizedLinks"
@@ -8,7 +7,7 @@
       flat
       bordered
       dense
-      class="col sticky-header-table"
+      class="col-grow sticky-header-table"
       :selected.sync="selectedRow"
       selection="single"
       :pagination="initialPagination"
@@ -60,7 +59,7 @@
                   flat
                   label="Edit"
                   icon="fas fa-pencil"
-                  @click="editLink(props.row)"
+                  @click.stop="editLink(props.row)"
                 />
                 <q-btn
                   flat
@@ -88,7 +87,6 @@
         </q-tr>
       </template>
     </q-table>
-  </div>
 </template>
 
 <script lang="ts">
@@ -96,6 +94,7 @@ import { mapGetters } from 'vuex';
 import linkState from '../store/link/state';
 import { LinkInterface } from 'src/store/link/state';
 import { AreaInterface } from 'src/store/area/state';
+import Vue from 'vue';
 
 const linkTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -128,14 +127,14 @@ const linkTableColumns = [
   { name: 'from', label: 'From', field: 'fromName', sortable: true }
 ];
 
-export default {
+export default Vue.extend({
   name: 'LinkTable',
   components: {},
   data() {
     return {
       linkTableColumns,
       linkTableFilter: '',
-      selectedRow: [],
+      selectedRow: new Array<LinkInterface>(),
       initialPagination: {
         rowsPerPage: 0
       }
@@ -175,46 +174,39 @@ export default {
   methods: {
     addLink() {
       const newLink = { ...linkState };
-      this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
-      this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
-      this.$store.dispatch('builder/putLinkUnderConstruction', newLink);
+      void this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
+      void this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
+      void this.$store.dispatch('builder/putLinkUnderConstruction', newLink);
 
       this.$emit('addLink');
     },
     editLink(link: LinkInterface) {
-      this.$store.dispatch('builder/selectLink', link).then(() =>
-        this.$store
-          .dispatch('builder/putIsLinkUnderConstructionNew', false)
-          .then(() =>
-            this.$store
-              .dispatch('builder/putIsLinkUnderConstruction', true)
-              .then(() =>
-                this.$store
-                  .dispatch('builder/putLinkUnderConstruction', {
-                    ...this.workingLink
-                  })
-                  .then(() => this.$emit('editLink'))
-              )
-          )
-      );
+      void this.$store.dispatch('builder/startEditingLink', link);
+      const selectedRow: LinkInterface[] = [];
+      selectedRow.push(link);
+      this.selectedRow = selectedRow;
     },
     cloneLink(link: LinkInterface) {
-      this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
-      this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
-      this.$store.dispatch('builder/putLinkUnderConstruction', {
+      void this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
+      void this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
+      void this.$store.dispatch('builder/putLinkUnderConstruction', {
         ...link
       });
       this.$emit('editArea');
     },
     toggleSingleRow(row: LinkInterface) {
-      this.selectedRow = [row];
-      this.$store.dispatch('builder/selectLink', row);
+      const selectedRow: LinkInterface[] = [];
+      selectedRow.push(row);
+      this.selectedRow = selectedRow;
+      void this.$store.dispatch('builder/selectLink', row).then(() => {
+        void this.$store.dispatch('builder/putBottomRightPanel', 'linkDetails');
+      });
     },
     deleteLink() {
       this.$emit('deleteLink');
     }
   }
-};
+});
 </script>
 
 <style lang="sass">
@@ -226,7 +218,7 @@ td.link-table-cell {  border-bottom-width: 1 !important; }
 
 .sticky-header-table
   /* height or max-height is important */
-  height: 310px
+  max-height: 100%
 
   .q-table__top,
   .q-table__bottom,

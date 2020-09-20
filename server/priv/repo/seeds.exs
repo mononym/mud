@@ -180,7 +180,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -191,7 +192,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_2} =
@@ -214,7 +216,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -225,7 +228,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_3} =
@@ -248,7 +252,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -259,7 +264,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 {:ok, maze_4} =
@@ -282,7 +288,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -293,7 +300,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 {:ok, maze_5} =
@@ -316,7 +324,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -327,7 +336,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 {:ok, maze_6} =
@@ -350,7 +360,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -361,7 +372,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_7} =
@@ -384,7 +396,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -395,7 +408,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_8} =
@@ -418,7 +432,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -429,7 +444,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 {:ok, maze_9} =
@@ -452,7 +468,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -463,7 +480,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_10} =
@@ -486,7 +504,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -497,7 +516,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_11} =
@@ -520,7 +540,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -531,7 +552,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_12} =
@@ -554,7 +576,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -565,7 +588,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_13} =
@@ -588,7 +612,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -599,7 +624,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 {:ok, maze_14} =
@@ -622,7 +648,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -633,7 +660,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 {:ok, maze_15} =
@@ -656,7 +684,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -667,7 +696,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_16} =
@@ -690,7 +720,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -701,7 +732,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_17} =
@@ -724,7 +756,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -735,7 +768,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_18} =
@@ -758,7 +792,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -769,7 +804,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_19} =
@@ -792,7 +828,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -803,7 +840,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_20} =
@@ -826,7 +864,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -837,7 +876,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_21} =
@@ -860,7 +900,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -871,7 +912,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_22} =
@@ -894,7 +936,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -905,7 +948,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 {:ok, maze_23} =
@@ -928,7 +972,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -939,7 +984,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 {:ok, maze_24} =
@@ -962,7 +1008,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -973,7 +1020,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 {:ok, maze_25} =
@@ -996,7 +1044,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1007,7 +1056,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1018,7 +1068,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 # maze_26 =
@@ -1054,7 +1105,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1065,7 +1117,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 # center room west room links
@@ -1077,7 +1130,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1088,7 +1142,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 # center room north room links
@@ -1100,7 +1155,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1111,7 +1167,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 # center room south room links
@@ -1123,7 +1180,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1134,7 +1192,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 # center room southeast room links
@@ -1146,7 +1205,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the northwest",
   type: "obvious",
   short_description: "southeast",
-  long_description: "southeast"
+  long_description: "southeast",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1157,7 +1217,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the southeast",
   type: "obvious",
   short_description: "northwest",
-  long_description: "northwest"
+  long_description: "northwest",
+  icon: "compass"
 })
 
 # center room southwest room links
@@ -1169,7 +1230,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the northeast",
   type: "obvious",
   short_description: "southwest",
-  long_description: "southwest"
+  long_description: "southwest",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1180,7 +1242,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the southwest",
   type: "obvious",
   short_description: "northeast",
-  long_description: "northeast"
+  long_description: "northeast",
+  icon: "compass"
 })
 
 # center room northwest room links
@@ -1192,7 +1255,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the southeast",
   type: "obvious",
   short_description: "northwest",
-  long_description: "northwest"
+  long_description: "northwest",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1203,7 +1267,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the northwest",
   type: "obvious",
   short_description: "southeast",
-  long_description: "southeast"
+  long_description: "southeast",
+  icon: "compass"
 })
 
 # center room northeast room links
@@ -1215,7 +1280,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the southwest",
   type: "obvious",
   short_description: "northeast",
-  long_description: "northeast"
+  long_description: "northeast",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1226,7 +1292,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the northeast",
   type: "obvious",
   short_description: "southwest",
-  long_description: "southwest"
+  long_description: "southwest",
+  icon: "compass"
 })
 
 # north room northeast room links
@@ -1238,7 +1305,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1249,7 +1317,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 # north room northwest room links
@@ -1261,7 +1330,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1272,7 +1342,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 # south room southeast room links
@@ -1284,7 +1355,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1295,7 +1367,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 # south room southwest room links
@@ -1307,7 +1380,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the east",
   type: "obvious",
   short_description: "west",
-  long_description: "west"
+  long_description: "west",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1318,7 +1392,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the west",
   type: "obvious",
   short_description: "east",
-  long_description: "east"
+  long_description: "east",
+  icon: "compass"
 })
 
 # east room northeast room links
@@ -1330,7 +1405,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1341,7 +1417,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 # east room southeast room links
@@ -1353,7 +1430,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1364,7 +1442,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 # west room northwest room links
@@ -1376,7 +1455,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1387,7 +1467,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 # west room southwest room links
@@ -1399,7 +1480,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the north",
   type: "obvious",
   short_description: "south",
-  long_description: "south"
+  long_description: "south",
+  icon: "compass"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1410,7 +1492,8 @@ Mud.Repo.insert!(%Link{
   arrival_text: "the south",
   type: "obvious",
   short_description: "north",
-  long_description: "north"
+  long_description: "north",
+  icon: "compass"
 })
 
 # Portals
@@ -1423,7 +1506,7 @@ Mud.Repo.insert!(%Link{
   type: "obvious",
   short_description: "a shimmering portal",
   long_description: "a shimmering portal",
-  icon: "far fa-circle"
+  icon: "portal"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1435,7 +1518,7 @@ Mud.Repo.insert!(%Link{
   type: "obvious",
   short_description: "a glimmering portal",
   long_description: "a glimmering portal",
-  icon: "far fa-circle"
+  icon: "portal"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1447,7 +1530,7 @@ Mud.Repo.insert!(%Link{
   type: "obvious",
   short_description: "a glimmering portal",
   long_description: "a glimmering portal",
-  icon: "far fa-circle"
+  icon: "portal"
 })
 
 Mud.Repo.insert!(%Link{
@@ -1459,7 +1542,7 @@ Mud.Repo.insert!(%Link{
   type: "obvious",
   short_description: "a shimmering portal",
   long_description: "a shimmering portal",
-  icon: "far fa-circle"
+  icon: "portal"
 })
 
 # Object insertions

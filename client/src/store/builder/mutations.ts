@@ -135,6 +135,13 @@ const mutation: MutationTree<BuilderInterface> = {
     state.maps.forEach((map, index) => {
       Vue.set(state.mapIndex, map.id, index);
     });
+  },
+  // UI stuff
+  putBottomLeftPanel(state: BuilderInterface, panel: string) {
+    state.bottomLeftPanel = panel;
+  },
+  putBottomRightPanel(state: BuilderInterface, panel: string) {
+    state.bottomRightPanel = panel;
   }
 };
 

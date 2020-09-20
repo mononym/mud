@@ -213,7 +213,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   clearSelectedLink({ commit }) {
     return new Promise(resolve => {
-      commit('putSelectedLink', {...linkState});
+      commit('putSelectedLink', { ...linkState });
 
       resolve();
     });
@@ -251,6 +251,33 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   addLink({ commit }, link: LinkInterface) {
     return new Promise(resolve => {
       commit('addLink', link);
+
+      resolve();
+    });
+  },
+  startEditingLink({ commit }, link: LinkInterface) {
+    return new Promise(resolve => {
+      commit('putIsLinkUnderConstruction', true);
+      commit('putIsLinkUnderConstructionNew', link.id == '');
+      commit('putLinkUnderConstruction', {
+        ...link
+      });
+      commit('putBottomRightPanel', 'linkWizard');
+
+      resolve();
+    });
+  },
+  // UI stuff
+  putBottomLeftPanel({ commit }, panel: string) {
+    return new Promise(resolve => {
+      commit('putBottomLeftPanel', panel);
+
+      resolve();
+    });
+  },
+  putBottomRightPanel({ commit }, panel: string) {
+    return new Promise(resolve => {
+      commit('putBottomRightPanel', panel);
 
       resolve();
     });

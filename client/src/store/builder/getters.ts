@@ -77,6 +77,40 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
       return state.selectedLink;
     }
   },
+  workingLinkToArea(state: BuilderInterface): AreaInterface {
+    let link: LinkInterface;
+
+    if (state.isLinkUnderConstruction) {
+      link = state.linkUnderConstruction;
+    } else {
+      link = state.selectedLink;
+    }
+
+    const toId: string = link.toId;
+
+    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, toId)) {
+      return state.internalAreas[state.internalAreaIndex[toId]];
+    } else {
+      return state.externalAreas[state.externalAreaIndex[toId]];
+    }
+  },
+  workingLinkFromArea(state: BuilderInterface): AreaInterface {
+    let link: LinkInterface;
+
+    if (state.isLinkUnderConstruction) {
+      link = state.linkUnderConstruction;
+    } else {
+      link = state.selectedLink;
+    }
+
+    const fromId: string = link.fromId;
+
+    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, fromId)) {
+      return state.internalAreas[state.internalAreaIndex[fromId]];
+    } else {
+      return state.externalAreas[state.externalAreaIndex[fromId]];
+    }
+  },
   selectedLink(state: BuilderInterface): LinkInterface {
     return state.selectedLink;
   },
@@ -116,6 +150,13 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     } else {
       return state.selectedMap;
     }
+  },
+  // UI stuff
+  bottomLeftPanel(state: BuilderInterface): string {
+    return state.bottomLeftPanel;
+  },
+  bottomRightPanel(state: BuilderInterface): string {
+    return state.bottomRightPanel;
   }
 };
 

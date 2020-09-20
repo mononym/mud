@@ -1,51 +1,53 @@
 <template>
-  <div class="q-pa-md fit">
-    <q-card flat bordered class="fit column">
-      <q-card-section>
-        <p class="text-h6 text-center">
-          {{ workingArea.name }}
-        </p>
-      </q-card-section>
+  <q-card class="col-grow flex column" flat bordered>
+    <q-card-section class="q-pb-none col-auto">
+      <p class="text-h6 text-center">
+        {{ workingArea.name }}
+      </p>
+    </q-card-section>
 
-      <q-card-section>
-        <q-tabs v-model="tab" class="text-teal" dense align="justify">
-          <q-tab name="description" label="Description" />
-          <q-tab name="links" label="Links" />
-        </q-tabs>
-      </q-card-section>
+    <q-card-section class="q-pa-none col-auto">
+      <q-tabs v-model="tab" class="text-teal" dense align="justify">
+        <q-tab name="description" label="Description" />
+        <q-tab name="links" label="Links" />
+      </q-tabs>
+    </q-card-section>
 
-      <q-card-section class="q-pt-none col">
-        <q-tab-panels
-          v-model="tab"
-          animated
-          transition-prev="jump-up"
-          transition-next="jump-up"
-          class="col-grow full-height row"
-        >
-          <q-tab-panel class="col row q-pa-none" name="description">
-            <p>{{ workingArea.description }}</p>
-          </q-tab-panel>
+    <q-card-section class="area-panel q-pa-none col flex column">
+      <q-tab-panels
+        v-model="tab"
+        animated
+        transition-prev="jump-up"
+        transition-next="jump-up"
+        class="tab-panel col flex column"
+      >
+        <q-tab-panel class="q-pa-none col" name="description">
+          <p>{{ workingArea.description }}</p>
+        </q-tab-panel>
 
-          <q-tab-panel class="col row q-pa-none" name="links">
-            <link-table />
-          </q-tab-panel>
-        </q-tab-panels>
-      </q-card-section>
+        <q-tab-panel class="q-pa-none col flex column" name="links">
+          <link-table />
+        </q-tab-panel>
+      </q-tab-panels>
+    </q-card-section>
 
-      <q-separator inset />
+    <q-separator class="col-1px" inset />
 
-      <q-card-actions>
-        <q-btn flat @click="editArea" :disabled="buttonsDisabled">Edit</q-btn>
-        <q-btn flat @click="cloneArea" :disabled="buttonsDisabled">Clone</q-btn>
-        <q-btn flat :disabled="buttonsDisabled" @click="deleteArea"
-          >Delete</q-btn
-        >
-      </q-card-actions>
-    </q-card>
-  </div>
+    <q-card-actions align="around" class="col-auto">
+      <q-btn class="col" flat :disabled="buttonsDisabled" @click="editArea"
+        >Edit</q-btn
+      >
+      <q-btn class="col" flat :disabled="buttonsDisabled" @click="cloneArea"
+        >Clone</q-btn
+      >
+      <q-btn class="col" flat :disabled="buttonsDisabled" @click="deleteArea"
+        >Delete</q-btn
+      >
+    </q-card-actions>
+  </q-card>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from 'vuex';
 import defaultArea from '../store/area/state';
 import LinkTable from '../components/LinkTable.vue';
@@ -61,7 +63,7 @@ export default {
     };
   },
   computed: {
-    buttonsDisabled() {
+    buttonsDisabled(): boolean {
       return !this.isAreaSelected || this.isAreaUnderConstruction;
     },
     ...mapGetters({
@@ -94,4 +96,7 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="sass">
+.area-panels { max-height: calc(100% - 100px) !important}
+.tab-panels { max-height: 100% !important}
+</style>

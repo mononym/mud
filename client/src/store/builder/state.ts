@@ -32,6 +32,9 @@ export interface BuilderInterface {
   maps: MapInterface[];
   mapUnderConstruction: MapInterface;
   selectedMap: MapInterface;
+  // UI stuff
+  bottomLeftPanel: string;
+  bottomRightPanel: string;
 }
 
 const state: BuilderInterface = {
@@ -60,6 +63,9 @@ const state: BuilderInterface = {
   maps: [],
   mapUnderConstruction: { ...mapState },
   selectedMap: { ...mapState },
+  // UI stuff
+  bottomLeftPanel: 'mapTable',
+  bottomRightPanel: 'areaTable'
 };
 
 export default state;

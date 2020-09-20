@@ -1,94 +1,76 @@
 <template>
-  <q-splitter
-    v-model="splitterModel"
-    class="buildInstanceSplitter col"
-    unit="%"
-  >
-    <template v-slot:before>
-      <q-splitter
-        v-model="mapSplitterModel"
-        class="mapSplitter col-grow row"
-        unit="%"
-        horizontal
-      >
-        <template v-slot:before>
-          <div class="col full-height column">
-            <builder-map />
-          </div>
-        </template>
+  <div class="flex col row">
+    <div class="flex col column">
+      <div class="col column flex">
+        <builder-map />
+      </div>
+      <div class="col column flex">
+        <q-tab-panels
+          v-model="bottomLeftPanel"
+          animated
+          class="rounded-borders col column flex"
+        >
+          <q-tab-panel class="col column flex q-pa-none" name="mapTable">
+            <map-table
+              @saved="mapSaved"
+              @selected="mapSelected"
+              @editMap="editMap"
+              @addMap="addMap"
+            />
+          </q-tab-panel>
 
-        <template v-slot:after>
-          <q-tab-panels
-            v-model="bottomLeftPanel"
-            animated
-            class="rounded-borders full-height column"
-          >
-            <q-tab-panel class="col column flex q-pa-none" name="table">
-              <map-table
-                @saved="mapSaved"
-                @selected="mapSelected"
-                @editMap="editMap"
-                @addMap="addMap"
-              />
-            </q-tab-panel>
+          <q-tab-panel class="col column flex q-pa-none" name="wizard">
+            <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
+          </q-tab-panel>
+        </q-tab-panels>
+      </div>
+    </div>
 
-            <q-tab-panel class="col column flex" name="wizard">
-              <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
-            </q-tab-panel>
-          </q-tab-panels>
-        </template>
-      </q-splitter>
-    </template>
+    <div class="flex col column">
+      <div class="col flex column">
+        <area-details @editArea="editArea" />
+      </div>
 
-    <template v-slot:after>
-      <q-splitter
-        v-model="areaSplitterModel"
-        class="areaSplitter col-grow row"
-        unit="%"
-        horizontal
-      >
-        <template v-slot:before>
-          <div class="col full-height column">
-            <area-details @editArea="editArea" />
-          </div>
-        </template>
+      <div class="col flex column">
+        <q-tab-panels
+          v-model="bottomRightPanel"
+          animated
+          class="rounded-borders col flex column"
+        >
+          <q-tab-panel name="areaTable" class="col column flex q-pa-none">
+            <area-table
+              @saved="areaSaved"
+              @selected="areaSelected"
+              @editArea="editArea"
+              @addArea="addArea"
+              @deleteArea="showDeleteAreaConfirmation"
+            />
+          </q-tab-panel>
 
-        <template v-slot:after>
-          <q-tab-panels
-            v-model="bottomRightPanel"
-            animated
-            class="rounded-borders full-height column"
-          >
-            <q-tab-panel name="areaTable" class="col column flex q-pa-none">
-              <area-table
-                @saved="areaSaved"
-                @selected="areaSelected"
-                @editArea="editArea"
-                @addArea="addArea"
-                @deleteArea="showDeleteAreaConfirmation"
-              />
-            </q-tab-panel>
+          <q-tab-panel class="col column flex q-pa-none" name="areaWizard">
+            <area-wizard
+              @saved="areaSaved"
+              @deleteArea="showDeleteAreaConfirmation"
+              @canceled="cancelAreaEdit"
+            />
+          </q-tab-panel>
 
-            <q-tab-panel class="col column flex" name="areaWizard">
-              <area-wizard
-                @saved="areaSaved"
-                @deleteArea="showDeleteAreaConfirmation"
-                @canceled="cancelAreaEdit"
-              />
-            </q-tab-panel>
+          <q-tab-panel class="col column flex q-pa-none" name="linkDetails">
+            <link-details
+              @saved="linkSaved"
+              @editLink="editLink"
+              @addLink="addLink"
+              @deleteLink="showDeleteLinkConfirmation"
+            />
+          </q-tab-panel>
 
-            <q-tab-panel class="col column flex" name="linkDetails">
-              <link-details
-                @saved="linkSaved"
-                @editLink="editLink"
-                @addLink="addLink"
-                @deleteLink="showDeleteLinkConfirmation"
-              />
-            </q-tab-panel>
-          </q-tab-panels>
-        </template>
-      </q-splitter>
-    </template>
+          <q-tab-panel class="col column flex q-pa-none" name="linkWizard">
+            <link-wizard />
+          </q-tab-panel>
+        </q-tab-panels>
+      </div>
+    </div>
+
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -110,12 +92,10 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-  </q-splitter>
+  </div>
 </template>
 
 <style lang="sass">
-#map-table { padding-bottom: 0px !important; padding-top: 0px !important }
-
 .buildInstanceSplitter { max-height: calc(100vh - 50px) }
 </style>
 
@@ -127,6 +107,7 @@ import MapWizard from '../components/MapWizard.vue';
 import MapTable from '../components/MapTable.vue';
 import AreaDetails from '../components/AreaDetails.vue';
 import LinkDetails from '../components/LinkDetails.vue';
+import LinkWizard from '../components/LinkWizard.vue';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -138,13 +119,12 @@ export default {
     MapTable,
     MapWizard,
     BuilderMap,
-    LinkDetails
+    LinkDetails,
+    LinkWizard
   },
   data() {
     return {
-      bottomRightPanel: 'areaTable',
       loading: false,
-      bottomLeftPanel: 'table',
       areaSplitterModel: 50,
       mapSplitterModel: 50,
       splitterModel: 50,
@@ -154,7 +134,9 @@ export default {
   computed: {
     ...mapGetters({
       selectedArea: 'builder/selectedArea',
-      selectedMap: 'builder/selectedMap'
+      selectedMap: 'builder/selectedMap',
+      bottomLeftPanel: 'builder/bottomLeftPanel',
+      bottomRightPanel: 'builder/bottomRightPanel'
     })
   },
   created() {

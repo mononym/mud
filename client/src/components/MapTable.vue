@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md col column">
+  <div class="q-pa-none col column">
     <q-table
       title="Maps"
       :data="maps"
