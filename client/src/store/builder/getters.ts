@@ -5,6 +5,8 @@ import { LinkInterface } from '../link/state';
 import { MapInterface } from '../map/state';
 import { BuilderInterface } from './state';
 import areaState from '../area/state';
+import linkState from '../link/state';
+import mapState from '../map/state';
 
 const getters: GetterTree<BuilderInterface, StateInterface> = {
   areaIndex(state: BuilderInterface): Record<string, number> {
@@ -20,13 +22,15 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     return state.areas;
   },
   isAreaSelected(state: BuilderInterface): boolean {
-    return state.selectedArea.id !== '';
+    return state.isAreaSelected;
   },
   workingArea(state: BuilderInterface): AreaInterface {
     if (state.isAreaUnderConstruction) {
       return state.areaUnderConstruction;
-    } else {
+    } else if (state.isAreaSelected) {
       return state.selectedArea;
+    } else {
+      return { ...areaState };
     }
   },
   isAreaUnderConstruction(state: BuilderInterface): boolean {
@@ -54,14 +58,16 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     );
   },
   isLinkSelected(state: BuilderInterface): boolean {
-    return state.selectedLink.id !== '';
+    return state.isLinkSelected
   },
   workingLink(state: BuilderInterface): LinkInterface {
     let link: LinkInterface;
     if (state.isLinkUnderConstruction) {
       link = state.linkUnderConstruction;
-    } else {
+    } else if (state.isLinkSelected) {
       link = state.selectedLink;
+    } else {
+      link = { ...linkState };
     }
 
     if (link.toId !== '' && link.fromId !== '') {
@@ -127,7 +133,7 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     return state.selectedMap.id;
   },
   isMapSelected(state: BuilderInterface): boolean {
-    return state.selectedMap.id !== '';
+    return state.isMapSelected;
   },
   isMapUnderConstruction(state: BuilderInterface): boolean {
     return state.isMapUnderConstruction;
@@ -141,8 +147,10 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   workingMap(state: BuilderInterface): MapInterface {
     if (state.isMapUnderConstruction) {
       return state.mapUnderConstruction;
-    } else {
+    } else if (state.isMapSelected) {
       return state.selectedMap;
+    } else {
+      return { ...mapState };
     }
   },
   // UI stuff

@@ -7,6 +7,7 @@ import { LinkInterface } from '../link/state';
 import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
 import linkState from '../link/state';
+import mapState from '../map/state';
 
 function normalizeLinks(
   links: LinkInterface[],
@@ -43,6 +44,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
             response.data.areas.length > 0
           ) {
             commit('putSelectedArea', response.data.areas[0]);
+            commit('putIsAreaSelected', true);
           }
 
           resolve();
@@ -64,6 +66,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
 
           if (response.data.length > 0) {
             commit('putSelectedMap', response.data[0]);
+            commit('putIsMapSelected', true);
             void dispatch('fetchDataForMap', response.data[0].id);
           }
 
@@ -127,6 +130,15 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
+  deselectMap({ commit }) {
+    return new Promise(resolve => {
+      commit('putSelectedMap', { ...mapState });
+      commit('isMapSelected', false);
+
+      resolve();
+    });
+  },
+  // Area stuff
   deleteArea({ commit, state }) {
     return new Promise((resolve, reject) => {
       axios
@@ -155,6 +167,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     return new Promise(resolve => {
       if (state.selectedArea.id !== area.id) {
         commit('putSelectedArea', area);
+        commit('putIsAreaSelected', true);
       }
 
       resolve();
@@ -202,6 +215,14 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   getArea({ state }, areaId: string) {
     return state.areas[state.areaIndex[areaId]];
   },
+  deselectArea({ commit }) {
+    return new Promise(resolve => {
+      commit('putSelectedArea', { ...areaState });
+      commit('isAreaSelected', false);
+
+      resolve();
+    });
+  },
   deleteLink({ commit, state }) {
     return new Promise((resolve, reject) => {
       axios
@@ -237,7 +258,23 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     return new Promise(resolve => {
       if (state.selectedLink.id !== link.id) {
         commit('putSelectedLink', link);
+        commit('putIsLinkSelected', true);
       }
+
+      resolve();
+    });
+  },
+  putIsLinkSelected({ commit }, isIt: boolean) {
+    return new Promise(resolve => {
+      commit('putIsLinkSelected', isIt);
+
+      resolve();
+    });
+  },
+  deselectLink({ commit }) {
+    return new Promise(resolve => {
+      commit('putSelectedLink', { ...linkState });
+      commit('putIsLinkSelected', false);
 
       resolve();
     });

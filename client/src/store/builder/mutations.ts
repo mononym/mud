@@ -7,6 +7,10 @@ import Vue from 'vue';
 import areaState from '../area/state';
 
 const mutation: MutationTree<BuilderInterface> = {
+  // Area stuff
+  putIsAreaSelected(state: BuilderInterface, isIt: boolean) {
+    state.isAreaSelected = isIt;
+  },
   putIsAreaUnderConstruction(state: BuilderInterface, isIt: boolean) {
     state.isAreaUnderConstruction = isIt;
   },
@@ -44,6 +48,7 @@ const mutation: MutationTree<BuilderInterface> = {
       Vue.set(state.areaIndex, area.id, index);
     });
   },
+  // Link stuff
   putIsLinkUnderConstruction(state: BuilderInterface, isIt: boolean) {
     state.isLinkUnderConstruction = isIt;
   },
@@ -71,6 +76,13 @@ const mutation: MutationTree<BuilderInterface> = {
     state.links.forEach((link, index) => {
       Vue.set(state.linkIndex, link.id, index);
     });
+  },
+  putIsLinkSelected(state: BuilderInterface, isIt: boolean) {
+    state.isLinkSelected = isIt;
+  },
+  // Map stuff
+  putIsMapSelected(state: BuilderInterface, isIt: boolean) {
+    state.isMapSelected = isIt;
   },
   putIsMapUnderConstruction(state: BuilderInterface, isIt: boolean) {
     state.isMapUnderConstruction = isIt;

@@ -14,11 +14,13 @@ export interface BuilderInterface {
   isAreaUnderConstruction: boolean;
   isAreaUnderConstructionNew: boolean;
   selectedArea: AreaInterface;
+  isAreaSelected: boolean;
   // Link stuff
   links: LinkInterface[];
   linkIndex: Record<string, number>;
   linkUnderConstruction: LinkInterface;
   selectedLink: LinkInterface;
+  isLinkSelected: boolean;
   isLinkUnderConstruction: boolean;
   isLinkUnderConstructionNew: boolean;
   // Map stuff
@@ -28,6 +30,7 @@ export interface BuilderInterface {
   maps: MapInterface[];
   mapUnderConstruction: MapInterface;
   selectedMap: MapInterface;
+  isMapSelected: boolean;
   // UI stuff
   bottomLeftPanel: string;
   bottomRightPanel: string;
@@ -41,6 +44,7 @@ const state: BuilderInterface = {
   isAreaUnderConstruction: false,
   isAreaUnderConstructionNew: true,
   selectedArea: { ...areaState },
+  isAreaSelected: false,
   // Link
   isLinkUnderConstruction: false,
   isLinkUnderConstructionNew: true,
@@ -48,6 +52,7 @@ const state: BuilderInterface = {
   linkIndex: {},
   links: [],
   selectedLink: { ...linkState },
+  isLinkSelected: false,
   // Map
   isMapUnderConstruction: false,
   isMapUnderConstructionNew: true,
@@ -55,6 +60,7 @@ const state: BuilderInterface = {
   maps: [],
   mapUnderConstruction: { ...mapState },
   selectedMap: { ...mapState },
+  isMapSelected: false,
   // UI stuff
   bottomLeftPanel: 'mapTable',
   bottomRightPanel: 'areaTable'

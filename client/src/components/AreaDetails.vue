@@ -9,13 +9,19 @@
 
       <q-card-section class="q-pa-none col-auto">
         <q-tabs v-model="tab" class="text-teal" dense align="justify">
-          <q-tab name="description" label="Description" />
-          <q-tab name="links" label="Links" />
+          <q-tab
+            name="description"
+            label="Description"
+            @click="clickedDescriptionsTab"
+          />
+          <q-tab name="links" label="Links" @click="clickedLinksTab" />
         </q-tabs>
       </q-card-section>
 
       <q-card-section class="q-pa-none col">
-        <p v-show="tab == 'description'" class="q-pa-sm">{{ workingArea.description }}</p>
+        <p v-show="tab == 'description'" class="q-pa-sm">
+          {{ workingArea.description }}
+        </p>
         <link-table v-show="tab == 'links'" />
       </q-card-section>
 
@@ -56,7 +62,8 @@ export default {
     return {
       selectedArea: defaultArea,
       confirmDelete: false,
-      tab: 'description'
+      tab: 'description',
+      link: null
     };
   },
   computed: {
@@ -67,10 +74,28 @@ export default {
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
       workingArea: 'builder/workingArea',
-      selectedMapId: 'builder/selectedMapId'
+      selectedMapId: 'builder/selectedMapId',
+      links: 'builder/links',
+      selectedLink: 'builder/selectedLink',
+      isLinkSelected: 'builder/isLinkSelected'
     })
   },
   methods: {
+    clickedDescriptionsTab() {
+      // if (this.isLinkSelected) {
+      //   this.link = this.selectedLink;
+      // }
+
+      this.$store.dispatch('builder/putBottomRightPanel', 'areaTable');
+      this.$store.dispatch('builder/deselectLink');
+    },
+    clickedLinksTab() {
+      // if (this.link !== null) {
+      //   this.$store.dispatch('builder/selectLink', this.link);
+      // } else if (!this.isLinkSelected && this.links.length > 0) {
+      //   this.$store.dispatch('builder/selectLink', this.links[0]);
+      // }
+    },
     editArea() {
       this.$store.dispatch('builder/putIsAreaUnderConstructionNew', false);
       this.$store.dispatch('builder/putIsAreaUnderConstruction', true);

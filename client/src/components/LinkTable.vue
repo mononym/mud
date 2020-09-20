@@ -132,6 +132,7 @@ export default Vue.extend({
   data() {
     return {
       linkTableColumns,
+      localSelectedRow: '',
       linkTableFilter: '',
       selectedRow: new Array<LinkInterface>(),
       initialPagination: {
@@ -168,7 +169,8 @@ export default Vue.extend({
       links: 'builder/workingAreaLinks',
       workingLink: 'builder/workingLink',
       areas: 'builder/areas',
-      isLinkSelected: 'builder/isLinkSelected'
+      isLinkSelected: 'builder/isLinkSelected',
+      selectedLink: 'builder/selectedLink'
     })
   },
   methods: {
