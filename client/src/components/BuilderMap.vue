@@ -1,6 +1,6 @@
 <template>
-  <div class="q-pa-md col row">
-    <q-card flat bordered class="col column">
+  <div class="q-pa-none">
+    <q-card flat bordered class="fit flex column">
       <q-card-section class="col-shrink">
         <div class="text-h6 text-center">{{ mapName }}</div>
       </q-card-section>
@@ -41,7 +41,7 @@
 
       <q-separator class="col-1px full-width" dark />
 
-      <q-card-actions class="col-shrink row">
+      <q-card-actions class="col-shrink">
         <q-btn
           flat
           class="action-button col"
@@ -142,57 +142,54 @@ export default {
       const areas = this.areas;
       const workingLink = this.workingLink;
 
-      return (
-        this.links
-          .map(function(link: LinkInterface) {
-            const toArea = areas[areaIndex[link.toId]];
-            const fromArea = areas[areaIndex[link.fromId]];
-            let stroke;
+      return this.links.map(function(link: LinkInterface) {
+        const toArea = areas[areaIndex[link.toId]];
+        const fromArea = areas[areaIndex[link.fromId]];
+        let stroke;
 
-            if (
-              (workingLink.toId == link.fromId &&
-                workingLink.fromId == link.toId) ||
-              link.id == workingLink.id
-            ) {
-              stroke = 'red';
-            } else {
-              stroke = 'white';
-            }
+        if (
+          (workingLink.toId == link.fromId &&
+            workingLink.fromId == link.toId) ||
+          link.id == workingLink.id
+        ) {
+          stroke = 'red';
+        } else {
+          stroke = 'white';
+        }
 
-            return {
-              id: link.id,
-              x1: fromArea.mapX * gridSize + mapSize / 2,
-              y1: fromArea.mapY * gridSize + mapSize / 2,
-              x2: toArea.mapX * gridSize + mapSize / 2,
-              y2: toArea.mapY * gridSize + mapSize / 2,
-              stroke: stroke
-            };
-          })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .sort(function(firstLink: any, secondLink: any) {
-            const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
-            const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
-            const firstCLength = Math.sqrt(firstALength + firstBLength);
+        return {
+          id: link.id,
+          x1: fromArea.mapX * gridSize + mapSize / 2,
+          y1: fromArea.mapY * gridSize + mapSize / 2,
+          x2: toArea.mapX * gridSize + mapSize / 2,
+          y2: toArea.mapY * gridSize + mapSize / 2,
+          stroke: stroke
+        };
+      });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // .sort(function(firstLink: any, secondLink: any) {
+      //   const firstALength = Math.pow(firstLink.x2 - firstLink.x1, 2);
+      //   const firstBLength = Math.pow(firstLink.y2 - firstLink.y1, 2);
+      //   const firstCLength = Math.sqrt(firstALength + firstBLength);
 
-            const secondALength = Math.pow(secondLink.x2 - secondLink.x1, 2);
-            const secondBLength = Math.pow(secondLink.y2 - secondLink.y1, 2);
-            const secondCLength = Math.sqrt(secondALength + secondBLength);
+      //   const secondALength = Math.pow(secondLink.x2 - secondLink.x1, 2);
+      //   const secondBLength = Math.pow(secondLink.y2 - secondLink.y1, 2);
+      //   const secondCLength = Math.sqrt(secondALength + secondBLength);
 
-            if (
-              firstLink.id !== workingLink.id &&
-              (firstCLength < secondCLength || secondLink.id == workingLink.id)
-            ) {
-              return -1;
-            } else if (
-              firstCLength == secondCLength &&
-              firstLink.id !== workingLink.id
-            ) {
-              return 0;
-            } else {
-              return 1;
-            }
-          })
-      );
+      //   if (
+      //     firstLink.id !== workingLink.id &&
+      //     (firstCLength < secondCLength || secondLink.id == workingLink.id)
+      //   ) {
+      //     return -1;
+      //   } else if (
+      //     firstCLength == secondCLength &&
+      //     firstLink.id !== workingLink.id
+      //   ) {
+      //     return 0;
+      //   } else {
+      //     return 1;
+      //   }
+      // })
     },
     squares: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
@@ -212,8 +209,8 @@ export default {
       });
     },
     ...mapGetters({
-      links: 'builder/allLinks',
-      areas: 'builder/allAreas',
+      links: 'builder/links',
+      areas: 'builder/areas',
       isAreaSelected: 'builder/isAreaSelected',
       isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
       isMapUnderConstruction: 'builder/isMapUnderConstruction',
@@ -245,6 +242,9 @@ export default {
 };
 </script>
 
-<style></style>
-:key="square.key" :x="square.x" :y="square.y" :width="square.width"
-:height="square.height" :fill="square.fill"
+<style>
+.builder-map-wrapper {
+  height: 50%;
+  width: 50%;
+}
+</style>

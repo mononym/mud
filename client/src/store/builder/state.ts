@@ -8,19 +8,15 @@ import linkState from '../link/state';
 
 export interface BuilderInterface {
   // Area stuff
-  internalAreaIndex: Record<string, number>;
-  externalAreaIndex: Record<string, number>;
-  internalAreas: AreaInterface[];
-  externalAreas: AreaInterface[];
+  areaIndex: Record<string, number>;
+  areas: AreaInterface[];
   areaUnderConstruction: AreaInterface;
   isAreaUnderConstruction: boolean;
   isAreaUnderConstructionNew: boolean;
   selectedArea: AreaInterface;
   // Link stuff
-  internalLinks: LinkInterface[];
-  externalLinks: LinkInterface[];
-  internalLinkIndex: Record<string, number>;
-  externalLinkIndex: Record<string, number>;
+  links: LinkInterface[];
+  linkIndex: Record<string, number>;
   linkUnderConstruction: LinkInterface;
   selectedLink: LinkInterface;
   isLinkUnderConstruction: boolean;
@@ -39,10 +35,8 @@ export interface BuilderInterface {
 
 const state: BuilderInterface = {
   // Area
-  internalAreaIndex: {},
-  externalAreaIndex: {},
-  internalAreas: [],
-  externalAreas: [],
+  areaIndex: {},
+  areas: [],
   areaUnderConstruction: { ...areaState },
   isAreaUnderConstruction: false,
   isAreaUnderConstructionNew: true,
@@ -51,10 +45,8 @@ const state: BuilderInterface = {
   isLinkUnderConstruction: false,
   isLinkUnderConstructionNew: true,
   linkUnderConstruction: { ...linkState },
-  internalLinkIndex: {},
-  externalLinkIndex: {},
-  internalLinks: [],
-  externalLinks: [],
+  linkIndex: {},
+  links: [],
   selectedLink: { ...linkState },
   // Map
   isMapUnderConstruction: false,

@@ -5,11 +5,9 @@ import axios, { AxiosResponse, AxiosError } from 'axios';
 
 const actions: ActionTree<MapInterface, StateInterface> = {
   loadMap(context) {
-    console.log('loading');
     axios
       .get('/map')
       .then(function(response: AxiosResponse) {
-        console.log(response);
         void context.commit('setIsAuthenticated', true);
         void context.commit('setIsAuthenticating', false);
         void context.commit('setMapId', response.data.id);
@@ -17,7 +15,6 @@ const actions: ActionTree<MapInterface, StateInterface> = {
         // void context.dispatch('settings/loadSettings');
       })
       .catch(function(error: AxiosError) {
-        console.log(error);
         void context.commit('setMapId', null);
       });
   }

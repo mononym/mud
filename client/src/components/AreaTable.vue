@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md col column">
+  <div class="q-pa-none">
     <q-table
       title="Areas"
       :data="areas"
@@ -7,10 +7,11 @@
       row-key="id"
       flat
       bordered
-      class="col"
+      class="fit"
       :selected.sync="selectedRow"
       selection="single"
       :pagination="initialPagination"
+      virtual-scroll
     >
       <template v-slot:top>
         <q-btn
@@ -89,7 +90,6 @@
 <script lang="ts">
 import { mapGetters } from 'vuex';
 import { AreaInterface } from 'src/store/area/state';
-import areaState from '../store/area/state';
 
 const areaTableColumns = [
   { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
@@ -128,23 +128,12 @@ export default {
       return [this.$store.getters['builder/selectedArea']];
     },
     ...mapGetters({
-      areas: 'builder/internalAreas',
+      areas: 'builder/areas',
       selectedArea: 'builder/selectedArea',
       selectedMap: 'builder/selectedMap'
     })
   },
   methods: {
-    addArea() {
-      const newArea = { ...areaState };
-      newArea.mapId = this.selectedMapId;
-      console.log('newarea');
-      console.log(newArea);
-      this.$store.dispatch('builder/putIsAreaUnderConstructionNew', true);
-      this.$store.dispatch('builder/putIsAreaUnderConstruction', true);
-      this.$store.dispatch('builder/putAreaUnderConstruction', newArea);
-
-      this.$emit('addArea');
-    },
     editArea(area: AreaInterface) {
       this.$store.dispatch('builder/selectArea', area).then(() =>
         this.$store
@@ -170,6 +159,9 @@ export default {
       this.$store.dispatch('builder/clearSelectedLink');
     },
     deleteArea() {
+      this.$emit('deleteArea');
+    },
+    addArea() {
       this.$emit('deleteArea');
     }
   }

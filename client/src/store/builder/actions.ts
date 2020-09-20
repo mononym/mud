@@ -8,22 +8,41 @@ import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
 import linkState from '../link/state';
 
+function normalizeLinks(
+  links: LinkInterface[],
+  areas: AreaInterface[],
+  areaIndex: Record<string, number>
+) {
+  return links.map((link: LinkInterface) => {
+    link.toName = areas[areaIndex[link.toId]].name;
+    link.fromName = areas[areaIndex[link.fromId]].name;
+
+    return link;
+  });
+}
+
 const actions: ActionTree<BuilderInterface, StateInterface> = {
   fetchDataForMap({ commit, getters }, mapId: string) {
     return new Promise((resolve, reject) => {
       axios
         .get('/maps/' + mapId + '/data/')
         .then(function(response: AxiosResponse) {
-          commit('putInternalAreas', response.data.internalAreas);
-          commit('putExternalAreas', response.data.externalAreas);
-          commit('putInternalLinks', response.data.internalLinks);
-          commit('putExternalLinks', response.data.externalLinks);
+          commit('putAreas', response.data.areas);
+
+          commit(
+            'putLinks',
+            normalizeLinks(
+              response.data.links,
+              getters['areas'],
+              getters['areaIndex']
+            )
+          );
 
           if (
             !getters['builder/isAreaSelected'] &&
-            response.data.internalAreas.length > 0
+            response.data.areas.length > 0
           ) {
-            commit('putSelectedArea', response.data.internalAreas[0]);
+            commit('putSelectedArea', response.data.areas[0]);
           }
 
           resolve();
@@ -164,7 +183,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   },
   resetAreas({ commit }) {
     return new Promise(resolve => {
-      commit('putInternalAreas', []);
+      commit('putareas', []);
       commit('putSelectedArea', { ...areaState });
 
       resolve();
@@ -181,11 +200,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
     commit('removeArea', areaId);
   },
   getArea({ state }, areaId: string) {
-    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, areaId)) {
-      return state.internalAreas[state.internalAreaIndex[areaId]];
-    } else {
-      return state.externalAreas[state.externalAreaIndex[areaId]];
-    }
+    return state.areas[state.areaIndex[areaId]];
   },
   deleteLink({ commit, state }) {
     return new Promise((resolve, reject) => {

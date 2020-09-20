@@ -129,20 +129,9 @@ defmodule Mud.Engine.Map do
         )
       )
 
-    grouped_links =
-      Enum.group_by(links, fn link ->
-        if link.to_id in internal_ids or link.from_id in internal_ids do
-          :internal
-        else
-          :external
-        end
-      end)
-
     %{
-      external_areas: external_areas,
-      internal_areas: internal_areas,
-      internal_links: Map.get(grouped_links, :internal, []),
-      external_links: Map.get(grouped_links, :external, [])
+      areas: Enum.concat([external_areas, internal_areas]),
+      links: links
     }
   end
 

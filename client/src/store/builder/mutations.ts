@@ -16,48 +16,32 @@ const mutation: MutationTree<BuilderInterface> = {
   putAreaUnderConstruction(state: BuilderInterface, area: AreaInterface) {
     state.areaUnderConstruction = area;
   },
-  putInternalArea(state: BuilderInterface, area: AreaInterface) {
-    Vue.set(state.internalAreaIndex, area.id, state.internalAreas.length);
+  putArea(state: BuilderInterface, area: AreaInterface) {
+    Vue.set(state.areaIndex, area.id, state.areas.length);
 
-    state.internalAreas.push(area);
-  },
-  putExternalArea(state: BuilderInterface, area: AreaInterface) {
-    Vue.set(state.internalAreaIndex, area.id, state.externalAreas.length);
-
-    state.externalAreas.push(area);
+    state.areas.push(area);
   },
   putSelectedArea(state: BuilderInterface, area: AreaInterface) {
     state.selectedArea = area;
   },
   updateArea(state: BuilderInterface, area: AreaInterface) {
-    Vue.set(state.internalAreas, state.internalAreaIndex[area.id], area);
+    Vue.set(state.areas, state.areaIndex[area.id], area);
   },
   deleteArea(state: BuilderInterface) {
-    state.internalAreas.splice(
-      state.internalAreaIndex[state.selectedArea.id],
-      1
-    );
+    state.areas.splice(state.areaIndex[state.selectedArea.id], 1);
 
     state.selectedArea = { ...areaState };
-    state.internalAreaIndex = {};
-    state.internalAreas.forEach((area, index) => {
-      Vue.set(state.internalAreaIndex, area.id, index);
+    state.areaIndex = {};
+    state.areas.forEach((area, index) => {
+      Vue.set(state.areaIndex, area.id, index);
     });
   },
-  putInternalAreas(state: BuilderInterface, areas: AreaInterface[]) {
-    state.internalAreas = areas;
-    state.internalAreaIndex = {};
+  putAreas(state: BuilderInterface, areas: AreaInterface[]) {
+    state.areas = areas;
+    state.areaIndex = {};
 
-    state.internalAreas.forEach((area, index) => {
-      Vue.set(state.internalAreaIndex, area.id, index);
-    });
-  },
-  putExternalAreas(state: BuilderInterface, areas: AreaInterface[]) {
-    state.externalAreas = areas;
-    state.externalAreaIndex = {};
-
-    state.externalAreas.forEach((area, index) => {
-      Vue.set(state.externalAreaIndex, area.id, index);
+    state.areas.forEach((area, index) => {
+      Vue.set(state.areaIndex, area.id, index);
     });
   },
   putIsLinkUnderConstruction(state: BuilderInterface, isIt: boolean) {
@@ -73,34 +57,19 @@ const mutation: MutationTree<BuilderInterface> = {
     state.selectedLink = link;
   },
   updateLink(state: BuilderInterface, link: LinkInterface) {
-    if (
-      Object.prototype.hasOwnProperty.call(state.internalLinkIndex, link.id)
-    ) {
-      Vue.set(state.internalLinks, state.internalLinkIndex[link.id], link);
-    } else {
-      Vue.set(state.externalLinks, state.externalLinkIndex[link.id], link);
-    }
+    Vue.set(state.links, state.linkIndex[link.id], link);
   },
-  // TODO: This function is going to need to deal with internal/external links and how to insert them
   addLink(state: BuilderInterface, link: LinkInterface) {
-    Vue.set(state.internalLinkIndex, link.id, state.internalLinks.length);
+    Vue.set(state.linkIndex, link.id, state.links.length);
 
-    state.internalLinks.push(link);
+    state.links.push(link);
   },
-  putInternalLinks(state: BuilderInterface, links: LinkInterface[]) {
-    state.internalLinks = links;
-    state.internalLinkIndex = {};
+  putLinks(state: BuilderInterface, links: LinkInterface[]) {
+    state.links = links;
+    state.linkIndex = {};
 
-    state.internalLinks.forEach((link, index) => {
-      Vue.set(state.internalLinkIndex, link.id, index);
-    });
-  },
-  putExternalLinks(state: BuilderInterface, links: LinkInterface[]) {
-    state.externalLinks = links;
-    state.externalLinkIndex = {};
-
-    state.externalLinks.forEach((link, index) => {
-      Vue.set(state.externalLinkIndex, link.id, index);
+    state.links.forEach((link, index) => {
+      Vue.set(state.linkIndex, link.id, index);
     });
   },
   putIsMapUnderConstruction(state: BuilderInterface, isIt: boolean) {

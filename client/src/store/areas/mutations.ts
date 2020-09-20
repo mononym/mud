@@ -26,7 +26,7 @@ const mutation: MutationTree<AreasInterface> = {
 
     buildIndexes(state);
   },
-  putInternalAreasForMap(
+  putareasForMap(
     state: AreasInterface,
     payload: { areas: Record<string, AreaInterface>; mapId: string }
   ) {

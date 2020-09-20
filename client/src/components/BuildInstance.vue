@@ -1,75 +1,48 @@
 <template>
-  <div class="flex col row">
-    <div class="flex col column">
-      <div class="col column flex">
-        <builder-map />
-      </div>
-      <div class="col column flex">
-        <q-tab-panels
-          v-model="bottomLeftPanel"
-          animated
-          class="rounded-borders col column flex"
-        >
-          <q-tab-panel class="col column flex q-pa-none" name="mapTable">
-            <map-table
-              @saved="mapSaved"
-              @selected="mapSelected"
-              @editMap="editMap"
-              @addMap="addMap"
-            />
-          </q-tab-panel>
+  <div class="build-instance-wrapper flex row col wrap">
+    <builder-map />
 
-          <q-tab-panel class="col column flex q-pa-none" name="wizard">
-            <map-wizard @saved="mapSaved" @canceled="cancelMapEdit" />
-          </q-tab-panel>
-        </q-tab-panels>
-      </div>
-    </div>
+    <area-details @editArea="editArea" />
 
-    <div class="flex col column">
-      <div class="col flex column">
-        <area-details @editArea="editArea" />
-      </div>
+    <map-table
+      v-show="bottomLeftPanel == 'mapTable'"
+      @saved="mapSaved"
+      @selected="mapSelected"
+      @editMap="editMap"
+      @addMap="addMap"
+    />
 
-      <div class="col flex column">
-        <q-tab-panels
-          v-model="bottomRightPanel"
-          animated
-          class="rounded-borders col flex column"
-        >
-          <q-tab-panel name="areaTable" class="col column flex q-pa-none">
-            <area-table
-              @saved="areaSaved"
-              @selected="areaSelected"
-              @editArea="editArea"
-              @addArea="addArea"
-              @deleteArea="showDeleteAreaConfirmation"
-            />
-          </q-tab-panel>
+    <map-wizard
+      v-show="bottomLeftPanel == 'mapWizard'"
+      @saved="mapSaved"
+      @canceled="cancelMapEdit"
+    />
 
-          <q-tab-panel class="col column flex q-pa-none" name="areaWizard">
-            <area-wizard
-              @saved="areaSaved"
-              @deleteArea="showDeleteAreaConfirmation"
-              @canceled="cancelAreaEdit"
-            />
-          </q-tab-panel>
+    <area-table
+      v-show="bottomRightPanel == 'areaTable'"
+      @saved="areaSaved"
+      @selected="areaSelected"
+      @editArea="editArea"
+      @addArea="addArea"
+      @deleteArea="showDeleteAreaConfirmation"
+    />
 
-          <q-tab-panel class="col column flex q-pa-none" name="linkDetails">
-            <link-details
-              @saved="linkSaved"
-              @editLink="editLink"
-              @addLink="addLink"
-              @deleteLink="showDeleteLinkConfirmation"
-            />
-          </q-tab-panel>
+    <area-wizard
+      v-show="bottomRightPanel == 'areaWizard'"
+      @saved="areaSaved"
+      @deleteArea="showDeleteAreaConfirmation"
+      @canceled="cancelAreaEdit"
+    />
 
-          <q-tab-panel class="col column flex q-pa-none" name="linkWizard">
-            <link-wizard />
-          </q-tab-panel>
-        </q-tab-panels>
-      </div>
-    </div>
+    <link-details
+      v-show="bottomRightPanel == 'linkDetails'"
+      @saved="linkSaved"
+      @editLink="editLink"
+      @addLink="addLink"
+      @deleteLink="showDeleteLinkConfirmation"
+    />
+
+    <link-wizard v-show="bottomRightPanel == 'linkWizard'" />
 
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
@@ -96,7 +69,7 @@
 </template>
 
 <style lang="sass">
-.buildInstanceSplitter { max-height: calc(100vh - 50px) }
+.build-instance-wrapper > div { height: 50% !important; width: 50% !important }
 </style>
 
 <script>

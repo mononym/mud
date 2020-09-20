@@ -1,4 +1,5 @@
 <template>
+  <div class="q-pa-none fit">
     <q-table
       title="Links"
       :data="normalizedLinks"
@@ -7,18 +8,15 @@
       flat
       bordered
       dense
-      class="col-grow sticky-header-table"
+      class="fit sticky-header-table"
       :selected.sync="selectedRow"
       selection="single"
       :pagination="initialPagination"
+      virtual-scroll
+      :rows-per-page-options="[0]"
+      :pagination-label="getPaginationLabel"
     >
       <template v-slot:top>
-        <q-btn
-          color="primary"
-          label="Add Link"
-          :disabled="addLinkButtonDisabled"
-          @click="addLink"
-        />
         <q-space />
         <q-input
           v-model="linkTableFilter"
@@ -87,6 +85,7 @@
         </q-tr>
       </template>
     </q-table>
+  </div>
 </template>
 
 <script lang="ts">
@@ -141,8 +140,8 @@ export default Vue.extend({
     };
   },
   computed: {
-    addLinkButtonDisabled: function(): boolean {
-      return !this.$store.getters['builder/isAreaSelected'];
+    buttonsDisabled: function(): boolean {
+      return !this.isLinkSelected;
     },
     workingLinkId: function(): string {
       return this.workingLink.id;
@@ -168,17 +167,19 @@ export default Vue.extend({
     ...mapGetters({
       links: 'builder/workingAreaLinks',
       workingLink: 'builder/workingLink',
-      areas: 'builder/allAreas'
+      areas: 'builder/areas',
+      isLinkSelected: 'builder/isLinkSelected'
     })
   },
   methods: {
+    getPaginationLabel(start: number, end: number, total: number) {
+      return total.toString() + ' Links';
+    },
     addLink() {
       const newLink = { ...linkState };
       void this.$store.dispatch('builder/putIsLinkUnderConstructionNew', true);
       void this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
       void this.$store.dispatch('builder/putLinkUnderConstruction', newLink);
-
-      this.$emit('addLink');
     },
     editLink(link: LinkInterface) {
       void this.$store.dispatch('builder/startEditingLink', link);
@@ -192,7 +193,6 @@ export default Vue.extend({
       void this.$store.dispatch('builder/putLinkUnderConstruction', {
         ...link
       });
-      this.$emit('editArea');
     },
     toggleSingleRow(row: LinkInterface) {
       const selectedRow: LinkInterface[] = [];

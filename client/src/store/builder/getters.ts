@@ -4,22 +4,20 @@ import { StateInterface } from '../index';
 import { LinkInterface } from '../link/state';
 import { MapInterface } from '../map/state';
 import { BuilderInterface } from './state';
+import areaState from '../area/state';
 
 const getters: GetterTree<BuilderInterface, StateInterface> = {
+  areaIndex(state: BuilderInterface): Record<string, number> {
+    return state.areaIndex;
+  },
   selectedAreaId(state: BuilderInterface): string {
     return state.selectedArea.id;
   },
   selectedArea(state: BuilderInterface): AreaInterface {
     return state.selectedArea;
   },
-  internalAreas(state: BuilderInterface): AreaInterface[] {
-    return state.internalAreas;
-  },
-  externalAreas(state: BuilderInterface): AreaInterface[] {
-    return state.externalAreas;
-  },
-  allAreas(state: BuilderInterface): AreaInterface[] {
-    return state.internalAreas.concat(state.externalAreas);
+  areas(state: BuilderInterface): AreaInterface[] {
+    return state.areas;
   },
   isAreaSelected(state: BuilderInterface): boolean {
     return state.selectedArea.id !== '';
@@ -40,14 +38,8 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   areaUnderConstruction(state: BuilderInterface): AreaInterface {
     return state.areaUnderConstruction;
   },
-  internalLinks(state: BuilderInterface): LinkInterface[] {
-    return state.internalLinks;
-  },
-  externalLinks(state: BuilderInterface): LinkInterface[] {
-    return state.externalLinks;
-  },
-  allLinks(state: BuilderInterface): LinkInterface[] {
-    return state.internalLinks.concat(state.externalLinks);
+  links(state: BuilderInterface): LinkInterface[] {
+    return state.links;
   },
   workingAreaLinks(state: BuilderInterface): LinkInterface[] {
     let workingArea: AreaInterface;
@@ -57,25 +49,27 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
       workingArea = state.selectedArea;
     }
 
-    const someLinks = state.internalLinks.filter(
+    return state.links.filter(
       link => link.toId == workingArea.id || link.fromId == workingArea.id
     );
-
-    const moreLinks = state.externalLinks.filter(
-      link => link.toId == workingArea.id || link.fromId == workingArea.id
-    );
-
-    return someLinks.concat(moreLinks);
   },
   isLinkSelected(state: BuilderInterface): boolean {
     return state.selectedLink.id !== '';
   },
   workingLink(state: BuilderInterface): LinkInterface {
+    let link: LinkInterface;
     if (state.isLinkUnderConstruction) {
-      return state.linkUnderConstruction;
+      link = state.linkUnderConstruction;
     } else {
-      return state.selectedLink;
+      link = state.selectedLink;
     }
+
+    if (link.toId !== '' && link.fromId !== '') {
+      link.toName = state.areas[state.areaIndex[link.toId]].name;
+      link.fromName = state.areas[state.areaIndex[link.fromId]].name;
+    }
+
+    return link;
   },
   workingLinkToArea(state: BuilderInterface): AreaInterface {
     let link: LinkInterface;
@@ -86,12 +80,12 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
       link = state.selectedLink;
     }
 
-    const toId: string = link.toId;
-
-    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, toId)) {
-      return state.internalAreas[state.internalAreaIndex[toId]];
+    if (link.id == '') {
+      return { ...areaState };
     } else {
-      return state.externalAreas[state.externalAreaIndex[toId]];
+      const toId: string = link.toId;
+
+      return state.areas[state.areaIndex[toId]];
     }
   },
   workingLinkFromArea(state: BuilderInterface): AreaInterface {
@@ -103,12 +97,12 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
       link = state.selectedLink;
     }
 
-    const fromId: string = link.fromId;
-
-    if (Object.prototype.hasOwnProperty.call(state.internalAreaIndex, fromId)) {
-      return state.internalAreas[state.internalAreaIndex[fromId]];
+    if (link.id == '') {
+      return { ...areaState };
     } else {
-      return state.externalAreas[state.externalAreaIndex[fromId]];
+      const fromId: string = link.fromId;
+
+      return state.areas[state.areaIndex[fromId]];
     }
   },
   selectedLink(state: BuilderInterface): LinkInterface {

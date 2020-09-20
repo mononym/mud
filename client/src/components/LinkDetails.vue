@@ -1,93 +1,90 @@
 <template>
-  <div class="q-pa-md fit">
-    <q-card flat bordered class="fit column">
-      <q-card-section>
+  <div class="q-pa-none">
+    <q-card class="fit flex column" flat bordered>
+      <q-card-section class="col-shrink">
         <p class="text-h6 text-center">
-          {{ workingArea.name }}
+          {{ workingLink.name }}
         </p>
       </q-card-section>
 
-      <q-card-section>
+      <q-card-section class="q-pa-none col-auto">
         <q-tabs v-model="tab" class="text-teal" dense align="justify">
           <q-tab name="description" label="Description" />
           <q-tab name="links" label="Links" />
         </q-tabs>
       </q-card-section>
 
-      <q-card-section class="q-pt-none col">
-        <q-tab-panels
-          v-model="tab"
-          animated
-          transition-prev="jump-up"
-          transition-next="jump-up"
-          class="col-grow full-height row"
-        >
-          <q-tab-panel class="col row q-pa-none" name="description">
-            <p>{{ workingArea.description }}</p>
-          </q-tab-panel>
-
-          <q-tab-panel class="col row q-pa-none" name="links">
-            <link-table />
-          </q-tab-panel>
-        </q-tab-panels>
+      <q-card-section class="q-pa-none col">
+        <p v-show="tab == 'description'" class="q-pa-sm">
+          {{ workingLink.shortDescription }}
+        </p>
       </q-card-section>
 
-      <q-separator inset />
+      <q-separator class="col-1px" inset />
 
-      <q-card-actions>
-        <q-btn flat @click="editArea" :disabled="buttonsDisabled">Edit</q-btn>
-        <q-btn flat @click="cloneArea" :disabled="buttonsDisabled">Clone</q-btn>
-        <q-btn flat :disabled="buttonsDisabled" @click="deleteArea"
-          >Delete</q-btn
-        >
+      <q-card-actions align="around" class="col-auto">
+        <q-btn class="col" flat label="New" />
       </q-card-actions>
     </q-card>
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import { mapGetters } from 'vuex';
-import defaultArea from '../store/area/state';
-import LinkTable from '../components/LinkTable.vue';
+import { AreaInterface } from 'src/store/area/state';
 
 export default {
   name: 'LinkDetails',
-  components: { LinkTable },
+  components: {},
   data() {
     return {
-      selectedArea: defaultArea,
       confirmDelete: false,
       tab: 'description'
     };
   },
   computed: {
-    buttonsDisabled() {
-      return !this.isAreaSelected || this.isAreaUnderConstruction;
+    normalizedLinks: function(): Record<string, unknown>[] {
+      const areaIndex: Record<string, number> = this.areaIndex;
+
+      // this.areas.forEach((area: AreaInterface, index: number) => {
+      //   areaIndex[area.id] = index;
+      // });
+
+      const areas = this.areas;
+      const links = this.links.map((link: Record<string, string>) => {
+        link.toName = areas[areaIndex[link.toId]].name;
+        link.fromName = areas[areaIndex[link.fromId]].name;
+
+        return link;
+      });
+
+      return links;
     },
     ...mapGetters({
-      isAreaSelected: 'builder/isAreaSelected',
-      isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
-      workingArea: 'builder/workingArea'
+      isLinkUnderConstruction: 'builder/isLinkUnderConstruction',
+      isLinkUnderConstructionNew: 'builder/isLinkUnderConstructionNew',
+      workingLink: 'builder/workingLink',
+      links: 'builder/workingAreaLinks',
+      areas: 'builder/areas',
+      areaIndex: 'builder/areaIndex'
     })
   },
   methods: {
-    editArea() {
-      this.$store.dispatch('builder/putIsAreaUnderConstructionNew', false);
-      this.$store.dispatch('builder/putIsAreaUnderConstruction', true);
-      this.$store.dispatch('builder/putAreaUnderConstruction', {
-        ...this.workingArea
+    editLink() {
+      this.$store.dispatch('builder/putIsLinkUnderConstructionNew', false);
+      this.$store.dispatch('builder/putIsLinkUnderConstruction', true);
+      this.$store.dispatch('builder/putLinkUnderConstruction', {
+        ...this.workingLink
       });
-      this.$emit('editArea');
     },
-    cloneArea() {
+    cloneLink() {
       this.$store.dispatch('builder/putIsAreaUnderConstructionNew', true);
       this.$store.dispatch('builder/putIsAreaUnderConstruction', true);
       this.$store.dispatch('builder/putAreaUnderConstruction', {
-        ...this.workingArea
+        ...this.workingLink
       });
-      this.$emit('editArea');
     },
-    deleteArea() {
+    deleteLink() {
       this.$emit('deleteArea');
     }
   }

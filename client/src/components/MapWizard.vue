@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <q-stepper v-model="step" vertical color="primary" animated>
+    <!-- <q-stepper v-model="step" vertical color="primary" animated>
       <q-step
         :name="1"
         title="Name"
@@ -129,7 +129,7 @@
           <q-btn color="primary" label="Cancel" @click="cancel" />
         </q-stepper-navigation>
       </q-step>
-    </q-stepper>
+    </q-stepper> -->
   </div>
 </template>
 

@@ -1,141 +1,144 @@
 <template>
-  <q-card flat bordered class="q-pa-none col-grow column">
-    <q-card-section class="col-auto q-plbr-none text-h6 text-center">
-      {{ workingLinkFromArea.name }} to {{ workingLinkToArea.name }}
-    </q-card-section>
+  <div class="q-pa-none">
+    <q-card flat bordered class="q-pa-none">
+      <q-card-section class="q-plbr-none text-h6 text-center">
+        {{ workingLinkFromArea.name }} to {{ workingLinkToArea.name }}
+      </q-card-section>
 
-    <q-card-section class="col q-pa-none">
-      <q-stepper
-        v-model="step"
-        class="col full-height q-pa-none"
-        vertical
-        color="primary"
-        animated
-        header-nav
-      >
-        <q-step
-          :name="1"
-          title="Visuals"
-          icon="fas fa-eye"
-          :done="step > 1"
-          :header-nav="step > 1 || !isNew"
-          :caption="link.shortDescription"
+      <q-card-section class="q-pa-none">
+        <q-stepper
+          v-model="step"
+          class="q-pa-none"
+          vertical
+          color="primary"
+          header-nav
         >
-          <p>What players see</p>
+          <q-step
+            :name="1"
+            title="Visuals"
+            icon="fas fa-eye"
+            :done="step > 1"
+            :header-nav="step > 1 || !isNew"
+            :caption="link.shortDescription"
+          >
+            <p>What players see</p>
 
-          <q-form class="q-gutter-md">
-            <q-select
-              v-model="icon"
-              filled
-              :options="iconOptions"
-              label="Standard"
-              color="teal"
-              clearable
-              options-selected-class="text-deep-orange"
-            >
-              <template v-slot:before>
-                <q-icon :name="icon.icon" />
-              </template>
-              <template v-slot:option="scope">
-                <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
-                  <q-item-section avatar>
-                    <q-icon :name="scope.opt.icon" />
-                  </q-item-section>
-                  <q-item-section>
-                    <q-item-label>{{ scope.opt.label }}</q-item-label>
-                    <q-item-label caption>{{
-                      scope.opt.description
-                    }}</q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template>
-            </q-select>
-            <q-input
-              v-model="link.shortDescription"
-              label="Short Description"
-            />
+            <q-form class="q-gutter-md">
+              <q-select
+                v-model="icon"
+                filled
+                :options="iconOptions"
+                label="Standard"
+                color="teal"
+                clearable
+                options-selected-class="text-deep-orange"
+              >
+                <template v-slot:before>
+                  <q-icon :name="icon.icon" />
+                </template>
+                <template v-slot:option="scope">
+                  <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
+                    <q-item-section avatar>
+                      <q-icon :name="scope.opt.icon" />
+                    </q-item-section>
+                    <q-item-section>
+                      <q-item-label>{{ scope.opt.label }}</q-item-label>
+                      <q-item-label caption>{{
+                        scope.opt.description
+                      }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
+              </q-select>
+              <q-input
+                v-model="link.shortDescription"
+                label="Short Description"
+              />
 
-            <q-input v-model="link.longDescription" label="Long Description" />
-          </q-form>
+              <q-input
+                v-model="link.longDescription"
+                label="Long Description"
+              />
+            </q-form>
 
-          <q-stepper-navigation>
-            <q-btn
-              :disabled="descriptionContinueButtonDisabled"
-              color="primary"
-              label="Continue"
-              @click="step = 2"
-            />
-          </q-stepper-navigation>
-        </q-step>
+            <q-stepper-navigation>
+              <q-btn
+                :disabled="descriptionContinueButtonDisabled"
+                color="primary"
+                label="Continue"
+                @click="step = 2"
+              />
+            </q-stepper-navigation>
+          </q-step>
 
-        <q-step
-          :name="2"
-          title="Arrival and Departure Strings"
-          icon="fas fa-signature"
-          :done="step > 2"
-          :header-nav="step > 2 || !isNew"
-        >
-          <p>What players see when a character enters and leaves an area.</p>
+          <q-step
+            :name="2"
+            title="Arrival and Departure Strings"
+            icon="fas fa-signature"
+            :done="step > 2"
+            :header-nav="step > 2 || !isNew"
+          >
+            <p>What players see when a character enters and leaves an area.</p>
 
-          <q-form class="q-gutter-md">
-            <q-input v-model="link.arrivalText" label="Arrival Text" />
+            <q-form class="q-gutter-md">
+              <q-input v-model="link.arrivalText" label="Arrival Text" />
 
-            <q-input v-model="link.departureText" label="Departure Text" />
-          </q-form>
-          <q-stepper-navigation>
-            <q-btn
-              :disabled="descriptionContinueButtonDisabled"
-              color="primary"
-              label="Continue"
-              @click="step = 3"
-            />
-            <q-btn
-              flat
-              color="primary"
-              label="Back"
-              class="q-ml-sm"
-              @click="step = 1"
-            />
-          </q-stepper-navigation>
-        </q-step>
+              <q-input v-model="link.departureText" label="Departure Text" />
+            </q-form>
+            <q-stepper-navigation>
+              <q-btn
+                :disabled="descriptionContinueButtonDisabled"
+                color="primary"
+                label="Continue"
+                @click="step = 3"
+              />
+              <q-btn
+                flat
+                color="primary"
+                label="Back"
+                class="q-ml-sm"
+                @click="step = 1"
+              />
+            </q-stepper-navigation>
+          </q-step>
 
-        <q-step
-          :name="3"
-          title="Icon"
-          icon="fas fa-signature"
-          :done="step > 3"
-          :header-nav="step > 3 || !isNew"
-        >
-          <div class="q-pa-lg"></div>
+          <q-step
+            :name="3"
+            title="Icon"
+            icon="fas fa-signature"
+            :done="step > 3"
+            :header-nav="step > 3 || !isNew"
+          >
+            <div class="q-pa-lg"></div>
 
-          <q-stepper-navigation>
-            <q-btn
-              flat
-              color="primary"
-              label="Back"
-              class="q-ml-sm"
-              @click="step = 2"
-            />
-          </q-stepper-navigation>
-        </q-step>
-      </q-stepper>
-    </q-card-section>
+            <q-stepper-navigation>
+              <q-btn
+                flat
+                color="primary"
+                label="Back"
+                class="q-ml-sm"
+                @click="step = 2"
+              />
+            </q-stepper-navigation>
+          </q-step>
+        </q-stepper>
+      </q-card-section>
 
-    <q-card-actions align="around" class="flex row q-pa-none">
-      <q-btn
-        v-if="!saveButtonDisabled"
-        class="col"
-        label="Save"
-        @click="saveLink"
-      />
-      <q-btn class="col" label="Cancel" @click="cancel" />
-    </q-card-actions>
-  </q-card>
+      <q-card-actions align="around" class="q-pa-none">
+        <q-btn
+          v-if="!saveButtonDisabled"
+          class=""
+          label="Save"
+          @click="saveLink"
+        />
+        <q-btn class="" label="Cancel" @click="cancel" />
+      </q-card-actions>
+    </q-card>
+  </div>
 </template>
 
 <script lang="ts">
 import { mapGetters } from 'vuex';
-import { LinkInterface } from 'src/store/link/state';
 import linkState from '../store/link/state';
 
 interface IconOption {
@@ -313,9 +316,7 @@ export default {
         );
     },
     saveLink() {
-      console.log('saving');
       this.link.icon = this.icon.value;
-      console.log(this.link);
       // const params = {
       //   link: {
       //     name: this.link.name,

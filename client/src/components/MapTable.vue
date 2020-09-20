@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-none col column">
+  <div class="q-pa-none">
     <q-table
       title="Maps"
       :data="maps"
@@ -7,10 +7,9 @@
       row-key="id"
       flat
       bordered
-      class="col"
+      class="fit"
       :selected.sync="selectedRow"
       selection="single"
-      :pagination="initialPagination"
     >
       <template v-slot:top>
         <q-btn color="primary" label="Add Map" @click="addMap" />
@@ -90,9 +89,6 @@ export default {
     return {
       mapTableColumns,
       mapTableFilter: '',
-      initialPagination: {
-        rowsPerPage: 0
-      }
     };
   },
   computed: {

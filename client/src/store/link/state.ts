@@ -9,6 +9,8 @@ export interface LinkInterface {
   fromId: string;
   insertedAt: string;
   updatedAt: string;
+  toName: string;
+  fromName: string;
 }
 
 const state: LinkInterface = {
@@ -21,7 +23,9 @@ const state: LinkInterface = {
   toId: '',
   fromId: '',
   insertedAt: '',
-  updatedAt: ''
+  updatedAt: '',
+  toName: '',
+  fromName: ''
 };
 
 export default state;
