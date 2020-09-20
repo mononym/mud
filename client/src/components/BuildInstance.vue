@@ -2,7 +2,10 @@
   <div class="build-instance-wrapper flex row col wrap">
     <builder-map />
 
-    <area-details @editArea="editArea" />
+    <area-details
+      @editArea="editArea"
+      @deleteLink="showDeleteLinkConfirmation"
+    />
 
     <map-table
       v-show="bottomLeftPanel == 'mapTable'"
@@ -49,7 +52,7 @@
         <q-card-section class="row items-center">
           <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
           <span class="q-ml-sm"
-            >Confirm deletion of room: {{ selectedArea.name }}</span
+            >Confirm deletion of area: {{ selectedArea.name }}</span
           >
         </q-card-section>
 
@@ -60,6 +63,28 @@
             label="Delete"
             color="primary"
             @click="deleteArea"
+          />
+          <q-btn v-close-popup flat label="Cancel" color="primary" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="confirmDeleteLink" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="fas fa-trash" color="primary" text-color="white" />
+          <span class="q-ml-sm"
+            >Confirm deletion of link: {{ selectedLink.name }}</span
+          >
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            v-close-popup
+            flat
+            label="Delete"
+            color="primary"
+            @click="deleteLink"
           />
           <q-btn v-close-popup flat label="Cancel" color="primary" />
         </q-card-actions>
@@ -101,13 +126,15 @@ export default {
       areaSplitterModel: 50,
       mapSplitterModel: 50,
       splitterModel: 50,
-      confirmDeleteArea: false
+      confirmDeleteArea: false,
+      confirmDeleteLink: false
     };
   },
   computed: {
     ...mapGetters({
       selectedArea: 'builder/selectedArea',
       selectedMap: 'builder/selectedMap',
+      selectedLink: 'builder/selectedLink',
       bottomLeftPanel: 'builder/bottomLeftPanel',
       bottomRightPanel: 'builder/bottomRightPanel'
     })
@@ -149,8 +176,11 @@ export default {
     editLink() {
       // this.bottomRightPanel = 'table';
     },
+    deleteLink() {
+      this.$store.dispatch('builder/deleteLink');
+    },
     showDeleteLinkConfirmation() {
-      this.confirmDeleteArea = true;
+      this.confirmDeleteLink = true;
     },
     showDeleteAreaConfirmation() {
       this.confirmDeleteArea = true;

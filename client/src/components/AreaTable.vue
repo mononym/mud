@@ -67,6 +67,7 @@
                   flat
                   label="Link"
                   icon="fas fa-link"
+                  disabled
                   @click.stop="linkArea(props.row)"
                 />
                 <q-btn

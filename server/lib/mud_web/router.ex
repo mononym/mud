@@ -81,5 +81,8 @@ defmodule MudWeb.Router do
 
     # Area related stuff
     resources("/areas", AreaController, except: [:new, :edit])
+
+    # Link related stuff
+    resources("/links", LinkController, except: [:new, :edit, :index])
   end
 end

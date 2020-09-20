@@ -62,7 +62,8 @@
                 <q-btn
                   flat
                   label="Clone"
-                  icon="fas fa-pencil"
+                  icon="fas fa-clone"
+                  disabled
                   @click="cloneLink(props.row)"
                 />
                 <q-btn

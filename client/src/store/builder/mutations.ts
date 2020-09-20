@@ -5,6 +5,7 @@ import { LinkInterface } from '../link/state';
 import { MapInterface } from '../map/state';
 import Vue from 'vue';
 import areaState from '../area/state';
+import linkState from '../link/state';
 
 const mutation: MutationTree<BuilderInterface> = {
   // Area stuff
@@ -79,6 +80,15 @@ const mutation: MutationTree<BuilderInterface> = {
   },
   putIsLinkSelected(state: BuilderInterface, isIt: boolean) {
     state.isLinkSelected = isIt;
+  },
+  deleteLink(state: BuilderInterface) {
+    state.links.splice(state.linkIndex[state.selectedLink.id], 1);
+
+    state.selectedLink = { ...linkState };
+    state.linkIndex = {};
+    state.links.forEach((link, index) => {
+      Vue.set(state.linkIndex, link.id, index);
+    });
   },
   // Map stuff
   putIsMapSelected(state: BuilderInterface, isIt: boolean) {

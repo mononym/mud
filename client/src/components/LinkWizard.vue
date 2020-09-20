@@ -25,16 +25,17 @@
 
             <q-form class="q-gutter-md">
               <q-select
-                v-model="icon"
+                v-model="link.icon"
                 filled
                 :options="iconOptions"
                 label="Standard"
                 color="teal"
                 clearable
                 options-selected-class="text-deep-orange"
+                emit-value
               >
                 <template v-slot:before>
-                  <q-icon :name="icon.icon" />
+                  <q-icon :name="localIcon.icon" />
                 </template>
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
@@ -140,6 +141,7 @@
 <script lang="ts">
 import { mapGetters } from 'vuex';
 import linkState from '../store/link/state';
+import axios, { AxiosResponse } from 'axios';
 
 interface IconOption {
   label: string;
@@ -150,12 +152,8 @@ interface IconOption {
 
 export default {
   name: 'LinkWizard',
-  components: {},
   data() {
     return {
-      originalMapId: '',
-      mapChanged: false,
-      map: '',
       step: 1,
       icon: {
         label: '',
@@ -163,8 +161,13 @@ export default {
         description: '',
         icon: ''
       },
-      selectedMapOptionValue: '',
       link: { ...linkState },
+      localIcon: {
+        label: '',
+        value: '',
+        description: '',
+        icon: ''
+      },
       iconOptions: [
         {
           label: '',
@@ -206,6 +209,7 @@ export default {
     },
     ...mapGetters({
       maps: 'builder/maps',
+      isLinkUnderConstruction: 'builder/linkUnderConstruction',
       linkUnderConstruction: 'builder/linkUnderConstruction',
       selectedLink: 'builder/selectedLink',
       workingLink: 'builder/workingLink',
@@ -216,22 +220,31 @@ export default {
     })
   },
   watch: {
-    link: {
-      // This will let Vue know to look inside the array
-      deep: true,
+    isLinkUnderConstruction: function(itIs: boolean) {
+      console.log('isLinkUnderConstruction');
+      if (itIs) {
+        switch (this.linkUnderConstruction.icon) {
+          case 'compass':
+            this.localIcon = this.compassIcon();
+            break;
+          case 'door-closed':
+            this.localIcon = this.closedDoorIcon();
+            break;
+          case 'archway':
+            this.localIcon = this.archwayIcon();
+            break;
+          case 'gate':
+            this.localIcon = this.gateIcon();
+            break;
+          default:
+            this.localIcon = this.emptyIcon();
+        }
 
-      // We have to move our method to a handler field
-      handler() {
-        this.$store.dispatch(
-          'builder/putLinkUnderConstruction',
-          Object.assign({}, this.link)
-        );
+        this.link = { ...this.linkUnderConstruction };
       }
     }
   },
   created() {
-    this.link = Object.assign({}, this.linkUnderConstruction);
-
     this.iconOptions = [
       this.compassIcon(),
       this.closedDoorIcon(),
@@ -239,25 +252,6 @@ export default {
       this.gateIcon(),
       this.archwayIcon()
     ];
-
-    switch (this.link.icon) {
-      case '':
-        this.icon = this.emptyIcon();
-        break;
-      case 'compass':
-        this.icon = this.compassIcon();
-        break;
-      case 'door-closed':
-        this.icon = this.closedDoorIcon();
-        break;
-      case 'archway':
-        this.icon = this.archwayIcon();
-        break;
-      case 'gate':
-        this.icon = this.gateIcon();
-        break;
-      default:
-    }
   },
   methods: {
     emptyIcon(): IconOption {
@@ -316,69 +310,48 @@ export default {
         );
     },
     saveLink() {
-      this.link.icon = this.icon.value;
-      // const params = {
-      //   link: {
-      //     name: this.link.name,
-      //     map_id: this.link.mapId,
-      //     shortDescription: this.link.shortDescription,
-      //     longDescription: this.link.longDescription
-      //   }
-      // };
-      // let request;
-      // if (this.isNew) {
-      //   request = this.$axios.post('/links', params);
-      // } else {
-      //   const id: string = this.workingLink.id;
-      //   request = this.$axios.patch('/links/' + id, params);
-      //   if (this.mapChanged) {
-      //     request.then(result => {
-      //       this.$store
-      //         .dispatch('builder/fetchDataForMap', this.link.mapId)
-      //         .then(() =>
-      //           this.$store
-      //             .dispatch('builder/selectLink', result.data)
-      //             .then(() => this.$emit('saved'))
-      //         );
-      //     });
-      //   } else {
-      //     request
-      //       .then(result => {
-      //         if (this.isNew) {
-      //           this.$store
-      //             .dispatch('builder/putLink', result.data)
-      //             .then(() => {
-      //               this.$store
-      //                 .dispatch('builder/selectLink', result.data)
-      //                 .then(() =>
-      //                   this.$store.dispatch(
-      //                     'builder/putIsLinkUnderConstruction',
-      //                     false
-      //                   )
-      //                 )
-      //                 .then(() => {
-      //                   this.$emit('saved');
-      //                 });
-      //             });
-      //         } else {
-      //           this.$store
-      //             .dispatch('builder/updateLink', result.data)
-      //             .then(() =>
-      //               this.$store.dispatch(
-      //                 'builder/putIsLinkUnderConstruction',
-      //                 false
-      //               )
-      //             )
-      //             .then(() => {
-      //               this.$emit('saved');
-      //             });
-      //         }
-      //       })
-      //       .catch(function() {
-      //         alert('Error saving');
-      //       });
-      //   }
-      // }
+      const params = {
+        link: {
+          arrival_text: this.link.arrivalText,
+          departure_text: this.link.departureText,
+          short_description: this.link.shortDescription,
+          long_description: this.link.longDescription,
+          icon: this.link.icon,
+          to_id: this.link.toId,
+          from_id: this.link.fromId
+        }
+      };
+      let request;
+      if (this.isNew) {
+        request = this.$axios.post('/links', params);
+      } else {
+        const id: string = this.linkUnderConstruction.id;
+        request = this.$axios.patch('/links/' + id, params);
+      }
+
+      const store = this.$store;
+      const isNew = this.isNew;
+
+      request
+        .then(function(result: AxiosResponse) {
+          if (isNew) {
+            store.dispatch('builder/putLink', result.data).then(() => {
+              store
+                .dispatch('builder/selectLink', result.data)
+                .then(() =>
+                  store.dispatch('builder/putIsLinkUnderConstruction', false)
+                );
+            });
+          } else {
+            store.dispatch('builder/updateLink', result.data).then(() => {
+              store.dispatch('builder/selectLink', result.data);
+              store.dispatch('builder/putIsLinkUnderConstruction', false);
+            });
+          }
+        })
+        .catch(function() {
+          alert('Error saving');
+        });
     }
   }
 };

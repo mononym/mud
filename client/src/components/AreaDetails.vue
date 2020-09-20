@@ -22,7 +22,7 @@
         <p v-show="tab == 'description'" class="q-pa-sm">
           {{ workingArea.description }}
         </p>
-        <link-table v-show="tab == 'links'" />
+        <link-table v-show="tab == 'links'" @deleteLink="deleteLink" />
       </q-card-section>
 
       <q-separator class="col-1px full-width" inset />
@@ -124,6 +124,9 @@ export default {
       this.$store.dispatch('builder/putIsAreaUnderConstructionNew', true);
       this.$store.dispatch('builder/putIsAreaUnderConstruction', true);
       this.$store.dispatch('builder/putAreaUnderConstruction', newArea);
+    },
+    deleteLink() {
+      this.$emit('deleteLink');
     }
   }
 };

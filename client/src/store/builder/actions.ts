@@ -254,12 +254,10 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
       resolve();
     });
   },
-  selectLink({ commit, state }, link: LinkInterface) {
+  selectLink({ commit }, link: LinkInterface) {
     return new Promise(resolve => {
-      if (state.selectedLink.id !== link.id) {
-        commit('putSelectedLink', link);
-        commit('putIsLinkSelected', true);
-      }
+      commit('putSelectedLink', link);
+      commit('putIsLinkSelected', true);
 
       resolve();
     });
@@ -310,7 +308,7 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   startEditingLink({ commit }, link: LinkInterface) {
     return new Promise(resolve => {
       commit('putIsLinkUnderConstruction', true);
-      commit('putIsLinkUnderConstructionNew', link.id == '');
+      commit('putIsLinkUnderConstructionNew', false);
       commit('putLinkUnderConstruction', {
         ...link
       });
