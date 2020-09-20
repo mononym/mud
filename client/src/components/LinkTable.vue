@@ -173,6 +173,13 @@ export default Vue.extend({
       selectedLink: 'builder/selectedLink'
     })
   },
+  watch: {
+    isLinkSelected: function(isIt) {
+      if (!isIt) {
+        this.selectedRow = [];
+      }
+    }
+  },
   methods: {
     getPaginationLabel(start: number, end: number, total: number) {
       return total.toString() + ' Links';
