@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-none">
     <q-card class="fit flex column" flat bordered>
-      <q-card-section class="col-shrink">
+      <q-card-section class="col-shrink q-pb-none">
         <p class="text-h6 text-center">
           {{ workingArea.name }}
         </p>
@@ -19,7 +19,7 @@
         <link-table v-show="tab == 'links'" />
       </q-card-section>
 
-      <q-separator class="col-1px" inset />
+      <q-separator class="col-1px full-width" inset />
 
       <q-card-actions align="around" class="col-auto">
         <q-btn
