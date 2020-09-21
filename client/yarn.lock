@@ -894,6 +894,11 @@
   resolved "https://npm.fontawesome.com/@fortawesome/fontawesome-pro/-/5.14.0/fontawesome-pro-5.14.0.tgz#0fef6462ad9450211cfbf6ce3f6e9bb8353a4982"
   integrity sha512-mdxmCa8yHPXaM5WTRskL1iQf6JObI+l7R0Qa0/u9QOpmRUBkv1g/B3q+YQPaQmZOUy/5gZD9iwun5x4IELusWA==
 
+"@interactjs/types@1.9.22":
+  version "1.9.22"
+  resolved "https://registry.yarnpkg.com/@interactjs/types/-/types-1.9.22.tgz#1504d3170b062555b03ee8eb954ae653b7f614e2"
+  integrity sha512-GMMMCYE+FPrKCOOOqQ/ImpqLyinb6e8psw9MR9ymTJxnkmJMKrY/GDC/187PVxpWdtSqW+GibkeRfUCOv6vFjg==
+
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.3.tgz#3a582bdb53804c6ba6d146579c46e52130cf4a3b"
@@ -1966,6 +1971,11 @@ base@^0.11.1:
     isobject "^3.0.1"
     mixin-deep "^1.2.0"
     pascalcase "^0.1.1"
+
+batch-processor@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/batch-processor/-/batch-processor-1.0.0.tgz#75c95c32b748e0850d10c2b168f6bdbe9891ace8"
+  integrity sha1-dclcMrdI4IUNEMKxaPa9vpiRrOg=
 
 batch@0.6.1:
   version "0.6.1"
@@ -3570,6 +3580,13 @@ electron@^9.0.0:
     "@types/node" "^12.0.12"
     extract-zip "^1.0.3"
 
+element-resize-detector@^1.1.15:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/element-resize-detector/-/element-resize-detector-1.2.1.tgz#b0305194447a4863155e58f13323a0aef30851d1"
+  integrity sha512-BdFsPepnQr9fznNPF9nF4vQ457U/ZJXQDSNF1zBe7yaga8v9AdZf3/NElYxFdUh7SitSGt040QygiTo6dtatIw==
+  dependencies:
+    batch-processor "1.0.0"
+
 elementtree@0.1.7:
   version "0.1.7"
   resolved "https://registry.yarnpkg.com/elementtree/-/elementtree-0.1.7.tgz#9ac91be6e52fb6e6244c4e54a4ac3ed8ae8e29c0"
@@ -5062,6 +5079,13 @@ inquirer@^7.0.0:
     string-width "^4.1.0"
     strip-ansi "^6.0.0"
     through "^2.3.6"
+
+interactjs@^1.6.3:
+  version "1.9.22"
+  resolved "https://registry.yarnpkg.com/interactjs/-/interactjs-1.9.22.tgz#5ae98d2dd46d720cccdb89222b4e1ddcbe5cfeb9"
+  integrity sha512-zUQefYtYJTazWKqDCSYV0vMJPFWp/PKXwpA3v75fD3+4+4J3/ItjlO7K3L1CpNWYU6s8uoEmwwOD6uDy6OoI/w==
+  dependencies:
+    "@interactjs/types" "1.9.22"
 
 internal-ip@^4.3.0:
   version "4.3.0"
@@ -9254,6 +9278,14 @@ vue-eslint-parser@^7.0.0:
     espree "^6.2.1"
     esquery "^1.0.1"
     lodash "^4.17.15"
+
+vue-grid-layout@^2.3.8:
+  version "2.3.8"
+  resolved "https://registry.yarnpkg.com/vue-grid-layout/-/vue-grid-layout-2.3.8.tgz#47e4a8c16df9e3c917f8c142f86fb70594e86b3c"
+  integrity sha512-bwvJo1BWe547w2Y9JhiwUGQr4YSSwSWKry4gClwnmkpWF4lKpJflHPvl0LGGknmmnpdEFOKdgreIcilh6Ry43w==
+  dependencies:
+    element-resize-detector "^1.1.15"
+    interactjs "^1.6.3"
 
 vue-hot-reload-api@^2.3.0:
   version "2.3.4"
