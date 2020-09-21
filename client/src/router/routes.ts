@@ -66,7 +66,7 @@ const routes: RouteConfig[] = [
         path: ':instance',
         component: () => import('pages/BuildInstancePage.vue'),
         meta: { requiresAuth: true }
-      },
+      }
       // {
       //   path: ':instance/region/:region/edit',
       //   component: () => import('pages/BuildInstancePage.vue'),
@@ -77,6 +77,17 @@ const routes: RouteConfig[] = [
       //   component: () => import('pages/BuildRegionPage.vue'),
       //   meta: { requiresAuth: true }
       // },
+    ]
+  },
+  {
+    path: '/play',
+    component: () => import('layouts/GameClientLayout.vue'),
+    children: [
+      {
+        path: ':slug',
+        component: () => import('pages/GameClientPage.vue'),
+        meta: { requiresAuth: true }
+      }
     ]
   },
 

@@ -9,5 +9,5 @@
     "noImplicitThis": true,
     "allowJs": true,
     "checkJs": true
-  }
+  },
 }

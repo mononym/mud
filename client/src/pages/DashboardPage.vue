@@ -1,7 +1,7 @@
 <template>
-  <q-page class="dashboardPage column">
+  <q-page class="dashboardPage col flex row">
     <q-splitter
-      class="dashboardSplitter fit"
+      class="dashboardSplitter col flex-1"
       v-model="splitterModel"
       unit="px"
       disable
@@ -36,9 +36,10 @@
           animated
           transition-prev="jump-up"
           transition-next="jump-up"
+          class="fit"
         >
           <q-tab-panel name="quickActions">
-            <q-card flat bordered class="my-card bg-primary">
+            <q-card flat bordered class="bg-primary">
 
               <q-card-section>
                 <div class="text-h6 text-center">Characters</div>

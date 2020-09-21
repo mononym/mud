@@ -34,7 +34,7 @@ defmodule MudWeb.CharacterController do
       {:ok, character} ->
         conn
         |> put_status(201)
-        |> json(character)
+        |> render("show.json", character: character)
 
       {:error, changeset} ->
         IO.inspect(changeset, label: "CREATE ERROR")
@@ -113,6 +113,6 @@ defmodule MudWeb.CharacterController do
 
     conn
     |> put_status(200)
-    |> json(races)
+    |> render("character-creation-data.json", races: Map.values(races))
   end
 end

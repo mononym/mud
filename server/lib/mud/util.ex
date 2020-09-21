@@ -12,12 +12,15 @@ defmodule Mud.Util do
   end
 
   def changeset_has_error?(changeset = %Ecto.Changeset{}, field, desired_error) when is_atom(field) do
-    IO.inspect(Keyword.get(changeset.errors, field), label: "changeset_has_error")
-    actual_error = changeset.errors
-    |> Keyword.get(field)
-    |> elem(0)
+    if (changeset_has_error?(changeset, field)) do
+      actual_error = changeset.errors
+      |> Keyword.get(field)
+      |> elem(0)
 
-    actual_error == desired_error
+      actual_error == desired_error
+    else
+      false
+    end
   end
 
   def extract_and_normalize_changeset_errors(changeset = %Ecto.Changeset{}) do

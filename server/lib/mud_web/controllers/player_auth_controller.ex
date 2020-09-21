@@ -42,14 +42,22 @@ defmodule MudWeb.PlayerAuthController do
   end
 
   def sync_status(conn, _) do
-    if conn.assigns.player_authenticated? do
+    with true <- conn.assigns.player_authenticated?,
+         {:ok, _player} <- Mud.Account.get_player(conn.assigns.player.id) do
       conn
       |> put_status(200)
       |> json(%{authenticated: true, player: conn.assigns.player})
     else
-      conn
-      |> put_status(200)
-      |> json(%{authenticated: false})
+      {:error, _} ->
+        conn
+        |> clear_session()
+        |> put_status(200)
+        |> json(%{authenticated: false})
+
+      _ ->
+        conn
+        |> put_status(200)
+        |> json(%{authenticated: false})
     end
   end
 end

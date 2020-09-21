@@ -4,8 +4,8 @@ import { CharactersInterface } from './state';
 import { CharacterInterface } from '../character/state';
 
 const actions: ActionTree<CharactersInterface, StateInterface> = {
-  putCharacter({ commit }, character: CharacterInterface) {
-    commit('putCharacter', character);
+  addCharacter({ commit }, character: CharacterInterface) {
+    commit('addCharacter', character);
   },
   removeCharacterById({ commit }, characterId: string) {
     commit('removeCharacter', characterId);

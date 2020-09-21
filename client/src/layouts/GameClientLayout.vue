@@ -15,8 +15,6 @@
           You can do it
         </q-toolbar-title>
 
-        <q-btn stretch flat label="Build" to="/build" />
-
         <q-btn color="purple" label="Account Settings">
           <q-menu>
             <div class="row no-wrap q-pa-md">
@@ -66,7 +64,7 @@
 import { defineComponent } from '@vue/composition-api';
 
 export default defineComponent({
-  name: 'MainLayout',
+  name: 'GameClientLayout',
   components: {},
   methods: {
     logout() {}

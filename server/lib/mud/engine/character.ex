@@ -16,6 +16,7 @@ defmodule Mud.Engine.Character do
   ##
   ##
 
+  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
     has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
@@ -24,6 +25,7 @@ defmodule Mud.Engine.Character do
     timestamps()
     # Naming and Titles
     field(:name, :string)
+    field(:slug, :string)
 
     # Game Status
     field(:active, :boolean, default: false)
@@ -127,6 +129,7 @@ defmodule Mud.Engine.Character do
       :relative_item_id,
       :relative_position,
       :skin_color,
+      :slug,
       :stamina,
       :strength,
       :wisdom,
@@ -134,7 +137,8 @@ defmodule Mud.Engine.Character do
     ])
     |> validate_required([
       :name,
-      :player_id
+      :player_id,
+      :slug,
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
@@ -194,6 +198,7 @@ defmodule Mud.Engine.Character do
         :ok = Skill.initialize(character.id)
 
         {:ok, character}
+
       error ->
         error
     end
