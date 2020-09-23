@@ -7,6 +7,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Engine.{Area, Character, Instance, Item}
   alias Mud.Engine.Util
   alias Mud.Engine.Character.Skill
+  alias Mud.DataType.NameSlug
 
   require Logger
 
@@ -25,7 +26,7 @@ defmodule Mud.Engine.Character do
     timestamps()
     # Naming and Titles
     field(:name, :string)
-    field(:slug, :string)
+    field(:slug, NameSlug.Type)
 
     # Game Status
     field(:active, :boolean, default: false)
@@ -64,10 +65,10 @@ defmodule Mud.Engine.Character do
     field(:position, :string, default: "standing")
 
     # on, under, over, in
-    field(:relative_position, :string)
+    # field(:relative_position, :string)
 
     # the thing the Character is relative to
-    belongs_to(:relative_item, Item, type: :binary_id)
+    # belongs_to(:relative_item, Item, type: :binary_id)
 
     # The Object where the
     belongs_to(:area, Area, type: :binary_id)
@@ -104,8 +105,46 @@ defmodule Mud.Engine.Character do
 
   @doc false
   def changeset(character, attrs) do
+    IO.inspect(attrs, label: "attrs")
+    # IO.inspect(Ecto.Changeset.change(character), label: "attrs")
+
+    # IO.inspect(
+    #   cast(character, attrs, [
+    #     :active,
+    #     :age,
+    #     :agility,
+    #     :area_id,
+    #     :charisma,
+    #     :constitution,
+    #     :dexterity,
+    #     :eye_accent_color,
+    #     :eye_color,
+    #     :eye_color_type,
+    #     :height,
+    #     :hair_color,
+    #     :hair_length,
+    #     :hair_style,
+    #     :intelligence,
+    #     :name,
+    #     :player_id,
+    #     :position,
+    #     :race,
+    #     :reflexes,
+    #     :relative_item_id,
+    #     :relative_position,
+    #     :skin_color,
+    #     :stamina,
+    #     :strength,
+    #     :wisdom,
+    #     :handedness
+    #   ]),
+    #   label: "attrs"
+    # )
+
     character
-    |> cast(attrs, [
+    # |> Ecto.Changeset.change()
+    |> IO.inspect(label: "character")
+    |> Ecto.Changeset.cast(attrs, [
       :active,
       :age,
       :agility,
@@ -129,21 +168,29 @@ defmodule Mud.Engine.Character do
       :relative_item_id,
       :relative_position,
       :skin_color,
-      :slug,
       :stamina,
       :strength,
       :wisdom,
       :handedness
     ])
+    |> IO.inspect(label: "cast")
     |> validate_required([
       :name,
-      :player_id,
-      :slug,
+      :player_id
     ])
+    |> IO.inspect(label: "validate_required")
     |> foreign_key_constraint(:player_id)
+    |> IO.inspect(label: "foreign_key_constraint")
     |> validate_inclusion(:active, [true, false])
+    |> IO.inspect(label: "validate_inclusion")
     |> unsafe_validate_unique(:name, Mud.Repo)
+    |> IO.inspect(label: "unsafe_validate_unique")
     |> unique_constraint(:name)
+    |> IO.inspect(label: "unique_constraint")
+    |> NameSlug.maybe_generate_slug()
+    |> IO.inspect(label: "maybe_generate_slug")
+    |> NameSlug.unique_constraint()
+    |> IO.inspect(label: "unique_constraint")
   end
 
   @topic inspect(__MODULE__)
@@ -203,8 +250,6 @@ defmodule Mud.Engine.Character do
         error
     end
   end
-
-  def change(character), do: Ecto.Changeset.change(character)
 
   def new, do: %__MODULE__{}
 
@@ -474,6 +519,25 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
+      iex> get_by_slug!(123)
+      %Character{}
+
+      iex> get_by_slug!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  @spec get_by_slug!(String.t()) :: %__MODULE__{} | nil
+  def get_by_slug!(character_slug) do
+    Repo.one!(from(character in __MODULE__, where: character.slug == ^character_slug))
+  end
+
+  @doc """
+  Gets a single character.
+
+  Raises `Ecto.NoResultsError` if the Character does not exist.
+
+  ## Examples
+
       iex> get_with_skills_by_id!(123)
       %Character{}
 
@@ -501,9 +565,13 @@ defmodule Mud.Engine.Character do
   @spec update(character :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(character, attrs \\ %{}) do
+    IO.inspect({character, attrs}, label: "update")
+
     character
     |> changeset(attrs)
+    |> IO.inspect(label: "changeset")
     |> Repo.update()
+    |> IO.inspect(label: "update")
   end
 
   def update!(character_id, attrs) when is_binary(character_id) do

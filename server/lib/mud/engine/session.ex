@@ -64,6 +64,7 @@ defmodule Mud.Engine.Session do
 
     Enum.each(to, fn dest ->
       msg = %{message_or_event | to: dest}
+      IO.inspect(msg, label: "cast_message_or_event/1")
       GenServer.cast(via(dest), msg)
     end)
   end
@@ -128,16 +129,23 @@ defmodule Mud.Engine.Session do
   @doc false
   @impl true
   def init(args) do
+    IO.inspect(args, label: "Mud.Engine.Session.init/1")
     # Load or initialize character session state
     state = load_character_session_data(args.character_id)
+    IO.inspect(state, label: "Mud.Engine.Session.init/1")
 
     # Set character to active
     state.character_id
     |> Mud.Engine.Character.get_by_id!()
+    |> IO.inspect()
     |> Mud.Engine.Character.update(%{active: true})
+    |> IO.inspect(label: "update")
+
+    IO.inspect("update", label: "Mud.Engine.Session.init/1")
 
     # Start inactivity timer
     state = update_timeout(state, @character_inactivity_timeout_warning)
+    IO.inspect("ok", label: "Mud.Engine.Session.init/1")
 
     {:ok, state}
   end
@@ -162,12 +170,12 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
-    Logger.debug("#{inspect(output)}")
+    Logger.debug("#{inspect(output)}", label: "session_handle_cast")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
     output = %{output | text: Mud.Engine.Message.Output.transform_for_web(output)}
 
-    state = update_buffer(state, output)
+    state = update_buffer(state, output.text)
 
     state =
       if map_size(state.subscribers) != 0 do
@@ -186,7 +194,7 @@ defmodule Mud.Engine.Session do
 
   @impl true
   def handle_cast(%Mud.Engine.Message.Input{} = input, state) do
-    Logger.debug("#{inspect(input)}", label: "handle_cast")
+    Logger.debug("#{inspect(input)}", label: "session_handle_cast")
     # Logger.debug("#{inspect(state)}", label: "handle_cast")
     state = update_timeout(state, @character_inactivity_timeout_warning)
 

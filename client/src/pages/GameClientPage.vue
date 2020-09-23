@@ -42,6 +42,7 @@ main.q-page.game-client-page {max-height: calc(100vh - 50px)}
 
 <script lang="ts">
 import VueGridLayout from 'vue-grid-layout';
+import { Socket, SocketType } from 'phoenix';
 
 interface LayoutInterface {
   x: number;
@@ -67,6 +68,8 @@ export default {
     maxNumRows: number;
     rowHeight: number;
     windows: WindowInterface[];
+    phoenixJsUrl: string;
+    connection: Record<string, any>;
   } {
     return {
       marginX: 10,
@@ -80,19 +83,68 @@ export default {
           title: 'Story',
           layout: { x: 0, y: 0, w: 12, h: 12, i: 'story' }
         }
-      ]
+      ],
+      phoenixJsUrl: 'phoenix.js',
+      connection: {}
     };
   },
   computed: {
+    characterSlug: function(): string {
+      return this.$route.params.slug;
+    },
     layout: function(): LayoutInterface[] {
       return this.windows.map(map => map.layout);
     },
     marginString: function(): number[] {
       return [this.marginX, this.marginY];
     }
+    // socket: function(): SocketType {
+    //   return new Socket('ws://localhost:4000/socket', {
+    //     params: { userToken: 'foo' }
+    //   });
+    // },
+    // channel: function(): SocketType {
+    //   return this.socket.channel('character:' + this.characterSlug);
+    // }
   },
   mounted() {
     this.calculateRowHeight();
+
+    this.connection.socket = new Socket('ws://localhost:4000/socket', {
+      params: { token: 'foo' }
+    });
+    this.connection.socket.connect();
+
+    // console.log(this.connection);
+
+    // console.log('character:' + this.characterSlug);
+
+    this.connection.channel = this.connection.socket.channel(
+      'character:' + this.characterSlug
+    );
+    this.connection.channel.join();
+
+    // console.log(this.connection);
+
+    // this.connection.channel.push('ping');
+    this.connection.channel.on('output:story', function(
+      msg: Record<string, any>
+    ) {
+      console.log('Got message for story', msg);
+    });
+
+    // let channel = socket.channel('room:123', { token: roomToken });
+    // this.connection.channel.on('pong', function(msg: Record<string, any>) {
+    //   console.log('Got message', msg.text);
+    //   alert(msg.text);
+    // });
+    // $input.onEnter(e => {
+    //   channel
+    //     .push('new_msg', { body: e.target.val }, 10000)
+    //     .receive('ok', msg => console.log('created message', msg))
+    //     .receive('error', reasons => console.log('create failed', reasons))
+    //     .receive('timeout', () => console.log('Networking issue...'));
+    // });
   },
   methods: {
     calculateRowHeight() {
@@ -100,6 +152,19 @@ export default {
       const el = document.getElementById('gameClientLayout');
       this.rowHeight =
         el !== null ? Math.floor(el.clientHeight / this.maxNumRows) : 0;
+    },
+    connectChannel() {
+      // this.channel = this.socket.channel('character:' + this.characterSlug);
+      // this.channel.on('pong', function(msg: string) {
+      //   console.log('Got message', msg);
+      // });
+      // this.$input.onEnter(e => {
+      //   channel
+      //     .push('new_msg', { body: e.target.val }, 10000)
+      //     .receive('ok', msg => console.log('created message', msg))
+      //     .receive('error', reasons => console.log('create failed', reasons))
+      //     .receive('timeout', () => console.log('Networking issue...'));
+      // });
     }
   }
 };

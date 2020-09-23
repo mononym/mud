@@ -2,14 +2,13 @@ defmodule Mud.Engine.Instance do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Item, Region}
-  import Ecto.Query
+  alias Mud.DataType.NameSlug
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "instances" do
     field(:description, :string)
     field(:name, :string)
-    field(:slug, :string)
+    field(:slug, NameSlug.Type)
 
     timestamps()
   end
@@ -103,7 +102,8 @@ defmodule Mud.Engine.Instance do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete_instance(instance :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  @spec delete_instance(instance :: %__MODULE__{}) ::
+          {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def delete_instance(instance) do
     Repo.delete(instance)
   end

@@ -5,6 +5,7 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
     create table(:characters, primary_key: false) do
       add(:id, :binary_id, primary_key: true)
       add(:name, :citext)
+      add(:slug, :citext)
       add(:active, :boolean)
       add(:handedness, :string)
 

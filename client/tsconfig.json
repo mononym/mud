@@ -10,4 +10,7 @@
     "allowJs": true,
     "checkJs": true
   },
+  "linterOptions": {
+    "exclude": ["src/assets/phoenix.js"]
+  }
 }

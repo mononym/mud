@@ -16,6 +16,7 @@ defmodule MudWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   def connect(_, socket, _connect_info) do
+    # TODO: security check here
     IO.inspect("connecting user socket")
     # def connect(%{"token" => token}, socket, _connect_info) do
     # case Phoenix.Token.verify(socket, "player salt", token, max_age: 86400) do

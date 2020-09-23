@@ -60,6 +60,7 @@ defmodule Mud.MixProject do
       {:pp, "~> 0.1.1"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14.0"},
+      {:slugger, "~> 0.3"},
       {:surface, "~> 0.1.0-alpha.1"},
       {:telemetry, "~> 0.4"},
       {:timex, "~> 3.6.2"},

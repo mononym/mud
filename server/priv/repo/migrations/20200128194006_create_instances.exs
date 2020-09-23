@@ -11,6 +11,6 @@ defmodule Mud.Repo.Migrations.CreateInstances do
       timestamps()
     end
 
-    create(index(:instances, [:slug]))
+    create(unique_index(:instances, [:slug]))
   end
 end
