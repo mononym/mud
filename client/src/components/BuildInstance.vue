@@ -1,51 +1,60 @@
 <template>
   <div class="build-instance-wrapper flex row col wrap">
-    <builder-map />
+    <q-tabs v-model="tab" vertical class="text-teal tab-controller col-50px">
+      <q-tab name="world" icon="fas fa-globe" label="World" />
+      <q-tab name="code" icon="fas fa-code" label="Code" />
+    </q-tabs>
+    <div class="col fit code-tab" v-show="tab == 'code'">
+      <codemirror class="fit" v-model="code" :options="cmOptions" />
+    </div>
+    <div class="col fit world-tab flex row wrap" v-show="tab == 'world'">
+      <builder-map />
 
-    <area-details
-      @editArea="editArea"
-      @deleteLink="showDeleteLinkConfirmation"
-    />
+      <area-details
+        @editArea="editArea"
+        @deleteLink="showDeleteLinkConfirmation"
+      />
 
-    <map-table
-      v-show="bottomLeftPanel == 'mapTable'"
-      @saved="mapSaved"
-      @selected="mapSelected"
-      @editMap="editMap"
-      @addMap="addMap"
-    />
+      <map-table
+        v-show="bottomLeftPanel == 'mapTable'"
+        @saved="mapSaved"
+        @selected="mapSelected"
+        @editMap="editMap"
+        @addMap="addMap"
+      />
 
-    <map-wizard
-      v-show="bottomLeftPanel == 'mapWizard'"
-      @saved="mapSaved"
-      @canceled="cancelMapEdit"
-    />
+      <map-wizard
+        v-show="bottomLeftPanel == 'mapWizard'"
+        @saved="mapSaved"
+        @canceled="cancelMapEdit"
+      />
 
-    <area-table
-      v-show="bottomRightPanel == 'areaTable'"
-      @saved="areaSaved"
-      @selected="areaSelected"
-      @editArea="editArea"
-      @addArea="addArea"
-      @deleteArea="showDeleteAreaConfirmation"
-    />
+      <area-table
+        v-show="bottomRightPanel == 'areaTable'"
+        @saved="areaSaved"
+        @selected="areaSelected"
+        @editArea="editArea"
+        @addArea="addArea"
+        @deleteArea="showDeleteAreaConfirmation"
+      />
 
-    <area-wizard
-      v-show="bottomRightPanel == 'areaWizard'"
-      @saved="areaSaved"
-      @deleteArea="showDeleteAreaConfirmation"
-      @canceled="cancelAreaEdit"
-    />
+      <area-wizard
+        v-show="bottomRightPanel == 'areaWizard'"
+        @saved="areaSaved"
+        @deleteArea="showDeleteAreaConfirmation"
+        @canceled="cancelAreaEdit"
+      />
 
-    <link-details
-      v-show="bottomRightPanel == 'linkDetails'"
-      @saved="linkSaved"
-      @editLink="editLink"
-      @addLink="addLink"
-      @deleteLink="showDeleteLinkConfirmation"
-    />
+      <link-details
+        v-show="bottomRightPanel == 'linkDetails'"
+        @saved="linkSaved"
+        @editLink="editLink"
+        @addLink="addLink"
+        @deleteLink="showDeleteLinkConfirmation"
+      />
 
-    <link-wizard v-show="bottomRightPanel == 'linkWizard'" />
+      <link-wizard v-show="bottomRightPanel == 'linkWizard'" />
+    </div>
 
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
@@ -94,7 +103,9 @@
 </template>
 
 <style lang="sass">
-.build-instance-wrapper > div { height: 50% !important; width: 50% !important }
+.build-instance-wrapper > div.tab-controller { height: 100% !important; width: 80px !important }
+.build-instance-wrapper > .world-tab > div { height: 50% !important; width: 50% !important; }
+.CodeMirror { height: 100% !important; width: 100% !important }
 </style>
 
 <script>
@@ -107,6 +118,11 @@ import AreaDetails from '../components/AreaDetails.vue';
 import LinkDetails from '../components/LinkDetails.vue';
 import LinkWizard from '../components/LinkWizard.vue';
 import { mapGetters } from 'vuex';
+import { codemirror } from 'vue-codemirror';
+import CodeMirror from 'codemirror/lib/codemirror.js';
+import 'codemirror/lib/codemirror.css';
+import 'codemirror/theme/ambiance.css';
+import 'codemirror/mode/lua/lua.js';
 
 export default {
   name: 'BuildInstance',
@@ -118,7 +134,8 @@ export default {
     MapWizard,
     BuilderMap,
     LinkDetails,
-    LinkWizard
+    LinkWizard,
+    codemirror
   },
   data() {
     return {
@@ -127,7 +144,17 @@ export default {
       mapSplitterModel: 50,
       splitterModel: 50,
       confirmDeleteArea: false,
-      confirmDeleteLink: false
+      confirmDeleteLink: false,
+      tab: 'world',
+      code: '',
+      cmOptions: {
+        tabSize: 2,
+        mode: 'text/x-lua',
+        theme: 'ambiance',
+        lineNumbers: true,
+        line: true
+        // more CodeMirror options...
+      }
     };
   },
   computed: {
