@@ -84,5 +84,8 @@ defmodule MudWeb.Router do
 
     # Link related stuff
     resources("/links", LinkController, except: [:new, :edit, :index])
+
+    # Lua related stuff
+    resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
   end
 end

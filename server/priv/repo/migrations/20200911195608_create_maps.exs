@@ -10,6 +10,6 @@ defmodule Mud.Repo.Migrations.CreateMaps do
       timestamps()
     end
 
-    create(index(:maps, [:name]))
+    create(unique_index(:maps, [:name]))
   end
 end

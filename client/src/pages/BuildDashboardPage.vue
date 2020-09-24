@@ -1,6 +1,6 @@
 <template>
   <q-page class="dashboardPage fit">
-    <q-card flat bordered class="my-card bg-primary">
+    <q-card flat bordered>
       <q-card-section>
         <div class="text-h6 text-center">Instances</div>
       </q-card-section>

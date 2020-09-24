@@ -69,6 +69,7 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
     create(index(:characters, [:position]))
     create(index(:characters, [:handedness]))
     create(unique_index(:characters, [:name]))
+    create(unique_index(:characters, [:slug]))
     execute("CREATE INDEX name_tgm_idx ON characters USING GIN (name gin_trgm_ops)")
     create(index(:characters, [:instance_id]))
   end

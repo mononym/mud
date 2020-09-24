@@ -2,11 +2,49 @@
   <div class="build-instance-wrapper flex row col wrap">
     <q-tabs v-model="tab" vertical class="text-teal tab-controller col-50px">
       <q-tab name="world" icon="fas fa-globe" label="World" />
-      <q-tab name="code" icon="fas fa-code" label="Code" />
+      <q-tab
+        name="code"
+        icon="fas fa-code"
+        label="Code"
+        @click="refreshEditor"
+      />
     </q-tabs>
-    <div class="col fit code-tab" v-show="tab == 'code'">
-      <codemirror class="fit" v-model="code" :options="cmOptions" />
+    <div class="col fit code-tab flex row" v-show="tab == 'code'">
+      <q-tree
+        :nodes="luaScripts"
+        node-key="label"
+        selected-color="primary"
+        :selected.sync="selected"
+        accordion
+        class="col-250px"
+      />
+
+      <q-card flat bordered class="col-grow flex column">
+        <q-card-section class="q-pa-none col-shrink">
+          <div class="text-h6 text-center">{{ selected }}</div>
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-section class="q-pa-none col-grow">
+          <codemirror
+            ref="codeEditor"
+            v-model="code"
+            class="fit codeEditor"
+            :options="cmOptions"
+          />
+        </q-card-section>
+
+        <q-separator />
+
+        <q-card-actions align="around" class="action-container col-shrink">
+          <q-btn flat class="action-button">Save</q-btn>
+          <q-btn flat class="action-button">Cancel</q-btn>
+          <q-btn flat class="action-button">Clone</q-btn>
+        </q-card-actions>
+      </q-card>
     </div>
+
     <div class="col fit world-tab flex row wrap" v-show="tab == 'world'">
       <builder-map />
 
@@ -139,6 +177,7 @@ export default {
   },
   data() {
     return {
+      codeEditor: undefined,
       loading: false,
       areaSplitterModel: 50,
       mapSplitterModel: 50,
@@ -146,7 +185,7 @@ export default {
       confirmDeleteArea: false,
       confirmDeleteLink: false,
       tab: 'world',
-      code: '',
+      code: 'print("Hello, Robert(o)!")',
       cmOptions: {
         tabSize: 2,
         mode: 'text/x-lua',
@@ -154,7 +193,78 @@ export default {
         lineNumbers: true,
         line: true
         // more CodeMirror options...
-      }
+      },
+      selected: 'Food',
+      luaScripts: [
+        {
+          label: 'Commands',
+          children: [
+            {
+              label: 'Food',
+              icon: 'restaurant_menu'
+            },
+            {
+              label: 'Room service',
+              icon: 'room_service'
+            },
+            {
+              label: 'Room view',
+              icon: 'photo'
+            }
+          ]
+        },
+        {
+          label: 'Scripts',
+          children: [
+            {
+              label: 'Food',
+              icon: 'restaurant_menu'
+            },
+            {
+              label: 'Room service',
+              icon: 'room_service'
+            },
+            {
+              label: 'Room view',
+              icon: 'photo'
+            }
+          ]
+        },
+        {
+          label: 'Systems',
+          children: [
+            {
+              label: 'Food',
+              icon: 'restaurant_menu'
+            },
+            {
+              label: 'Room service',
+              icon: 'room_service'
+            },
+            {
+              label: 'Room view',
+              icon: 'photo'
+            }
+          ]
+        },
+        {
+          label: 'Modules',
+          children: [
+            {
+              label: 'Food',
+              icon: 'restaurant_menu'
+            },
+            {
+              label: 'Room service',
+              icon: 'room_service'
+            },
+            {
+              label: 'Room view',
+              icon: 'photo'
+            }
+          ]
+        }
+      ]
     };
   },
   computed: {
@@ -168,8 +278,58 @@ export default {
   },
   created() {
     this.$store.dispatch('builder/fetchMaps');
+    let self = this;
+
+    this.$axios.get('/lua_scripts').then(function(results) {
+      self.luaScripts = [
+        {
+          label: 'Commands',
+          children: results.data.Commands.map(function(cmd) {
+            return {
+              label: cmd.name,
+              icon: 'fas fa-code'
+            };
+          })
+        },
+        {
+          label: 'Scripts',
+          children: results.data.Scripts.map(function(cmd) {
+            return {
+              label: cmd.name,
+              icon: 'fas fa-code'
+            };
+          })
+        },
+        {
+          label: 'Systems',
+          children: results.data.Systems.map(function(cmd) {
+            return {
+              label: cmd.name,
+              icon: 'fas fa-code'
+            };
+          })
+        },
+        {
+          label: 'Modules',
+          children: results.data.Modules.map(function(cmd) {
+            return {
+              label: cmd.name,
+              icon: 'fas fa-code'
+            };
+          })
+        }
+      ];
+    });
+  },
+  mounted() {
+    this.codeEditor = this.$refs.codeEditor.codemirror;
   },
   methods: {
+    refreshEditor() {
+      setTimeout(() => {
+        this.codeEditor.refresh();
+      }, 10);
+    },
     addMap() {
       this.bottomLeftPanel = 'wizard';
     },

@@ -1673,3 +1673,33 @@ Mud.Engine.Item.create(%{
   icon: "fas fa-leaf",
   is_physical: true
 })
+
+#####
+#####
+# Lua script stuff
+#####
+#####
+
+Mud.Engine.LuaScript.create(%{
+  name: "look",
+  code: "print(\"Hello, Robert(o)!\")",
+  type: "Command"
+})
+
+Mud.Engine.LuaScript.create(%{
+  name: "weather",
+  code: "print(\"Hello, William(o)!\")",
+  type: "System"
+})
+
+Mud.Engine.LuaScript.create(%{
+  name: "dry naturally",
+  code: "print(\"Hello, Phil(o)!\")",
+  type: "Script"
+})
+
+Mud.Engine.LuaScript.create(%{
+  name: "skill checks",
+  code: "print(\"Hello, Vin(o)!\")",
+  type: "Module"
+})
