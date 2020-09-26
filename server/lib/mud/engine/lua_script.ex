@@ -9,6 +9,7 @@ defmodule Mud.Engine.LuaScript do
     field(:code, :string)
     field(:name, :string)
     field(:type, :string)
+    field(:description, :string)
     many_to_many(:dependencies, Mud.Engine.LuaScript, join_through: "lua_scripts_dependencies")
 
     timestamps()

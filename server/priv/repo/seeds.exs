@@ -1683,23 +1683,27 @@ Mud.Engine.Item.create(%{
 Mud.Engine.LuaScript.create(%{
   name: "look",
   code: "print(\"Hello, Robert(o)!\")",
-  type: "Command"
+  type: "Command",
+  description: "Logic for basic look command"
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "weather",
   code: "print(\"Hello, William(o)!\")",
-  type: "System"
+  type: "System",
+  description: "Weather controller"
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "dry naturally",
   code: "print(\"Hello, Phil(o)!\")",
-  type: "Script"
+  type: "Script",
+  description: "Script for a character dripping dry after getting wet"
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "skill checks",
   code: "print(\"Hello, Vin(o)!\")",
-  type: "Module"
+  type: "Module",
+  description: "Methods for performing various skill checks"
 })
