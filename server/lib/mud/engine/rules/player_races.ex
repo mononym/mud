@@ -114,21 +114,23 @@ defmodule Mud.Engine.Rules.PlayerRaces do
 
   defp common_eye_colors do
     [
-      "black",
-      "blue",
-      "brown",
-      "green",
-      "silver",
+      # amber
       "amber",
-      "leaf green",
-      "sea green",
+      "dark amber",
+      "light amber",
+      "black",
+      # blue
+      "blue",
       "sky blue",
       "dark blue",
       "light blue",
+      "brown",
+      "green",
+      "leaf green",
+      "silver",
+      "sea green",
       "dark brown",
       "light brown",
-      "dark amber",
-      "light amber",
       "yellow",
       "emerald green",
       "silvery white"
@@ -251,6 +253,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       "almost straight",
       "wavy",
       "curly",
+      "slightly curly",
       "slightly wavy",
       "very curly",
       "tightly curled",
@@ -260,8 +263,8 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     |> Enum.sort()
   end
 
+  [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "very short"]}]
   defp common_hair_styles do
-    [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "veryshort"]}]
   end
 
   defp common_hair_lengths do
