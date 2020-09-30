@@ -1707,3 +1707,103 @@ Mud.Engine.LuaScript.create(%{
   type: "Module",
   description: "Methods for performing various skill checks"
 })
+
+#####
+#####
+# Races stuff
+#####
+#####
+
+Mud.Engine.CharacterRace.create(%{
+  adjective: "Human",
+  description: "It is Human",
+  plural: "Humans",
+  singular: "Human",
+  portrait: "something.jpg",
+  instance_id: instance.id
+})
+
+Mud.Engine.CharacterRace.create(%{
+  adjective: "Elven",
+  description: "It is Elven",
+  plural: "Elves",
+  singular: "Elf",
+  portrait: "something.jpg",
+  instance_id: instance.id
+})
+
+Mud.Engine.CharacterRace.create(%{
+  adjective: "Dwarf",
+  description: "It is Dwarven",
+  plural: "Dwarves",
+  singular: "Dwarf",
+  portrait: "something.jpg",
+  instance_id: instance.id
+})
+
+#####
+#####
+# Racial Features Stuff
+#####
+#####
+
+{:ok, eye_color_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "eye color",
+    type: "select",
+    instance_id: instance.id
+  })
+
+{:ok, hair_color_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "hair color",
+    type: "select",
+    instance_id: instance.id
+  })
+
+{:ok, hair_length_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "hair length",
+    type: "select",
+    instance_id: instance.id
+  })
+
+{:ok, hair_style_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "hair style",
+    type: "select",
+    instance_id: instance.id
+  })
+
+{:ok, age_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "age",
+    type: "range",
+    instance_id: instance.id
+  })
+
+Mud.Engine.CharacterRaceFeatureOption.create(%{
+  character_race_feature_id: hair_length_feature.id,
+  option: %{value: "short"}
+})
+
+Mud.Engine.CharacterRaceFeatureOption.create(%{
+  character_race_feature_id: hair_length_feature.id,
+  option: %{value: "long"}
+})
+
+Mud.Engine.CharacterRaceFeatureOption.create(%{
+  character_race_feature_id: hair_style_feature.id,
+  option: %{value: "a simple loose style"},
+  conditions: %{"hair length" => "short"}
+})
+
+Mud.Engine.CharacterRaceFeatureOption.create(%{
+  character_race_feature_id: hair_color_feature.id,
+  option: %{value: "blonde"}
+})
+
+Mud.Engine.CharacterRaceFeatureOption.create(%{
+  character_race_feature_id: age_feature.id,
+  option: %{min: 0, max: 99}
+})

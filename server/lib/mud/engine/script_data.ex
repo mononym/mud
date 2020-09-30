@@ -99,7 +99,6 @@ defmodule Mud.Engine.ScriptData do
   def purge(thing, key) do
     script_query(thing, key)
     |> Repo.delete_all()
-    |> IO.inspect(label: :purge)
     |> case do
       {1, _} -> :ok
       {0, _} -> {:error, :no_such_script}

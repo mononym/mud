@@ -11,6 +11,10 @@
       <builder-code-editor />
     </div>
 
+    <div class="col fit code-tab" v-show="tab == 'races'">
+      <builder-races-editor />
+    </div>
+
     <div class="col fit world-tab flex row wrap" v-show="tab == 'world'">
       <builder-map />
 
@@ -122,6 +126,7 @@ import AreaDetails from '../components/AreaDetails.vue';
 import LinkDetails from '../components/LinkDetails.vue';
 import LinkWizard from '../components/LinkWizard.vue';
 import BuilderCodeEditor from '../components/BuilderCodeEditor.vue';
+import BuilderRacesEditor from '../components/BuilderRacesEditor.vue';
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
@@ -136,7 +141,8 @@ export default {
     BuilderMap,
     LinkDetails,
     LinkWizard,
-    BuilderCodeEditor
+    BuilderCodeEditor,
+    BuilderRacesEditor
   },
   data() {
     return {

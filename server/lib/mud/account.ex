@@ -204,13 +204,11 @@ defmodule Mud.Account do
 
             player = Mud.Repo.one!(player_select_query)
 
-            IO.inspect(player)
 
             {:ok, player}
 
           "login" ->
             player = Mud.Repo.one!(player_select_query)
-            IO.inspect(player)
 
             {:ok, player}
         end

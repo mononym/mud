@@ -26,7 +26,11 @@
               <q-separator />
 
               <q-card-actions align="around" class="action-container">
-                <q-btn flat class="action-button" :to="instance.buildLink"
+                <q-btn
+                  flat
+                  class="action-button"
+                  :to="instance.buildLink"
+                  @click="setInstanceBeingBuilt(instance.slug)"
                   >Build</q-btn
                 >
               </q-card-actions>
@@ -83,6 +87,7 @@ div.action-container a.action-button
 
 <script>
 import Vue from 'vue';
+import { InstanceInterface } from '../store/instance/state';
 // const seed = [
 //   {
 //     name: 'Khandrish',
@@ -107,7 +112,6 @@ let instances = [];
 
 export default {
   name: 'BuildDashboardPage',
-  computed: {},
   data() {
     return {
       instances,
@@ -141,7 +145,17 @@ export default {
 
         return instance;
       });
+
+      console.log('here');
+      console.log(this.instances);
+
+      this.$store.dispatch('builder/putInstances', response.data);
     });
+  },
+  methods: {
+    setInstanceBeingBuilt(instanceSlug) {
+      this.$store.dispatch('builder/putInstanceBeingBuilt', instanceSlug);
+    }
   }
 };
 </script>

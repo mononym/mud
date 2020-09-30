@@ -103,7 +103,7 @@ defmodule Mud.Engine.Map do
         )
       )
 
-    internal_ids = Enum.map(internal_areas, & &1.id) |> IO.inspect()
+    internal_ids = Enum.map(internal_areas, & &1.id)
 
     links =
       Repo.all(
@@ -112,14 +112,12 @@ defmodule Mud.Engine.Map do
           where: link.to_id in ^internal_ids or link.from_id in ^internal_ids
         )
       )
-      |> IO.inspect()
 
     external_ids =
       links
       |> Stream.flat_map(&[&1.to_id, &1.from_id])
       |> Stream.uniq()
       |> Enum.filter(&(&1 not in internal_ids))
-      |> IO.inspect()
 
     external_areas =
       Repo.all(

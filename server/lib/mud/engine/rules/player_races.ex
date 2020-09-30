@@ -4,6 +4,9 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     defstruct singular: nil,
               plural: nil,
               adjective: nil,
+              portrait: "",
+              description: "",
+              
               eye_colors: [],
               eye_shapes: [],
               eye_features: [],
@@ -13,8 +16,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
               hair_lengths: [],
               heights: [],
               skin_colors: [],
-              portrait: "",
-              description: "",
               pronouns: [],
               age_min: 0,
               age_max: 0,

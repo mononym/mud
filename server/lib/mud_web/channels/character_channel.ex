@@ -8,8 +8,6 @@ defmodule MudWeb.CharacterChannel do
   def join("character:" <> character_slug, _message, socket) do
     character = Engine.Character.get_by_slug!(character_slug)
 
-    IO.inspect("JOINING CHARACTER CHANNEL")
-
     # TODO: security check here
     # if character.player_id === conn.assigns.player.id do
     Engine.start_character_session(character.id)
@@ -53,7 +51,6 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_cast(%Mud.Engine.Message.Output{} = output, socket) do
-    IO.inspect(output, label: "handle_cast")
     Phoenix.Channel.push(socket, "output:story", %{text: output.text})
 
     {:noreply, socket}

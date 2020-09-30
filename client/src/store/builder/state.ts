@@ -1,6 +1,7 @@
 import { AreaInterface } from '../area/state';
 import { MapInterface } from '../map/state';
 import { LinkInterface } from '../link/state';
+import { InstanceInterface } from '../instance/state';
 
 import areaState from '../area/state';
 import mapState from '../map/state';
@@ -34,6 +35,10 @@ export interface BuilderInterface {
   // UI stuff
   bottomLeftPanel: string;
   bottomRightPanel: string;
+  // Instance stuff
+  instanceBeingBuilt: string;
+  instanceIndex: Record<string, number>;
+  instances: InstanceInterface[];
 }
 
 const state: BuilderInterface = {
@@ -63,7 +68,11 @@ const state: BuilderInterface = {
   isMapSelected: false,
   // UI stuff
   bottomLeftPanel: 'mapTable',
-  bottomRightPanel: 'areaTable'
+  bottomRightPanel: 'areaTable',
+  // Instance stuff
+  instanceBeingBuilt: '',
+  instanceIndex: {},
+  instances: []
 };
 
 export default state;

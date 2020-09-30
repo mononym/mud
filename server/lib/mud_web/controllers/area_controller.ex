@@ -25,12 +25,9 @@ defmodule MudWeb.AreaController do
   end
 
   def update(conn, %{"id" => id, "area" => area_params}) do
-    IO.inspect(id, label: "getting")
     area = Area.get!(id)
-    IO.inspect(area, label: "gotarea")
 
     with {:ok, %Area{} = area} <- Area.update(area, area_params) do
-      IO.inspect(area, label: "updated")
       render(conn, "show.json", area: area)
     end
   end

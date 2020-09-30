@@ -4,6 +4,9 @@ import { InstancesInterface } from './state';
 import { InstanceInterface } from '../instance/state';
 
 const actions: ActionTree<InstancesInterface, StateInterface> = {
+  putInstances({ commit }, instances: InstanceInterface[]) {
+    commit('putInstances', instances);
+  },
   putInstance({ commit }, instance: InstanceInterface) {
     commit('putInstance', instance);
   },

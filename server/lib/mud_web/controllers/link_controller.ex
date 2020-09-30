@@ -20,12 +20,9 @@ defmodule MudWeb.LinkController do
   end
 
   def update(conn, %{"id" => id, "link" => link_params}) do
-    IO.inspect(id, label: "getting")
     link = Link.get!(id)
-    IO.inspect(link, label: "gotlink")
 
     with {:ok, %Link{} = link} <- Link.update(link, link_params) do
-      IO.inspect(link, label: "updated")
       render(conn, "show.json", link: link)
     end
   end

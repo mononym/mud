@@ -46,16 +46,16 @@
 
     <q-form v-show="pane == 'wizard'" @submit="onSubmit" class="fit">
       <q-input
-        filled
         v-model="wizard.name"
+        filled
         label="Name"
         hint="Unique name of the script"
         lazy-rules
         :rules="[val => (val && val.length > 0) || 'Please type something']"
       />
       <q-input
-        filled
         v-model="wizard.description"
+        filled
         label="Description"
         hint="Unique name of the script"
         lazy-rules

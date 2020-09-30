@@ -3,6 +3,7 @@ import { BuilderInterface } from './state';
 import { AreaInterface } from '../area/state';
 import { LinkInterface } from '../link/state';
 import { MapInterface } from '../map/state';
+import { InstanceInterface } from '../instance/state';
 import Vue from 'vue';
 import areaState from '../area/state';
 import linkState from '../link/state';
@@ -133,6 +134,18 @@ const mutation: MutationTree<BuilderInterface> = {
   },
   putBottomRightPanel(state: BuilderInterface, panel: string) {
     state.bottomRightPanel = panel;
+  },
+  // Instance stuff
+  putInstanceBeingBuilt(state: BuilderInterface, instanceId: string) {
+    state.instanceBeingBuilt = instanceId;
+  },
+  putInstances(state: BuilderInterface, instances: InstanceInterface[]) {
+    state.instances = instances;
+    state.instanceIndex = {};
+
+    state.instances.forEach((instance, index) => {
+      Vue.set(state.instanceIndex, instance.slug, index);
+    });
   }
 };
 

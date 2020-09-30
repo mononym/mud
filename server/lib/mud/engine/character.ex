@@ -105,7 +105,6 @@ defmodule Mud.Engine.Character do
 
   @doc false
   def changeset(character, attrs) do
-    IO.inspect(attrs, label: "attrs")
     # IO.inspect(Ecto.Changeset.change(character), label: "attrs")
 
     # IO.inspect(
@@ -143,7 +142,6 @@ defmodule Mud.Engine.Character do
 
     character
     # |> Ecto.Changeset.change()
-    |> IO.inspect(label: "character")
     |> Ecto.Changeset.cast(attrs, [
       :active,
       :age,
@@ -173,24 +171,16 @@ defmodule Mud.Engine.Character do
       :wisdom,
       :handedness
     ])
-    |> IO.inspect(label: "cast")
     |> validate_required([
       :name,
       :player_id
     ])
-    |> IO.inspect(label: "validate_required")
     |> foreign_key_constraint(:player_id)
-    |> IO.inspect(label: "foreign_key_constraint")
     |> validate_inclusion(:active, [true, false])
-    |> IO.inspect(label: "validate_inclusion")
     |> unsafe_validate_unique(:name, Mud.Repo)
-    |> IO.inspect(label: "unsafe_validate_unique")
     |> unique_constraint(:name)
-    |> IO.inspect(label: "unique_constraint")
     |> NameSlug.maybe_generate_slug()
-    |> IO.inspect(label: "maybe_generate_slug")
     |> NameSlug.unique_constraint()
-    |> IO.inspect(label: "unique_constraint")
   end
 
   @topic inspect(__MODULE__)
@@ -565,13 +555,10 @@ defmodule Mud.Engine.Character do
   @spec update(character :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(character, attrs \\ %{}) do
-    IO.inspect({character, attrs}, label: "update")
 
     character
     |> changeset(attrs)
-    |> IO.inspect(label: "changeset")
     |> Repo.update()
-    |> IO.inspect(label: "update")
   end
 
   def update!(character_id, attrs) when is_binary(character_id) do

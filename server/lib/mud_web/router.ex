@@ -87,5 +87,13 @@ defmodule MudWeb.Router do
 
     # Lua related stuff
     resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
+
+    # Character race stuff
+    resources("/character_races", CharacterRaceController, except: [:new, :edit])
+    resources("/character_race_features", CharacterRaceFeatureController, except: [:new, :edit])
+
+    resources("/character_race_feature_options", CharacterRaceFeatureOptionController,
+      except: [:new, :edit]
+    )
   end
 end

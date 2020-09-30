@@ -37,8 +37,6 @@ defmodule MudWeb.CharacterController do
         |> render("show.json", character: character)
 
       {:error, changeset} ->
-        IO.inspect(changeset, label: "CREATE ERROR")
-
         if Mud.Util.changeset_has_error?(changeset, :player_id, "does not exist") do
           resp(conn, 401, "invalid session")
         else

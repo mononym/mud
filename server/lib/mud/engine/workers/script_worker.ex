@@ -153,14 +153,12 @@ defmodule Mud.Engine.Worker.ScriptWorker do
         end
 
       {:ok, context = %Context{halt: true}} ->
-        IO.inspect("halting")
         context = process(context)
 
         context =
           if not context.detach do
             persist(context)
           else
-            IO.inspect("detaching #{Timex.now()}")
             ScriptData.purge(context.script)
             Map.put(context, :script, nil)
           end
@@ -170,7 +168,6 @@ defmodule Mud.Engine.Worker.ScriptWorker do
             {:stop, :normal, context.response, clear_response(context)}
 
           is_nil(context.response) ->
-            IO.inspect("stopping")
             {:stop, :normal, context}
         end
 
@@ -287,9 +284,7 @@ defmodule Mud.Engine.Worker.ScriptWorker do
             Script.thing_to_id_key(context.thing) => context.thing.id,
             :key => context.key
           }
-          |> IO.inspect()
           |> ScriptData.create!()
-          |> IO.inspect(label: :init)
 
         context = %{context | script: script}
 
@@ -309,7 +304,6 @@ defmodule Mud.Engine.Worker.ScriptWorker do
       apply(context.callback_module, :run, [context])
     end)
     |> process_transaction_result(context)
-    |> IO.inspect(label: :run_result)
   end
 
   #

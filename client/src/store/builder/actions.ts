@@ -8,6 +8,7 @@ import axios, { AxiosResponse } from 'axios';
 import areaState from '../area/state';
 import linkState from '../link/state';
 import mapState from '../map/state';
+import { InstanceInterface } from '../instance/state';
 
 function normalizeLinks(
   links: LinkInterface[],
@@ -328,6 +329,21 @@ const actions: ActionTree<BuilderInterface, StateInterface> = {
   putBottomRightPanel({ commit }, panel: string) {
     return new Promise(resolve => {
       commit('putBottomRightPanel', panel);
+
+      resolve();
+    });
+  },
+  // Instance stuff
+  putInstanceBeingBuilt({ commit }, instance: InstanceInterface) {
+    return new Promise(resolve => {
+      commit('putInstanceBeingBuilt', instance);
+
+      resolve();
+    });
+  },
+  putInstances({ commit }, instances: InstanceInterface[]) {
+    return new Promise(resolve => {
+      commit('putInstances', instances);
 
       resolve();
     });

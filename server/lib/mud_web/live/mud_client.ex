@@ -138,8 +138,6 @@ defmodule MudWeb.MudClientLive do
   end
 
   def handle_cast(event, socket) do
-    IO.inspect(event)
-
     {:noreply, socket}
   end
 

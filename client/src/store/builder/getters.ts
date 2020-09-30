@@ -3,6 +3,7 @@ import { AreaInterface } from '../area/state';
 import { StateInterface } from '../index';
 import { LinkInterface } from '../link/state';
 import { MapInterface } from '../map/state';
+import { InstanceInterface } from '../instance/state';
 import { BuilderInterface } from './state';
 import areaState from '../area/state';
 import linkState from '../link/state';
@@ -58,7 +59,7 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
     );
   },
   isLinkSelected(state: BuilderInterface): boolean {
-    return state.isLinkSelected
+    return state.isLinkSelected;
   },
   workingLink(state: BuilderInterface): LinkInterface {
     let link: LinkInterface;
@@ -159,6 +160,10 @@ const getters: GetterTree<BuilderInterface, StateInterface> = {
   },
   bottomRightPanel(state: BuilderInterface): string {
     return state.bottomRightPanel;
+  },
+  // Instance stuff
+  instanceBeingBuilt(state: BuilderInterface): InstanceInterface {
+    return state.instances[state.instanceIndex[state.instanceBeingBuilt]];
   }
 };
 
