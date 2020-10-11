@@ -19,7 +19,7 @@ defmodule Mud.Engine.CharacterRaceFeature do
     field(:type, :string)
     field(:instance_id, :binary_id)
 
-    embeds_many :options, Option do
+    embeds_many :options, Option, on_replace: :delete do
       @derive Jason.Encoder
       # These options are used for the range type
       field(:min, :integer, default: 0)
@@ -29,7 +29,7 @@ defmodule Mud.Engine.CharacterRaceFeature do
       # This option is used for the toggle type.
       field(:toggle, :boolean, default: false)
 
-      embeds_many :conditions, Condition do
+      embeds_many :conditions, Condition, on_replace: :delete do
         @derive Jason.Encoder
         field(:key, :string, default: "")
 

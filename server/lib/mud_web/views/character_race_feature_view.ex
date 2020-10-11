@@ -22,6 +22,8 @@ defmodule MudWeb.CharacterRaceFeatureView do
     %{
       id: character_race_feature.id,
       name: character_race_feature.name,
+      key: character_race_feature.key,
+      field: character_race_feature.field,
       type: character_race_feature.type,
       options: character_race_feature.options
     }

@@ -22,118 +22,108 @@
       </q-tab-panel>
 
       <q-tab-panel class="flex column" name="features">
-        <div class="col top">
-          <!-- Top half spans 50% height and 100% width -->
-          <div v-show="featureTopView == 'table'" class="flex column">
-              <q-table
-                title="Character Features"
-                :data="features"
-                :columns="characterFeatureColumns"
-                :visible-columns="visibleFeatureColumns"
-                row-key="id"
-                flat
-                bordered
-                class="col-grow"
-                virtual-scroll
-                :selected.sync="selectedFeatureRow"
-                :pagination="initialPagination"
-                :rows-per-page-options="[0]"
-                :pagination-label="getFeaturesPaginationLabel"
-              >
-                <template v-slot:body-cell="props">
-                  <q-td
-                    :props="props"
-                    class="cursor-pointer"
-                    @click.exact="toggleSingleFeatureRow(props.row)"
-                  >
-                    {{ props.value }}
-                  </q-td>
-                </template>
-              </q-table>
-              <q-btn-group spread class="col-shrink">
-                <q-btn class="" flat @click="addFeature">Add</q-btn>
-                <q-btn
-                  :disabled="featureButtonsDisabled"
-                  class=""
-                  flat
-                  @click="editFeature"
-                  >Edit</q-btn
-                >
-                <q-btn
-                  :disabled="featureButtonsDisabled"
-                  class=""
-                  flat
-                  @click="deleteFeature"
-                  >Delete</q-btn
-                >
-              </q-btn-group>
-          </div>
-          <!-- Top half spans 50% height and 100% width -->
-          <q-form
-            v-show="featureTopView == 'editor'"
-            class="col-12 q-gutter-md"
-            @submit="saveFeature"
+        <!-- Top half spans 50% height and 100% width -->
+        <div v-show="featureTopView == 'table'" class="col flex column">
+          <q-table
+            title="Features"
+            :data="features"
+            :columns="characterFeatureColumns"
+            :visible-columns="visibleFeatureColumns"
+            row-key="id"
+            flat
+            bordered
+            class="col"
+            :selected.sync="selectedFeatureRow"
+            :pagination="initialPagination"
+            :rows-per-page-options="[0]"
+            :pagination-label="getFeaturesPaginationLabel"
           >
-            <q-input
-              v-model="featureUnderConstruction.name"
-              filled
-              label="Feature Name"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please type something'
-              ]"
-            />
-
-            <q-input
-              v-model="featureUnderConstruction.key"
-              filled
-              label="Feature Key"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please type something'
-              ]"
-            />
-
-            <q-input
-              v-model="featureUnderConstruction.field"
-              filled
-              label="Feature Field"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please type something'
-              ]"
-            />
-
-            <q-select
-              v-model="featureUnderConstruction.type"
-              :options="featureTypeOptions"
-              label="Standard"
-            />
-
-            <div>
-              <q-btn label="Save" color="primary" @click="saveFeature" />
-              <q-btn
-                label="Cancel"
-                color="primary"
-                class="q-ml-sm"
-                @click="cancelFeatureEdit"
-              />
-            </div>
-          </q-form>
+            <template v-slot:body-cell="props">
+              <q-td
+                :props="props"
+                class="cursor-pointer"
+                @click.exact="toggleSingleFeatureRow(props.row)"
+              >
+                {{ props.value }}
+              </q-td>
+            </template>
+          </q-table>
+          <q-btn-group spread class="col-shrink">
+            <q-btn class="" flat @click="addFeature">Add</q-btn>
+            <q-btn
+              :disabled="featureButtonsDisabled"
+              class=""
+              flat
+              @click="editFeature"
+              >Edit</q-btn
+            >
+            <q-btn
+              :disabled="featureButtonsDisabled"
+              class=""
+              flat
+              @click="deleteFeature"
+              >Delete</q-btn
+            >
+          </q-btn-group>
         </div>
+        <!-- Top half spans 50% height and 100% width -->
+        <q-form
+          v-show="featureTopView == 'editor'"
+          class="col-12 q-gutter-md"
+          @submit="saveFeature"
+        >
+          <q-input
+            v-model="featureUnderConstruction.name"
+            filled
+            label="Name"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
+
+          <q-input
+            v-model="featureUnderConstruction.key"
+            filled
+            label="Key"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
+
+          <q-input
+            v-model="featureUnderConstruction.field"
+            filled
+            label="Field"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
+
+          <q-select
+            v-model="featureUnderConstruction.type"
+            :options="featureTypeOptions"
+            label="Types"
+          />
+
+          <div>
+            <q-btn label="Save" color="primary" @click="saveFeature" />
+            <q-btn
+              label="Cancel"
+              color="primary"
+              class="q-ml-sm"
+              @click="cancelFeatureEdit"
+            />
+          </div>
+        </q-form>
 
         <div class="col flex row bottom">
           <!-- Bottom half spans 50% height and 50% width -->
-          <q-card v-show="optionView == 'table'" class="col-6 flex column">
+          <div v-show="optionView == 'table'" class="col-6 flex column">
             <q-table
-              title="Feature Options"
+              title="Options"
               :data="selectedFeatureOptions"
               :columns="characterFeatureOptionsColumns"
               :visible-columns="visibleFeatureOptionsColumns"
               flat
               bordered
-              virtual-scroll
-              class="col-grow"
+              class="col"
               :selected.sync="selectedOptionRow"
               :pagination="initialPagination"
               :rows-per-page-options="[0]"
@@ -149,7 +139,7 @@
                 </q-td>
               </template>
             </q-table>
-            <q-card-actions class="col-shrink flex row">
+            <q-btn-group spread class="col-shrink">
               <q-btn
                 :disabled="optionAddButtonDisabled"
                 class="col"
@@ -171,8 +161,8 @@
                 @click="deleteOption"
                 >Delete</q-btn
               >
-            </q-card-actions>
-          </q-card>
+            </q-btn-group>
+          </div>
           <!-- Bottom half spans 50% height and 50% width -->
           <q-form
             v-show="optionView == 'editor'"
@@ -229,17 +219,16 @@
             </div>
           </q-form>
           <!-- Bottom half spans 50% height and 50% width -->
-          <q-card v-show="conditionView == 'table'" class="col-6 flex column">
+          <div v-show="conditionView == 'table'" class="col-6 flex column">
             <q-table
-              title="Option Conditions"
+              title="Conditions"
               :data="selectedOptionConditions"
               :columns="featureOptionConditionColumns"
               :visible-columns="visibleOptionConditionsColumns"
               flat
               bordered
-              virtual-scroll
-              class="col-grow"
-              :selected.sync="selectedOptionConditionRow"
+              class="col"
+              :selected.sync="selectedConditionRow"
               :pagination="initialPagination"
               :rows-per-page-options="[0]"
               :pagination-label="getConditionsPaginationLabel"
@@ -254,7 +243,7 @@
                 </q-td>
               </template>
             </q-table>
-            <q-card-actions class="flex row col-shrink">
+            <q-btn-group stretch class="col-shrink">
               <q-btn :disabled="conditionAddButtonDisabled" class="col" flat
                 >Add</q-btn
               >
@@ -264,8 +253,8 @@
               <q-btn :disabled="conditionButtonsDisabled" class="col" flat
                 >Delete</q-btn
               >
-            </q-card-actions>
-          </q-card>
+            </q-btn-group>
+          </div>
           <!-- Bottom half spans 50% height and 50% width -->
           <q-form
             v-show="conditionView == 'editor'"
@@ -453,7 +442,7 @@ export default {
     visibleOptionConditionsColumns: string[];
     selectedFeatureRow: CharacterRaceFeatureInterface[];
     selectedOptionRow: CharacterRaceFeatureOptionInterface[];
-    selectedOptionConditionRow: CharacterRaceFeatureOptionConditionInterface[];
+    selectedConditionRow: CharacterRaceFeatureOptionConditionInterface[];
     featureTopView: string;
     optionView: string;
     conditionView: string;
@@ -465,7 +454,6 @@ export default {
     optionIsNew: boolean;
     featureTypeOptions: string[];
     featureIndex: Record<string, number>;
-    selectedFeatureOptions: CharacterRaceFeatureOptionInterface[];
     initialPagination: { rowsPerPage: number };
   } {
     return {
@@ -474,13 +462,12 @@ export default {
       characterFeatureOptionsColumns,
       featureOptionConditionColumns,
       features: [],
-      selectedFeatureOptions: [],
       featureIndex: {},
       visibleFeatureColumns: ['name', 'field', 'key', 'type'],
       visibleOptionConditionsColumns: ['key', 'comparison', 'values'],
       selectedFeatureRow: [],
       selectedOptionRow: [],
-      selectedOptionConditionRow: [],
+      selectedConditionRow: [],
       featureTopView: 'table',
       optionView: 'table',
       conditionView: 'table',
@@ -497,6 +484,13 @@ export default {
     };
   },
   computed: {
+    selectedFeatureOptions: function(): CharacterRaceFeatureOptionInterface[] {
+      if (this.selectedFeatureRow.length > 0) {
+        return this.selectedFeatureRow[0].options;
+      } else {
+        return [];
+      }
+    },
     selectedFeatureType: function(): string {
       if (this.selectedFeatureRow.length > 0) {
         return this.selectedFeatureRow[0].type;
@@ -515,7 +509,7 @@ export default {
       return this.selectedOptionRow.length == 0;
     },
     conditionButtonsDisabled: function(): boolean {
-      return this.selectedOptionConditionRow.length == 0;
+      return this.selectedConditionRow.length == 0;
     },
     optionButtonsDisabled: function(): boolean {
       return this.selectedOptionRow.length == 0;
@@ -586,6 +580,8 @@ export default {
         return {
           id: feature.id,
           name: feature.name,
+          key: feature.key,
+          field: feature.field,
           type: feature.type,
           options: feature.options
         };
@@ -642,11 +638,12 @@ export default {
           this.optionUnderConstruction
         );
       } else {
+        const self = this;
         const updatedOptions = this.selectedFeatureOptions.map(function(
           option
         ) {
-          if (option.id == this.optionUnderConstruction.id) {
-            return this.optionUnderConstruction;
+          if (option.id == self.optionUnderConstruction.id) {
+            return self.optionUnderConstruction;
           } else {
             return option;
           }
@@ -711,7 +708,23 @@ export default {
       this.featureTopView = 'editor';
     },
     deleteFeature() {
-      console.log('deleteFeature');
+      const self = this;
+
+      self.$axios
+        .delete('/character_race_features/' + self.selectedFeatureRow[0].id)
+        .then(function() {
+          console.log('sweong hwsrhskhjr')
+          self.features.splice(self.featureIndex[self.selectedFeatureRow[0].id], 1);
+
+          self.selectedFeatureRow = [];
+          self.featureIndex = {};
+          self.features.forEach((feature, index) => {
+            Vue.set(self.featureIndex, feature.id, index);
+          });
+        })
+        .catch(function() {
+          alert('Error when fetching maps');
+        });
     },
     addOption() {
       this.featureUnderConstruction = this.selectedFeatureRow[0];
@@ -728,20 +741,37 @@ export default {
     },
     deleteOption() {
       console.log('deleteOption');
+      this.featureUnderConstruction = this.selectedFeatureRow[0];
+      this.optionUnderConstruction = this.selectedOptionRow[0];
+      // remove option from the options and save the feature
+      const self = this;
+      console.log('asjhdaskjhd');
+      const updatedOptions = this.selectedFeatureOptions.filter(function(
+        option
+      ) {
+        return option.id != self.optionUnderConstruction.id;
+      });
+
+      this.featureUnderConstruction.options = updatedOptions;
+
+      this.saveFeature();
+      this.selectedConditionRow = [];
+      this.cancelConditionEdit();
+      this.selectedOptionRow = [];
+      this.cancelOptionEdit();
     },
     filter() {
       console.log('filter');
     },
     toggleSingleFeatureRow(row: CharacterRaceFeatureInterface) {
       this.selectedFeatureRow = [row];
-      Vue.set(this, 'selectedFeatureOptions', row.options);
       Vue.set(this, 'selectedOptionRow', []);
     },
     toggleSingleOptionRow(row: CharacterRaceFeatureOptionInterface) {
       Vue.set(this.selectedOptionRow, 0, row);
     },
     toggleSingleConditionRow(row: CharacterRaceFeatureOptionInterface) {
-      Vue.set(this.selectedOptionConditionRow, 0, row);
+      Vue.set(this.selectedConditionRow, 0, row);
     }
   }
 };
