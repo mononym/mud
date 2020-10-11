@@ -7,15 +7,15 @@
       <q-tab name="commands" icon="fas fa-terminal" label="Commands" />
       <q-tab name="templates" icon="fas fa-file-alt" label="Templates" />
     </q-tabs>
-    <div class="col fit code-tab" v-show="tab == 'code'">
+    <div v-show="tab == 'code'" class="col code-tab">
       <builder-code-editor />
     </div>
 
-    <div class="col fit code-tab" v-show="tab == 'races'">
+    <div v-show="tab == 'races'" class="col races-tab">
       <builder-races-editor />
     </div>
 
-    <div class="col fit world-tab flex row wrap" v-show="tab == 'world'">
+    <div v-show="tab == 'world'" class="col world-tab flex row wrap">
       <builder-map />
 
       <area-details
@@ -127,7 +127,6 @@ import LinkDetails from '../components/LinkDetails.vue';
 import LinkWizard from '../components/LinkWizard.vue';
 import BuilderCodeEditor from '../components/BuilderCodeEditor.vue';
 import BuilderRacesEditor from '../components/BuilderRacesEditor.vue';
-import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 export default {

@@ -1,7 +1,6 @@
 defmodule MudWeb.CharacterRaceFeatureView do
   use MudWeb, :view
   alias MudWeb.CharacterRaceFeatureView
-  alias MudWeb.CharacterRaceFeatureOptionView
 
   def render("index.json", %{character_race_feature: character_race_feature}) do
     render_many(
@@ -24,12 +23,7 @@ defmodule MudWeb.CharacterRaceFeatureView do
       id: character_race_feature.id,
       name: character_race_feature.name,
       type: character_race_feature.type,
-      options:
-        render_many(
-          character_race_feature.options,
-          CharacterRaceFeatureOptionView,
-          "character_race_feature_option.json"
-        )
+      options: character_race_feature.options
     }
   end
 end

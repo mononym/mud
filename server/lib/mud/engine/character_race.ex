@@ -8,6 +8,7 @@ defmodule Mud.Engine.CharacterRace do
   import Ecto.Query, warn: false
   alias Mud.Repo
 
+  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "character_races" do

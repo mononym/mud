@@ -5,18 +5,39 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   import Ecto.Query, warn: false
   alias Mud.Repo
-  alias Mud.Engine.CharacterRaceFeatureOption
   use Ecto.Schema
   import Ecto.Changeset
+  require Protocol
 
+  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "character_race_features" do
     field(:name, :string)
+    field(:field, :string)
+    field(:key, :string)
     field(:type, :string)
     field(:instance_id, :binary_id)
 
-    has_many(:options, CharacterRaceFeatureOption)
+    embeds_many :options, Option do
+      @derive Jason.Encoder
+      # These options are used for the range type
+      field(:min, :integer, default: 0)
+      field(:max, :integer, default: 0)
+      # This option is used for the select type.
+      field(:value, :string, default: "")
+      # This option is used for the toggle type.
+      field(:toggle, :boolean, default: false)
+
+      embeds_many :conditions, Condition do
+        @derive Jason.Encoder
+        field(:key, :string, default: "")
+
+        # If a condition is for a singular match, such as equals or notequals, the list will contain a single item.
+        field(:values, {:array, :string}, default: [])
+        field(:comparison, :string, default: "")
+      end
+    end
 
     timestamps()
   end
@@ -24,8 +45,20 @@ defmodule Mud.Engine.CharacterRaceFeature do
   @doc false
   def changeset(character_race_feature, attrs) do
     character_race_feature
-    |> cast(attrs, [:name, :type, :instance_id])
-    |> validate_required([:name, :type, :instance_id])
+    |> cast(attrs, [:name, :field, :key, :type, :instance_id])
+    |> validate_required([:name, :field, :key, :type, :instance_id])
+    |> cast_embed(:options, with: &option_changeset/2)
+  end
+
+  defp option_changeset(schema, params) do
+    schema
+    |> cast(params, [:min, :max, :value, :toggle])
+    |> cast_embed(:conditions, with: &condition_changeset/2)
+  end
+
+  defp condition_changeset(schema, params) do
+    schema
+    |> cast(params, [:key, :values, :comparison])
   end
 
   @doc """
@@ -38,13 +71,7 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   """
   def list do
-    Repo.all(
-      from(feature in __MODULE__,
-        left_join: option in CharacterRaceFeatureOption,
-        on: option.character_race_feature_id == feature.id,
-        preload: [options: option]
-      )
-    )
+    Repo.all(__MODULE__)
     |> IO.inspect(label: "list")
   end
 
@@ -77,18 +104,18 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   """
   def create(attrs \\ %{}) do
-    feature =
-      %__MODULE__{}
-      |> __MODULE__.changeset(attrs)
-      |> Repo.insert()
+    # feature =
+    %__MODULE__{}
+    |> __MODULE__.changeset(attrs)
+    |> Repo.insert()
 
-    case feature do
-      {:ok, feature} ->
-        {:ok, Repo.preload(feature, :options)}
+    # case feature do
+    #   {:ok, feature} ->
+    #     {:ok, Repo.preload(feature, :options)}
 
-      error ->
-        error
-    end
+    #   error ->
+    #     error
+    # end
   end
 
   @doc """
@@ -104,18 +131,9 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   """
   def update(%__MODULE__{} = character_race_feature, attrs) do
-    feature =
-      character_race_feature
-      |> __MODULE__.changeset(attrs)
-      |> Repo.update()
-
-    case feature do
-      {:ok, feature} ->
-        {:ok, Repo.preload(feature, :options)}
-
-      error ->
-        error
-    end
+    character_race_feature
+    |> __MODULE__.changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """

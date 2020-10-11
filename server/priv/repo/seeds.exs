@@ -1747,63 +1747,110 @@ Mud.Engine.CharacterRace.create(%{
 #####
 #####
 
-{:ok, eye_color_feature} =
+{:ok, primary_eye_color_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
-    name: "eye color",
+    name: "Primary Eye Color",
+    field: "Primary Eye Color",
+    key: "primary-eye-color",
     type: "select",
-    instance_id: instance.id
+    instance_id: instance.id,
+    options: [
+      %{value: "blue"},
+      %{value: "ice-blue"},
+      %{value: "dark-blue"},
+      %{value: "deep-green"},
+      %{value: "pale-green"},
+      %{value: "hazel"},
+      %{value: "green"},
+      %{value: "amber"}
+    ]
+  })
+
+{:ok, secodnary_eye_color_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "Secondary Eye Color",
+    field: "Secondary Eye Color",
+    key: "secondary-eye-color",
+    type: "select",
+    instance_id: instance.id,
+    options: [
+      %{value: "blue"},
+      %{value: "ice-blue"},
+      %{value: "dark-blue"},
+      %{value: "deep-green"},
+      %{value: "pale-green"},
+      %{value: "hazel"},
+      %{value: "green"},
+      %{value: "amber"}
+    ]
   })
 
 {:ok, hair_color_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
-    name: "hair color",
+    name: "Hair Color",
+    field: "Hair Color",
+    key: "hair-color",
     type: "select",
-    instance_id: instance.id
+    instance_id: instance.id,
+    options: [%{value: "black"}, %{value: "brown"}, %{value: "red"}, %{value: "blonde"}]
   })
 
 {:ok, hair_length_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
-    name: "hair length",
+    name: "Hair Length",
+    field: "Hair Length",
+    key: "hair-length",
     type: "select",
-    instance_id: instance.id
+    instance_id: instance.id,
+    options: [%{value: "short"}, %{value: "long"}, %{value: "bald"}, %{value: "shoulder-length"}]
   })
 
 {:ok, hair_style_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
-    name: "hair style",
+    name: "Hair Style",
+    field: "Hair Style",
+    key: "hair-style",
     type: "select",
-    instance_id: instance.id
+    instance_id: instance.id,
+    options: [
+      %{
+        value: "a simple loose style",
+        conditions: [
+          %{
+            "key" => "hair-length",
+            "values" => ["long", "short", "shoulder-length"],
+            "comparison" => "in"
+          }
+        ]
+      }
+    ]
   })
 
 {:ok, age_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
-    name: "age",
-    type: "range",
-    instance_id: instance.id
+    name: "Age",
+    field: "Age",
+    key: "age",
+    type: "select",
+    instance_id: instance.id,
+    options: [
+      %{value: "very young"},
+      %{value: "young"},
+      %{value: "young adult"},
+      %{value: "adult"},
+      %{value: "middle aged"},
+      %{value: "older"},
+      %{value: "old"},
+      %{value: "ancient"}
+    ]
   })
 
-Mud.Engine.CharacterRaceFeatureOption.create(%{
-  character_race_feature_id: hair_length_feature.id,
-  option: %{value: "short"}
-})
-
-Mud.Engine.CharacterRaceFeatureOption.create(%{
-  character_race_feature_id: hair_length_feature.id,
-  option: %{value: "long"}
-})
-
-Mud.Engine.CharacterRaceFeatureOption.create(%{
-  character_race_feature_id: hair_style_feature.id,
-  option: %{value: "a simple loose style"},
-  conditions: %{"hair length" => "short"}
-})
-
-Mud.Engine.CharacterRaceFeatureOption.create(%{
-  character_race_feature_id: hair_color_feature.id,
-  option: %{value: "blonde"}
-})
-
-Mud.Engine.CharacterRaceFeatureOption.create(%{
-  character_race_feature_id: age_feature.id,
-  option: %{min: 0, max: 99}
-})
+{:ok, age_feature} =
+  Mud.Engine.CharacterRaceFeature.create(%{
+    name: "Heterochromia",
+    field: "Heterochromia",
+    key: "heterochromia",
+    type: "select",
+    instance_id: instance.id,
+    options: [%{value: "none"}, %{value: "complete"}, %{value: "segmental"}, %{value: "central"}]
+  })
