@@ -32,10 +32,10 @@ defmodule Mud.Engine.CharacterRaceFeature do
       embeds_many :conditions, Condition, on_replace: :delete do
         @derive Jason.Encoder
         field(:key, :string, default: "")
-
-        # If a condition is for a singular match, such as equals or notequals, the list will contain a single item.
-        field(:values, {:array, :string}, default: [])
         field(:comparison, :string, default: "")
+        field(:toggle, :boolean, default: false)
+        field(:select, {:array, :string}, default: [])
+        field(:range, :integer, default: 0)
       end
     end
 
@@ -58,7 +58,7 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   defp condition_changeset(schema, params) do
     schema
-    |> cast(params, [:key, :values, :comparison])
+    |> cast(params, [:key, :toggle, :select, :range, :comparison])
   end
 
   @doc """
@@ -72,7 +72,6 @@ defmodule Mud.Engine.CharacterRaceFeature do
   """
   def list do
     Repo.all(__MODULE__)
-    |> IO.inspect(label: "list")
   end
 
   @doc """

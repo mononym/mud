@@ -28,7 +28,7 @@ defmodule MudWeb.CharacterRaceFeatureController do
     character_race_feature = CharacterRaceFeature.get!(id)
 
     with {:ok, %CharacterRaceFeature{} = character_race_feature} <-
-           CharacterRaceFeature.update(character_race_feature, character_race_feature_params) do
+           IO.inspect(CharacterRaceFeature.update(character_race_feature, character_race_feature_params)) do
       render(conn, "show.json", character_race_feature: character_race_feature)
     end
   end

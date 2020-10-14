@@ -2,14 +2,18 @@ export interface CharacterRaceFeatureOptionConditionInterface {
   id: string;
   key: string;
   comparison: string;
-  values: string[];
+  select: string[];
+  toggle: boolean;
+  range: number
 }
 
 const ConditionState: CharacterRaceFeatureOptionConditionInterface = {
   id: '',
   key: '',
   comparison: '',
-  values: []
+  select: [],
+  toggle: false,
+  range: 0
 }
 
 export {ConditionState}

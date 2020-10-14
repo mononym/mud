@@ -167,7 +167,7 @@
           <q-form
             v-show="optionView == 'editor'"
             class="col-6 q-gutter-md"
-            @submit="saveFeatureOption"
+            @submit="saveOption"
           >
             <q-input
               v-show="selectedFeatureType == 'select'"
@@ -186,6 +186,7 @@
               filled
               label="Min"
               lazy-rules
+              type="number"
               :rules="[
                 val => (val && val.length > 0) || 'Please type something'
               ]"
@@ -196,6 +197,7 @@
               v-model="optionUnderConstruction.max"
               filled
               label="Max"
+              type="number"
               lazy-rules
               :rules="[
                 val => (val && val.length > 0) || 'Please type something'
@@ -209,7 +211,12 @@
             />
 
             <div>
-              <q-btn label="Save" color="primary" @click="saveFeatureOption" />
+              <q-btn
+                label="Save"
+                color="primary"
+                :disabled="optionSaveButtonDisabled"
+                @click="saveOption"
+              />
               <q-btn
                 label="Cancel"
                 color="primary"
@@ -244,13 +251,25 @@
               </template>
             </q-table>
             <q-btn-group stretch class="col-shrink">
-              <q-btn :disabled="conditionAddButtonDisabled" class="col" flat
+              <q-btn
+                :disabled="conditionAddButtonDisabled"
+                class="col"
+                flat
+                @click="addCondition"
                 >Add</q-btn
               >
-              <q-btn :disabled="conditionButtonsDisabled" class="col" flat
+              <q-btn
+                :disabled="conditionButtonsDisabled"
+                class="col"
+                flat
+                @click="editCondition"
                 >Edit</q-btn
               >
-              <q-btn :disabled="conditionButtonsDisabled" class="col" flat
+              <q-btn
+                :disabled="conditionButtonsDisabled"
+                class="col"
+                flat
+                @click="deleteCondition"
                 >Delete</q-btn
               >
             </q-btn-group>
@@ -259,41 +278,60 @@
           <q-form
             v-show="conditionView == 'editor'"
             class="col-6 q-gutter-md"
-            @submit="saveFeature"
           >
-            <q-input
-              v-model="featureUnderConstruction.name"
-              filled
+            <q-select
+              v-model="conditionUnderConstruction.key"
+              :options="conditionKeyOptions"
               label="Key"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please type something'
-              ]"
+              option-value="key"
+              option-label="key"
+              emit-value
             />
 
             <q-select
-              v-model="featureUnderConstruction.type"
-              :options="featureTypeOptions"
+              v-model="conditionUnderConstruction.comparison"
+              :options="conditionComparisonTypeOptions"
               label="Comparison"
             />
 
-            <q-input
-              v-model="featureUnderConstruction.field"
-              filled
-              label="Values"
-              lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Please type something'
-              ]"
+            <q-table
+              v-show="showConditionSelect"
+              title="Values"
+              :data="conditionSelectOptions"
+              :columns="conditionSelectColumns"
+              :visible-columns="visibleConditionFeatureColumns"
+              row-key="value"
+              selection="multiple"
+              :selected.sync="conditionOptionSelected"
+            />
+
+            <q-slider
+              v-show="showConditionRange"
+              v-model="conditionUnderConstruction.range"
+              :min="conditionRangeMinOption"
+              :max="conditionRangeMaxOption"
+              :step="1"
+              label
+              label-always
+            />
+
+            <q-toggle
+              v-show="showConditionToggle"
+              v-model="conditionUnderConstruction.toggle"
             />
 
             <div>
-              <q-btn label="Save" color="primary" @click="saveFeature" />
+              <q-btn
+                label="Save"
+                color="primary"
+                :disabled="conditionSaveButtonDisabled"
+                @click="saveCondition"
+              />
               <q-btn
                 label="Cancel"
                 color="primary"
                 class="q-ml-sm"
-                @click="cancelFeatureEdit"
+                @click="cancelConditionEdit"
               />
             </div>
           </q-form>
@@ -429,17 +467,30 @@ let featureOptionConditionColumns: [
   }
 ];
 
+let conditionSelectColumns: [
+  {
+    name: 'value';
+    required: false;
+    align: 'center';
+    label: 'Value';
+    sortable: true;
+    field: 'value';
+  }
+];
+
 export default {
   name: 'BuildRacesEditor',
   components: {},
   data(): {
     tab: string;
+    conditionSelectColumns: CharacterFeatureColumns[];
     characterFeatureColumns: CharacterFeatureColumns[];
     characterFeatureOptionsColumns: CharacterFeatureOptionsColumns[];
     featureOptionConditionColumns: CharacterFeatureOptionsColumns[];
     features: CharacterRaceFeatureInterface[];
     visibleFeatureColumns: string[];
     visibleOptionConditionsColumns: string[];
+    visibleConditionFeatureColumns: string[];
     selectedFeatureRow: CharacterRaceFeatureInterface[];
     selectedOptionRow: CharacterRaceFeatureOptionInterface[];
     selectedConditionRow: CharacterRaceFeatureOptionConditionInterface[];
@@ -455,16 +506,25 @@ export default {
     featureTypeOptions: string[];
     featureIndex: Record<string, number>;
     initialPagination: { rowsPerPage: number };
+    conditionOptionSelected: CharacterRaceFeatureOptionInterface[];
   } {
     return {
       tab: 'races',
+      conditionSelectColumns,
       characterFeatureColumns,
       characterFeatureOptionsColumns,
       featureOptionConditionColumns,
       features: [],
       featureIndex: {},
       visibleFeatureColumns: ['name', 'field', 'key', 'type'],
-      visibleOptionConditionsColumns: ['key', 'comparison', 'values'],
+      visibleOptionConditionsColumns: [
+        'key',
+        'comparison',
+        'select',
+        'toggle',
+        'range'
+      ],
+      visibleConditionFeatureColumns: ['value'],
       selectedFeatureRow: [],
       selectedOptionRow: [],
       selectedConditionRow: [],
@@ -472,7 +532,7 @@ export default {
       optionView: 'table',
       conditionView: 'table',
       featureUnderConstruction: { ...featureState },
-      featureTypeOptions: ['range', 'select'],
+      featureTypeOptions: ['range', 'select', 'toggle'],
       featureIsNew: false,
       conditionIsNew: false,
       optionIsNew: false,
@@ -480,10 +540,95 @@ export default {
         rowsPerPage: 0
       },
       optionUnderConstruction: { ...OptionState },
-      conditionUnderConstruction: { ...ConditionState }
+      conditionUnderConstruction: { ...ConditionState },
+      conditionOptionSelected: []
     };
   },
   computed: {
+    optionSaveButtonDisabled: function(): boolean {
+      return (
+        (this.selectedFeatureType == 'select' &&
+          this.optionUnderConstruction.value == '') ||
+        (this.selectedFeatureType == 'range' &&
+          this.optionUnderConstruction.min >
+            this.optionUnderConstruction.max) ||
+        // will be a toggle type which has no check, can be saved in either true or false position
+        false
+      );
+    },
+    conditionSaveButtonDisabled: function(): boolean {
+      return (
+        this.conditionUnderConstruction.key == '' ||
+        this.conditionUnderConstruction.comparison == ''
+      );
+    },
+    showConditionRange: function(): boolean {
+      return (
+        this.conditionFeature.type == 'range' &&
+        this.conditionFeature.key !== ''
+      );
+    },
+    showConditionSelect: function(): boolean {
+      return (
+        this.conditionFeature.type == 'select' &&
+        this.conditionFeature.key !== ''
+      );
+    },
+    showConditionToggle: function(): boolean {
+      return (
+        this.conditionFeature.type == 'toggle' &&
+        this.conditionFeature.key !== ''
+      );
+    },
+    conditionFeature: function(): CharacterRaceFeatureInterface {
+      if (this.conditionUnderConstruction.key != '') {
+        return this.getFeatureByKey(this.conditionUnderConstruction.key);
+      } else {
+        return { ...featureState };
+      }
+    },
+    conditionRangeMaxOption: function(): number {
+      if (this.conditionFeature.type == 'range') {
+        return this.conditionFeature.options[0].max;
+      } else {
+        return 0;
+      }
+    },
+    conditionRangeMinOption: function(): number {
+      if (this.conditionFeature.type == 'range') {
+        return this.conditionFeature.options[0].min;
+      } else {
+        return 0;
+      }
+    },
+    conditionSelectOptions: function(): CharacterRaceFeatureOptionInterface[] {
+      if (this.conditionFeature.type == 'select') {
+        console.log('tuyriughr');
+        return this.conditionFeature.options;
+      } else {
+        return [];
+      }
+    },
+    conditionComparisonTypeOptions: function(): string[] {
+      if (this.conditionFeature.type == 'range') {
+        return ['==', '!=', '<', '>', '<=', '>='];
+      } else if (this.conditionFeature.type == 'select') {
+        return ['in', 'not in'];
+      } else if (this.conditionFeature.type == 'toggle') {
+        return ['=='];
+      } else {
+        return [];
+      }
+    },
+    conditionKeyOptions: function(): CharacterRaceFeatureInterface[] {
+      if (this.selectedFeatureRow.length > 0) {
+        return this.features.filter(
+          feature => feature.id != this.selectedFeatureRow[0].id
+        );
+      } else {
+        return [];
+      }
+    },
     selectedFeatureOptions: function(): CharacterRaceFeatureOptionInterface[] {
       if (this.selectedFeatureRow.length > 0) {
         return this.selectedFeatureRow[0].options;
@@ -531,7 +676,9 @@ export default {
             id: condition.id,
             key: condition.key,
             comparison: condition.comparison,
-            values: condition.values
+            toggle: condition.toggle,
+            select: condition.select,
+            range: condition.range
           };
         });
       } else {
@@ -594,6 +741,11 @@ export default {
   },
   mounted() {},
   methods: {
+    getFeatureByKey(key: string): CharacterRaceFeatureInterface {
+      return (
+        this.features.find(feature => feature.key == key) || { ...featureState }
+      );
+    },
     getOptionsPaginationLabel(
       start: number,
       end: number,
@@ -632,22 +784,51 @@ export default {
       this.featureIsNew = false;
       this.featureUnderConstruction = { ...featureState };
     },
-    saveFeatureOption() {
+    saveCondition() {
+      console.log('oiureoiutre');
+
+      this.conditionUnderConstruction.select = this.conditionOptionSelected.map(
+        option => option.value
+      );
+
+      if (this.conditionIsNew) {
+        this.optionUnderConstruction.conditions.push(
+          this.conditionUnderConstruction
+        );
+      } else {
+        const self = this;
+        const updatedConditions = this.optionUnderConstruction.conditions.map(
+          function(condition) {
+            if (condition.id == self.conditionUnderConstruction.id) {
+              return self.conditionUnderConstruction;
+            } else {
+              return condition;
+            }
+          }
+        );
+
+        this.optionUnderConstruction.conditions = updatedConditions;
+      }
+
+      this.saveOption();
+      this.cancelConditionEdit();
+    },
+    saveOption() {
       if (this.optionIsNew) {
         this.featureUnderConstruction.options.push(
           this.optionUnderConstruction
         );
       } else {
         const self = this;
-        const updatedOptions = this.selectedFeatureOptions.map(function(
-          option
-        ) {
-          if (option.id == self.optionUnderConstruction.id) {
-            return self.optionUnderConstruction;
-          } else {
-            return option;
+        const updatedOptions = this.featureUnderConstruction.options.map(
+          function(option) {
+            if (option.id == self.optionUnderConstruction.id) {
+              return self.optionUnderConstruction;
+            } else {
+              return option;
+            }
           }
-        });
+        );
 
         this.featureUnderConstruction.options = updatedOptions;
       }
@@ -660,6 +841,14 @@ export default {
 
       if (this.featureIsNew) {
         this.featureUnderConstruction.instance_id = this.instanceBeingBuilt.id;
+
+        if (
+          this.featureUnderConstruction.type == 'range' ||
+          this.featureUnderConstruction.type == 'toggle'
+        ) {
+          this.featureUnderConstruction.options.push({ ...OptionState });
+        }
+
         request = this.$axios.post(
           '/character_race_features',
           this.featureUnderConstruction
@@ -701,11 +890,15 @@ export default {
     addFeature() {
       this.featureIsNew = true;
       this.featureTopView = 'editor';
+      this.cancelConditionEdit();
+      this.cancelOptionEdit();
     },
     editFeature() {
       this.featureUnderConstruction = this.selectedFeatureRow[0];
       this.featureIsNew = false;
       this.featureTopView = 'editor';
+      this.cancelConditionEdit();
+      this.cancelOptionEdit();
     },
     deleteFeature() {
       const self = this;
@@ -713,8 +906,11 @@ export default {
       self.$axios
         .delete('/character_race_features/' + self.selectedFeatureRow[0].id)
         .then(function() {
-          console.log('sweong hwsrhskhjr')
-          self.features.splice(self.featureIndex[self.selectedFeatureRow[0].id], 1);
+          console.log('sweong hwsrhskhjr');
+          self.features.splice(
+            self.featureIndex[self.selectedFeatureRow[0].id],
+            1
+          );
 
           self.selectedFeatureRow = [];
           self.featureIndex = {};
@@ -725,12 +921,25 @@ export default {
         .catch(function() {
           alert('Error when fetching maps');
         });
+
+      this.cancelConditionEdit();
+      this.cancelOptionEdit();
+      this.cancelFeatureEdit();
+    },
+    addCondition() {
+      this.featureUnderConstruction = this.selectedFeatureRow[0];
+      this.optionUnderConstruction = this.selectedOptionRow[0];
+      this.featureIsNew = false;
+      this.optionIsNew = false;
+      this.conditionIsNew = true;
+      this.conditionView = 'editor';
     },
     addOption() {
       this.featureUnderConstruction = this.selectedFeatureRow[0];
       this.featureIsNew = false;
       this.optionIsNew = true;
       this.optionView = 'editor';
+      this.cancelConditionEdit();
     },
     editOption() {
       this.featureUnderConstruction = this.selectedFeatureRow[0];
@@ -738,9 +947,18 @@ export default {
       this.optionUnderConstruction = this.selectedOptionRow[0];
       this.optionIsNew = false;
       this.optionView = 'editor';
+      this.cancelConditionEdit();
+    },
+    editCondition() {
+      this.featureUnderConstruction = this.selectedFeatureRow[0];
+      this.featureIsNew = false;
+      this.optionUnderConstruction = this.selectedOptionRow[0];
+      this.optionIsNew = false;
+      this.conditionUnderConstruction = this.selectedConditionRow[0];
+      this.conditionIsNew = false;
+      this.conditionView = 'editor';
     },
     deleteOption() {
-      console.log('deleteOption');
       this.featureUnderConstruction = this.selectedFeatureRow[0];
       this.optionUnderConstruction = this.selectedOptionRow[0];
       // remove option from the options and save the feature
@@ -759,6 +977,25 @@ export default {
       this.cancelConditionEdit();
       this.selectedOptionRow = [];
       this.cancelOptionEdit();
+    },
+    deleteCondition() {
+      this.featureUnderConstruction = this.selectedFeatureRow[0];
+      this.optionUnderConstruction = this.selectedOptionRow[0];
+      this.conditionUnderConstruction = this.selectedConditionRow[0];
+
+      const self = this;
+      console.log('asjhdaskjhd');
+      const updatedConditions = this.selectedOptionConditions.filter(function(
+        condition
+      ) {
+        return condition.id != self.conditionUnderConstruction.id;
+      });
+
+      this.optionUnderConstruction.conditions = updatedConditions;
+
+      this.saveOption();
+      this.selectedConditionRow = [];
+      this.cancelConditionEdit();
     },
     filter() {
       console.log('filter');

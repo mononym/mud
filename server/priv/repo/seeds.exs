@@ -1818,7 +1818,7 @@ Mud.Engine.CharacterRace.create(%{
         conditions: [
           %{
             "key" => "hair-length",
-            "values" => ["long", "short", "shoulder-length"],
+            "select" => ["long", "short", "shoulder-length"],
             "comparison" => "in"
           }
         ]
