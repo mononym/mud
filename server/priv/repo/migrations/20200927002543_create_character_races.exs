@@ -8,7 +8,7 @@ defmodule Mud.Repo.Migrations.CreateCharacterRaces do
       add :plural, :string
       add :adjective, :string
       add :portrait, :string
-      add :description, :string
+      add :description, :text
       add :instance_id, references(:instances, on_delete: :nothing, type: :binary_id)
 
       timestamps()

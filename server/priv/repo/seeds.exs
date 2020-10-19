@@ -1714,14 +1714,15 @@ Mud.Engine.LuaScript.create(%{
 #####
 #####
 
-Mud.Engine.CharacterRace.create(%{
-  adjective: "Human",
-  description: "It is Human",
-  plural: "Humans",
-  singular: "Human",
-  portrait: "something.jpg",
-  instance_id: instance.id
-})
+{:ok, human} =
+  Mud.Engine.CharacterRace.create(%{
+    adjective: "Human",
+    description: "It is Human",
+    plural: "Humans",
+    singular: "Human",
+    portrait: "something.jpg",
+    instance_id: instance.id
+  })
 
 Mud.Engine.CharacterRace.create(%{
   adjective: "Elven",
@@ -1733,7 +1734,7 @@ Mud.Engine.CharacterRace.create(%{
 })
 
 Mud.Engine.CharacterRace.create(%{
-  adjective: "Dwarf",
+  adjective: "Dwarven",
   description: "It is Dwarven",
   plural: "Dwarves",
   singular: "Dwarf",
@@ -1766,7 +1767,7 @@ Mud.Engine.CharacterRace.create(%{
     ]
   })
 
-{:ok, secodnary_eye_color_feature} =
+{:ok, secondary_eye_color_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Secondary Eye Color",
     field: "Secondary Eye Color",
@@ -1845,7 +1846,7 @@ Mud.Engine.CharacterRace.create(%{
     ]
   })
 
-{:ok, age_feature} =
+{:ok, heterochromia_feature} =
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Heterochromia",
     field: "Heterochromia",
@@ -1854,3 +1855,10 @@ Mud.Engine.CharacterRace.create(%{
     instance_id: instance.id,
     options: [%{value: "none"}, %{value: "complete"}, %{value: "segmental"}, %{value: "central"}]
   })
+
+Mud.Engine.RaceFeature.link(human.id, age_feature.id)
+Mud.Engine.RaceFeature.link(human.id, primary_eye_color_feature.id)
+Mud.Engine.RaceFeature.link(human.id, heterochromia_feature.id)
+Mud.Engine.RaceFeature.link(human.id, secondary_eye_color_feature.id)
+Mud.Engine.RaceFeature.link(human.id, hair_color_feature.id)
+Mud.Engine.RaceFeature.link(human.id, hair_length_feature.id)

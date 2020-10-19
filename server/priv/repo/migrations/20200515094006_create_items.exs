@@ -8,8 +8,8 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:is_furniture, :boolean)
       add(:is_scenery, :boolean)
       add(:is_hidden, :boolean)
-      add(:short_description, :string)
-      add(:long_description, :string)
+      add(:short_description, :text)
+      add(:long_description, :text)
       add(:icon, :string)
 
       add(:area_id, references(:areas, on_delete: :nilify_all, type: :binary_id))

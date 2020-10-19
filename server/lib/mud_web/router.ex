@@ -95,5 +95,8 @@ defmodule MudWeb.Router do
     resources("/character_race_feature_options", CharacterRaceFeatureOptionController,
       except: [:new, :edit]
     )
+
+    post("/character_races/link_feature", CharacterRaceController, :link_feature)
+    post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
   end
 end

@@ -7,6 +7,7 @@ defmodule Mud.Engine.CharacterRace do
   import Ecto.Changeset
   import Ecto.Query, warn: false
   alias Mud.Repo
+  alias Mud.Engine.CharacterRaceFeature
 
   @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -18,6 +19,14 @@ defmodule Mud.Engine.CharacterRace do
     field(:portrait, :string)
     field(:singular, :string)
     field(:instance_id, :binary_id)
+
+    many_to_many(
+      :features,
+      CharacterRaceFeature,
+      join_through: Mud.Engine.RaceFeature,
+      on_replace: :delete,
+      unique: true
+    )
 
     timestamps()
   end
@@ -32,7 +41,19 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def list do
-    Repo.all(__MODULE__)
+    from(race in __MODULE__, preload: [:features])
+    |> Repo.all()
+
+    # preload_query =
+    #   from(feature in CharacterRaceFeature,
+    #   join: pt in "post_tags", on: pt.tag_id == t.id,
+    #   join: c in assoc(t, :comment),
+    #   preload: [comment: c])
+
+    #   preload_query = from(t in Tag, join: c in assoc(t, :comment), preload: [comment: c])
+
+    #       from(p in Post, preload: [tags: ^preload_query])
+    #       |> PreloadTest.Repo.all()
   end
 
   @doc """
@@ -49,7 +70,8 @@ defmodule Mud.Engine.CharacterRace do
       ** (Ecto.NoResultsError)
 
   """
-  def get!(id), do: Repo.get!(__MODULE__, id)
+  def get!(id),
+    do: Repo.one!(from(race in __MODULE__, where: race.id == ^id, preload: [:features]))
 
   @doc """
   Creates a character_race.
@@ -64,9 +86,18 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def create(attrs \\ %{}) do
-    %__MODULE__{}
-    |> __MODULE__.changeset(attrs)
-    |> Repo.insert()
+    result =
+      %__MODULE__{}
+      |> __MODULE__.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, race} ->
+        {:ok, Repo.preload(race, :features)}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -82,9 +113,18 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def update(%__MODULE__{} = character_race, attrs) do
-    character_race
-    |> __MODULE__.changeset(attrs)
-    |> Repo.update()
+    result =
+      character_race
+      |> __MODULE__.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, race} ->
+        {:ok, Repo.preload(race, :features)}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -120,6 +160,13 @@ defmodule Mud.Engine.CharacterRace do
   def changeset(character_race, attrs) do
     character_race
     |> cast(attrs, [:singular, :plural, :adjective, :portrait, :description])
-    |> validate_required([:singular, :plural, :adjective, :portrait, :description])
+    |> validate_required([:singular, :plural, :adjective, :description])
   end
+
+  # def changeset_update_projects(%User{} = user, projects) do
+  #   user
+  #   |> cast(%{}, @required_fields)
+  #   # associate projects to the user
+  #   |> put_assoc(:projects, projects)
+  # end
 end

@@ -2,6 +2,7 @@ defmodule MudWeb.CharacterRaceController do
   use MudWeb, :controller
 
   alias Mud.Engine.CharacterRace
+  alias Mud.Engine.RaceFeature
 
   action_fallback(MudWeb.FallbackController)
 
@@ -10,7 +11,7 @@ defmodule MudWeb.CharacterRaceController do
     render(conn, "index.json", character_races: character_races)
   end
 
-  def create(conn, %{"character_race" => character_race_params}) do
+  def create(conn, character_race_params) do
     with {:ok, %CharacterRace{} = character_race} <- CharacterRace.create(character_race_params) do
       conn
       |> put_status(:created)
@@ -24,7 +25,7 @@ defmodule MudWeb.CharacterRaceController do
     render(conn, "show.json", character_race: character_race)
   end
 
-  def update(conn, %{"id" => id, "character_race" => character_race_params}) do
+  def update(conn, character_race_params = %{"id" => id}) do
     character_race = CharacterRace.get!(id)
 
     with {:ok, %CharacterRace{} = character_race} <-
@@ -39,5 +40,30 @@ defmodule MudWeb.CharacterRaceController do
     with {:ok, %CharacterRace{}} <- CharacterRace.delete(character_race) do
       send_resp(conn, :no_content, "")
     end
+  end
+
+  def link_feature(conn, %{
+        "character_race_feature_id" => feature_id,
+        "character_race_id" => race_id
+      }) do
+    with {:ok, _} <- RaceFeature.link(race_id, feature_id),
+         %CharacterRace{} = character_race <- CharacterRace.get!(race_id) do
+      conn
+      |> put_status(:ok)
+      |> render("show.json", character_race: character_race)
+    end
+  end
+
+  def unlink_feature(conn, %{
+        "character_race_feature_id" => feature_id,
+        "character_race_id" => race_id
+      }) do
+    RaceFeature.unlink(race_id, feature_id)
+
+    character_race = CharacterRace.get!(race_id)
+
+    conn
+    |> put_status(:ok)
+    |> render("show.json", character_race: character_race)
   end
 end

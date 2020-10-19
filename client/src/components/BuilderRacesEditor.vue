@@ -16,9 +16,116 @@
     <q-separator />
 
     <q-tab-panels v-model="tab" class="tab-panel">
-      <q-tab-panel class="" name="races">
-        <div class="text-h6">Mails</div>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit.
+      <q-tab-panel class="flex column" name="races">
+        <!-- Races Table -->
+        <div class="col flex column">
+          <q-table
+            title="Races"
+            :data="races"
+            :columns="raceColumns"
+            :visible-columns="visibleRaceColumns"
+            row-key="id"
+            flat
+            bordered
+            class="col"
+            :selected.sync="selectedRaceRow"
+            :pagination="initialPagination"
+            :rows-per-page-options="[0]"
+            :pagination-label="getRacesPaginationLabel"
+          >
+            <template v-slot:body-cell="props">
+              <q-td
+                :props="props"
+                class="cursor-pointer"
+                @click.exact="toggleSingleRaceRow(props.row)"
+              >
+                {{ props.value }}
+              </q-td>
+            </template>
+          </q-table>
+          <q-btn-group spread class="col-shrink">
+            <q-btn class="" flat @click="addRace">Add</q-btn>
+            <q-btn
+              :disabled="raceButtonsDisabled"
+              class=""
+              flat
+              @click="editRace"
+              >Edit</q-btn
+            >
+            <q-btn
+              :disabled="raceButtonsDisabled"
+              class=""
+              flat
+              @click="deleteRace"
+              >Delete</q-btn
+            >
+          </q-btn-group>
+        </div>
+        <!-- Race Details View -->
+        <!-- <div v-show="raceBottomView == 'details'" class="col flex column"> -->
+        <q-card v-show="raceBottomView == 'details'" class="col">
+          <q-card-section horizontal>
+            <q-img
+              class="col-5"
+              src="https://cdn.quasar.dev/img/parallax1.jpg"
+            />
+
+            <q-card-section class="col flex column">
+              <q-card-section class="col-shrink">
+                <p class="full-width text-h4">
+                  {{ selectedRace.singular }}
+                </p>
+                <p>
+                  {{ selectedRace.description }}
+                </p>
+              </q-card-section>
+              <q-card-section class="col">
+                <q-toolbar class="bg-primary text-white shadow-2">
+                  <q-toolbar-title>Features</q-toolbar-title>
+                </q-toolbar>
+                <q-list dense>
+                  <q-item
+                    v-for="race in selectedRace.features"
+                    v-show="raceIsSelected"
+                    :key="race.id"
+                  >
+                    <q-item-section top class="col-2 gt-sm">
+                      <q-item-label class="q-mt-sm">{{
+                        race.name
+                      }}</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-card-section>
+            </q-card-section>
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-actions>
+            <q-btn flat round icon="event" />
+            <q-btn flat>
+              5:30PM
+            </q-btn>
+            <q-btn flat>
+              7:00PM
+            </q-btn>
+            <q-btn flat color="primary">
+              Reserve
+            </q-btn>
+          </q-card-actions>
+        </q-card>
+        <!-- </div> -->
+        <!-- <div v-show="raceBottomView == 'editor'" class="col flex column"> -->
+        <race-wizard
+          v-if="raceBottomView == 'editor'"
+          :race="{ ...raceUnderConstruction }"
+          :features="features"
+          @cancel="cancelRaceEdit"
+          @created="createdRace"
+          @updated="updatedRace"
+        />
+        <!-- </div> -->
       </q-tab-panel>
 
       <q-tab-panel class="flex column" name="features">
@@ -275,10 +382,7 @@
             </q-btn-group>
           </div>
           <!-- Bottom half spans 50% height and 50% width -->
-          <q-form
-            v-show="conditionView == 'editor'"
-            class="col-6 q-gutter-md"
-          >
+          <q-form v-show="conditionView == 'editor'" class="col-6 q-gutter-md">
             <q-select
               v-model="conditionUnderConstruction.key"
               :options="conditionKeyOptions"
@@ -359,8 +463,11 @@ import {
   ConditionState,
   OptionState
 } from 'src/store/characterRaceFeature/state';
+import { RaceInterface } from 'src/store/race/state';
+import raceState from 'src/store/race/state';
+import RaceWizard from '../components/RaceWizard.vue';
 
-interface CharacterFeatureColumns {
+interface CommonColumnInterface {
   name: string;
   required: boolean;
   label: string;
@@ -478,13 +585,48 @@ let conditionSelectColumns: [
   }
 ];
 
+let raceColumns: [
+  {
+    name: 'singular';
+    required: false;
+    align: 'center';
+    label: 'Singlular';
+    sortable: true;
+    field: 'singular';
+  },
+  {
+    name: 'plural';
+    required: false;
+    align: 'center';
+    label: 'Plural';
+    sortable: true;
+    field: 'plural';
+  },
+  {
+    name: 'adjective';
+    required: false;
+    align: 'center';
+    label: 'Adjective';
+    sortable: true;
+    field: 'adjective';
+  },
+  {
+    name: 'description';
+    required: false;
+    align: 'center';
+    label: 'Description';
+    sortable: true;
+    field: 'description';
+  }
+];
+
 export default {
   name: 'BuildRacesEditor',
-  components: {},
+  components: { RaceWizard },
   data(): {
     tab: string;
-    conditionSelectColumns: CharacterFeatureColumns[];
-    characterFeatureColumns: CharacterFeatureColumns[];
+    conditionSelectColumns: CommonColumnInterface[];
+    characterFeatureColumns: CommonColumnInterface[];
     characterFeatureOptionsColumns: CharacterFeatureOptionsColumns[];
     featureOptionConditionColumns: CharacterFeatureOptionsColumns[];
     features: CharacterRaceFeatureInterface[];
@@ -507,16 +649,42 @@ export default {
     featureIndex: Record<string, number>;
     initialPagination: { rowsPerPage: number };
     conditionOptionSelected: CharacterRaceFeatureOptionInterface[];
+    // Race stuff
+    raceColumns: CommonColumnInterface[];
+    raceIndex: Record<string, number>;
+    raceIsNew: boolean;
+    races: RaceInterface[];
+    raceUnderConstruction: RaceInterface;
+    selectedRaceRow: RaceInterface[];
+    visibleRaceColumns: string[];
+    raceBottomView: string;
   } {
     return {
+      // Common stuff
       tab: 'races',
-      conditionSelectColumns,
+      initialPagination: {
+        rowsPerPage: 0
+      },
+      // Feature stuff
       characterFeatureColumns,
-      characterFeatureOptionsColumns,
-      featureOptionConditionColumns,
       features: [],
       featureIndex: {},
       visibleFeatureColumns: ['name', 'field', 'key', 'type'],
+      selectedFeatureRow: [],
+      featureTypeOptions: ['range', 'select', 'toggle'],
+      featureTopView: 'table',
+      featureIsNew: false,
+      featureUnderConstruction: { ...featureState },
+      // Option stuff
+      characterFeatureOptionsColumns,
+      selectedOptionRow: [],
+      optionView: 'table',
+      optionIsNew: false,
+      optionUnderConstruction: { ...OptionState },
+      // Condition Stuff
+      conditionSelectColumns,
+      featureOptionConditionColumns,
+      visibleConditionFeatureColumns: ['value'],
       visibleOptionConditionsColumns: [
         'key',
         'comparison',
@@ -524,24 +692,20 @@ export default {
         'toggle',
         'range'
       ],
-      visibleConditionFeatureColumns: ['value'],
-      selectedFeatureRow: [],
-      selectedOptionRow: [],
       selectedConditionRow: [],
-      featureTopView: 'table',
-      optionView: 'table',
       conditionView: 'table',
-      featureUnderConstruction: { ...featureState },
-      featureTypeOptions: ['range', 'select', 'toggle'],
-      featureIsNew: false,
       conditionIsNew: false,
-      optionIsNew: false,
-      initialPagination: {
-        rowsPerPage: 0
-      },
-      optionUnderConstruction: { ...OptionState },
       conditionUnderConstruction: { ...ConditionState },
-      conditionOptionSelected: []
+      conditionOptionSelected: [],
+      // Races stuff
+      visibleRaceColumns: ['singular', 'plural', 'adjective', 'description'],
+      raceColumns,
+      selectedRaceRow: [],
+      races: [],
+      raceIndex: {},
+      raceIsNew: false,
+      raceUnderConstruction: { ...raceState },
+      raceBottomView: 'details'
     };
   },
   computed: {
@@ -710,10 +874,50 @@ export default {
     },
     ...mapGetters({
       instanceBeingBuilt: 'builder/instanceBeingBuilt'
-    })
+    }),
+    // Race stuff
+    selectedRace: function(): RaceInterface {
+      if (this.selectedRaceRow.length > 0) {
+        return this.selectedRaceRow[0];
+      } else {
+        return { ...raceState };
+      }
+    },
+    raceIsSelected: function(): boolean {
+      return this.selectedRaceRow.length > 0;
+    },
+    raceButtonsDisabled: function(): boolean {
+      return this.selectedRaceRow.length == 0;
+    }
   },
   created() {
     let self = this;
+
+    this.$axios.get('/character_races').then(function(results) {
+      console.log('races');
+      console.log(results);
+
+      // This explicit mapping is so that the keys in the object are in a deterministic
+      // order, which impacts how the data is displayed in the data table.
+      self.races = results.data.map(function(race: RaceInterface) {
+        return {
+          id: race.id,
+          singular: race.singular,
+          plural: race.plural,
+          adjective: race.adjective,
+          description: race.description,
+          portrait: race.portrait,
+          features: race.features,
+          instance_id: race.instance_id
+        };
+      });
+
+      // self.races = results.data;
+
+      self.races.forEach((race, index) => {
+        Vue.set(self.raceIndex, race.id, index);
+      });
+    });
 
     this.$axios.get('/character_race_features').then(function(results) {
       console.log('character_race_features');
@@ -739,7 +943,7 @@ export default {
       });
     });
   },
-  mounted() {},
+  // mounted() {},
   methods: {
     getFeatureByKey(key: string): CharacterRaceFeatureInterface {
       return (
@@ -859,8 +1063,6 @@ export default {
           this.featureUnderConstruction
         );
       }
-
-      console.log('herer');
 
       request
         .then(result => {
@@ -1009,6 +1211,100 @@ export default {
     },
     toggleSingleConditionRow(row: CharacterRaceFeatureOptionInterface) {
       Vue.set(this.selectedConditionRow, 0, row);
+    },
+    // ******************
+    // Races stuff
+    // ******************
+    getRacesPaginationLabel(start: number, end: number, total: number): string {
+      return total.toString() + ' Race(s)';
+    },
+    toggleSingleRaceRow(row: RaceInterface) {
+      this.selectedRaceRow = [row];
+      this.cancelRaceEdit();
+    },
+    editRace() {
+      this.raceUnderConstruction = { ...this.selectedRaceRow[0] };
+      this.raceIsNew = false;
+      this.raceBottomView = 'editor';
+    },
+    addRace() {
+      this.raceUnderConstruction = { ...raceState };
+      this.raceIsNew = true;
+      this.raceBottomView = 'editor';
+    },
+    cancelRaceEdit() {
+      this.raceBottomView = 'details';
+      this.raceIsNew = false;
+      this.raceUnderConstruction = { ...raceState };
+    },
+    raceSaved(race: RaceInterface) {
+      let request;
+
+      if (this.raceIsNew) {
+        this.raceUnderConstruction.instance_id = this.instanceBeingBuilt.id;
+
+        request = this.$axios.post(
+          '/character_races',
+          this.raceUnderConstruction
+        );
+      } else {
+        request = this.$axios.patch(
+          '/character_races/' + this.raceUnderConstruction.id,
+          this.raceUnderConstruction
+        );
+      }
+
+      request
+        .then(result => {
+          if (this.raceIsNew) {
+            Vue.set(this.raceIndex, result.data.id, this.races.length);
+
+            this.races.push(result.data);
+            this.raceIsNew = false;
+            this.raceUnderConstruction = { ...raceState };
+          } else {
+            Vue.set(this.races, this.raceIndex[result.data.id], result.data);
+            this.raceUnderConstruction = { ...raceState };
+          }
+
+          this.raceIsNew = false;
+          this.raceBottomView = 'details';
+          this.selectedRaceRow = [result.data];
+        })
+        .catch(function() {
+          alert('Error saving');
+        })
+        .then();
+    },
+    createdRace(race: RaceInterface) {
+      Vue.set(this.raceIndex, race.id, this.races.length);
+
+      this.races.push(race);
+      this.raceIsNew = false;
+      this.raceUnderConstruction = { ...raceState };
+      this.cancelRaceEdit();
+    },
+    updatedRace(race: RaceInterface) {
+      Vue.set(this.races, this.raceIndex[race.id], race);
+      this.raceUnderConstruction = { ...raceState };
+      this.cancelRaceEdit();
+    },
+    deleteRace() {
+      const self = this;
+
+      self.$axios
+        .delete('/character_races/' + self.selectedRaceRow[0].id)
+        .then(function() {
+          self.races.splice(self.raceIndex[self.selectedRaceRow[0].id], 1);
+
+          self.selectedRaceRow = [];
+          self.raceIndex = {};
+          self.races.forEach((race, index) => {
+            Vue.set(self.raceIndex, race.id, index);
+          });
+        });
+
+      this.cancelRaceEdit();
     }
   }
 };

@@ -5,6 +5,7 @@ defmodule Mud.Engine.CharacterRaceFeature do
 
   import Ecto.Query, warn: false
   alias Mud.Repo
+  alias Mud.Engine.CharacterRace
   use Ecto.Schema
   import Ecto.Changeset
   require Protocol
@@ -38,6 +39,14 @@ defmodule Mud.Engine.CharacterRaceFeature do
         field(:range, :integer, default: 0)
       end
     end
+
+    many_to_many(
+      :races,
+      CharacterRace,
+      join_through: Mud.Engine.RaceFeature,
+      on_replace: :delete,
+      unique: true
+    )
 
     timestamps()
   end

@@ -1,48 +1,28 @@
-interface HairStyleInterface {
-  lengths: string[];
-  style: string;
-}
+
+import { CharacterRaceFeatureInterface } from '../characterRaceFeature/state';
 
 export interface RaceInterface {
   id: string;
-  eyeColors: string[];
-  eyeShapes: string[];
-  eyeFeatures: string[];
-  hairColors: string[];
-  hairTypes: string[];
-  hairStyles: HairStyleInterface[];
-  hairLengths: string[];
-  heights: string[];
-  skinColors: string[];
-  portrait: string;
+  adjective: string;
   description: string;
-  pronouns: string[];
-  ageMin: number;
-  ageMax: number;
-  bodyShapes: string[];
-  singular: string;
+  features: CharacterRaceFeatureInterface[];
   plural: string;
+  portrait: string;
+  pronouns: string[];
+  singular: string;
+  instance_id: string;
 }
 
 const state: RaceInterface = {
   id: '',
-  eyeColors: [],
-  eyeShapes: [],
-  eyeFeatures: [],
-  hairColors: [],
-  hairTypes: [],
-  hairStyles: [],
-  hairLengths: [],
-  heights: [],
-  skinColors: [],
-  portrait: '',
+  adjective: '',
   description: '',
+  features: [],
+  plural: '',
+  portrait: '',
   pronouns: [],
-  ageMin: 0,
-  ageMax: 0,
-  bodyShapes: [],
   singular: '',
-  plural: ''
+  instance_id: '',
 };
 
 export default state;
