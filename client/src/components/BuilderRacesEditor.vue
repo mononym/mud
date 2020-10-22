@@ -18,56 +18,50 @@
     <q-tab-panels v-model="tab" class="tab-panel">
       <q-tab-panel class="flex column" name="races">
         <!-- Races Table -->
-        <div class="col flex column">
-          <q-table
-            title="Races"
-            :data="races"
-            :columns="raceColumns"
-            :visible-columns="visibleRaceColumns"
-            row-key="id"
-            flat
-            bordered
-            class="col"
-            :selected.sync="selectedRaceRow"
-            :pagination="initialPagination"
-            :rows-per-page-options="[0]"
-            :pagination-label="getRacesPaginationLabel"
+        <q-table
+          title="Races"
+          :data="races"
+          :columns="raceColumns"
+          :visible-columns="visibleRaceColumns"
+          row-key="id"
+          flat
+          bordered
+          class="col"
+          :selected.sync="selectedRaceRow"
+          :pagination="initialPagination"
+          :rows-per-page-options="[0]"
+          :pagination-label="getRacesPaginationLabel"
+        >
+          <template v-slot:body-cell="props">
+            <q-td
+              :props="props"
+              class="cursor-pointer"
+              @click.exact="toggleSingleRaceRow(props.row)"
+            >
+              {{ props.value }}
+            </q-td>
+          </template>
+        </q-table>
+        <q-btn-group spread class="col-shrink">
+          <q-btn class="" flat @click="addRace">Add</q-btn>
+          <q-btn :disabled="raceButtonsDisabled" class="" flat @click="editRace"
+            >Edit</q-btn
           >
-            <template v-slot:body-cell="props">
-              <q-td
-                :props="props"
-                class="cursor-pointer"
-                @click.exact="toggleSingleRaceRow(props.row)"
-              >
-                {{ props.value }}
-              </q-td>
-            </template>
-          </q-table>
-          <q-btn-group spread class="col-shrink">
-            <q-btn class="" flat @click="addRace">Add</q-btn>
-            <q-btn
-              :disabled="raceButtonsDisabled"
-              class=""
-              flat
-              @click="editRace"
-              >Edit</q-btn
-            >
-            <q-btn
-              :disabled="raceButtonsDisabled"
-              class=""
-              flat
-              @click="deleteRace"
-              >Delete</q-btn
-            >
-          </q-btn-group>
-        </div>
+          <q-btn
+            :disabled="raceButtonsDisabled"
+            class=""
+            flat
+            @click="deleteRace"
+            >Delete</q-btn
+          >
+        </q-btn-group>
         <!-- Race Details View -->
-        <!-- <div v-show="raceBottomView == 'details'" class="col flex column"> -->
         <q-card v-show="raceBottomView == 'details'" class="col">
           <q-card-section horizontal>
             <q-img
-              class="col-5"
-              src="https://cdn.quasar.dev/img/parallax1.jpg"
+              class="col-2"
+              :src="selectedRace.portrait"
+              :alt="selectedRace.singular"
             />
 
             <q-card-section class="col flex column">
@@ -99,24 +93,7 @@
               </q-card-section>
             </q-card-section>
           </q-card-section>
-
-          <q-separator />
-
-          <q-card-actions>
-            <q-btn flat round icon="event" />
-            <q-btn flat>
-              5:30PM
-            </q-btn>
-            <q-btn flat>
-              7:00PM
-            </q-btn>
-            <q-btn flat color="primary">
-              Reserve
-            </q-btn>
-          </q-card-actions>
         </q-card>
-        <!-- </div> -->
-        <!-- <div v-show="raceBottomView == 'editor'" class="col flex column"> -->
         <race-wizard
           v-if="raceBottomView == 'editor'"
           :race="{ ...raceUnderConstruction }"
@@ -125,7 +102,6 @@
           @created="createdRace"
           @updated="updatedRace"
         />
-        <!-- </div> -->
       </q-tab-panel>
 
       <q-tab-panel class="flex column" name="features">
@@ -1285,8 +1261,10 @@ export default {
       this.cancelRaceEdit();
     },
     updatedRace(race: RaceInterface) {
+      console.log('updatedRace');
       Vue.set(this.races, this.raceIndex[race.id], race);
       this.raceUnderConstruction = { ...raceState };
+      this.selectedRaceRow = [race];
       this.cancelRaceEdit();
     },
     deleteRace() {

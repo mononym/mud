@@ -1,47 +1,69 @@
 <template>
-  <q-stepper v-model="step" vertical color="primary" animated header-nav>
+  <q-stepper
+    v-model="step"
+    class="col flex column raceWizardStepper"
+    vertical
+    color="primary"
+    animated
+    header-nav
+  >
     <q-step
       :name="1"
+      class="col"
       title="Details"
       icon="fas fa-signature"
       :done="step > 1"
       :header-nav="step > 1 || !isNew"
       :caption="raceUnderConstruction.singular"
     >
-      <q-form class="">
-        <q-input
-          v-model="raceUnderConstruction.singular"
-          filled
-          label="Singular"
-          lazy-rules
-          :rules="[val => (val && val.length > 0) || 'Please type something']"
-        />
+      <div class="flex">
+        <q-form class="col">
+          <q-input
+            v-model="raceUnderConstruction.singular"
+            filled
+            label="Singular"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
 
-        <q-input
-          v-model="raceUnderConstruction.plural"
-          filled
-          label="Plural"
-          lazy-rules
-          :rules="[val => (val && val.length > 0) || 'Please type something']"
-        />
+          <q-input
+            v-model="raceUnderConstruction.plural"
+            filled
+            label="Plural"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
 
-        <q-input
-          v-model="raceUnderConstruction.adjective"
-          filled
-          label="Adjective"
-          lazy-rules
-          :rules="[val => (val && val.length > 0) || 'Please type something']"
-        />
+          <q-input
+            v-model="raceUnderConstruction.adjective"
+            filled
+            label="Adjective"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+          />
 
-        <q-input
-          v-model="raceUnderConstruction.description"
-          filled
-          label="Description"
-          lazy-rules
-          :rules="[val => (val && val.length > 0) || 'Please type something']"
-          type="textarea"
-        />
-      </q-form>
+          <q-input
+            v-model="raceUnderConstruction.description"
+            filled
+            label="Description"
+            lazy-rules
+            :rules="[val => (val && val.length > 0) || 'Please type something']"
+            type="textarea"
+          />
+        </q-form>
+        <div class="col flex column">
+          <q-img
+            class="col"
+            :src="raceUnderConstruction.portrait"
+            :alt="raceUnderConstruction.singular"
+            :ratio="1"
+            contain
+          />
+
+          <q-file v-model="fileToUpload" class="col-shrink" label="Select Image" />
+          <q-btn color="primary" label="Upload" @click="uploadImage" />
+        </div>
+      </div>
 
       <q-stepper-navigation>
         <q-btn
@@ -64,6 +86,7 @@
       :name="2"
       title="Features"
       icon="fas fa-globe"
+      class="col"
       :done="step > 2"
       :header-nav="step > 2 || !isNew"
     >
@@ -108,34 +131,27 @@
       </q-stepper-navigation>
     </q-step>
 
-    <!-- <q-step
+    <q-step
       :name="3"
-      title="Description"
-      icon="fas fa-signature"
+      title="Image"
+      icon="fas fa-picture"
       :done="step > 3"
       :header-nav="step > 3 || !isNew"
+      class="flex col"
     >
-      <q-input v-model="area.description" label="Description" type="textarea" />
+      <q-img
+        class="col-2"
+        :src="raceUnderConstruction.portrait"
+        :alt="raceUnderConstruction.singular"
+      />
 
-      <q-stepper-navigation>
-        <q-btn
-          :disabled="saveButtonDisabled"
-          color="primary"
-          label="Save"
-          @click="saveArea"
-        />
+      <q-file v-model="fileToUpload" class="" label="Image" />
 
-        <q-btn
-          flat
-          @click="step = 2"
-          color="primary"
-          label="Back"
-          class="q-ml-sm"
-        />
-
+      <q-stepper-navigation class="col-shrink">
+        <q-btn color="primary" label="Upload" @click="uploadImage" />
         <q-btn color="primary" label="Cancel" @click="cancel" />
       </q-stepper-navigation>
-    </q-step> -->
+    </q-step>
   </q-stepper>
 </template>
 
@@ -161,11 +177,13 @@ export default {
     }
   },
   data(): {
+    fileToUpload: File | null;
     linking: boolean;
     raceUnderConstruction: RaceInterface;
     step: number;
   } {
     return {
+      fileToUpload: null,
       linking: false,
       raceUnderConstruction: { ...raceState },
       step: 1
@@ -277,9 +295,36 @@ export default {
           self.raceUnderConstruction = result.data;
           self.linking = false;
         });
+    },
+    uploadImage() {
+      const self = this;
+
+      if (this.fileToUpload) {
+        let formData = new FormData();
+        formData.append('file', this.fileToUpload);
+        formData.append('race_id', this.raceUnderConstruction.id);
+
+        // const file = this.fileToUpload.name
+
+        this.$axios
+          .post('/character_races/upload_image', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          })
+          .then(function(result) {
+            console.log('SUCCESS!!');
+            self.raceUnderConstruction = result.data;
+            self.$emit('updated', result.data);
+          })
+          .catch(function() {
+            console.log('FAILURE!!');
+          });
+      }
     }
   }
 };
 </script>
 
-<style></style>
+<style lang="sass">
+</style>

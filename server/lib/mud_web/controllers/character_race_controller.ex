@@ -6,6 +6,8 @@ defmodule MudWeb.CharacterRaceController do
 
   action_fallback(MudWeb.FallbackController)
 
+  @character_profile_portraits "character-race-portraits"
+
   def index(conn, _params) do
     character_races = CharacterRace.list()
     render(conn, "index.json", character_races: character_races)
@@ -65,5 +67,45 @@ defmodule MudWeb.CharacterRaceController do
     conn
     |> put_status(:ok)
     |> render("show.json", character_race: character_race)
+  end
+
+  def generate_image_upload_url(conn, %{"file_name" => file_name, "race_id" => race_id}) do
+    extension = String.split(file_name, ".") |> List.last()
+    race = CharacterRace.get!(race_id)
+
+    client =
+      GcsSignedUrl.Client.load_from_file(Application.get_env(:mud, :gcs_service_account_file))
+
+    url = GcsSignedUrl.generate(client, "character-race-portraits", "#{race.id}.#{extension}")
+
+    conn |> put_status(:created) |> json(%{url: url})
+  end
+
+  def upload_image(conn, args) do
+    extension = String.split(args["file"].filename, ".") |> List.last()
+
+    race = CharacterRace.get!(args["race_id"])
+
+    if race.portrait != nil do
+      filename = String.split(race.portrait, "/") |> List.last()
+      ExAws.S3.delete_object(@character_profile_portraits, filename)
+    end
+
+    filename = "#{UUID.uuid4()}.#{extension}"
+
+    args["file"].path
+    |> ExAws.S3.Upload.stream_file()
+    |> ExAws.S3.upload(@character_profile_portraits, filename)
+    |> ExAws.request!()
+
+    domain = Application.get_env(:mud, :race_image_cf_domain)
+
+    url = "https://#{domain}/#{filename}"
+
+    {:ok, race} = CharacterRace.update(race, %{portrait: url})
+
+    conn
+    |> put_status(:ok)
+    |> render("show.json", character_race: race)
   end
 end

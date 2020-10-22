@@ -18,8 +18,15 @@ config :mud,
     String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "600000")),
   character_inactivity_timeout_final:
     String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "1200000")),
-  create_player_token_ttl: String.to_integer(System.get_env("CREATE_PLAYER_TOKEN_TTL", "1800"))
+  create_player_token_ttl: String.to_integer(System.get_env("CREATE_PLAYER_TOKEN_TTL", "1800")),
+  race_image_cf_domain: System.get_env("AWS_RACE_IMAGE_CF_DOMAIN")
 
 config :mud, :generators,
   migration: true,
   binary_id: true
+
+config :ex_aws,
+  normalize_path: false,
+  region: {:system, "AWS_REGION"}
+
+config :ex_aws, :hackney_opts, recv_timeout: 30_000

@@ -98,5 +98,7 @@ defmodule MudWeb.Router do
 
     post("/character_races/link_feature", CharacterRaceController, :link_feature)
     post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
+    post("/character_races/generate_image_upload_url", CharacterRaceController, :generate_image_upload_url)
+    post("/character_races/upload_image", CharacterRaceController, :upload_image)
   end
 end
