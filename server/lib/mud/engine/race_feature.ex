@@ -27,7 +27,7 @@ defmodule Mud.Engine.RaceFeature do
       iex> link(%{character_race_id: good_value, character_race_feature_id: good_value})
       {:ok, %RaceFeature{}}
 
-      iex> create(%{character_race_id: bad_value, character_race_feature_id: bad_value})
+      iex> link(%{character_race_id: bad_value, character_race_feature_id: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """

@@ -69,18 +69,6 @@ defmodule MudWeb.CharacterRaceController do
     |> render("show.json", character_race: character_race)
   end
 
-  def generate_image_upload_url(conn, %{"file_name" => file_name, "race_id" => race_id}) do
-    extension = String.split(file_name, ".") |> List.last()
-    race = CharacterRace.get!(race_id)
-
-    client =
-      GcsSignedUrl.Client.load_from_file(Application.get_env(:mud, :gcs_service_account_file))
-
-    url = GcsSignedUrl.generate(client, "character-race-portraits", "#{race.id}.#{extension}")
-
-    conn |> put_status(:created) |> json(%{url: url})
-  end
-
   def upload_image(conn, args) do
     extension = String.split(args["file"].filename, ".") |> List.last()
 

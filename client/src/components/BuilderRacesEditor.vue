@@ -1046,19 +1046,17 @@ export default {
             Vue.set(this.featureIndex, result.data.id, this.features.length);
 
             this.features.push(result.data);
-            this.featureIsNew = false;
-            this.featureUnderConstruction = { ...featureState };
-            this.featureTopView = 'table';
           } else {
             Vue.set(
               this.features,
               this.featureIndex[result.data.id],
               result.data
             );
-            this.featureIsNew = false;
-            this.featureUnderConstruction = { ...featureState };
-            this.featureTopView = 'table';
           }
+
+          this.featureIsNew = false;
+          this.featureUnderConstruction = { ...featureState };
+          this.featureTopView = 'table';
         })
         .catch(function() {
           alert('Error saving');
@@ -1084,7 +1082,6 @@ export default {
       self.$axios
         .delete('/character_race_features/' + self.selectedFeatureRow[0].id)
         .then(function() {
-          console.log('sweong hwsrhskhjr');
           self.features.splice(
             self.featureIndex[self.selectedFeatureRow[0].id],
             1

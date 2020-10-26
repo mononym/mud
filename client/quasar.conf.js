@@ -120,7 +120,7 @@ module.exports = configure(function(ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['LoadingBar']
+      plugins: ['Dialog', 'LoadingBar']
     },
 
     // animations: 'all', // --- includes all animations

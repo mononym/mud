@@ -92,13 +92,13 @@ defmodule MudWeb.Router do
     resources("/character_races", CharacterRaceController, except: [:new, :edit])
     resources("/character_race_features", CharacterRaceFeatureController, except: [:new, :edit])
 
-    resources("/character_race_feature_options", CharacterRaceFeatureOptionController,
-      except: [:new, :edit]
-    )
-
     post("/character_races/link_feature", CharacterRaceController, :link_feature)
     post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
     post("/character_races/generate_image_upload_url", CharacterRaceController, :generate_image_upload_url)
     post("/character_races/upload_image", CharacterRaceController, :upload_image)
+
+    # Character template stuff
+    resources "/character_templates", CharacterTemplateController, except: [:new, :edit]
+    get("/character_templates/instance/:instance_id", CharacterTemplateController, :list_by_instance)
   end
 end

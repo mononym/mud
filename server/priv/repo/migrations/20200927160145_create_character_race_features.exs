@@ -15,8 +15,8 @@ defmodule Mud.Repo.Migrations.CreateCharacterRaceFeature do
     end
 
     create(index(:character_race_features, [:instance_id]))
-    create(unique_index(:character_race_features, [:name]))
-    create(unique_index(:character_race_features, [:key]))
+    create(unique_index(:character_race_features, [:name, :instance_id]))
+    create(unique_index(:character_race_features, [:key, :instance_id]))
     create(index(:character_race_features, [:type]))
   end
 end

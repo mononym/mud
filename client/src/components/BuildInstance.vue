@@ -64,6 +64,10 @@
       <link-wizard v-show="bottomRightPanel == 'linkWizard'" />
     </div>
 
+    <div v-show="tab == 'templates'" class="col templates-tab">
+      <builder-templates-editor />
+    </div>
+
     <q-dialog v-model="confirmDeleteArea" persistent>
       <q-card>
         <q-card-section class="row items-center">
@@ -127,6 +131,7 @@ import LinkDetails from '../components/LinkDetails.vue';
 import LinkWizard from '../components/LinkWizard.vue';
 import BuilderCodeEditor from '../components/BuilderCodeEditor.vue';
 import BuilderRacesEditor from '../components/BuilderRacesEditor.vue';
+import BuilderTemplatesEditor from '../components/BuilderTemplatesEditor.vue';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -141,7 +146,8 @@ export default {
     LinkDetails,
     LinkWizard,
     BuilderCodeEditor,
-    BuilderRacesEditor
+    BuilderRacesEditor,
+    BuilderTemplatesEditor
   },
   data() {
     return {
