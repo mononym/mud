@@ -93,15 +93,15 @@
 
           <div class="row justify-center">
             <q-btn-toggle
-              glossy
               v-model="selectedRace"
+              glossy
               :options="raceOptions"
             />
           </div>
         </div>
 
         <q-stepper-navigation>
-          <q-btn @click="step = 2" color="primary" label="Continue" />
+          <q-btn color="primary" label="Continue" @click="step = 2" />
         </q-stepper-navigation>
       </q-step>
 
@@ -129,13 +129,13 @@
         </div>
 
         <q-stepper-navigation>
-          <q-btn @click="step = 3" color="primary" label="Continue" />
+          <q-btn color="primary" label="Continue" @click="step = 3" />
           <q-btn
             flat
-            @click="step = 1"
             color="primary"
             label="Back"
             class="q-ml-sm"
+            @click="step = 1"
           />
         </q-stepper-navigation>
       </q-step>
@@ -197,13 +197,13 @@
         </div>
 
         <q-stepper-navigation>
-          <q-btn @click="step = 4" color="primary" label="Continue" />
+          <q-btn color="primary" label="Continue" @click="step = 4" />
           <q-btn
             flat
-            @click="step = 2"
             color="primary"
             label="Back"
             class="q-ml-sm"
+            @click="step = 2"
           />
         </q-stepper-navigation>
       </q-step>
@@ -226,13 +226,13 @@
         just leave it on the default 'Adventurer' background.
 
         <q-stepper-navigation>
-          <q-btn @click="step = 5" color="primary" label="Continue" />
+          <q-btn color="primary" label="Continue" @click="step = 5" />
           <q-btn
             flat
-            @click="step = 3"
             color="primary"
             label="Back"
             class="q-ml-sm"
+            @click="step = 3"
           />
         </q-stepper-navigation>
       </q-step>
@@ -250,13 +250,13 @@
         What are your character's unique abilities?
 
         <q-stepper-navigation>
-          <q-btn @click="step = 6" color="primary" label="Continue" />
+          <q-btn color="primary" label="Continue" @click="step = 6" />
           <q-btn
             flat
-            @click="step = 4"
             color="primary"
             label="Back"
             class="q-ml-sm"
+            @click="step = 4"
           />
         </q-stepper-navigation>
       </q-step>
@@ -283,10 +283,10 @@
           />
           <q-btn
             flat
-            @click="step = 5"
             color="primary"
             label="Back"
             class="q-ml-sm"
+            @click="step = 5"
           />
         </q-stepper-navigation>
       </q-step>
