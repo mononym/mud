@@ -1752,7 +1752,7 @@ Mud.Engine.CharacterRace.create(%{
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Primary Eye Color",
     field: "Primary Eye Color",
-    key: "primary-eye-color",
+    key: "primary_eye_color",
     type: "select",
     instance_id: instance.id,
     options: [
@@ -1771,7 +1771,7 @@ Mud.Engine.CharacterRace.create(%{
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Secondary Eye Color",
     field: "Secondary Eye Color",
-    key: "secondary-eye-color",
+    key: "secondary_eye_color",
     type: "select",
     instance_id: instance.id,
     options: [
@@ -1790,7 +1790,7 @@ Mud.Engine.CharacterRace.create(%{
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Hair Color",
     field: "Hair Color",
-    key: "hair-color",
+    key: "hair_color",
     type: "select",
     instance_id: instance.id,
     options: [%{value: "black"}, %{value: "brown"}, %{value: "red"}, %{value: "blonde"}]
@@ -1800,7 +1800,7 @@ Mud.Engine.CharacterRace.create(%{
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Hair Length",
     field: "Hair Length",
-    key: "hair-length",
+    key: "hair_length",
     type: "select",
     instance_id: instance.id,
     options: [%{value: "short"}, %{value: "long"}, %{value: "bald"}, %{value: "shoulder-length"}]
@@ -1810,7 +1810,7 @@ Mud.Engine.CharacterRace.create(%{
   Mud.Engine.CharacterRaceFeature.create(%{
     name: "Hair Style",
     field: "Hair Style",
-    key: "hair-style",
+    key: "hair_style",
     type: "select",
     instance_id: instance.id,
     options: [
@@ -1818,7 +1818,7 @@ Mud.Engine.CharacterRace.create(%{
         value: "a simple loose style",
         conditions: [
           %{
-            "key" => "hair-length",
+            "key" => "hair_length",
             "select" => ["long", "short", "shoulder-length"],
             "comparison" => "in"
           }

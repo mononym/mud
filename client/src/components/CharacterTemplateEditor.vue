@@ -1,10 +1,18 @@
 <template>
   <div class="fit flex row wrap">
-    <div class="half-width">Sample character to apply the template to</div>
-    <div class="half-width">
-      Display the template output of select/edited template
+    <div class="half-width half-height">
+      <character-creation-wizard
+        mode="preview"
+        @preview="characterSelectedForPreview"
+      />
     </div>
-    <div v-show="editing == false" class="full-width flex column">
+    <div class="half-width half-height">
+      <q-skeleton v-if="showPreviewPlaceholder" class="fit" type="rect" />
+      <p v-if="!showPreviewPlaceholder">
+        {{ templatePreview }}
+      </p>
+    </div>
+    <div v-show="editing == false" class="full-width flex column half-height">
       <q-table
         title="Templates"
         :data="templates"
@@ -44,7 +52,7 @@
     </div>
     <q-form
       v-show="editing == true"
-      class="q-gutter-md full-width"
+      class="q-gutter-md full-width half-height"
       @submit="save"
     >
       <q-input
@@ -86,6 +94,7 @@ import Vue from 'vue';
 import { mapGetters } from 'vuex';
 import { CharacterTemplateInterface } from 'src/store/characterTemplate/state';
 import templateState from 'src/store/characterTemplate/state';
+import CharacterCreationWizard from '../components/CharacterCreationWizard.vue';
 
 interface CommonColumnInterface {
   name: string;
@@ -121,21 +130,24 @@ let templateColumns: [
 
 export default {
   name: 'CharacterTemplateEditor',
-  components: {},
+  components: { CharacterCreationWizard },
   props: {},
   data(): {
     editing: boolean;
+    featuresForPreview: Record<string, unknown>;
     initialPagination: { rowsPerPage: number };
     isNew: boolean;
     selectedTemplateRow: CharacterTemplateInterface[];
     templateColumns: CommonColumnInterface[];
     templates: unknown[];
     templateIndex: Record<string, number>;
+    templatePreview: string;
     templateUnderConstruction: CharacterTemplateInterface;
     visibleColumns: string[];
   } {
     return {
       editing: false,
+      featuresForPreview: {},
       initialPagination: {
         rowsPerPage: 0
       },
@@ -144,11 +156,32 @@ export default {
       templateColumns,
       templates: [],
       templateIndex: {},
+      templatePreview: '',
       templateUnderConstruction: { ...templateState },
       visibleColumns: ['name', 'description', 'template']
     };
   },
   computed: {
+    showPreviewPlaceholder: function(): boolean {
+      return this.templatePreview == '';
+    },
+    // templatePreview: function(): string {
+    //   if (
+    //     this.selectedTemplateRow.length == 0 ||
+    //     this.featuresForPreview == {}
+    //   ) {
+    //     return '';
+    //   } else {
+    //     return this.$axios
+    //       .post('/character_templates/preview', {
+    //         template_id: this.selectedTemplateRow[0].id,
+    //         features: this.featuresForPreview
+    //       })
+    //       .then(response => {
+    //         return response.preview;
+    //       });
+    //   }
+    // },
     buttonsDisabled: function(): boolean {
       return this.selectedTemplateRow.length == 0;
     },
@@ -186,6 +219,27 @@ export default {
       });
   },
   methods: {
+    maybeTriggerPreview(): void {
+      if (
+        this.selectedTemplateRow.length > 0 &&
+        this.featuresForPreview != {}
+      ) {
+        const self = this;
+
+        this.$axios
+          .post('/character_templates/preview', {
+            template_id: this.selectedTemplateRow[0].id,
+            features: this.featuresForPreview
+          })
+          .then(response => {
+            self.templatePreview = response.data.preview;
+          });
+      }
+    },
+    characterSelectedForPreview(features: Record<string, unknown>): void {
+      this.featuresForPreview = features;
+      this.maybeTriggerPreview();
+    },
     getTemplatesPaginationLabel(
       start: number,
       end: number,
@@ -195,6 +249,7 @@ export default {
     },
     toggleSingleRow(row: CharacterTemplateInterface) {
       this.selectedTemplateRow = [row];
+      this.maybeTriggerPreview();
     },
     add() {
       this.editing = true;
@@ -283,7 +338,7 @@ export default {
 
       this.$q
         .dialog({
-          title: 'Delete \'' + name + '\'?',
+          title: "Delete '" + name + "'?",
           message: "Type '" + name + "' to continue with deletion.",
           prompt: {
             model: '',
@@ -303,4 +358,5 @@ export default {
 
 <style lang="sass">
 .half-width { width: 50% }
+.half-height { height: 50% }
 </style>

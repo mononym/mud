@@ -755,7 +755,7 @@ export default {
       } else if (this.conditionFeature.type == 'select') {
         return ['in', 'not in'];
       } else if (this.conditionFeature.type == 'toggle') {
-        return ['=='];
+        return ['equals'];
       } else {
         return [];
       }

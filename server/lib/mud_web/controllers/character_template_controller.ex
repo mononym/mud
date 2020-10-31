@@ -34,6 +34,21 @@ defmodule MudWeb.CharacterTemplateController do
     render(conn, "show.json", character_template: character_template)
   end
 
+  def preview(conn, %{"template_id" => template_id, "features" => features}) do
+    character_template = CharacterTemplate.get!(template_id)
+    template = character_template.template
+
+    features =
+      Map.to_list(features)
+      |> Enum.map(fn {key, value} ->
+        {String.to_atom(key), value}
+      end)
+
+    text = EEx.eval_string(template, [{:pronoun, "they"}] ++ features)
+
+    json(conn, %{preview: text})
+  end
+
   def update(conn, character_template_params = %{"id" => id}) do
     character_template = CharacterTemplate.get!(id)
 

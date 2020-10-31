@@ -96,9 +96,11 @@ defmodule MudWeb.Router do
     post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
     post("/character_races/generate_image_upload_url", CharacterRaceController, :generate_image_upload_url)
     post("/character_races/upload_image", CharacterRaceController, :upload_image)
+    get("/character_races/instance/:instance_id", CharacterRaceController, :list_by_instance)
 
     # Character template stuff
     resources "/character_templates", CharacterTemplateController, except: [:new, :edit]
+    post("/character_templates/preview", CharacterTemplateController, :preview)
     get("/character_templates/instance/:instance_id", CharacterTemplateController, :list_by_instance)
   end
 end

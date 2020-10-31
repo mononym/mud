@@ -13,6 +13,11 @@ defmodule MudWeb.CharacterRaceController do
     render(conn, "index.json", character_races: character_races)
   end
 
+  def list_by_instance(conn, %{"instance_id" => instance_id}) do
+    character_races = CharacterRace.list_by_instance(instance_id)
+    render(conn, "index.json", character_races: character_races)
+  end
+
   def create(conn, character_race_params) do
     with {:ok, %CharacterRace{} = character_race} <- CharacterRace.create(character_race_params) do
       conn
