@@ -1684,28 +1684,32 @@ Mud.Engine.LuaScript.create(%{
   name: "look",
   code: "print(\"Hello, Robert(o)!\")",
   type: "Command",
-  description: "Logic for basic look command"
+  description: "Logic for basic look command",
+  instance_id: instance.id
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "weather",
   code: "print(\"Hello, William(o)!\")",
   type: "System",
-  description: "Weather controller"
+  description: "Weather controller",
+  instance_id: instance.id
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "dry naturally",
   code: "print(\"Hello, Phil(o)!\")",
   type: "Script",
-  description: "Script for a character dripping dry after getting wet"
+  description: "Script for a character dripping dry after getting wet",
+  instance_id: instance.id
 })
 
 Mud.Engine.LuaScript.create(%{
   name: "skill checks",
   code: "print(\"Hello, Vin(o)!\")",
   type: "Module",
-  description: "Methods for performing various skill checks"
+  description: "Methods for performing various skill checks",
+  instance_id: instance.id
 })
 
 #####

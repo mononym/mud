@@ -92,6 +92,7 @@ import CodeMirror from 'codemirror/lib/codemirror.js';
 import 'codemirror/lib/codemirror.css';
 import 'codemirror/theme/ambiance.css';
 import 'codemirror/mode/lua/lua.js';
+import { LuaScriptState } from 'src/store/luaScripts/state';
 
 interface LuaScriptInterface {
   id: string;
@@ -121,9 +122,6 @@ export default {
       line: boolean;
     };
     selected: string;
-    luaScripts: LuaScriptInterface[];
-    treeNodes: TreeNodeInterface[];
-    luaScriptIndex: Record<string, number>;
     headers: string[];
     pane: string;
     wizard: {
@@ -147,9 +145,6 @@ export default {
         // more CodeMirror options...
       },
       selected: '',
-      luaScripts: [],
-      treeNodes: [],
-      luaScriptIndex: {},
       headers: ['Commands', 'Scripts', 'Modules', 'Systems'],
       pane: 'editor',
       wizard: {
@@ -163,79 +158,160 @@ export default {
     };
   },
   computed: {
-    ...mapGetters({})
-  },
-  created() {
-    let self = this;
+    luaScriptIndex: function(): Record<string, number> {
+      const scriptIndex = {};
 
-    this.$axios.get('/lua_scripts').then(function(results) {
-      self.treeNodes = [
+      this.luaScripts.forEach(function(script, index) {
+        scriptIndex[script.name] = index;
+      });
+
+      return scriptIndex;
+    },
+    treeNodes: function(): TreeNodeInterface[] {
+      return [
         {
           label: 'Commands',
           selectable: false,
           icon: '',
-          children: results.data.Commands.map(function(
-            script: LuaScriptInterface
-          ) {
-            return {
-              label: script.name,
-              icon: 'fas fa-code'
-            };
-          })
+          children: this.luaScripts
+            .filter(function(script: LuaScriptInterface) {
+              return script.type == 'Command';
+            })
+            .map(function(script: LuaScriptInterface) {
+              return {
+                label: script.name,
+                icon: 'fas fa-code'
+              };
+            })
         },
         {
           label: 'Scripts',
           selectable: false,
           icon: '',
-          children: results.data.Scripts.map(function(
-            script: LuaScriptInterface
-          ) {
-            return {
-              label: script.name,
-              icon: 'fas fa-code'
-            };
-          })
+          children: this.luaScripts
+            .filter(function(script: LuaScriptInterface) {
+              return script.type == 'Script';
+            })
+            .map(function(script: LuaScriptInterface) {
+              return {
+                label: script.name,
+                icon: 'fas fa-code'
+              };
+            })
         },
         {
           label: 'Systems',
           selectable: false,
           icon: '',
-          children: results.data.Systems.map(function(
-            script: LuaScriptInterface
-          ) {
-            return {
-              label: script.name,
-              icon: 'fas fa-code'
-            };
-          })
+          children: this.luaScripts
+            .filter(function(script: LuaScriptInterface) {
+              return script.type == 'System';
+            })
+            .map(function(script: LuaScriptInterface) {
+              return {
+                label: script.name,
+                icon: 'fas fa-code'
+              };
+            })
         },
         {
           label: 'Modules',
           selectable: false,
           icon: '',
-          children: results.data.Modules.map(function(
-            script: LuaScriptInterface
-          ) {
-            return {
-              label: script.name,
-              icon: 'fas fa-code'
-            };
-          })
+          children: this.luaScripts
+            .filter(function(script: LuaScriptInterface) {
+              return script.type == 'Module';
+            })
+            .map(function(script: LuaScriptInterface) {
+              return {
+                label: script.name,
+                icon: 'fas fa-code'
+              };
+            })
         }
       ];
-
-      self.luaScripts = results.data.Commands.concat(results.data.Scripts)
-        .concat(results.data.Systems)
-        .concat(results.data.Modules);
-
-      self.luaScripts.forEach((script, index) => {
-        Vue.set(self.luaScriptIndex, script.name, index);
-      });
-    });
+    },
+    ...mapGetters({
+      instanceBeingBuilt: 'instances/instanceBeingBuilt',
+      luaScripts: 'luaScripts/all'
+    })
+  },
+  created() {
+    this.$store.dispatch(
+      'luaScripts/loadForInstance',
+      this.instanceBeingBuilt.id
+    );
   },
   mounted() {
+    console.log('hda');
+    // this.treeNodes = [
+    //   {
+    //     label: 'Commands',
+    //     selectable: false,
+    //     icon: '',
+    //     children: this.luaScripts
+    //       .filter(function(script: LuaScriptInterface) {
+    //         return script.type == 'Command';
+    //       })
+    //       .map(function(script: LuaScriptInterface) {
+    //         return {
+    //           label: script.name,
+    //           icon: 'fas fa-code'
+    //         };
+    //       })
+    //   },
+    //   {
+    //     label: 'Scripts',
+    //     selectable: false,
+    //     icon: '',
+    //     children: this.luaScripts
+    //       .filter(function(script: LuaScriptInterface) {
+    //         return script.type == 'Script';
+    //       })
+    //       .map(function(script: LuaScriptInterface) {
+    //         return {
+    //           label: script.name,
+    //           icon: 'fas fa-code'
+    //         };
+    //       })
+    //   },
+    //   {
+    //     label: 'Systems',
+    //     selectable: false,
+    //     icon: '',
+    //     children: this.luaScripts
+    //       .filter(function(script: LuaScriptInterface) {
+    //         return script.type == 'System';
+    //       })
+    //       .map(function(script: LuaScriptInterface) {
+    //         return {
+    //           label: script.name,
+    //           icon: 'fas fa-code'
+    //         };
+    //       })
+    //   },
+    //   {
+    //     label: 'Modules',
+    //     selectable: false,
+    //     icon: '',
+    //     children: this.luaScripts
+    //       .filter(function(script: LuaScriptInterface) {
+    //         return script.type == 'Module';
+    //       })
+    //       .map(function(script: LuaScriptInterface) {
+    //         return {
+    //           label: script.name,
+    //           icon: 'fas fa-code'
+    //         };
+    //       })
+    //   }
+    // ];
+
     this.codeEditor = this.$refs.codeEditor.codemirror;
   },
+  // mounted() {
+  //   this.codeEditor = this.$refs.codeEditor.codemirror;
+  // },
   methods: {
     refreshEditor() {
       setTimeout(() => {
@@ -250,9 +326,7 @@ export default {
       this.pane = 'wizard';
       this.editingNewScript = false;
     },
-    buildNodeTree() {
-
-    },
+    buildNodeTree() {},
     onSubmit() {
       const params = {
         map: {
@@ -273,10 +347,14 @@ export default {
       request
         .then(result => {
           if (this.editingNewScript) {
-            Vue.set(this.luaScriptIndex, result.data.id, this.luaScripts.length);
+            Vue.set(
+              this.luaScriptIndex,
+              result.data.id,
+              this.luaScripts.length
+            );
 
-            this.luaScripts.push(result.data)
-            this.selected = result.data.name
+            this.luaScripts.push(result.data);
+            this.selected = result.data.name;
             this.$store.dispatch('builder/selectMap', result.data).then(() => {
               this.$store.dispatch('builder/putMap', result.data).then(() => {
                 this.$emit('saved');

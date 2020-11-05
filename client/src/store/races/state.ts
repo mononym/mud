@@ -13,7 +13,7 @@ export interface RaceInterface {
   instance_id: string;
 }
 
-const state: RaceInterface = {
+const RaceState: RaceInterface = {
   id: '',
   adjective: '',
   description: '',
@@ -23,6 +23,16 @@ const state: RaceInterface = {
   pronouns: [],
   singular: '',
   instance_id: '',
+}
+
+export {RaceState}
+
+export interface RacesInterface {
+  races: Map<string, RaceInterface>;
+}
+
+const state: RacesInterface = {
+  races: new Map()
 };
 
 export default state;

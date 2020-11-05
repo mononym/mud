@@ -186,7 +186,7 @@ export default {
       return this.selectedTemplateRow.length == 0;
     },
     ...mapGetters({
-      instanceBeingBuilt: 'builder/instanceBeingBuilt'
+      instanceBeingBuilt: 'instances/instanceBeingBuilt'
     })
   },
   created() {

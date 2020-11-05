@@ -73,7 +73,9 @@ defmodule MudWeb.Router do
     # post "/characters/update", CharacterController, :update
     get("/characters/get-creation-data", CharacterController, :get_creation_data)
 
+    # Instance related stuff
     get("/instances", InstanceController, :list_all)
+    get("/instances/slug/:instance", InstanceController, :get_by_slug)
 
     # Map related stuff
     resources("/maps", MapController, except: [:new, :edit])
@@ -88,19 +90,45 @@ defmodule MudWeb.Router do
     # Lua related stuff
     resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
 
+    get(
+      "/lua_scripts/instance/:instance_id",
+      LuaScriptController,
+      :list_by_instance
+    )
+
     # Character race stuff
     resources("/character_races", CharacterRaceController, except: [:new, :edit])
     resources("/character_race_features", CharacterRaceFeatureController, except: [:new, :edit])
 
     post("/character_races/link_feature", CharacterRaceController, :link_feature)
     post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
-    post("/character_races/generate_image_upload_url", CharacterRaceController, :generate_image_upload_url)
+
+    post(
+      "/character_races/generate_image_upload_url",
+      CharacterRaceController,
+      :generate_image_upload_url
+    )
+
     post("/character_races/upload_image", CharacterRaceController, :upload_image)
     get("/character_races/instance/:instance_id", CharacterRaceController, :list_by_instance)
 
     # Character template stuff
-    resources "/character_templates", CharacterTemplateController, except: [:new, :edit]
+    resources("/character_templates", CharacterTemplateController, except: [:new, :edit])
     post("/character_templates/preview", CharacterTemplateController, :preview)
-    get("/character_templates/instance/:instance_id", CharacterTemplateController, :list_by_instance)
+
+    get(
+      "/character_templates/instance/:instance_id",
+      CharacterTemplateController,
+      :list_by_instance
+    )
+
+    # Commands stuff
+    resources "/commands", CommandController, except: [:new, :edit]
+
+    get(
+      "/commands/instance/:instance_id",
+      CommandController,
+      :list_by_instance
+    )
   end
 end

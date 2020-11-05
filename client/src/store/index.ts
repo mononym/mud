@@ -37,6 +37,18 @@ import { CharacterInterface } from './character/state';
 import characters from './characters';
 import { CharactersInterface } from './characters/state';
 
+import command from './command';
+import { CommandInterface } from './command/state';
+
+import commands from './commands';
+import { CommandsInterface } from './commands/state';
+
+import luaScripts from './luaScripts';
+import { LuaScriptsInterface} from './luaScripts/state';
+
+import races from './races';
+import { RacesInterface } from './races/state';
+
 /*
  * If not building with SSR mode, you can
  * directly export the Store instantiation
@@ -58,6 +70,10 @@ export interface StateInterface {
   builder: BuilderInterface;
   character: CharacterInterface;
   characters: CharactersInterface;
+  command: CommandInterface;
+  commands: CommandsInterface;
+  luaScripts: LuaScriptsInterface;
+  races: RacesInterface
 }
 
 export default store(function({ Vue }) {
@@ -76,7 +92,11 @@ export default store(function({ Vue }) {
       areas,
       builder,
       character,
-      characters
+      characters,
+      command,
+      commands,
+      luaScripts,
+      races
     },
 
     // enable strict mode (adds overhead!)

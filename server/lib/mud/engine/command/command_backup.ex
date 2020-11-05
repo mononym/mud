@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Command do
+defmodule Mud.Engine.Command.Backup do
   # defstruct callback_module: nil,
   #           ast: nil,
   #           input: ""
@@ -299,7 +299,6 @@ defmodule Mud.Engine.Command do
       if current_part.greedy do
         build_abstract_ast(rest_of_input, parts, current_part, node, ast)
       else
-        # matching_children = list_matches(next_input, current_part, parts)
         potential_children = list_children(current_part, parts)
 
         transformed_input =

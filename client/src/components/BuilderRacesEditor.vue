@@ -439,8 +439,8 @@ import {
   ConditionState,
   OptionState
 } from 'src/store/characterRaceFeature/state';
-import { RaceInterface } from 'src/store/race/state';
-import raceState from 'src/store/race/state';
+import { RaceInterface } from 'src/store/races/state';
+import { RaceState } from 'src/store/races/state';
 import RaceWizard from '../components/RaceWizard.vue';
 
 interface CommonColumnInterface {
@@ -680,7 +680,7 @@ export default {
       races: [],
       raceIndex: {},
       raceIsNew: false,
-      raceUnderConstruction: { ...raceState },
+      raceUnderConstruction: { ...RaceState },
       raceBottomView: 'details'
     };
   },
@@ -849,14 +849,14 @@ export default {
       return this.selectedOptionRow.length == 0;
     },
     ...mapGetters({
-      instanceBeingBuilt: 'builder/instanceBeingBuilt'
+      instanceBeingBuilt: 'instances/instanceBeingBuilt'
     }),
     // Race stuff
     selectedRace: function(): RaceInterface {
       if (this.selectedRaceRow.length > 0) {
         return this.selectedRaceRow[0];
       } else {
-        return { ...raceState };
+        return { ...RaceState };
       }
     },
     raceIsSelected: function(): boolean {
@@ -1201,14 +1201,14 @@ export default {
       this.raceBottomView = 'editor';
     },
     addRace() {
-      this.raceUnderConstruction = { ...raceState };
+      this.raceUnderConstruction = { ...RaceState };
       this.raceIsNew = true;
       this.raceBottomView = 'editor';
     },
     cancelRaceEdit() {
       this.raceBottomView = 'details';
       this.raceIsNew = false;
-      this.raceUnderConstruction = { ...raceState };
+      this.raceUnderConstruction = { ...RaceState };
     },
     raceSaved(race: RaceInterface) {
       let request;
@@ -1234,10 +1234,10 @@ export default {
 
             this.races.push(result.data);
             this.raceIsNew = false;
-            this.raceUnderConstruction = { ...raceState };
+            this.raceUnderConstruction = { ...RaceState };
           } else {
             Vue.set(this.races, this.raceIndex[result.data.id], result.data);
-            this.raceUnderConstruction = { ...raceState };
+            this.raceUnderConstruction = { ...RaceState };
           }
 
           this.raceIsNew = false;
@@ -1254,13 +1254,13 @@ export default {
 
       this.races.push(race);
       this.raceIsNew = false;
-      this.raceUnderConstruction = { ...raceState };
+      this.raceUnderConstruction = { ...RaceState };
       this.cancelRaceEdit();
     },
     updatedRace(race: RaceInterface) {
       console.log('updatedRace');
       Vue.set(this.races, this.raceIndex[race.id], race);
-      this.raceUnderConstruction = { ...raceState };
+      this.raceUnderConstruction = { ...RaceState };
       this.selectedRaceRow = [race];
       this.cancelRaceEdit();
     },

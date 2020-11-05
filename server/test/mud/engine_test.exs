@@ -126,4 +126,67 @@ defmodule Mud.EngineTest do
       assert %Ecto.Changeset{} = Engine.change_lua_script(lua_script)
     end
   end
+
+  describe "commands" do
+    alias Mud.Engine.Command
+
+    @valid_attrs %{description: "some description", name: "some name", parts: []}
+    @update_attrs %{description: "some updated description", name: "some updated name", parts: []}
+    @invalid_attrs %{description: nil, name: nil, parts: nil}
+
+    def command_fixture(attrs \\ %{}) do
+      {:ok, command} =
+        attrs
+        |> Enum.into(@valid_attrs)
+        |> Engine.create_command()
+
+      command
+    end
+
+    test "list_commands/0 returns all commands" do
+      command = command_fixture()
+      assert Engine.list_commands() == [command]
+    end
+
+    test "get_command!/1 returns the command with given id" do
+      command = command_fixture()
+      assert Engine.get_command!(command.id) == command
+    end
+
+    test "create_command/1 with valid data creates a command" do
+      assert {:ok, %Command{} = command} = Engine.create_command(@valid_attrs)
+      assert command.description == "some description"
+      assert command.name == "some name"
+      assert command.parts == []
+    end
+
+    test "create_command/1 with invalid data returns error changeset" do
+      assert {:error, %Ecto.Changeset{}} = Engine.create_command(@invalid_attrs)
+    end
+
+    test "update_command/2 with valid data updates the command" do
+      command = command_fixture()
+      assert {:ok, %Command{} = command} = Engine.update_command(command, @update_attrs)
+      assert command.description == "some updated description"
+      assert command.name == "some updated name"
+      assert command.parts == []
+    end
+
+    test "update_command/2 with invalid data returns error changeset" do
+      command = command_fixture()
+      assert {:error, %Ecto.Changeset{}} = Engine.update_command(command, @invalid_attrs)
+      assert command == Engine.get_command!(command.id)
+    end
+
+    test "delete_command/1 deletes the command" do
+      command = command_fixture()
+      assert {:ok, %Command{}} = Engine.delete_command(command)
+      assert_raise Ecto.NoResultsError, fn -> Engine.get_command!(command.id) end
+    end
+
+    test "change_command/1 returns a command changeset" do
+      command = command_fixture()
+      assert %Ecto.Changeset{} = Engine.change_command(command)
+    end
+  end
 end

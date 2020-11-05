@@ -10,4 +10,10 @@ defmodule MudWeb.InstanceController do
 
     render(conn, "index.json", instances: instances)
   end
+
+  def get_by_slug(conn, %{"instance" => slug}) do
+    instance = Instance.get_by_slug!(slug)
+
+    render(conn, "instance.json", instance: instance)
+  end
 end

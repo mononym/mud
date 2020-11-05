@@ -60,7 +60,11 @@
             contain
           />
 
-          <q-file v-model="fileToUpload" class="col-shrink" label="Select Image" />
+          <q-file
+            v-model="fileToUpload"
+            class="col-shrink"
+            label="Select Image"
+          />
           <q-btn color="primary" label="Upload" @click="uploadImage" />
         </div>
       </div>
@@ -157,8 +161,8 @@
 
 <script lang="ts">
 import { CharacterRaceFeatureInterface } from 'src/store/characterRaceFeature/state';
-import { RaceInterface } from 'src/store/race/state';
-import raceState from 'src/store/race/state';
+import { RaceInterface } from 'src/store/races/state';
+import raceState from 'src/store/races/state';
 import { Prop } from 'vue/types/options';
 
 export default {
@@ -326,5 +330,4 @@ export default {
 };
 </script>
 
-<style lang="sass">
-</style>
+<style lang="sass"></style>

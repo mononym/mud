@@ -1,7 +1,9 @@
 defmodule Mud.Engine.LuaScript do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Instance
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -11,6 +13,7 @@ defmodule Mud.Engine.LuaScript do
     field(:type, :string)
     field(:description, :string)
     many_to_many(:dependencies, Mud.Engine.LuaScript, join_through: "lua_scripts_dependencies")
+    belongs_to(:instance, Instance, type: :binary_id)
 
     timestamps()
   end
@@ -18,8 +21,8 @@ defmodule Mud.Engine.LuaScript do
   @doc false
   def changeset(lua_script, attrs) do
     lua_script
-    |> cast(attrs, [:name, :type, :code])
-    |> validate_required([:name, :type, :code])
+    |> cast(attrs, [:name, :type, :code, :description, :instance_id])
+    |> validate_required([:name, :type, :code, :description, :instance_id])
   end
 
   @doc """
@@ -33,6 +36,19 @@ defmodule Mud.Engine.LuaScript do
   """
   def list do
     Repo.all(__MODULE__)
+  end
+
+  @doc """
+  Returns the list of character_templates.
+
+  ## Examples
+
+      iex> list_by_instance(instance_id)
+      [%LuaScript{}, ...]
+
+  """
+  def list_by_instance(instance_id) do
+    Repo.all(from(script in __MODULE__, where: script.instance_id == ^instance_id))
   end
 
   @doc """

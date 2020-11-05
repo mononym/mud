@@ -51,6 +51,9 @@ defmodule Mud.Engine.Instance do
     end)
   end
 
+  @spec get_by_slug!(slug :: String.t()) :: %__MODULE__{}
+  def get_by_slug!(slug), do: Repo.get_by!(__MODULE__, slug: slug)
+
   @doc """
   Creates an instance.
 

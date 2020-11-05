@@ -5,13 +5,15 @@ import Vue from 'vue';
 
 const mutation: MutationTree<InstancesInterface> = {
   putInstance(state: InstancesInterface, instance: InstanceInterface) {
-    Vue.set(state.instances, instance.id, instance);
+    Vue.set(state.instances, instance.slug, instance);
+  },
+  putInstanceBeingBuilt(state: InstancesInterface, instance: string) {
+    state.instanceBeingBuilt = instance
   },
   removeInstanceById(state: InstancesInterface, instanceId: string) {
     Vue.delete(state.instances, instanceId);
   },
   putInstances(state: InstancesInterface, instances: InstancesInterface[]) {
-    console.log('putting');
     const initialValue = {};
     state.instances = instances.reduce((obj, item) => {
       return {

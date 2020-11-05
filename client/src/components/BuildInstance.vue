@@ -7,15 +7,15 @@
       <q-tab name="commands" icon="fas fa-terminal" label="Commands" />
       <q-tab name="templates" icon="fas fa-file-alt" label="Templates" />
     </q-tabs>
-    <div v-show="tab == 'code'" class="col code-tab">
+    <div v-if="tab == 'code'" class="col code-tab">
       <builder-code-editor />
     </div>
 
-    <div v-show="tab == 'races'" class="col races-tab">
+    <div v-if="tab == 'races'" class="col races-tab">
       <builder-races-editor />
     </div>
 
-    <div v-show="tab == 'world'" class="col world-tab flex row wrap">
+    <div v-if="tab == 'world'" class="col world-tab flex row wrap">
       <builder-map />
 
       <area-details
@@ -64,7 +64,11 @@
       <link-wizard v-show="bottomRightPanel == 'linkWizard'" />
     </div>
 
-    <div v-show="tab == 'templates'" class="col templates-tab">
+    <div v-if="tab == 'commands'" class="col templates-tab">
+      <builder-commands-editor />
+    </div>
+
+    <div v-if="tab == 'templates'" class="col templates-tab">
       <builder-templates-editor />
     </div>
 
@@ -117,7 +121,6 @@
 <style lang="sass">
 .build-instance-wrapper > div.tab-controller { height: 100% !important; width: 100px !important }
 .build-instance-wrapper > .world-tab > div { height: 50% !important; width: 50% !important; }
-.CodeMirror { height: 100% !important; width: 100% !important }
 </style>
 
 <script>
@@ -132,6 +135,7 @@ import LinkWizard from '../components/LinkWizard.vue';
 import BuilderCodeEditor from '../components/BuilderCodeEditor.vue';
 import BuilderRacesEditor from '../components/BuilderRacesEditor.vue';
 import BuilderTemplatesEditor from '../components/BuilderTemplatesEditor.vue';
+import BuilderCommandsEditor from '../components/BuilderCommandsEditor.vue';
 import { mapGetters } from 'vuex';
 
 export default {
@@ -147,7 +151,8 @@ export default {
     LinkWizard,
     BuilderCodeEditor,
     BuilderRacesEditor,
-    BuilderTemplatesEditor
+    BuilderTemplatesEditor,
+    BuilderCommandsEditor
   },
   data() {
     return {
@@ -185,7 +190,14 @@ export default {
     })
   },
   created() {
-    this.$store.dispatch('builder/fetchMaps');
+    this.$store
+      .dispatch('instances/ensureLoaded', this.$route.params.instance)
+      .then(() => {
+        return this.$store.dispatch(
+          'instances/putInstanceBeingBuilt',
+          this.$route.params.instance
+        );
+      })
   },
   methods: {
     addMap() {

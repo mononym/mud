@@ -17,7 +17,7 @@
           class="rounded-borders"
         >
           <q-carousel-slide
-            v-for="race in races"
+            v-for="race in Array.from(races.values())"
             :key="race.id"
             :name="race.singular"
             class="column no-wrap flex-center"
@@ -122,7 +122,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import { RaceInterface } from 'src/store/race/state';
+import { RaceInterface } from 'src/store/races/state';
 import { mapGetters } from 'vuex';
 import { EasyForm } from 'quasar-ui-easy-forms';
 import {
@@ -135,24 +135,19 @@ interface RaceOption {
   value: string;
 }
 
-const clearFields = (fieldIds, fieldInput) => {
-  fieldIds.forEach(id => fieldInput({ id, value: '' }));
-};
-
 export default {
   name: 'CharacterCreationWizard',
+  components: { EasyForm },
   props: {
     mode: {
       type: String,
       default: 'edit'
     }
   },
-  components: { EasyForm },
   data(): {
     featuresForm: Record<string, unknown>;
     featuresFormValue: Record<string, unknown>;
     name: string;
-    races: Record<string, RaceInterface>;
     selectedRace: string;
     step: number;
   } {
@@ -160,85 +155,45 @@ export default {
       featuresForm: { schema: [] },
       featuresFormValue: {},
       name: '',
-      races: {},
       selectedRace: '',
       step: 1
     };
   },
-  // conditions: [
-  // %{
-  //   "key" => "hair-length",
-  //   "select" => ["long", "short", "shoulder-length"],
-  //   "comparison" => "in"
-  // }
   computed: {
     raceOptions: function(): RaceOption[] {
       console.log('computing raceOptions');
 
-      if (this.races != {}) {
-        const races = this.races;
-        var result = Object.keys(races).map(function(race) {
-          return { label: races[race].singular, value: races[race].singular };
-        });
+      const options = [];
 
-        return result;
-      } else {
-        return [];
+      for (let [key, race] of this.races) {
+        options.push({
+          label: race.singular,
+          value: race.singular
+        });
       }
+
+      return options;
     },
     ...mapGetters({
-      instanceBeingBuilt: 'builder/instanceBeingBuilt'
+      instanceBeingBuilt: 'instances/instanceBeingBuilt',
+      races: 'races/allMap'
     })
   },
-  watch: {
-    // featuresFormValue: function(newFormValues, oldFormValues) {
-    //   console.log('featuresFormValue***************************');
-    //   console.log(newFormValues);
-    //   const features = this.races[this.selectedRace].features;
-    //   for (const property in newFormValues) {
-    //     if (property != 'schema' && newFormValues[property] != undefined) {
-    //       const feature = features.find(feature => feature.key == property);
-    //       switch (feature.type) {
-    //         case 'select': {
-    //           const option: CharacterRaceFeatureOptionInterface = feature.options.find(
-    //             option =>
-    //               option.value == newFormValues[property]
-    //                 ? newFormValues[property].value
-    //                 : undefined
-    //           );
-    //           if (
-    //             option != undefined &&
-    //             !this.filterFeatureOption(option.conditions, newFormValues)
-    //           ) {
-    //             this.featuresFormValue[property] = undefined;
-    //           }
-    //           break;
-    //         }
-    //         case 'range':
-    //           break;
-    //         default:
-    //       }
-    //     }
-    //   }
-    // iterate through all of the values in the new form
-    // check the key for the value and grab the feature from the race
-    // check the conditions for the selected feature option to see if they still pass
-    // if conditions pass leave everything alone, otherwise set offending value to undefined
-    // if (newSelectedRace !== oldSelectedRace) {
-    //   this.featuresFormValue = { schema: [] };
-    // }
-    // },
-    // selectedRace: function(newSelectedRace, oldSelectedRace) {
-    //   if (newSelectedRace !== oldSelectedRace) {
-    //     this.featuresFormValue = { schema: [] };
-    //   }
-    // }
-  },
+  watch: {},
   created() {
-    // fetch the data when the view is created and the data is
-    // already being observed
-    this.fetchCharacterCreationData();
-    this.selectRace();
+    this.$store
+      .dispatch('races/loadForInstance', this.instanceBeingBuilt.id)
+      .then(() => {
+        if (this.races.size > 0) {
+          Vue.set(
+            this,
+            'selectedRace',
+            this.randomElement(Array.from(this.races.values())).singular
+          );
+
+          this.selectRace();
+        }
+      });
   },
   methods: {
     selectRace: function(): unknown {
@@ -246,12 +201,11 @@ export default {
 
       this.featuresForm = {
         // Build the schema for the form based on the race selected
-        schema: this.races[this.selectedRace].features
-          .map(function(feature) {
+        schema: this.races
+          .get(this.selectedRace)
+          .features.map(function(feature) {
             let component: string;
             let props = {};
-
-            console.log(feature.name);
 
             // Which functions we inject into the form depend on the type of feature we are showing
             switch (feature.type) {
@@ -340,9 +294,6 @@ export default {
       conditions: CharacterRaceFeatureOptionConditionInterface[],
       selectedFeatures: Record<string, string>
     ): boolean {
-      console.log('filterFeatureOption');
-      // console.log(conditions);
-      // console.log(selectedFeatures);
       const self = this;
 
       if (conditions.length == 0) {
@@ -357,10 +308,6 @@ export default {
       condition: CharacterRaceFeatureOptionConditionInterface,
       selectedFeatures: Record<string, string>
     ): boolean {
-      console.log('checkCondition');
-      console.log(condition);
-      console.log(selectedFeatures);
-      console.log(condition.comparison);
       switch (condition.comparison) {
         case 'in':
           // console.log(selectedFeatures[condition.key]);
@@ -381,28 +328,6 @@ export default {
         default:
           return false;
       }
-    },
-    fetchCharacterCreationData() {
-      // void this.$axios.get('characters/get-creation-data')
-
-      // console.log('params');
-      // console.log(this.$route.params);
-
-      void this.$axios
-        .get('/character_races/instance/' + this.instanceBeingBuilt.id)
-        .then(result => {
-          const data: RaceInterface[] = result.data;
-          const races = data.reduce(
-            (obj: Record<string, unknown>, race: RaceInterface) => (
-              (obj[race.singular] = race), obj
-            ),
-            {}
-          );
-          Vue.set(this, 'races', races);
-          Vue.set(this, 'selectedRace', this.randomElement(data).singular);
-        });
-
-      return true;
     },
     randomElement<T>(array: T[]): T {
       return array[Math.floor(Math.random() * array.length)];

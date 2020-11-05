@@ -10,15 +10,12 @@ defmodule MudWeb.LuaScriptController do
 
     groups = Enum.group_by(lua_scripts, & &1.type)
 
-    # final_grouping =  %{
-    #   "Commands" => groups["Command"],
-    #   "Systems" => groups["System"],
-    #   "Scripts" => groups["Script"],
-    #   "Modules" => groups["Module"]
-    # }
-
-
     render(conn, "index.json", lua_scripts: groups)
+  end
+
+  def list_by_instance(conn, %{"instance_id" => instance_id}) do
+    lua_scripts = LuaScript.list_by_instance(instance_id)
+    render(conn, "index.json", lua_scripts: lua_scripts)
   end
 
   def create(conn, %{"lua_script" => lua_script_params}) do

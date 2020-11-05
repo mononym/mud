@@ -116,11 +116,11 @@ module.exports = configure(function(ctx) {
       // (like functional components as one of the examples),
       // you can manually specify Quasar components/directives to be available everywhere:
       //
-      components: ['QSelect', 'QSlider', 'QToggle'],
+      components: ['QInput', 'QSelect', 'QSlider', 'QToggle'],
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog', 'LoadingBar']
+      plugins: ['Dialog', 'LoadingBar', 'Loading']
     },
 
     // animations: 'all', // --- includes all animations
