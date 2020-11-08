@@ -1,21 +1,29 @@
 import { MutationTree } from 'vuex';
 import { CommandsInterface } from './state';
 import { CommandInterface } from '../command/state';
+import Vue from 'vue'
 
 const mutation: MutationTree<CommandsInterface> = {
   putCommand(state: CommandsInterface, command: CommandInterface) {
-    state.commands.set(command.id, command);
+    Vue.set(state.commandIndex, command.id, state.commands.length);
+
+    state.commands.push(command);
   },
   putCommands(state: CommandsInterface, commands: CommandInterface[]) {
-    state.commands = commands.reduce(
-      (map: Map<string, CommandInterface>, command: CommandInterface) => (
-        (map.set(command.id, command)), map
-      ),
-      new Map()
-    );
+    state.commands = commands;
+    state.commandIndex = {};
+
+    state.commands.forEach((command, index) => {
+      Vue.set(state.commandIndex, command.id, index);
+    });
   },
-  removeCommandById(state: CommandsInterface, commandId: string) {
-    state.commands.delete(commandId);
+  removeCommand(state: CommandsInterface, commandId: string) {
+    state.commands.splice(state.commandIndex[commandId], 1);
+    state.commandIndex = {};
+
+    state.commands.forEach((command, index) => {
+      Vue.set(state.commandIndex, command.id, index);
+    });
   }
 };
 

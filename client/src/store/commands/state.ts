@@ -1,11 +1,13 @@
 import { CommandInterface } from '../command/state';
 
 export interface CommandsInterface {
-  commands: Map<string, CommandInterface>;
+  commands: CommandInterface[];
+  commandIndex: Record<string, number>;
 }
 
 const state: CommandsInterface = {
-  commands: new Map(),
+  commands: [],
+  commandIndex: {}
 };
 
 export default state;

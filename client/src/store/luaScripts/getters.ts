@@ -7,7 +7,7 @@ const getters: GetterTree<LuaScriptsInterface, StateInterface> = {
     return Array.from(state.scripts.values())
   },
   allCommandScripts(state: LuaScriptsInterface) {
-    return Array.from(state.scripts.values()).filter(script => script.type == 'command')
+    return Array.from(state.scripts.values()).filter(script => script.type == 'Command')
   }
 };
 

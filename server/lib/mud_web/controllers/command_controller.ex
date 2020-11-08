@@ -15,15 +15,15 @@ defmodule MudWeb.CommandController do
     render(conn, "index.json", commands: commands)
   end
 
-  def create(conn, %{"command" => command_params}) do
+  def create(conn, command_params) do
     with {:ok, %Command{} = command} <- Command.create(command_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.command_path(conn, :show, command))
       |> render("show.json", command: command)
     end
   end
 
+  @spec show(Plug.Conn.t(), map) :: Plug.Conn.t()
   def show(conn, %{"id" => id}) do
     command = Command.get!(id)
     render(conn, "show.json", command: command)

@@ -3,15 +3,28 @@ defmodule Mud.Engine.Command do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  require Protocol
 
+  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "commands" do
     field(:description, :string)
     field(:name, :string)
-    field(:parts, {:array, :map})
     field(:instance_id, :binary_id)
     field(:lua_script_id, :binary_id)
+
+    embeds_many :segments, Segment, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:match, :string, default: "")
+      field(:key, :string, default: "")
+      field(:greedy, :boolean, default: true)
+      field(:dropWhitespace, :boolean, default: false)
+      field(:transformer, :string, default: "none")
+      field(:type, :string, default: "text")
+      field(:multiple, :string, default: "none")
+      field(:follows, {:array, :string}, default: [])
+    end
 
     timestamps()
   end
@@ -72,8 +85,9 @@ defmodule Mud.Engine.Command do
   """
   def create(attrs \\ %{}) do
     %__MODULE__{}
-    |> Command.changeset(attrs)
+    |> __MODULE__.changeset(attrs)
     |> Repo.insert()
+    |> IO.inspect(label: :inserted)
   end
 
   @doc """
@@ -126,7 +140,14 @@ defmodule Mud.Engine.Command do
   @doc false
   def changeset(command, attrs) do
     command
-    |> cast(attrs, [:name, :description, :parts])
-    |> validate_required([:name, :description, :parts])
+    |> cast(attrs, [:name, :description, :instance_id, :lua_script_id])
+    |> cast_embed(:segments, with: &segment_changeset/2)
+    |> validate_required([:name, :description, :segments, :instance_id, :lua_script_id])
+  end
+
+  defp segment_changeset(schema, params) do
+    schema
+    |> cast(params, [:match, :key, :greedy, :dropWhitespace, :transformer, :type, :multiple, :follows])
+    |> validate_required([:match, :key, :type])
   end
 end

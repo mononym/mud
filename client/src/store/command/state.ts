@@ -1,24 +1,28 @@
-export interface CommandPartInterface {
+export interface CommandSegmentInterface {
   id: string;
-  matches: string;
+  match: string;
   key: string;
-  follows: string[];
   greedy: boolean;
-  drop_whitespace: boolean;
+  dropWhitespace: boolean;
   transformer: string;
+  type: string;
+  multiple: string;
+  follows: string[];
 }
 
-const PartState: CommandPartInterface = {
+const SegmentState: CommandSegmentInterface = {
   id: '',
-  matches: '',
-  follows: [],
+  match: '',
   key: '',
   greedy: true,
-  drop_whitespace: true,
-  transformer: '',
+  dropWhitespace: true,
+  transformer: 'none',
+  type: 'text',
+  multiple: 'none',
+  follows: []
 }
 
-export {PartState}
+export {SegmentState}
 
 export interface CommandInterface {
   id: string;
@@ -26,7 +30,7 @@ export interface CommandInterface {
   description: string;
   instance_id: string;
   lua_script_id: string;
-  parts: CommandPartInterface[]
+  segments: CommandSegmentInterface[]
 }
 
 const state: CommandInterface = {
@@ -35,7 +39,7 @@ const state: CommandInterface = {
   description: '',
   instance_id: '',
   lua_script_id: '',
-  parts: []
+  segments: []
 };
 
 export default state;

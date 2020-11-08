@@ -14,6 +14,7 @@ defmodule MudWeb.CommandView do
     %{id: command.id,
       name: command.name,
       description: command.description,
-      parts: command.parts}
+      lua_script_id: command.lua_script_id,
+      segments: command.segments}
   end
 end
