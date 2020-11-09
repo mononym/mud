@@ -8,7 +8,7 @@ defmodule Mud.Engine.LuaScript do
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "lua_scripts" do
-    field(:code, :string)
+    field(:code, :string, default: "")
     field(:name, :string)
     field(:type, :string)
     field(:description, :string)

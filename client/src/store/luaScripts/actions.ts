@@ -4,6 +4,13 @@ import { LuaScriptInterface } from './state';
 import axios, { AxiosResponse } from 'axios';
 
 const actions: ActionTree<LuaScriptInterface, StateInterface> = {
+  putScript({ commit }, script: LuaScriptInterface) {
+    return new Promise(resolve => {
+      commit('putScript', script);
+
+      resolve();
+    });
+  },
   loadForInstance({ commit }, instanceId: string) {
     return new Promise((resolve, reject) => {
       axios

@@ -29,7 +29,7 @@
       <q-card-section class="q-pa-none col-grow">
         <codemirror
           ref="codeEditor"
-          v-model="code"
+          v-model="scriptUnderConstruction.code"
           class="fit codeEditor"
           :options="cmOptions"
         />
@@ -38,15 +38,14 @@
       <q-separator />
 
       <q-card-actions align="around" class="action-container col-shrink">
-        <q-btn flat class="action-button">Save</q-btn>
-        <q-btn flat class="action-button">Cancel</q-btn>
-        <q-btn flat class="action-button">Clone</q-btn>
+        <q-btn flat class="action-button" @click="save">Save</q-btn>
+        <q-btn flat class="action-button" @click="resetCode">Reset</q-btn>
       </q-card-actions>
     </q-card>
 
-    <q-form v-show="pane == 'wizard'" @submit="onSubmit" class="fit">
+    <q-form v-if="pane == 'wizard'" class="fit">
       <q-input
-        v-model="wizard.name"
+        v-model="scriptUnderConstruction.name"
         filled
         label="Name"
         hint="Unique name of the script"
@@ -54,7 +53,7 @@
         :rules="[val => (val && val.length > 0) || 'Please type something']"
       />
       <q-input
-        v-model="wizard.description"
+        v-model="scriptUnderConstruction.description"
         filled
         label="Description"
         hint="Unique name of the script"
@@ -62,10 +61,14 @@
         :rules="[val => (val && val.length > 0) || 'Please type something']"
       />
 
-      <q-select v-model="wizard.type" :options="typeOptions" label="Type" />
+      <q-select
+        v-model="scriptUnderConstruction.type"
+        :options="typeOptions"
+        label="Type"
+      />
 
       <div>
-        <q-btn label="Submit" type="submit" color="primary" />
+        <q-btn label="Save" color="primary" @click="save" />
         <q-btn
           label="Reset"
           type="reset"
@@ -73,6 +76,7 @@
           flat
           class="q-ml-sm"
         />
+        <q-btn label="Cancel" color="secondary" @click="cancelEdit" />
       </div>
     </q-form>
   </div>
@@ -113,7 +117,6 @@ export default {
   components: { codemirror },
   data(): {
     codeEditor: unknown;
-    code: string;
     cmOptions: {
       tabSize: number;
       mode: string;
@@ -124,18 +127,11 @@ export default {
     selected: string;
     headers: string[];
     pane: string;
-    wizard: {
-      id: string;
-      name: string;
-      description: string;
-      type: string;
-    };
     typeOptions: string[];
-    editingNewScript: boolean;
+    scriptUnderConstruction: LuaScriptInterface;
   } {
     return {
       codeEditor: undefined,
-      code: '',
       cmOptions: {
         tabSize: 2,
         mode: 'text/x-lua',
@@ -147,17 +143,14 @@ export default {
       selected: '',
       headers: ['Commands', 'Scripts', 'Modules', 'Systems'],
       pane: 'editor',
-      wizard: {
-        id: '',
-        name: '',
-        description: '',
-        type: ''
-      },
-      typeOptions: ['Commands', 'Scripts', 'Systems', 'Modules'],
-      editingNewScript: false
+      typeOptions: ['command', 'script', 'system', 'module'],
+      scriptUnderConstruction: { ...LuaScriptState }
     };
   },
   computed: {
+    editingNewScript: function(): boolean {
+      return this.scriptUnderConstruction.id == '';
+    },
     luaScriptIndex: function(): Record<string, number> {
       const scriptIndex = {};
 
@@ -175,7 +168,7 @@ export default {
           icon: '',
           children: this.luaScripts
             .filter(function(script: LuaScriptInterface) {
-              return script.type == 'Command';
+              return script.type == 'command';
             })
             .map(function(script: LuaScriptInterface) {
               return {
@@ -190,7 +183,7 @@ export default {
           icon: '',
           children: this.luaScripts
             .filter(function(script: LuaScriptInterface) {
-              return script.type == 'Script';
+              return script.type == 'script';
             })
             .map(function(script: LuaScriptInterface) {
               return {
@@ -205,7 +198,7 @@ export default {
           icon: '',
           children: this.luaScripts
             .filter(function(script: LuaScriptInterface) {
-              return script.type == 'System';
+              return script.type == 'system';
             })
             .map(function(script: LuaScriptInterface) {
               return {
@@ -220,7 +213,7 @@ export default {
           icon: '',
           children: this.luaScripts
             .filter(function(script: LuaScriptInterface) {
-              return script.type == 'Module';
+              return script.type == 'module';
             })
             .map(function(script: LuaScriptInterface) {
               return {
@@ -243,75 +236,8 @@ export default {
     );
   },
   mounted() {
-    console.log('hda');
-    // this.treeNodes = [
-    //   {
-    //     label: 'Commands',
-    //     selectable: false,
-    //     icon: '',
-    //     children: this.luaScripts
-    //       .filter(function(script: LuaScriptInterface) {
-    //         return script.type == 'Command';
-    //       })
-    //       .map(function(script: LuaScriptInterface) {
-    //         return {
-    //           label: script.name,
-    //           icon: 'fas fa-code'
-    //         };
-    //       })
-    //   },
-    //   {
-    //     label: 'Scripts',
-    //     selectable: false,
-    //     icon: '',
-    //     children: this.luaScripts
-    //       .filter(function(script: LuaScriptInterface) {
-    //         return script.type == 'Script';
-    //       })
-    //       .map(function(script: LuaScriptInterface) {
-    //         return {
-    //           label: script.name,
-    //           icon: 'fas fa-code'
-    //         };
-    //       })
-    //   },
-    //   {
-    //     label: 'Systems',
-    //     selectable: false,
-    //     icon: '',
-    //     children: this.luaScripts
-    //       .filter(function(script: LuaScriptInterface) {
-    //         return script.type == 'System';
-    //       })
-    //       .map(function(script: LuaScriptInterface) {
-    //         return {
-    //           label: script.name,
-    //           icon: 'fas fa-code'
-    //         };
-    //       })
-    //   },
-    //   {
-    //     label: 'Modules',
-    //     selectable: false,
-    //     icon: '',
-    //     children: this.luaScripts
-    //       .filter(function(script: LuaScriptInterface) {
-    //         return script.type == 'Module';
-    //       })
-    //       .map(function(script: LuaScriptInterface) {
-    //         return {
-    //           label: script.name,
-    //           icon: 'fas fa-code'
-    //         };
-    //       })
-    //   }
-    // ];
-
     this.codeEditor = this.$refs.codeEditor.codemirror;
   },
-  // mounted() {
-  //   this.codeEditor = this.$refs.codeEditor.codemirror;
-  // },
   methods: {
     refreshEditor() {
       setTimeout(() => {
@@ -319,20 +245,29 @@ export default {
       }, 10);
     },
     selectLuaScript(newScript: string) {
-      this.code = this.luaScripts[this.luaScriptIndex[newScript]].code;
+      this.scriptUnderConstruction = {
+        ...this.luaScripts[this.luaScriptIndex[newScript]]
+      };
       this.refreshEditor();
     },
+    resetCode() {},
     createNewScript() {
+      this.scriptUnderConstruction = { ...LuaScriptState };
       this.pane = 'wizard';
-      this.editingNewScript = false;
+    },
+    cancelEdit() {
+      this.pane = 'editor';
+      this.scriptUnderConstruction = { ...LuaScriptState };
     },
     buildNodeTree() {},
-    onSubmit() {
+    save() {
       const params = {
-        map: {
-          name: this.wizard.name,
-          description: this.wizard.description,
-          type: this.wizard.type
+        lua_script: {
+          name: this.scriptUnderConstruction.name,
+          description: this.scriptUnderConstruction.description,
+          type: this.scriptUnderConstruction.type,
+          instance_id: this.instanceBeingBuilt.id,
+          code: this.scriptUnderConstruction.code
         }
       };
 
@@ -341,37 +276,19 @@ export default {
       if (this.editingNewScript) {
         request = this.$axios.post('/lua_scripts', params);
       } else {
-        request = this.$axios.patch('/lua_scripts/' + this.wizard.id, params);
+        request = this.$axios.patch(
+          '/lua_scripts/' + this.scriptUnderConstruction.id,
+          params
+        );
       }
 
-      request
-        .then(result => {
-          if (this.editingNewScript) {
-            Vue.set(
-              this.luaScriptIndex,
-              result.data.id,
-              this.luaScripts.length
-            );
-
-            this.luaScripts.push(result.data);
-            this.selected = result.data.name;
-            this.$store.dispatch('builder/selectMap', result.data).then(() => {
-              this.$store.dispatch('builder/putMap', result.data).then(() => {
-                this.$emit('saved');
-              });
-            });
-          } else {
-            this.$store.dispatch('builder/updateMap', result.data).then(() => {
-              this.$emit('saved');
-            });
-          }
-        })
-        .catch(function() {
-          alert('Error saving');
-        })
-        .finally(function() {
-          this.$store.dispatch('builder/putIsMapUnderConstruction', false);
-        });
+      request.then(result => {
+        this.$store
+          .dispatch('luaScripts/putScript', result.data)
+          .catch(function() {
+            alert('Error saving');
+          });
+      });
     }
   }
 };

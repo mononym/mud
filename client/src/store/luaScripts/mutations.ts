@@ -4,19 +4,29 @@ import Vue from 'vue'
 
 const mutation: MutationTree<LuaScriptsInterface> = {
     putScript(state: LuaScriptsInterface, script: LuaScriptInterface) {
-      state.scripts.set(script.id, script);
+      if (state.scriptIndex[script.id] != undefined) {
+        Vue.set(state.scripts, state.scriptIndex[script.id], script)
+      } else {
+        Vue.set(state.scriptIndex, script.id, state.scripts.length);
+    
+        state.scripts.push(script);
+      }
     },
     putScripts(state: LuaScriptsInterface, scripts: LuaScriptInterface[]) {
-      Vue.set(state, 'scripts',
-       scripts.reduce(
-        (map: Map<string, LuaScriptInterface>, script: LuaScriptInterface) => (
-          (map.set(script.id, script)), map
-        ),
-        new Map()
-      ))
+      state.scripts = scripts;
+      state.scriptIndex = {};
+  
+      state.scripts.forEach((luaScript, index) => {
+        Vue.set(state.scriptIndex, luaScript.id, index);
+      });
     },
     removeScriptById(state: LuaScriptsInterface, scriptId: string) {
-      state.scripts.delete(scriptId);
+      state.scripts.splice(state.scriptIndex[scriptId], 1);
+      state.scriptIndex = {};
+  
+      state.scripts.forEach((luaScript, index) => {
+        Vue.set(state.scriptIndex, luaScript.id, index);
+      });
     }};
 
 export default mutation;

@@ -9,7 +9,7 @@ export interface LuaScriptInterface {
 
 const LuaScriptState: LuaScriptInterface = {
   id: '',
-  code: '',
+  code: 'print("Hello World!")',
   description: '',
   name: '',
   type: '',
@@ -19,11 +19,13 @@ const LuaScriptState: LuaScriptInterface = {
 export {LuaScriptState}
 
 export interface LuaScriptsInterface {
-  scripts: Map<string, LuaScriptInterface>;
+  scripts: LuaScriptInterface[];
+  scriptIndex: Record<string, number>;
 }
 
 const state: LuaScriptsInterface = {
-  scripts: new Map()
+  scripts: [],
+  scriptIndex: {}
 };
 
 

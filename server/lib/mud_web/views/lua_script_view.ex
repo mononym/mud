@@ -7,7 +7,7 @@ defmodule MudWeb.LuaScriptView do
   end
 
   def render("show.json", %{lua_script: lua_script}) do
-    %{data: render_one(lua_script, LuaScriptView, "lua_script.json")}
+    render_one(lua_script, LuaScriptView, "lua_script.json")
   end
 
   def render("lua_script.json", %{lua_script: lua_script}) do
