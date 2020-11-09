@@ -20,7 +20,7 @@ const mutation: MutationTree<LuaScriptsInterface> = {
         Vue.set(state.scriptIndex, luaScript.id, index);
       });
     },
-    removeScriptById(state: LuaScriptsInterface, scriptId: string) {
+    removeScript(state: LuaScriptsInterface, scriptId: string) {
       state.scripts.splice(state.scriptIndex[scriptId], 1);
       state.scriptIndex = {};
   

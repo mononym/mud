@@ -40,6 +40,9 @@
       <q-card-actions align="around" class="action-container col-shrink">
         <q-btn flat class="action-button" @click="save">Save</q-btn>
         <q-btn flat class="action-button" @click="resetCode">Reset</q-btn>
+        <q-btn flat class="action-button" @click="promptForScriptDelete"
+          >Reset</q-btn
+        >
       </q-card-actions>
     </q-card>
 
@@ -260,6 +263,32 @@ export default {
       this.scriptUnderConstruction = { ...LuaScriptState };
     },
     buildNodeTree() {},
+    deleteScript(): void {
+      this.$store
+        .dispatch('luaScripts/deleteScript', this.scriptUnderConstruction.id)
+        .then(() => {
+          this.scriptUnderConstruction = { ...LuaScriptState };
+        });
+    },
+    promptForScriptDelete() {
+      let name = this.scriptUnderConstruction.name;
+
+      this.$q
+        .dialog({
+          title: "Delete '" + name + "'?",
+          message: "Type '" + name + "' to continue with deletion.",
+          prompt: {
+            model: '',
+            isValid: val => val == name, // << here is the magic
+            type: 'text' // optional
+          },
+          cancel: true,
+          persistent: true
+        })
+        .onOk(() => {
+          this.deleteScript();
+        });
+    },
     save() {
       const params = {
         lua_script: {

@@ -28,6 +28,23 @@ const actions: ActionTree<LuaScriptInterface, StateInterface> = {
         });
     });
   },
+  deleteScript({ commit }, scriptId: string) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/lua_scripts/' + scriptId)
+        .then(function() {
+          commit('removeScript', scriptId);
+
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when deleting script');
+          alert(e);
+
+          reject(e);
+        });
+    });
+  }
 };
 
 export default actions;
