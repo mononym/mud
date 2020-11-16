@@ -3,36 +3,31 @@ import { AreasInterface } from './state';
 import { AreaInterface } from '../area/state';
 import Vue from 'vue';
 
-function buildIndexes(state: AreasInterface) {
-  state.areasForMapIndex = {};
-
-  for (const prop in state.areasMap) {
-    if (state.areasMap.hasOwnProperty(prop)) {
-      const areaId = prop;
-      const area = state.areasMap[areaId];
-
-      if (!state.areasForMapIndex.hasOwnProperty(area.mapId)) {
-        Vue.set(state.areasForMapIndex, area.mapId, []);
-      }
-
-      state.areasForMapIndex[area.mapId].splice(0, 0, area.id);
-    }
-  }
-}
-
 const mutation: MutationTree<AreasInterface> = {
   putArea(state: AreasInterface, area: AreaInterface) {
-    Vue.set(state.areasMap, area.id, area);
-
-    buildIndexes(state);
+    if (state.areaIndex[area.id] != undefined) {
+      Vue.set(state.areas, state.areaIndex[area.id], area);
+    } else {
+      Vue.set(state.areaIndex, area.id, state.areas.length);
+  
+      state.areas.push(area);
+    }
   },
-  putareasForMap(
-    state: AreasInterface,
-    payload: { areas: Record<string, AreaInterface>; mapId: string }
-  ) {
-    state.areasMap = { ...this.areasMap, ...payload.areas };
+  putAreas(state: AreasInterface, areas: AreaInterface[]) {
+    state.areas = areas;
+    state.areaIndex = {};
 
-    buildIndexes(state);
+    state.areas.forEach((area, index) => {
+      Vue.set(state.areaIndex, area.id, index);
+    });
+  },
+  removeArea(state: AreasInterface, areaId: string) {
+    state.areas.splice(state.areaIndex[areaId], 1);
+    state.areaIndex = {};
+
+    state.areas.forEach((area, index) => {
+      Vue.set(state.areaIndex, area.id, index);
+    });
   }
 };
 

@@ -4,64 +4,24 @@
       title="Maps"
       :data="maps"
       :columns="mapTableColumns"
+      :visible-columns="visibleMapColumns"
       row-key="id"
       flat
       bordered
       class="fit"
       :selected.sync="selectedRow"
-      selection="single"
+      :pagination="initialPagination"
+      :rows-per-page-options="[0]"
+      :pagination-label="getPaginationLabel"
     >
-      <template v-slot:top>
-        <q-btn color="primary" label="Add Map" @click="addMap" />
-        <q-space />
-        <q-input
-          v-model="mapTableFilter"
-          borderless
-          dense
-          debounce="300"
-          color="primary"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
-
-      <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
-
-      <template v-slot:body="props">
-        <q-tr
-          class="cursor-pointer map-table-row"
+      <template v-slot:body-cell="props">
+        <q-td
           :props="props"
+          class="cursor-pointer"
           @click.exact="toggleSingleRow(props.row)"
         >
-          <q-td
-            v-for="col in props.cols"
-            :key="col.name"
-            class="map-table-cell"
-            :props="props"
-          >
-            <span v-if="col.name === 'actions'">
-              <q-btn-group flat>
-                <q-btn
-                  flat
-                  label="Edit"
-                  icon="fas fa-pencil"
-                  @click="editMap(props.row)"
-                />
-              </q-btn-group>
-            </span>
-            <span v-else>
-              {{ col.value }}
-            </span>
-          </q-td>
-        </q-tr>
+          {{ props.value }}
+        </q-td>
       </template>
     </q-table>
   </div>
@@ -72,8 +32,14 @@ import { MapInterface } from 'src/store/map/state';
 import { mapGetters } from 'vuex';
 import mapState from '../store/map/state';
 
+interface CommonColumnInterface {
+  name: string;
+  label: string;
+  sortable: boolean;
+  field: string;
+}
+
 const mapTableColumns = [
-  { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
   { name: 'name', label: 'Name', field: 'name', sortable: true },
   {
     name: 'description',
@@ -85,59 +51,39 @@ const mapTableColumns = [
 
 export default {
   name: 'MapTable',
-  data() {
+  data(): {
+    mapTableColumns: CommonColumnInterface[];
+    mapTableFilter: string;
+    selectedRow: MapInterface[];
+    initialPagination: { rowsPerPage: number };
+    visibleMapColumns: string[];
+  } {
     return {
       mapTableColumns,
       mapTableFilter: '',
+      selectedRow: [],
+      initialPagination: {
+        rowsPerPage: 0
+      },
+      visibleMapColumns: ['name', 'description']
     };
   },
   computed: {
-    selectedRow: function(): MapInterface[] {
-      return [this.$store.getters['builder/selectedMap']];
-    },
     ...mapGetters({
-      maps: 'builder/maps',
-      selectedMap: 'builder/selectedMap'
+      maps: 'maps/listAll'
     })
   },
   methods: {
-    addMap() {
-      this.$store.dispatch('builder/putIsMapUnderConstruction', true).then(() =>
-        this.$store
-          .dispatch('builder/putMapUnderConstruction', { ...mapState })
-          .then(() => this.$store.dispatch('builder/resetAreas'))
-          .then(() => this.$emit('addMap'))
-      );
-    },
-    editMap(map: MapInterface) {
-      this.$store.dispatch('builder/selectMap', map).then(() =>
-        this.$store
-          .dispatch('builder/putIsMapUnderConstructionNew', false)
-          .then(() =>
-            this.$store
-              .dispatch('builder/putIsMapUnderConstruction', true)
-              .then(() =>
-                this.$store
-                  .dispatch('builder/putMapUnderConstruction', this.selectedMap)
-                  .then(() =>
-                    this.$store.dispatch('builder/fetchDataForMap', map.id)
-                  )
-                  .then(() => this.$emit('editMap'))
-              )
-          )
-      );
+    addMap() {},
+    editMap() {
+      this.$emit('edit');
     },
     toggleSingleRow(row: MapInterface) {
-      if (this.selectedMap.id !== row.id) {
-        this.$store.dispatch('builder/selectMap', row).then(() => {
-          this.$store
-            .dispatch('builder/fetchDataForMap', row.id)
-            .then(() => {
-              this.$store.dispatch('builder/clearSelectedLink');
-            })
-            .then(() => this.$emit('selected'));
-        });
-      }
+      this.selectedRow = [row];
+      this.$emit('select', row);
+    },
+    getPaginationLabel(start: number, end: number, total: number): string {
+      return total.toString() + ' Map(s)';
     }
   }
 };

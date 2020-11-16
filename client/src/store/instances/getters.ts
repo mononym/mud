@@ -4,7 +4,17 @@ import { InstancesInterface } from './state';
 
 const getters: GetterTree<InstancesInterface, StateInterface> = {
   instanceBeingBuilt(state: InstancesInterface) {
-    return state.instances[state.instanceBeingBuilt];
+    const index = state.instanceSlugIndex[state.instanceBeingBuilt]
+
+    if (index != undefined) {
+      return state.instances[state.instanceSlugIndex[state.instanceBeingBuilt]];
+    }
+  },
+  loaded(state: InstancesInterface) {
+    return state.loaded
+  },
+  listAll(state: InstancesInterface) {
+    return state.instances
   }
 };
 

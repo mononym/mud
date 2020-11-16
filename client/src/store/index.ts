@@ -28,6 +28,12 @@ import { AreaInterface } from './area/state';
 import areas from './areas';
 import { AreasInterface } from './areas/state';
 
+import link from './link';
+import { LinkInterface } from './link/state';
+
+import links from './links';
+import { LinksInterface } from './links/state';
+
 import builder from './builder';
 import { BuilderInterface } from './builder/state';
 
@@ -74,6 +80,8 @@ export interface StateInterface {
   commands: CommandsInterface;
   luaScripts: LuaScriptsInterface;
   races: RacesInterface
+  link: LinkInterface;
+  links: LinksInterface;
 }
 
 export default store(function({ Vue }) {
@@ -96,7 +104,9 @@ export default store(function({ Vue }) {
       command,
       commands,
       luaScripts,
-      races
+      races,
+      link,
+      links,
     },
 
     // enable strict mode (adds overhead!)

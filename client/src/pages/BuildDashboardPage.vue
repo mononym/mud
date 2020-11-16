@@ -29,8 +29,7 @@
                 <q-btn
                   flat
                   class="action-button"
-                  :to="instance.buildLink"
-                  @click="setInstanceBeingBuilt(instance.slug)"
+                  :to="'build/' + instance.slug"
                   >Build</q-btn
                 >
               </q-card-actions>
@@ -88,33 +87,12 @@ div.action-container a.action-button
 <script>
 import Vue from 'vue';
 import { InstanceInterface } from '../store/instance/state';
-// const seed = [
-//   {
-//     name: 'Khandrish',
-//     active: false,
-//     race: 'Elf'
-//   }
-// ];
-
-// we generate lots of rows here
-let instances = [];
-// for (let i = 0; i < 1000; i++) {
-//   data = data.concat(seed.slice(0).map(r => ({ ...r })));
-// }
-// data.forEach((row, index) => {
-//   row.index = index;
-// });
-
-// we are not going to change this array,
-// so why not freeze it to avoid Vue adding overhead
-// with state change detection
-// Object.freeze(data);
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'BuildDashboardPage',
   data() {
     return {
-      instances,
       splitterModel: 150,
 
       pagination: {
@@ -138,24 +116,15 @@ export default {
       tab: 'quickActions'
     };
   },
-  mounted: function() {
-    this.$axios.get('/instances').then(response => {
-      this.instances = response.data.map(function(instance) {
-        instance['buildLink'] = 'build/' + instance.slug;
-
-        return instance;
-      });
-
-      console.log('here');
-      console.log(this.instances);
-
-      this.$store.dispatch('builder/putInstances', response.data);
-    });
+  computed: {
+    ...mapGetters({
+      instances: 'instances/listAll'
+    })
+  },
+  created: function() {
+    this.$store.dispatch('instances/loadAll');
   },
   methods: {
-    setInstanceBeingBuilt(instanceSlug) {
-      this.$store.dispatch('builder/putInstanceBeingBuilt', instanceSlug);
-    }
   }
 };
 </script>

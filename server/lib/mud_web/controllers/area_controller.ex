@@ -10,6 +10,11 @@ defmodule MudWeb.AreaController do
     render(conn, "index.json", areas: areas)
   end
 
+  def list_by_map(conn, params) do
+    areas = Area.list_by_map(params["map_id"])
+    render(conn, "index.json", areas: areas)
+  end
+
   def create(conn, %{"area" => area_params}) do
     with {:ok, %Area{} = area} <- Area.create(area_params) do
       conn

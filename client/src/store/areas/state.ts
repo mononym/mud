@@ -1,15 +1,13 @@
 import { AreaInterface } from '../area/state';
 
 export interface AreasInterface {
-  // areasIndex: string[];
-  areasMap: Record<string, AreaInterface>;
-  areasForMapIndex: Record<string, string[]>;
+  areas: AreaInterface[];
+  areaIndex: Record<string, number>;
 }
 
 const state: AreasInterface = {
-  // areasIndex: [],
-  areasMap: {},
-  areasForMapIndex: {}
+  areas: [],
+  areaIndex: {}
 };
 
 export default state;

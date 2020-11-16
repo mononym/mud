@@ -3,6 +3,7 @@ defmodule Mud.Engine.Map do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.{Area, Link}
+  alias Mud.Engine.Instance
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -15,6 +16,7 @@ defmodule Mud.Engine.Map do
     field(:max_zoom, :integer)
     field(:min_zoom, :integer)
     field(:default_zoom, :integer)
+    belongs_to(:instance, Instance, type: :binary_id)
 
     has_many(:areas, Area)
 
@@ -38,6 +40,19 @@ defmodule Mud.Engine.Map do
         order_by: [desc: map.updated_at]
       )
     )
+  end
+
+  @doc """
+  Returns the list of maps.
+
+  ## Examples
+
+      iex> list_by_instance(instance_id)
+      [%Map{}, ...]
+
+  """
+  def list_by_instance(instance_id) do
+    Repo.all(from(map in __MODULE__, where: map.instance_id == ^instance_id))
   end
 
   @doc """
@@ -185,7 +200,8 @@ defmodule Mud.Engine.Map do
       :grid_size,
       :max_zoom,
       :min_zoom,
-      :default_zoom
+      :default_zoom,
+      :instance_id
     ])
     |> validate_required([
       :name,
@@ -194,7 +210,8 @@ defmodule Mud.Engine.Map do
       :grid_size,
       :max_zoom,
       :min_zoom,
-      :default_zoom
+      :default_zoom,
+      :instance_id
     ])
   end
 end

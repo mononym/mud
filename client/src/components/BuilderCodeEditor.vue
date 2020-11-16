@@ -86,8 +86,6 @@
 </template>
 
 <style lang="sass">
-.build-instance-wrapper > div.tab-controller { height: 100% !important; width: 80px !important }
-.build-instance-wrapper > .world-tab > div { height: 50% !important; width: 50% !important; }
 .CodeMirror { height: 100% !important; width: 100% !important }
 </style>
 

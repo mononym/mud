@@ -1,15 +1,13 @@
 import { LinkInterface } from '../link/state';
 
 export interface LinksInterface {
-  // allLinksIndex: string[];
-  linksMap: Record<string, LinkInterface>;
-  linksForMapIndex: Record<string, string[]>;
+  links: LinkInterface[];
+  linkIndex: Record<string, number>;
 }
 
 const state: LinksInterface = {
-  // allLinksIndex: [],
-  linksMap: {},
-  linksForMapIndex: {}
+  links: [],
+  linkIndex: {}
 };
 
 export default state;

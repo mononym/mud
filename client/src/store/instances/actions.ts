@@ -12,9 +12,26 @@ const actions: ActionTree<InstancesInterface, StateInterface> = {
       resolve();
     });
   },
+  loadAll({ commit }) {
+    return new Promise((resolve, reject) => {
+        axios
+        .get('/instances')
+        .then(function(response: AxiosResponse) {
+          commit('putInstances', response.data);
+
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when fetching instances');
+          alert(e);
+
+          reject();
+        });
+      })
+  },
   ensureLoaded({ commit, state }, instance: string) {
     return new Promise((resolve, reject) => {
-      if (state.instances[instance] == undefined) {
+      if (state.instanceSlugIndex[instance] == undefined) {
         axios
         .get('/instances/slug/' + instance)
         .then(function(response: AxiosResponse) {
@@ -28,6 +45,8 @@ const actions: ActionTree<InstancesInterface, StateInterface> = {
 
           reject();
         });
+    } else {
+      resolve()
     }});
   },
   putInstance({ commit }, instance: InstanceInterface) {
@@ -37,7 +56,7 @@ const actions: ActionTree<InstancesInterface, StateInterface> = {
       resolve();
     });
   },
-  putInstanceBeingBuilt({ commit }, instance: InstanceInterface) {
+  putInstanceBeingBuilt({ commit }, instance: string) {
     return new Promise(resolve => {
       commit('putInstanceBeingBuilt', instance);
 

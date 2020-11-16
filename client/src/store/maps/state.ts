@@ -1,15 +1,13 @@
 import { MapInterface } from '../map/state';
 
 export interface MapsInterface {
-  mapsList: MapInterface[];
-  mapsMap: Map<string, MapInterface>;
-  fetched: boolean;
+  maps: MapInterface[];
+  mapIndex: Record<string, number>;
 }
 
 const state: MapsInterface = {
-  fetched: false,
-  mapsList: [],
-  mapsMap: new Map(),
+  maps: [],
+  mapIndex: {}
 };
 
 export default state;

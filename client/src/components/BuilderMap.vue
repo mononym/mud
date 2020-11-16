@@ -32,7 +32,7 @@
             :height="square.height"
             :fill="square.fill"
             class="cursor-pointer"
-            @click="selectArea(square.key)"
+            @click="selectArea(square.area)"
           >
             <title>{{ square.name }}</title>
           </rect>
@@ -64,11 +64,46 @@
 <script lang="ts">
 import { AreaInterface } from 'src/store/area/state';
 import { LinkInterface } from 'src/store/link/state';
+import { MapInterface } from 'src/store/map/state';
 import { mapGetters } from 'vuex';
+import { Prop } from 'vue/types/options';
+import { PropOptions } from 'vue';
 
 export default {
   name: 'BuilderMap',
-  data() {
+  props: {
+    focusarea: {
+      type: String,
+      required: true
+    },
+    map: {
+      type: Object as Prop<MapInterface>,
+      required: true
+    },
+    areas: <PropOptions<AreaInterface[]>>{
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    links: <PropOptions<LinkInterface[]>>{
+      type: Array,
+      required: true,
+      default: () => []
+    },
+    mapareahighlights: {
+      type: Object,
+      required: true
+    },
+    maplinkhighlights: {
+      type: Object,
+      required: true
+    }
+  },
+  data(): {
+    aspectRatio: { x: number; y: number };
+    zoomMultipliers: number[];
+    zoomMultierIndex: number;
+  } {
     return {
       aspectRatio: { x: 16, y: 9 },
       zoomMultipliers: [0.06, 0.125, 0.25, 0.5, 1, 2],
@@ -101,15 +136,21 @@ export default {
       return (this.yCenterPoint - this.viewBoxYSize / 2).toString();
     },
     xCenterPoint: function(): number {
-      if (this.isAreaSelected || this.isAreaUnderConstruction) {
-        return this.workingArea.mapX * this.gridSize + this.mapSize / 2;
+      if (this.areaIndex[this.focusarea] != undefined) {
+        return (
+          this.areas[this.areaIndex[this.focusarea]].mapX * this.gridSize +
+          this.mapSize / 2
+        );
       } else {
         return this.mapSize / 2;
       }
     },
     yCenterPoint: function(): number {
-      if (this.isAreaSelected || this.isAreaUnderConstruction) {
-        return this.workingArea.mapY * this.gridSize + this.mapSize / 2;
+      if (this.areaIndex[this.focusarea] != undefined) {
+        return (
+          this.areas[this.areaIndex[this.focusarea]].mapY * this.gridSize +
+          this.mapSize / 2
+        );
       } else {
         return this.mapSize / 2;
       }
@@ -118,7 +159,7 @@ export default {
       return this.aspectRatio.y / this.aspectRatio.x;
     },
     gridSize: function(): number {
-      return this.workingMap.gridSize;
+      return this.map.gridSize;
     },
     viewBoxXSize: function(): number {
       return this.mapSize * this.zoomMultiplier;
@@ -127,38 +168,31 @@ export default {
       return this.mapSize * this.aspectRatioMultiplier * this.zoomMultiplier;
     },
     mapSize: function(): number {
-      return this.workingMap.mapSize;
+      return this.map.mapSize;
     },
     viewbox: function(): string {
       return `${this.viewBoxX.toString()} ${this.viewBoxY.toString()} ${this.viewBoxXSize.toString()} ${this.viewBoxYSize.toString()}`;
     },
     mapName: function(): string {
-      return this.workingMap.name;
+      return this.map.name;
     },
     lines: function(): Record<string, unknown>[] {
       const areaIndex = this.areaIndex;
-      const map = this.workingMap;
-      const gridSize = this.workingMap.gridSize;
+      const gridSize = this.map.gridSize;
       const mapSize = this.mapSize;
       const areas = this.areas;
-      const workingLink = this.workingLink;
+      const self = this;
 
       return (
         this.links
+          .filter(
+            link =>
+              areas[areaIndex[link.toId]] != undefined &&
+              areas[areaIndex[link.fromId]] != undefined
+          )
           .map(function(link: LinkInterface) {
             const toArea = areas[areaIndex[link.toId]];
             const fromArea = areas[areaIndex[link.fromId]];
-            let stroke;
-
-            if (
-              (workingLink.toId == link.fromId &&
-                workingLink.fromId == link.toId) ||
-              link.id == workingLink.id
-            ) {
-              stroke = 'red';
-            } else {
-              stroke = 'white';
-            }
 
             return {
               id: link.id,
@@ -166,18 +200,15 @@ export default {
               y1: fromArea.mapY * gridSize + mapSize / 2,
               x2: toArea.mapX * gridSize + mapSize / 2,
               y2: toArea.mapY * gridSize + mapSize / 2,
-              stroke: stroke
+              stroke: self.maplinkhighlights[link.id] || 'white'
             };
           })
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .sort(function(firstLink: any, secondLink: any) {
-            if (
-              firstLink.id !== workingLink.id &&
-              secondLink.id !== workingLink.id
-            ) {
-              return 0;
-            } else if (firstLink.id == workingLink.id) {
+            if (self.maplinkhighlights[firstLink.id] != undefined) {
               return 1;
+            } else if (self.maplinkhighlights[secondLink.id] != undefined) {
+              return -1;
             } else {
               return 0;
             }
@@ -187,7 +218,7 @@ export default {
     squares: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
-      const workingArea = this.workingArea;
+      const self = this;
 
       return this.areas.map(function(area: AreaInterface) {
         return {
@@ -196,20 +227,19 @@ export default {
           y: area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
           width: area.mapSize,
           height: area.mapSize,
-          fill: area.id === workingArea.id ? 'green' : 'blue',
-          name: area.name
+          fill: self.mapareahighlights[area.id] || 'blue',
+          name: area.name,
+          area: area
         };
       });
     },
     ...mapGetters({
-      links: 'builder/links',
-      areas: 'builder/areas',
-      isAreaSelected: 'builder/isAreaSelected',
-      isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
-      isMapUnderConstruction: 'builder/isMapUnderConstruction',
-      workingArea: 'builder/workingArea',
-      workingMap: 'builder/workingMap',
-      workingLink: 'builder/workingLink'
+      instanceBeingBuilt: 'instances/instanceBeingBuilt'
+      // isAreaSelected: 'builder/isAreaSelected',
+      // isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
+      // isMapUnderConstruction: 'builder/isMapUnderConstruction',
+      // workingArea: 'builder/workingArea',
+      // workingLink: 'builder/workingLink'
     })
   },
   methods: {
@@ -220,16 +250,17 @@ export default {
       this.zoomMultierIndex++;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    selectArea(areaId: any) {
-      if (areaId !== this.workingArea.id) {
-        const id: string = areaId.toString();
-        this.$store.dispatch(
-          'builder/selectArea',
-          this.areas[this.areaIndex[id]]
-        );
+    selectArea(area: AreaInterface) {
+      this.$emit('selectArea', area);
+      // if (areaId !== this.workingArea.id) {
+      //   const id: string = areaId.toString();
+      //   this.$store.dispatch(
+      //     'builder/selectArea',
+      //     this.areas[this.areaIndex[id]]
+      //   );
 
-        this.$store.dispatch('builder/clearSelectedLink');
-      }
+      //   this.$store.dispatch('builder/clearSelectedLink');
+      // }
     }
   }
 };

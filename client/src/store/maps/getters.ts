@@ -4,10 +4,10 @@ import { MapsInterface } from './state';
 
 const getters: GetterTree<MapsInterface, StateInterface> = {
   getMapById: (state: MapsInterface) => (mapId: string) => {
-    return state.mapsMap.get(mapId)
+    return state.maps[state.mapIndex[mapId]]
   },
   listAll(state: MapsInterface) {
-    return state.mapsList
+    return state.maps
   }
 };
 

@@ -4,23 +4,31 @@ import { InstanceInterface } from '../instance/state';
 import Vue from 'vue';
 
 const mutation: MutationTree<InstancesInterface> = {
-  putInstance(state: InstancesInterface, instance: InstanceInterface) {
-    Vue.set(state.instances, instance.slug, instance);
-  },
   putInstanceBeingBuilt(state: InstancesInterface, instance: string) {
-    state.instanceBeingBuilt = instance
+    Vue.set(state, 'instanceBeingBuilt', instance);
   },
-  removeInstanceById(state: InstancesInterface, instanceId: string) {
-    Vue.delete(state.instances, instanceId);
+  putInstance(state: InstancesInterface, instance: InstanceInterface) {
+    Vue.set(state.instanceIndex, instance.id, state.instances.length);
+    Vue.set(state.instanceSlugIndex, instance.slug, state.instances.length);
+
+    state.instances.push(instance);
   },
-  putInstances(state: InstancesInterface, instances: InstancesInterface[]) {
-    const initialValue = {};
-    state.instances = instances.reduce((obj, item) => {
-      return {
-        ...obj,
-        [item.slug]: item
-      };
-    }, initialValue);
+  putInstances(state: InstancesInterface, instances: InstanceInterface[]) {
+    state.instances = instances;
+    state.instanceIndex = {};
+
+    state.instances.forEach((instance, index) => {
+      Vue.set(state.instanceIndex, instance.id, index);
+      Vue.set(state.instanceSlugIndex, instance.slug, index);
+    });
+  },
+  removeInstance(state: InstancesInterface, instanceId: string) {
+    state.instances.splice(state.instanceIndex[instanceId], 1);
+    state.instanceIndex = {};
+
+    state.instances.forEach((instance, index) => {
+      Vue.set(state.instanceIndex, instance.id, index);
+    });
   }
 };
 

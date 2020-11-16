@@ -14,6 +14,11 @@ defmodule MudWeb.LinkController do
     end
   end
 
+  def list_by_map(conn, params) do
+    links = Link.list_map_links(params["map_id"])
+    render(conn, "index.json", links: links)
+  end
+
   def show(conn, %{"id" => id}) do
     link = Link.get!(id)
     render(conn, "show.json", link: link)

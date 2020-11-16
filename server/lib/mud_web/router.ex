@@ -80,12 +80,15 @@ defmodule MudWeb.Router do
     # Map related stuff
     resources("/maps", MapController, except: [:new, :edit])
     get("/maps/:map_id/data", MapController, :fetch_data)
+    get("/maps/instance/:instance_id", MapController, :list_by_instance)
 
     # Area related stuff
     resources("/areas", AreaController, except: [:new, :edit])
+    get("/areas/map/:map_id", AreaController, :list_by_map)
 
     # Link related stuff
     resources("/links", LinkController, except: [:new, :edit, :index])
+    get("/links/map/:map_id", LinkController, :list_by_map)
 
     # Lua related stuff
     resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
@@ -123,7 +126,7 @@ defmodule MudWeb.Router do
     )
 
     # Commands stuff
-    resources "/commands", CommandController, except: [:new, :edit]
+    resources("/commands", CommandController, except: [:new, :edit])
 
     get(
       "/commands/instance/:instance_id",

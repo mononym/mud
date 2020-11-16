@@ -5,31 +5,42 @@ import { AreaInterface } from '../area/state';
 import axios, { AxiosResponse } from 'axios';
 
 const actions: ActionTree<AreasInterface, StateInterface> = {
-  fetchArea({ commit, state }, areaId: string) {
+  loadForMap({ commit }, mapId: string) {
     return new Promise((resolve, reject) => {
-      if (Object.prototype.hasOwnProperty.call(state.areasMap, areaId)) {
-        resolve({ ...state.areasMap[areaId] });
-      } else {
-        axios
-          .get('/areas/' + areaId)
-          .then(function(response: AxiosResponse) {
-            commit('putArea', response.data);
+      axios
+        .get('/areas/map/' + mapId)
+        .then(function(response: AxiosResponse) {
+          commit('putAreas', response.data);
 
-            resolve(response.data);
-          })
-          .catch(function() {
-            commit('removeArea', areaId);
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when fetching areas');
+          alert(e);
 
-            reject();
-          });
-      }
+          reject();
+        });
     });
   },
   putArea({ commit }, area: AreaInterface) {
     commit('putArea', area);
   },
-  removeAreaById({ commit }, areaId: string) {
-    commit('removeArea', areaId);
+  deleteArea({ commit }, areaId: string) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/areas/' + areaId)
+        .then(function() {
+          commit('removeArea', areaId);
+
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when deleting area');
+          alert(e);
+
+          reject();
+        });
+    });
   }
 };
 

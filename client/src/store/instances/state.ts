@@ -1,13 +1,19 @@
 import { InstanceInterface } from '../instance/state';
 
 export interface InstancesInterface {
-  instances: Record<string, InstanceInterface>;
+  loaded: boolean;
+  instances: InstanceInterface[];
+  instanceIndex: Record<string, number>;
+  instanceSlugIndex: Record<string, number>;
   instanceBeingBuilt: string;
 }
 
 const state: InstancesInterface = {
-  instanceBeingBuilt: '',
-  instances: {}
+  instances: [],
+  instanceIndex: {},
+  instanceSlugIndex: {},
+  loaded: false,
+  instanceBeingBuilt: ''
 };
 
 export default state;

@@ -97,7 +97,8 @@ defmodule Mud.Engine.Link do
         link in __MODULE__,
         join: area in Area,
         on: area.id == link.to_id or area.id == link.from_id,
-        where: area.map_id == ^map_id
+        where: area.map_id == ^map_id,
+        distinct: true
       )
     )
   end

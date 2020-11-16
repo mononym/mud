@@ -112,7 +112,8 @@ export default {
       areaTableFilter: '',
       initialPagination: {
         rowsPerPage: 0
-      }
+      },
+      selectedRow: []
     };
   },
   computed: {
@@ -125,39 +126,20 @@ export default {
     selectedMapId: function(): string {
       return this.selectedMap.id;
     },
-    selectedRow: function(): AreaInterface[] {
-      return [this.$store.getters['builder/selectedArea']];
-    },
     ...mapGetters({
-      areas: 'builder/areas',
+      areas: 'areas/listAll',
       selectedArea: 'builder/selectedArea',
       selectedMap: 'builder/selectedMap'
     })
   },
   methods: {
-    editArea(area: AreaInterface) {
-      this.$store.dispatch('builder/selectArea', area).then(() =>
-        this.$store
-          .dispatch('builder/putIsAreaUnderConstructionNew', false)
-          .then(() =>
-            this.$store
-              .dispatch('builder/putIsAreaUnderConstruction', true)
-              .then(() =>
-                this.$store
-                  .dispatch('builder/putAreaUnderConstruction', {
-                    ...this.selectedArea
-                  })
-                  .then(() => this.$emit('editArea'))
-              )
-          )
-      );
-    },
+    editArea(area: AreaInterface) {},
     linkArea(area: AreaInterface) {
       console.log(area.id);
     },
     toggleSingleRow(row: AreaInterface) {
-      this.$store.dispatch('builder/selectArea', row);
-      this.$store.dispatch('builder/clearSelectedLink');
+      this.selectedRow = [row];
+      this.$emit('select', row)
     },
     deleteArea() {
       this.$emit('deleteArea');

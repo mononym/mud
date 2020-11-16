@@ -11,6 +11,11 @@ defmodule MudWeb.MapController do
     render(conn, "index.json", maps: maps)
   end
 
+  def list_by_instance(conn, %{"instance_id" => instance_id}) do
+    maps = Map.list_by_instance(instance_id)
+    render(conn, "index.json", maps: maps)
+  end
+
   def create(conn, %{"map" => map_params}) do
     with {:ok, %Map{} = map} <- Map.create(map_params) do
       conn
