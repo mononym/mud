@@ -1,5 +1,5 @@
 <template>
-  <q-card class="fit flex column" flat bordered>
+  <q-card v-show="area.id != ''" class="fit flex column" flat bordered>
     <q-card-section class="col-shrink q-pb-none">
       <p class="text-h6 text-center">
         {{ area.name }}
