@@ -77,7 +77,7 @@
         />
         <area-wizard
           v-if="areaView == 'edit'"
-          :area="{ ...selectedArea }"
+          :area="{ ...areaUnderConstruction }"
           :map="{ ...selectedMap }"
           :links="selectedAreaLinks"
           :areas="areas"
@@ -85,7 +85,7 @@
           @save="areaWizardSave"
         />
       </div>
-      <q-btn-group spread class="col-shrink">
+      <q-btn-group v-if="areaView == 'details'" spread class="col-shrink">
         <q-btn :disabled="areaDetailsButtonsDisabled" flat @click="editArea"
           >Edit</q-btn
         >
@@ -249,6 +249,7 @@ export default {
     areaTableColumns: CommonColumnInterface[];
     areaTableSelectedRow: AreaInterface[];
     selectedArea: AreaInterface;
+    areaUnderConstruction: AreaInterface;
     // Link stuff
     selectedLink: LinkInterface;
     linkTableColumns: CommonColumnInterface[];
@@ -277,6 +278,7 @@ export default {
       areaTableColumns,
       areaTableSelectedRow: [],
       selectedArea: { ...areaState },
+      areaUnderConstruction: { ...areaState },
       // Link stuff
       selectedLink: { ...linkState },
       linkTableColumns,
@@ -427,46 +429,6 @@ export default {
       this.mapUnderConstruction = { ...mapState };
       this.mapView = 'details';
     },
-    saveMap(): void {
-      this.$q.loading.show({
-        message: 'Saving: ' + this.mapUnderConstruction.name,
-        delay: 1
-      });
-
-      const params = {
-        map: {
-          description: this.mapUnderConstruction.description,
-          name: this.mapUnderConstruction.name,
-          map_size: this.mapUnderConstruction.mapSize,
-          grid_size: this.mapUnderConstruction.gridSize,
-          max_zoom: this.mapUnderConstruction.maxZoom,
-          min_zoom: this.mapUnderConstruction.minZoom,
-          default_zoom: this.mapUnderConstruction.defaultZoom
-        }
-      };
-
-      let request;
-      if (this.mapUnderConstructionIsNew) {
-        request = this.$axios.post('/maps', params);
-      } else {
-        const id: string = this.mapUnderConstruction.id;
-        request = this.$axios.patch('/maps/' + id, params);
-      }
-
-      request
-        .then(function(result: AxiosResponse) {
-          this.$store.dispatch('maps/putMap', result.data);
-          this.selectedMap = result.data;
-          this.mapView = 'details';
-        })
-        .catch(function() {
-          alert('Error saving map');
-        })
-        .finally(function() {
-          this.mapUnderConstruction = { ...mapState };
-          this.$q.loading.hide();
-        });
-    },
     selectMap(map: MapInterface): void {
       this.$store
         .dispatch('areas/loadForMap', map.id)
@@ -490,8 +452,8 @@ export default {
       this.areaView = 'details';
     },
     areaWizardCancel(): void {
-      this.selectedArea = this.areaTableSelectedRow[0]
-      this.areaView = 'details'
+      this.selectedArea = this.areaTableSelectedRow[0];
+      this.areaView = 'details';
     },
     areaTableSelect(area: AreaInterface): void {
       this.mapSelectArea(area);
@@ -501,12 +463,6 @@ export default {
       this.mapLinkHighlights[link.id] = 'green';
       this.selectedLink = link;
     },
-    areaDetailsEditArea(): void {
-      this.bottomRightPanel = 'areaWizard';
-    },
-    areaDetailsEditLink(): void {
-      this.bottomRightPanel = 'linkWizard';
-    },
     areaWizardSaveArea(area: AreaInterface): void {
       this.$store.dispatch('areas/putArea', area).then(() => {
         if (area.id != this.selectedArea.id) {
@@ -514,6 +470,7 @@ export default {
           this.mapAreaHighlights = {};
           this.mapAreaHighlights[area.id] = 'green';
         }
+        this.areaUnderConstruction = { ...areaState };
         this.areaTableSelectedRow = [area];
         this.selectedArea = area;
         this.bottomRightPanel = 'areaTable';
@@ -536,10 +493,12 @@ export default {
       this.areaView = 'edit';
     },
     cloneArea(): void {
-      this.selectedArea.id = '';
+      this.areaUnderConstruction = { ...this.selectedArea };
+      this.areaUnderConstruction.id = '';
       this.areaView = 'edit';
     },
     editArea(): void {
+      this.areaUnderConstruction = { ...this.selectedArea };
       this.areaView = 'edit';
     },
     deleteArea(): void {
@@ -549,10 +508,6 @@ export default {
           this.selectedArea = { ...areaState };
           this.areaTableSelectedRow = [];
         });
-    },
-    areaTableToggleSingleRow(row: AreaInterface) {
-      this.areaTableSelectedRow = [row];
-      this.areaTableSelectArea(row);
     },
     // Link stuff
     linkWizardSaveLink(link: LinkInterface): void {

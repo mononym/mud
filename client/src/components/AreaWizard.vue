@@ -4,7 +4,7 @@
       <EasyForm v-model="workingArea" v-bind="areaForm" />
     </div>
     <q-btn-group spread class="col-shrink">
-      <q-btn :disabled="saveDisabled" flat @click="save">Save</q-btn>
+      <q-btn flat @click="save">Save</q-btn>
       <q-btn flat @click="cancel">Cancel</q-btn>
     </q-btn-group>
   </div>
@@ -17,6 +17,57 @@ import { MapInterface } from 'src/store/map/state';
 import { Prop } from 'vue/types/options';
 import { EasyForm } from 'quasar-ui-easy-forms';
 
+const areaForm = {
+  schema: [
+    {
+      id: 'name',
+      component: 'QInput',
+      label: 'Name',
+      required: true
+    },
+    {
+      id: 'description',
+      component: 'QInput',
+      label: 'Description',
+      subLabel: 'The text description of the room',
+      // component props:
+      autogrow: true
+    },
+    {
+      id: 'mapX',
+      component: 'QSlider',
+      label: 'Map X Coordinate',
+      subLabel: 'The center of the map is (0,0)',
+      // component props:
+      min: -500,
+      max: 500,
+      labelAlways: true,
+      default: 0
+    },
+    {
+      id: 'mapY',
+      component: 'QSlider',
+      label: 'Map Y Coordinate',
+      subLabel: 'The center of the map is (0,0)',
+      // component props:
+      min: -500,
+      max: 500,
+      'label-always': true,
+      default: 0
+    },
+    {
+      id: 'mapSize',
+      component: 'QSlider',
+      label: 'Map Size',
+      subLabel: 'How large, in pixels, the area will appear on a map',
+      // component props:
+      min: 0,
+      max: 1000,
+      labelAlways: true,
+      default: 0
+    }
+  ]
+};
 
 export default {
   name: 'AreaWizard',
@@ -34,69 +85,18 @@ export default {
   data(): {
     step: number;
     workingArea: AreaInterface;
+    areaForm: Record<string, unknown>;
   } {
     return {
       step: 1,
-      workingArea: { ...areaState }
+      workingArea: { ...areaState },
+      areaForm
     };
   },
   computed: {
-    saveDisabled(): boolean {
-      return this.workingArea.name == '' || this.workingArea.description == '';
-    },
-    areaForm: function(): Record<string, unknown> {
-      return {
-        schema: [
-          {
-            id: 'name',
-            component: 'QInput',
-            label: 'Name',
-            required: true
-          },
-          {
-            id: 'description',
-            component: 'QInput',
-            label: 'Description',
-            subLabel: 'The text description of the room',
-            // component props:
-            autogrow: true
-          },
-          {
-            id: 'mapX',
-            component: 'QSlider',
-            label: 'Map X Coordinate',
-            subLabel: 'The center of the map is (0,0)',
-            // component props:
-            min: -500,
-            max: 500,
-            labelAlways: true,
-            default: 0
-          },
-          {
-            id: 'mapY',
-            component: 'QSlider',
-            label: 'Map Y Coordinate',
-            subLabel: 'The center of the map is (0,0)',
-            // component props:
-            min: -500,
-            max: 500,
-            "label-always": true,
-            default: 0
-          },
-          {
-            id: 'mapSize',
-            component: 'QSlider',
-            label: 'Map Size',
-            subLabel: 'How large, in pixels, the area will appear on a map',
-            // component props:
-            min: 0,
-            max: 1000,
-            labelAlways: true,
-            default: 0
-          }
-        ]
-      };
-    },
+    // saveDisabled(): boolean {
+    //   return this.workingArea.name == '' || this.workingArea.description == '';
+    // },
     mapsIndex: function(): Record<string, number> {
       const mapIndex = {};
 
@@ -155,7 +155,8 @@ export default {
           description: this.workingArea.description,
           map_x: this.workingArea.mapX,
           map_y: this.workingArea.mapY,
-          map_size: this.workingArea.mapSize
+          map_size: this.workingArea.mapSize,
+          instance_id: this.workingArea.instanceId
         }
       };
 

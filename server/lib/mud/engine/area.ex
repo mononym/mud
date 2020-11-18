@@ -182,7 +182,6 @@ defmodule Mud.Engine.Area do
       :description,
       :map_id,
       :instance_id,
-      :region_id,
       :map_x,
       :map_y,
       :map_size
