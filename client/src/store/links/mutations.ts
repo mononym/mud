@@ -17,6 +17,10 @@ const mutation: MutationTree<LinksInterface> = {
         Vue.set(state.linkIndex, link.id, index);
       });
     },
+    clear(state: LinksInterface) {
+      state.links = [];
+      state.linkIndex = {};
+    },
     removeLink(state: LinksInterface, linkId: string) {
       state.links.splice(state.linkIndex[linkId], 1);
       state.linkIndex = {};

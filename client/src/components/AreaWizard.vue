@@ -1,114 +1,13 @@
 <template>
-  <q-stepper v-model="step" vertical color="primary" animated header-nav>
-    <q-step
-      :name="1"
-      title="Name"
-      icon="fas fa-signature"
-      :done="step > 1"
-      :header-nav="step > 1 || !isNew"
-      :caption="area.name"
-    >
-      Choose the name of the area. Does not have to be unique.
-
-      <q-input v-model="workingArea.name" label="Name" />
-
-      <q-stepper-navigation>
-        <q-btn
-          :disabled="nameContinueButtonDisabled"
-          color="primary"
-          label="Continue"
-          @click="step = 2"
-        />
-
-        <q-btn
-          v-if="!saveButtonDisabled"
-          color="primary"
-          label="Save"
-          @click="save"
-        />
-
-        <q-btn color="primary" label="Cancel" @click="cancel" />
-      </q-stepper-navigation>
-    </q-step>
-
-    <q-step
-      :name="2"
-      title="Map Settings"
-      icon="fas fa-globe"
-      :done="step > 2"
-      :header-nav="step > 2 || !isNew"
-      :caption="selectedMapName"
-    >
-      <q-form class="q-gutter-md">
-        <q-select
-          v-model="workingArea.mapId"
-          :options="maps"
-          option-label="name"
-          option-value="id"
-          :display-value="
-            maps[mapsIndex[workingArea.mapId]] != undefined
-              ? maps[mapsIndex[workingArea.mapId]].name
-              : ''
-          "
-          label="Map"
-          emit-value
-        />
-      </q-form>
-
-      <q-stepper-navigation>
-        <q-btn color="primary" label="Continue" @click="step = 3" />
-        <q-btn
-          flat
-          color="primary"
-          label="Back"
-          class="q-ml-sm"
-          @click="step = 1"
-        />
-
-        <q-btn
-          v-if="!saveButtonDisabled"
-          color="primary"
-          label="Save"
-          @click="save"
-        />
-
-        <q-btn color="primary" label="Cancel" @click="cancel" />
-      </q-stepper-navigation>
-    </q-step>
-
-    <q-step
-      :name="3"
-      title="Description"
-      icon="fas fa-signature"
-      :done="step > 3"
-      :header-nav="step > 3 || !isNew"
-    >
-      <q-input
-        v-model="workingArea.description"
-        label="Description"
-        type="textarea"
-      />
-
-      <q-stepper-navigation>
-        <q-btn
-          :disabled="saveButtonDisabled"
-          color="primary"
-          label="Save"
-          @click="save"
-        />
-
-        <q-btn
-          flat
-          color="primary"
-          label="Back"
-          class="q-ml-sm"
-          @click="step = 2"
-        />
-
-        <q-btn color="primary" label="Cancel" @click="cancel" />
-      </q-stepper-navigation>
-    </q-step>
-  </q-stepper>
+  <div class="fit flex column">
+    <div class="col">
+      <EasyForm v-model="workingArea" v-bind="areaForm" />
+    </div>
+    <q-btn-group spread class="col-shrink">
+      <q-btn :disabled="saveDisabled" flat @click="save">Save</q-btn>
+      <q-btn flat @click="cancel">Cancel</q-btn>
+    </q-btn-group>
+  </div>
 </template>
 
 <script lang="ts">
@@ -116,9 +15,12 @@ import { mapGetters } from 'vuex';
 import areaState, { AreaInterface } from 'src/store/area/state';
 import { MapInterface } from 'src/store/map/state';
 import { Prop } from 'vue/types/options';
+import { EasyForm } from 'quasar-ui-easy-forms';
+
 
 export default {
   name: 'AreaWizard',
+  components: { EasyForm },
   props: {
     area: {
       type: Object as Prop<AreaInterface>,
@@ -139,10 +41,66 @@ export default {
     };
   },
   computed: {
+    saveDisabled(): boolean {
+      return this.workingArea.name == '' || this.workingArea.description == '';
+    },
+    areaForm: function(): Record<string, unknown> {
+      return {
+        schema: [
+          {
+            id: 'name',
+            component: 'QInput',
+            label: 'Name',
+            required: true
+          },
+          {
+            id: 'description',
+            component: 'QInput',
+            label: 'Description',
+            subLabel: 'The text description of the room',
+            // component props:
+            autogrow: true
+          },
+          {
+            id: 'mapX',
+            component: 'QSlider',
+            label: 'Map X Coordinate',
+            subLabel: 'The center of the map is (0,0)',
+            // component props:
+            min: -500,
+            max: 500,
+            labelAlways: true,
+            default: 0
+          },
+          {
+            id: 'mapY',
+            component: 'QSlider',
+            label: 'Map Y Coordinate',
+            subLabel: 'The center of the map is (0,0)',
+            // component props:
+            min: -500,
+            max: 500,
+            "label-always": true,
+            default: 0
+          },
+          {
+            id: 'mapSize',
+            component: 'QSlider',
+            label: 'Map Size',
+            subLabel: 'How large, in pixels, the area will appear on a map',
+            // component props:
+            min: 0,
+            max: 1000,
+            labelAlways: true,
+            default: 0
+          }
+        ]
+      };
+    },
     mapsIndex: function(): Record<string, number> {
       const mapIndex = {};
 
-      this.maps.forEach(function(map, index) {
+      this.maps.forEach(function(map: MapInterface, index: number) {
         mapIndex[map.id] = index;
       });
 
@@ -192,9 +150,12 @@ export default {
 
       const params = {
         area: {
-          name: this.area.name,
-          map_id: this.area.mapId,
-          description: this.area.description
+          name: this.workingArea.name,
+          map_id: this.workingArea.mapId,
+          description: this.workingArea.description,
+          map_x: this.workingArea.mapX,
+          map_y: this.workingArea.mapY,
+          map_size: this.workingArea.mapSize
         }
       };
 
@@ -210,57 +171,12 @@ export default {
       request
         .then(result => {
           // emit that a thing was saved so that everything can be adjusted
-          this.$emit('saved', result.data);
+          this.$emit('save', result.data);
         })
-        // } else {
-        //   request
-        //     .then(result => {
-        //       if (this.isNew) {
-        //         this.$store
-        //           .dispatch('builder/putArea', result.data)
-        //           .then(() => {
-        //             this.$store
-        //               .dispatch('builder/selectArea', result.data)
-        //               .then(() =>
-        //                 this.$store.dispatch(
-        //                   'builder/putIsAreaUnderConstruction',
-        //                   false
-        //                 )
-        //               )
-        //               .then(() => {
-        //                 this.$emit('saved');
-        //               });
-        //           });
-        //       } else {
-        //         this.$store
-        //           .dispatch('builder/updateArea', result.data)
-        //           .then(() =>
-        //             this.$store.dispatch(
-        //               'builder/putIsAreaUnderConstruction',
-        //               false
-        //             )
-        //           )
-        //           .then(() => {
-        //             this.$emit('saved');
-        //           });
-        //       }
-        //     })
         .catch(function() {
           alert('Error saving');
         });
     }
-    // },
-    // watch: {
-    //   area: {
-    //     // This will let Vue know to look inside the array
-    //     deep: true,
-    //     // We have to move our method to a handler field
-    //     handler() {
-    //       this.$store.dispatch(
-    //         'builder/putAreaUnderConstruction',
-    //         Object.assign({}, this.area)
-    //       );
-    //     }
   }
 };
 </script>

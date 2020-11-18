@@ -1,5 +1,4 @@
 <template>
-  <div class="q-pa-none">
     <q-table
       title="Maps"
       :data="maps"
@@ -24,7 +23,6 @@
         </q-td>
       </template>
     </q-table>
-  </div>
 </template>
 
 <script lang="ts">

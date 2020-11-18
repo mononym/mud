@@ -25,8 +25,22 @@ const actions: ActionTree<MapsInterface, StateInterface> = {
   putMap({ commit }, map: MapInterface) {
     commit('putMap', map);
   },
-  removeMap({ commit }, mapId: string) {
-    commit('removeMap', mapId);
+  deleteMap({ commit }, mapId: string) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/maps/' + mapId)
+        .then(function() {
+          commit('removeMap', mapId);
+
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when deleting map');
+          alert(e);
+
+          reject();
+        });
+    });
   }
 };
 

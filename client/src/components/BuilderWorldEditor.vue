@@ -1,86 +1,110 @@
 <template>
-  <div class="flex row wrap fit world-editor-wrapper">
-    <builder-map
-      :map="selectedMap"
-      :areas="areas"
-      :links="links"
-      :mapareahighlights="mapAreaHighlights"
-      :maplinkhighlights="mapLinkHighlights"
-      :focusarea="focusArea"
-      @selectArea="mapSelectArea"
-    />
+  <div class="flex fit world-editor-wrapper">
+    <div class="col flex column full-height">
+      <div class="col">
+        <builder-map
+          :map="selectedMap"
+          :areas="areas"
+          :links="links"
+          :mapareahighlights="mapAreaHighlights"
+          :maplinkhighlights="mapLinkHighlights"
+          :focusarea="focusArea"
+          :readonly="view == 'map'"
+          @selectArea="mapSelectArea"
+        />
+      </div>
+      <div class="col">
+        <map-table v-if="view == 'map'" @select="selectMap" />
+        <area-table
+          v-if="view == 'area'"
+          :selectedrow="areaTableSelectedRow"
+          @select="areaTableSelect"
+          @create="areaTableCreate"
+        />
+      </div>
+    </div>
+    <div v-if="view == 'map'" class="col flex column">
+      <q-card v-if="mapView == 'details'" class="col flex column">
+        <q-card-section class="col-shrink">
+          <div class="text-h6">{{ selectedMap.name }}</div>
+        </q-card-section>
 
-    <area-details
-      :area="selectedArea"
-      :areas="areas"
-      :links="selectedAreaLinks"
-      @selectLink="areaDetailsSelectLink"
-      @editArea="areaDetailsEditArea"
-    />
+        <q-card-section class="col">
+          {{ selectedMap.description }}
+        </q-card-section>
 
-    <map-table v-if="bottomLeftPanel == 'mapTable'" @select="selectMap" />
+        <q-separator class="col-1px" dark />
 
-    <map-wizard v-if="bottomLeftPanel == 'mapWizard'" />
-
-    <div v-if="bottomRightPanel == 'areaTable'" class="flex column">
-      <q-table
-        title="Areas"
-        :data="areas"
-        :columns="areaTableColumns"
-        row-key="id"
-        flat
-        bordered
-        class="col"
-        :selected.sync="areaTableSelectedRow"
-        selection="single"
-        :pagination="initialPagination"
-        virtual-scroll
-      >
-        <template v-slot:body-cell="props">
-          <q-td
-            :props="props"
-            class="cursor-pointer"
-            @click.exact="areaTableToggleSingleRow(props.row)"
+        <q-card-actions class="flex col-shrink">
+          <q-btn
+            class="col"
+            flat
+            :disabled="mapDetailsButtonsDisabled"
+            @click="buildMap"
+            >Build</q-btn
           >
-            {{ props.value }}
-          </q-td>
-        </template>
-      </q-table>
+          <q-btn
+            class="col"
+            flat
+            :disabled="mapDetailsButtonsDisabled"
+            @click="editMap"
+            >Edit</q-btn
+          >
+          <q-btn
+            class="col"
+            flat
+            :disabled="mapDetailsButtonsDisabled"
+            @click="promptForDelete(selectedMap.name, deleteMap)"
+            >Delete</q-btn
+          >
+        </q-card-actions>
+      </q-card>
+      <div v-if="mapView == 'edit'" class="col">
+        <map-wizard
+          :map="{ ...selectedMap }"
+          @cancel="mapWizardCancel"
+          @save="mapWizardSave"
+        />
+      </div>
+    </div>
+    <div v-if="view == 'area'" class="col flex column">
+      <div class="col">
+        <area-details
+          v-if="areaView == 'details'"
+          :area="{ ...selectedArea }"
+          :areas="areas"
+          :links="selectedAreaLinks"
+        />
+        <area-wizard
+          v-if="areaView == 'edit'"
+          :area="{ ...selectedArea }"
+          :map="{ ...selectedMap }"
+          :links="selectedAreaLinks"
+          :areas="areas"
+          @cancel="areaWizardCancel"
+          @save="areaWizardSave"
+        />
+      </div>
       <q-btn-group spread class="col-shrink">
-        <q-btn class="" flat @click="createArea">Create</q-btn>
-        <q-btn
-          :disabled="areaTableButtonsDisabled"
-          class=""
-          flat
-          @click="editArea"
+        <q-btn :disabled="areaDetailsButtonsDisabled" flat @click="editArea"
           >Edit</q-btn
         >
+        <q-btn :disabled="areaDetailsButtonsDisabled" flat @click="cloneArea"
+          >Clone</q-btn
+        >
         <q-btn
-          :disabled="areaTableButtonsDisabled"
-          class=""
+          :disabled="areaDetailsButtonsDisabled"
           flat
           @click="promptForDelete(selectedArea.name, deleteArea)"
           >Delete</q-btn
         >
       </q-btn-group>
     </div>
-
-    <area-wizard
-      v-if="bottomRightPanel == 'areaWizard'"
-      :area="{ ...selectedArea }"
-      :map="selectedMap"
-      @saved="areaWizardSaveArea"
-      @cancel="areaWizardCancelEdit"
-    />
-
-    <link-details v-if="bottomRightPanel == 'linkDetails'" />
-
-    <link-wizard v-if="bottomRightPanel == 'linkWizard'" />
   </div>
 </template>
 
 <style lang="sass">
-.world-editor-wrapper > div { height: 50% !important; width: 50% !important; }
+.half-and-half { height: 50% !important; width: 50% !important; }
 </style>
 
 <script lang="ts">
@@ -89,9 +113,9 @@ import { mapGetters } from 'vuex';
 
 import BuilderMap from '../components/BuilderMap.vue';
 import AreaWizard from '../components/AreaWizard.vue';
-import MapWizard from '../components/MapWizard.vue';
+import AreaTable from '../components/AreaTable.vue';
 import MapTable from '../components/MapTable.vue';
-import AreaDetails from '../components/AreaDetails.vue';
+import MapWizard from '../components/MapWizard.vue';
 import LinkDetails from '../components/LinkDetails.vue';
 import LinkWizard from '../components/LinkWizard.vue';
 import { MapInterface } from 'src/store/map/state';
@@ -99,6 +123,8 @@ import mapState from 'src/store/map/state';
 import { AreaInterface } from 'src/store/area/state';
 import areaState from 'src/store/area/state';
 import linkState, { LinkInterface } from 'src/store/link/state';
+import { AxiosResponse } from 'axios';
+import AreaDetails from '../components/builder/AreaDetails.vue';
 
 interface CommonColumnInterface {
   name: string;
@@ -107,6 +133,65 @@ interface CommonColumnInterface {
   sortable: boolean;
   align: string;
 }
+
+const linkTableColumns = [
+  {
+    name: 'shortDescription',
+    label: 'Short Description',
+    field: 'shortDescription',
+    sortable: true,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'longDescription',
+    label: 'Long Description',
+    field: 'longDescription',
+    sortable: true,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'departureText',
+    label: 'Departure Text',
+    field: 'departureText',
+    sortable: true,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'arrivalText',
+    label: 'Arrival Text',
+    field: 'arrivalText',
+    sortable: true,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'icon',
+    label: 'Icon',
+    field: 'icon',
+    sortable: false,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'to',
+    label: 'To',
+    field: 'toId',
+    sortable: true,
+    required: true,
+    align: 'left'
+  },
+  {
+    name: 'from',
+    label: 'From',
+    field: 'fromId',
+    sortable: true,
+    required: true,
+    align: 'left'
+  }
+];
 
 const mapTableColumns = [
   {
@@ -149,13 +234,14 @@ const areaTableColumns = [
 export default {
   name: 'BuilderWorldEditor',
   components: {
-    AreaDetails,
     AreaWizard,
-    MapWizard,
+    AreaTable,
     BuilderMap,
     LinkDetails,
     LinkWizard,
-    MapTable
+    MapTable,
+    MapWizard,
+    AreaDetails
   },
   data(): {
     selectedMap: MapInterface;
@@ -165,15 +251,22 @@ export default {
     selectedArea: AreaInterface;
     // Link stuff
     selectedLink: LinkInterface;
+    linkTableColumns: CommonColumnInterface[];
+    linkTableSelectedRow: LinkInterface[];
     // UI stuff
     bottomLeftPanel: string;
     bottomRightPanel: string;
+    topRightPanel: string;
+    view: string;
+    mapView: string;
+    areaView: string;
     // Common Table Stuff
     initialPagination: { rowsPerPage: number };
     // Map Table Stuff
     mapTableColumns: CommonColumnInterface[];
     mapTableVisibleColumns: string[];
     mapTableSelectedRow: MapInterface[];
+    mapUnderConstruction: MapInterface;
     // Map stuff
     mapAreaHighlights: Record<string, string>;
     mapLinkHighlights: Record<string, string>;
@@ -186,9 +279,15 @@ export default {
       selectedArea: { ...areaState },
       // Link stuff
       selectedLink: { ...linkState },
+      linkTableColumns,
+      linkTableSelectedRow: [],
       // UI stuff
       bottomLeftPanel: 'mapTable',
       bottomRightPanel: 'areaTable',
+      topRightPanel: 'linkTable',
+      view: 'map',
+      mapView: 'details',
+      areaView: 'details',
       // Common Table Stuff
       initialPagination: {
         rowsPerPage: 0
@@ -197,12 +296,20 @@ export default {
       mapTableColumns,
       mapTableVisibleColumns: ['name', 'description'],
       mapTableSelectedRow: [],
+      mapUnderConstruction: { ...mapState },
       // Map stuff
       mapAreaHighlights: {},
       mapLinkHighlights: {}
     };
   },
   computed: {
+    // Map Stuff
+    mapDetailsButtonsDisabled: function(): boolean {
+      return this.selectedMap.id == '';
+    },
+    areaTableButtonsDisabled: function(): boolean {
+      return this.selectedArea.id == '';
+    },
     selectedAreaLinks: function(): LinkInterface[] {
       if (this.selectedArea.id == '') {
         return [];
@@ -214,6 +321,9 @@ export default {
         );
       }
     },
+    linkButtonsDisabled(): boolean {
+      return this.linkTableSelectedRow.length == 0;
+    },
     focusArea: function(): string {
       if (this.selectedArea.id == '') {
         return '';
@@ -221,8 +331,45 @@ export default {
         return this.selectedArea.id;
       }
     },
-    areaTableButtonsDisabled: function(): boolean {
+    mapForm: function(): Record<string, unknown> {
+      return {
+        schema: [
+          {
+            id: 'name',
+            component: 'QInput',
+            label: 'Name',
+            required: true
+          },
+          {
+            id: 'description',
+            component: 'QInput',
+            label: 'Description',
+            subLabel: 'A description of the area the map represents.'
+          },
+          {
+            id: 'mapSize',
+            component: 'QSlider',
+            label: 'Map Size',
+            subLabel:
+              'The total area available for the map. Impacts zooming behaviour',
+            // component props:
+            min: 100,
+            max: 10000,
+            labelAlways: true,
+            default: 5000,
+            step: 100
+          }
+        ]
+      };
+    },
+    // Area stuff
+    areaDetailsButtonsDisabled: function(): boolean {
       return this.selectedArea.id == '';
+    },
+    areaNameIndex(): Record<string, string> {
+      const index = {};
+      this.areas.forEach(area => (index[area.id] = area.name));
+      return index;
     },
     // mapsLoaded: function(): boolean {
     //   console.log('mapsLoaded');
@@ -245,14 +392,80 @@ export default {
     })
   },
   created() {
+    this.$store.dispatch('areas/clear');
+    this.$store.dispatch('links/clear');
     this.$store.dispatch('maps/loadForInstance', this.instanceBeingBuilt.id);
   },
   methods: {
     // Map stuff
+    deleteMap(): void {
+      this.$store.dispatch('maps/deleteMap', this.selectedMap.id).then(() => {
+        this.selectedMap = { ...mapState };
+        this.selectedArea = { ...areaState };
+        this.focusArea = '';
+        this.mapTableSelectedRow = [];
+        this.$store.dispatch('areas/clear');
+        this.$store.dispatch('links/clear');
+        this.mapLinkHighlights = {};
+        this.mapAreaHighlights = {};
+        this.mapView = 'details';
+      });
+    },
+    buildMap(): void {
+      this.view = 'area';
+    },
     editMap(): void {
-      this.bottomRightPanel = 'areaTable';
+      this.mapView = 'edit';
+    },
+    mapWizardCancel(): void {
+      this.mapUnderConstruction = { ...this.selectedMap };
+      this.mapView = 'details';
+    },
+    mapWizardSave(map: MapInterface): void {
+      this.$store.dispatch('maps/putMap', map);
+      this.selectedMap = map;
+      this.mapUnderConstruction = { ...mapState };
+      this.mapView = 'details';
+    },
+    saveMap(): void {
+      this.$q.loading.show({
+        message: 'Saving: ' + this.mapUnderConstruction.name,
+        delay: 1
+      });
 
-      this.bottomLeftPanel = 'wizard';
+      const params = {
+        map: {
+          description: this.mapUnderConstruction.description,
+          name: this.mapUnderConstruction.name,
+          map_size: this.mapUnderConstruction.mapSize,
+          grid_size: this.mapUnderConstruction.gridSize,
+          max_zoom: this.mapUnderConstruction.maxZoom,
+          min_zoom: this.mapUnderConstruction.minZoom,
+          default_zoom: this.mapUnderConstruction.defaultZoom
+        }
+      };
+
+      let request;
+      if (this.mapUnderConstructionIsNew) {
+        request = this.$axios.post('/maps', params);
+      } else {
+        const id: string = this.mapUnderConstruction.id;
+        request = this.$axios.patch('/maps/' + id, params);
+      }
+
+      request
+        .then(function(result: AxiosResponse) {
+          this.$store.dispatch('maps/putMap', result.data);
+          this.selectedMap = result.data;
+          this.mapView = 'details';
+        })
+        .catch(function() {
+          alert('Error saving map');
+        })
+        .finally(function() {
+          this.mapUnderConstruction = { ...mapState };
+          this.$q.loading.hide();
+        });
     },
     selectMap(map: MapInterface): void {
       this.$store
@@ -270,15 +483,29 @@ export default {
       return total.toString() + ' Map(s)';
     },
     // Area stuff
+    areaWizardSave(area: AreaInterface): void {
+      this.$store.dispatch('areas/putArea', area);
+      this.selectedArea = area;
+      this.areaTableSelectedRow = [area];
+      this.areaView = 'details';
+    },
+    areaWizardCancel(): void {
+      this.selectedArea = this.areaTableSelectedRow[0]
+      this.areaView = 'details'
+    },
+    areaTableSelect(area: AreaInterface): void {
+      this.mapSelectArea(area);
+    },
     areaDetailsSelectLink(link: LinkInterface): void {
       this.mapLinkHighlights = {};
       this.mapLinkHighlights[link.id] = 'green';
-    },
-    areaTableSelectArea(area: AreaInterface): void {
-      this.mapSelectArea(area);
+      this.selectedLink = link;
     },
     areaDetailsEditArea(): void {
       this.bottomRightPanel = 'areaWizard';
+    },
+    areaDetailsEditLink(): void {
+      this.bottomRightPanel = 'linkWizard';
     },
     areaWizardSaveArea(area: AreaInterface): void {
       this.$store.dispatch('areas/putArea', area).then(() => {
@@ -300,18 +527,20 @@ export default {
         this.mapLinkHighlights = {};
         this.mapAreaHighlights = {};
         this.mapAreaHighlights[area.id] = 'green';
-        this.areaTableSelectedRow = this.areas.filter(ar => ar.id == area.id);
+        this.areaTableSelectedRow = [area];
         this.selectedArea = this.areaTableSelectedRow[0];
       }
     },
-    createArea(): void {
+    areaTableCreate(): void {
       this.selectedArea = { ...areaState };
-      this.bottomRightPanel = 'areaWizard';
+      this.areaView = 'edit';
+    },
+    cloneArea(): void {
+      this.selectedArea.id = '';
+      this.areaView = 'edit';
     },
     editArea(): void {
-      this.$store
-        .dispatch('builder/putIsAreaUnderConstruction', true)
-        .then(() => (this.bottomRightPanel = 'areaWizard'));
+      this.areaView = 'edit';
     },
     deleteArea(): void {
       this.$store
@@ -324,6 +553,35 @@ export default {
     areaTableToggleSingleRow(row: AreaInterface) {
       this.areaTableSelectedRow = [row];
       this.areaTableSelectArea(row);
+    },
+    // Link stuff
+    linkWizardSaveLink(link: LinkInterface): void {
+      this.$store.dispatch('links/putLink', link).then(() => {
+        if (link.id != this.selectedLink.id) {
+          this.mapLinkHighlights = {};
+          this.mapLinkHighlights[link.id] = 'green';
+        }
+        this.selectedLink = link;
+        this.bottomRightPanel = 'areaTable';
+      });
+    },
+    linkTableToggleSingleRow(row: LinkInterface) {
+      this.linkTableSelectedRow = [row];
+    },
+    createLink(): void {
+      this.selectedLink = { ...linkState };
+      this.topRightPanel = 'linkWizard';
+    },
+    editLink(): void {
+      this.topRightPanel = 'linkWizard';
+    },
+    deleteLink(): void {
+      this.$store
+        .dispatch('links/deleteLink', this.selectedLink.id)
+        .then(() => {
+          this.selectedLink = { ...linkState };
+          this.linkTableSelectedRow = [];
+        });
     },
     // Common stuff
     promptForDelete(name: string, callback) {

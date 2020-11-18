@@ -19,7 +19,7 @@ defmodule MudWeb.MapView do
       description: map.description,
       mapSize: map.map_size,
       gridSize: map.grid_size,
-      maxZoom: map.min_zoom,
+      maxZoom: map.max_zoom,
       minZoom: map.min_zoom,
       defaultZoom: map.default_zoom,
       inserted_at: map.inserted_at,

@@ -5,9 +5,13 @@ import Vue from 'vue'
 
 const mutation: MutationTree<MapsInterface> = {
   putMap(state: MapsInterface, map: MapInterface) {
-    Vue.set(state.mapIndex, map.id, state.maps.length);
-
-    state.maps.push(map);
+    if (state.mapIndex[map.id] != undefined) {
+      Vue.set(state.maps, state.mapIndex[map.id], map);
+    } else {
+      Vue.set(state.mapIndex, map.id, state.maps.length);
+  
+      state.maps.push(map);
+    }
   },
   putMaps(state: MapsInterface, maps: MapInterface[]) {
     Vue.set(state, 'maps', maps)

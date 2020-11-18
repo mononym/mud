@@ -1,91 +1,45 @@
 <template>
-  <div class="q-pa-none">
-    <q-table
-      title="Areas"
-      :data="areas"
-      :columns="areaTableColumns"
-      row-key="id"
-      flat
-      bordered
-      class="fit"
-      :selected.sync="selectedRow"
-      selection="single"
-      :pagination="initialPagination"
-      virtual-scroll
-    >
-      <template v-slot:top>
-        <q-btn
-          :disabled="addAreaButtonDisabled"
-          color="primary"
-          label="Add Area"
-          @click="addArea"
-        />
-        <q-space />
-        <q-input
-          v-model="areaTableFilter"
-          borderless
-          dense
-          debounce="300"
-          color="primary"
-        >
-          <template v-slot:append>
-            <q-icon name="search" />
-          </template>
-        </q-input>
-      </template>
+  <q-table
+    title="Areas"
+    :data="areas"
+    :columns="areaTableColumns"
+    row-key="id"
+    flat
+    bordered
+    class="fit"
+    :selected.sync="selectedrow"
+    selection="single"
+    :rows-per-page-options="[0]"
+    :pagination="initialPagination"
+    virtual-scroll
+    :pagination-label="getPaginationLabel"
+  >
+    <template v-slot:top>
+      <q-btn color="primary" label="Create New Area" @click="createArea" />
+      <q-space />
+      <q-input
+        v-model="areaTableFilter"
+        borderless
+        dense
+        debounce="300"
+        color="primary"
+      >
+        <template v-slot:append>
+          <q-icon name="search" />
+        </template>
+      </q-input>
+    </template>
 
-      <template v-slot:header="props">
-        <q-tr :props="props">
-          <q-th v-for="col in props.cols" :key="col.name" :props="props">
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
-
-      <template v-slot:body="props">
-        <q-tr
-          class="cursor-pointer"
-          :props="props"
-          @click.exact="toggleSingleRow(props.row)"
-        >
-          <q-td
-            v-for="col in props.cols"
-            :key="col.name"
-            class="area-table-row"
-            :props="props"
-          >
-            <span v-if="col.name === 'actions'">
-              <q-btn-group flat spread>
-                <q-btn
-                  flat
-                  label="Edit"
-                  icon="fas fa-pencil"
-                  @click="editArea(props.row)"
-                />
-                <q-btn
-                  v-if="props.row.id !== selectedAreaId && selectedAreaId != ''"
-                  flat
-                  label="Link"
-                  icon="fas fa-link"
-                  disabled
-                  @click.stop="linkArea(props.row)"
-                />
-                <q-btn
-                  flat
-                  label="Delete"
-                  icon="fas fa-trash"
-                  @click="deleteArea"
-                />
-              </q-btn-group>
-            </span>
-            <span v-else>
-              {{ col.value }}
-            </span>
-          </q-td>
-        </q-tr>
-      </template>
-    </q-table>
-  </div>
+    <template v-slot:body-cell="props">
+      <q-td
+        :props="props"
+        class="cursor-pointer"
+        @click.exact="toggleSingleRow(props.row)"
+      >
+        {{ props.value }}
+      </q-td>
+    </template>
+  </q-table>
 </template>
 
 <script lang="ts">
@@ -93,7 +47,6 @@ import { mapGetters } from 'vuex';
 import { AreaInterface } from 'src/store/area/state';
 
 const areaTableColumns = [
-  { name: 'actions', label: 'Actions', field: 'actions', sortable: false },
   { name: 'name', label: 'Name', field: 'name', sortable: true },
   {
     name: 'description',
@@ -106,20 +59,22 @@ const areaTableColumns = [
 export default {
   name: 'AreaTable',
   components: {},
+  props: {
+    selectedrow: {
+      type: Array,
+      required: true
+    }
+  },
   data() {
     return {
       areaTableColumns,
       areaTableFilter: '',
       initialPagination: {
         rowsPerPage: 0
-      },
-      selectedRow: []
+      }
     };
   },
   computed: {
-    addAreaButtonDisabled: function(): boolean {
-      return !this.$store.getters['builder/isMapSelected'];
-    },
     selectedAreaId: function(): string {
       return this.selectedArea.id;
     },
@@ -138,14 +93,13 @@ export default {
       console.log(area.id);
     },
     toggleSingleRow(row: AreaInterface) {
-      this.selectedRow = [row];
-      this.$emit('select', row)
+      this.$emit('select', row);
     },
-    deleteArea() {
-      this.$emit('deleteArea');
+    createArea() {
+      this.$emit('create');
     },
-    addArea() {
-      this.$emit('deleteArea');
+    getPaginationLabel(start: number, end: number, total: number): string {
+      return total.toString() + ' Area(s)';
     }
   }
 };

@@ -192,6 +192,9 @@ defmodule Mud.Engine.Map do
 
   """
   def changeset(%__MODULE__{} = map, attrs \\ %{}) do
+    IO.inspect(map, label: "map")
+    IO.inspect(attrs, label: "attrs")
+
     map
     |> cast(attrs, [
       :name,
@@ -213,5 +216,6 @@ defmodule Mud.Engine.Map do
       :default_zoom,
       :instance_id
     ])
+    |> IO.inspect(label: "after cast")
   end
 end

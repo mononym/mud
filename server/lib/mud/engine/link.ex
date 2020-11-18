@@ -46,7 +46,8 @@ defmodule Mud.Engine.Link do
       :departure_text,
       :from_id,
       :to_id,
-      :short_description
+      :short_description,
+      :icon
     ])
     |> validate_required([
       :type,
@@ -55,8 +56,10 @@ defmodule Mud.Engine.Link do
       :from_id,
       :to_id,
       :short_description,
-      :long_description
+      :long_description,
+      :icon
     ])
+    |> unique_constraint([:type, :from_id, :to_id])
   end
 
   @doc """
@@ -192,9 +195,13 @@ defmodule Mud.Engine.Link do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(%__MODULE__{} = link, attrs) do
+    IO.inspect(link, label: "link to update")
+    IO.inspect(attrs, label: "attrs to update")
+
     link
     |> __MODULE__.changeset(attrs)
     |> Repo.update()
+    |> IO.inspect()
   end
 
   @doc """

@@ -19,28 +19,24 @@
             icon="fas fa-eye"
             :done="step > 1"
             :header-nav="step > 1 || !isNew"
-            :caption="link.shortDescription"
+            :caption="workingLink.shortDescription"
           >
-            <p>What players see</p>
+            <p>Icon for exit that players see</p>
 
             <q-form class="q-gutter-md">
               <q-select
-                v-model="link.icon"
+                v-model="workingLink.icon"
                 filled
                 :options="iconOptions"
-                label="Standard"
                 color="teal"
                 clearable
                 options-selected-class="text-deep-orange"
                 emit-value
               >
-                <template v-slot:before>
-                  <q-icon :name="localIcon.icon" />
-                </template>
                 <template v-slot:option="scope">
                   <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
                     <q-item-section avatar>
-                      <q-icon :name="scope.opt.icon" />
+                      <q-icon :name="scope.opt.value" />
                     </q-item-section>
                     <q-item-section>
                       <q-item-label>{{ scope.opt.label }}</q-item-label>
@@ -50,14 +46,17 @@
                     </q-item-section>
                   </q-item>
                 </template>
+                <template v-slot:selected>
+                  <q-icon :name="workingLink.icon" />
+                </template>
               </q-select>
               <q-input
-                v-model="link.shortDescription"
+                v-model="workingLink.shortDescription"
                 label="Short Description"
               />
 
               <q-input
-                v-model="link.longDescription"
+                v-model="workingLink.longDescription"
                 label="Long Description"
               />
             </q-form>
@@ -82,9 +81,12 @@
             <p>What players see when a character enters and leaves an area.</p>
 
             <q-form class="q-gutter-md">
-              <q-input v-model="link.arrivalText" label="Arrival Text" />
+              <q-input v-model="workingLink.arrivalText" label="Arrival Text" />
 
-              <q-input v-model="link.departureText" label="Departure Text" />
+              <q-input
+                v-model="workingLink.departureText"
+                label="Departure Text"
+              />
             </q-form>
             <q-stepper-navigation>
               <q-btn
@@ -140,8 +142,11 @@
 
 <script lang="ts">
 import { mapGetters } from 'vuex';
-import linkState from '../store/link/state';
+import linkState, { LinkInterface } from '../store/link/state';
+import { MapInterface } from '../store/map/state';
 import axios, { AxiosResponse } from 'axios';
+import { Prop } from 'vue/types/options';
+import areaState, { AreaInterface } from 'src/store/area/state';
 
 interface IconOption {
   label: string;
@@ -152,8 +157,27 @@ interface IconOption {
 
 export default {
   name: 'LinkWizard',
+  props: {
+    link: {
+      type: Object as Prop<LinkInterface>,
+      required: true
+    },
+    map: {
+      type: Object as Prop<MapInterface>,
+      required: true
+    },
+    maps: {
+      type: Array,
+      required: true
+    },
+    areas: {
+      type: Array,
+      required: true
+    }
+  },
   data() {
     return {
+      workingLink: { ...linkState },
       step: 1,
       icon: {
         label: '',
@@ -161,7 +185,6 @@ export default {
         description: '',
         icon: ''
       },
-      link: { ...linkState },
       localIcon: {
         label: '',
         value: '',
@@ -187,6 +210,28 @@ export default {
     textContinueButtonDisabled: function(): boolean {
       return this.link.arrivalText === '' || this.link.departureText === '';
     },
+    workingLinkFromArea: function(): AreaInterface {
+      const result: AreaInterface[] = this.areas.filter(
+        area => area.id == this.workingLink.fromId
+      );
+
+      if (result.length > 0) {
+        return result[0];
+      } else {
+        return { ...areaState };
+      }
+    },
+    workingLinkToArea: function(): AreaInterface {
+      const result: AreaInterface[] = this.areas.filter(
+        area => area.id == this.workingLink.toId
+      );
+
+      if (result.length > 0) {
+        return result[0];
+      } else {
+        return { ...areaState };
+      }
+    },
     saveButtonDisabled: function(): boolean {
       return (
         this.link.shortDescription === '' ||
@@ -198,50 +243,14 @@ export default {
     allowNameHeaderSelect: function(): boolean {
       return !this.isNew;
     },
-    selectedMapName: function(): string {
-      return this.selectedMap.name;
+    isNew: function(): boolean {
+      return this.workingLink.id == '';
     },
     mapOptions: function(): Record<string, string> {
       return this.maps.map((map: Record<string, string>) => {
         map.label = map.name;
         map.value = map.id;
       });
-    },
-    ...mapGetters({
-      maps: 'builder/maps',
-      isLinkUnderConstruction: 'builder/linkUnderConstruction',
-      linkUnderConstruction: 'builder/linkUnderConstruction',
-      selectedLink: 'builder/selectedLink',
-      workingLink: 'builder/workingLink',
-      selectedMap: 'builder/selectedMap',
-      isNew: 'builder/isLinkUnderConstructionNew',
-      workingLinkToArea: 'builder/workingLinkToArea',
-      workingLinkFromArea: 'builder/workingLinkFromArea'
-    })
-  },
-  watch: {
-    isLinkUnderConstruction: function(itIs: boolean) {
-      console.log('isLinkUnderConstruction');
-      if (itIs) {
-        switch (this.linkUnderConstruction.icon) {
-          case 'compass':
-            this.localIcon = this.compassIcon();
-            break;
-          case 'door-closed':
-            this.localIcon = this.closedDoorIcon();
-            break;
-          case 'archway':
-            this.localIcon = this.archwayIcon();
-            break;
-          case 'gate':
-            this.localIcon = this.gateIcon();
-            break;
-          default:
-            this.localIcon = this.emptyIcon();
-        }
-
-        this.link = { ...this.linkUnderConstruction };
-      }
     }
   },
   created() {
@@ -252,6 +261,8 @@ export default {
       this.gateIcon(),
       this.archwayIcon()
     ];
+
+    this.workingLink = { ...this.link };
   },
   methods: {
     emptyIcon(): IconOption {
@@ -265,7 +276,7 @@ export default {
     compassIcon(): IconOption {
       return {
         label: 'Compass',
-        value: 'compass',
+        value: 'fas fa-compass',
         description: 'Directional Exit',
         icon: 'fas fa-compass'
       };
@@ -273,7 +284,7 @@ export default {
     closedDoorIcon(): IconOption {
       return {
         label: 'Closed Door',
-        value: 'door-closed',
+        value: 'fas fa-door-closed',
         description: 'Standard Closed Door',
         icon: 'fas fa-door-closed'
       };
@@ -281,7 +292,7 @@ export default {
     openDoorIcon(): IconOption {
       return {
         label: 'Open Door',
-        value: 'door-open',
+        value: 'fas fa-door-open',
         description: 'Standard Open Door',
         icon: 'fas fa-door-open'
       };
@@ -289,7 +300,7 @@ export default {
     archwayIcon(): IconOption {
       return {
         label: 'Archway',
-        value: 'archway',
+        value: 'fas fa-archway',
         description: 'Archway',
         icon: 'fas fa-archway'
       };
@@ -297,7 +308,7 @@ export default {
     gateIcon(): IconOption {
       return {
         label: 'Gate',
-        value: 'gate',
+        value: 'fas fa-dungeon',
         description: 'Gates of all types',
         icon: 'fas fa-dungeon'
       };
@@ -312,42 +323,26 @@ export default {
     saveLink() {
       const params = {
         link: {
-          arrival_text: this.link.arrivalText,
-          departure_text: this.link.departureText,
-          short_description: this.link.shortDescription,
-          long_description: this.link.longDescription,
-          icon: this.link.icon,
-          to_id: this.link.toId,
-          from_id: this.link.fromId
+          arrival_text: this.workingLink.arrivalText,
+          departure_text: this.workingLink.departureText,
+          short_description: this.workingLink.shortDescription,
+          long_description: this.workingLink.longDescription,
+          icon: this.workingLink.icon,
+          to_id: this.workingLink.toId,
+          from_id: this.workingLink.fromId
         }
       };
       let request;
       if (this.isNew) {
         request = this.$axios.post('/links', params);
       } else {
-        const id: string = this.linkUnderConstruction.id;
+        const id: string = this.workingLink.id;
         request = this.$axios.patch('/links/' + id, params);
       }
 
-      const store = this.$store;
-      const isNew = this.isNew;
-
       request
         .then(function(result: AxiosResponse) {
-          if (isNew) {
-            store.dispatch('builder/putLink', result.data).then(() => {
-              store
-                .dispatch('builder/selectLink', result.data)
-                .then(() =>
-                  store.dispatch('builder/putIsLinkUnderConstruction', false)
-                );
-            });
-          } else {
-            store.dispatch('builder/updateLink', result.data).then(() => {
-              store.dispatch('builder/selectLink', result.data);
-              store.dispatch('builder/putIsLinkUnderConstruction', false);
-            });
-          }
+          this.$emit('saved', result.data);
         })
         .catch(function() {
           alert('Error saving');

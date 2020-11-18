@@ -41,6 +41,13 @@ const actions: ActionTree<AreasInterface, StateInterface> = {
           reject();
         });
     });
+  },
+  clear({ commit }) {
+    return new Promise((resolve) => {
+      commit('clear');
+
+      resolve();
+    });
   }
 };
 

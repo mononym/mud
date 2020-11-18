@@ -21,6 +21,10 @@ const mutation: MutationTree<AreasInterface> = {
       Vue.set(state.areaIndex, area.id, index);
     });
   },
+  clear(state: AreasInterface) {
+    state.areas = [];
+    state.areaIndex = {};
+  },
   removeArea(state: AreasInterface, areaId: string) {
     state.areas.splice(state.areaIndex[areaId], 1);
     state.areaIndex = {};
