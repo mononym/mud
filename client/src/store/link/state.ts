@@ -4,13 +4,10 @@ export interface LinkInterface {
   departureText: string;
   shortDescription: string;
   longDescription: string;
+  type: string;
   icon: string;
   toId: string;
   fromId: string;
-  insertedAt: string;
-  updatedAt: string;
-  toName: string;
-  fromName: string;
 }
 
 const state: LinkInterface = {
@@ -20,12 +17,9 @@ const state: LinkInterface = {
   shortDescription: '',
   longDescription: '',
   icon: '',
+  type: '',
   toId: '',
   fromId: '',
-  insertedAt: '',
-  updatedAt: '',
-  toName: '',
-  fromName: ''
 };
 
 export default state;

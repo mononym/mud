@@ -84,8 +84,21 @@
           @cancel="areaWizardCancel"
           @save="areaWizardSave"
         />
+        <link-wizard
+          v-if="areaView == 'link'"
+          :area="{ ...selectedArea }"
+          :map="{ ...selectedMap }"
+          :link="{ ...selectedLink }"
+          :maps="maps"
+          :areas="areas"
+          @cancel="linkWizardCancel"
+          @save="linkWizardSave"
+        />
       </div>
       <q-btn-group v-if="areaView == 'details'" spread class="col-shrink">
+        <q-btn :disabled="areaDetailsButtonsDisabled" flat @click="linkArea"
+          >Link</q-btn
+        >
         <q-btn :disabled="areaDetailsButtonsDisabled" flat @click="editArea"
           >Edit</q-btn
         >
@@ -117,7 +130,7 @@ import AreaTable from '../components/AreaTable.vue';
 import MapTable from '../components/MapTable.vue';
 import MapWizard from '../components/MapWizard.vue';
 import LinkDetails from '../components/LinkDetails.vue';
-import LinkWizard from '../components/LinkWizard.vue';
+import LinkWizard from '../components/builder/LinkWizard.vue';
 import { MapInterface } from 'src/store/map/state';
 import mapState from 'src/store/map/state';
 import { AreaInterface } from 'src/store/area/state';
@@ -455,6 +468,10 @@ export default {
       this.selectedArea = this.areaTableSelectedRow[0];
       this.areaView = 'details';
     },
+    linkArea(): void {
+      this.selectedArea = this.areaTableSelectedRow[0];
+      this.areaView = 'link';
+    },
     areaTableSelect(area: AreaInterface): void {
       this.mapSelectArea(area);
     },
@@ -510,14 +527,12 @@ export default {
         });
     },
     // Link stuff
-    linkWizardSaveLink(link: LinkInterface): void {
+    linkWizardCancel(link: LinkInterface): void {
+      this.areaView = 'details';
+    },
+    linkWizardSave(link: LinkInterface): void {
       this.$store.dispatch('links/putLink', link).then(() => {
-        if (link.id != this.selectedLink.id) {
-          this.mapLinkHighlights = {};
-          this.mapLinkHighlights[link.id] = 'green';
-        }
-        this.selectedLink = link;
-        this.bottomRightPanel = 'areaTable';
+        this.areaView = 'details';
       });
     },
     linkTableToggleSingleRow(row: LinkInterface) {
