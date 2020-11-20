@@ -51,12 +51,9 @@ defmodule Mud.Engine.Link do
     ])
     |> validate_required([
       :type,
-      :arrival_text,
-      :departure_text,
       :from_id,
       :to_id,
       :short_description,
-      :long_description,
       :icon
     ])
     |> unique_constraint([:type, :from_id, :to_id])

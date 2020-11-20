@@ -22,6 +22,17 @@
           :stroke="line.stroke"
           stroke-width="2"
         />
+        <line
+          v-for="stroke in strokes"
+          :key="stroke.id"
+          :x1="stroke.x1"
+          :y1="stroke.y1"
+          :x2="stroke.x2"
+          :y2="stroke.y2"
+          :stroke="stroke.stroke"
+          stroke-dasharray="5,5"
+          stroke-width="2"
+        />
         <rect
           v-for="square in squares"
           :key="square.key"
@@ -67,15 +78,46 @@ import { mapGetters } from 'vuex';
 import { Prop } from 'vue/types/options';
 import { PropOptions } from 'vue';
 
+function buildSquare(
+  area: AreaInterface,
+  gridSize: number,
+  mapSize: number,
+  fill: string
+): Record<string, unknown> {
+  return {
+    key: area.id,
+    x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
+    y: -area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
+    width: area.mapSize,
+    height: area.mapSize,
+    fill: fill,
+    name: area.name,
+    area: area
+  };
+}
+
 export default {
   name: 'BuilderMap',
   props: {
+    showmapareapreview: {
+      type: Boolean,
+      default: false
+    },
     readonly: {
       type: Boolean,
       default: false
     },
     focusarea: {
       type: String,
+      required: false,
+      default: ''
+    },
+    maplinkpreviewarea: {
+      type: String,
+      required: true
+    },
+    mapareapreview: {
+      type: Object as Prop<AreaInterface>,
       required: true
     },
     map: {
@@ -150,7 +192,7 @@ export default {
     yCenterPoint: function(): number {
       if (this.areaIndex[this.focusarea] != undefined) {
         return (
-          -(this.areas[this.areaIndex[this.focusarea]].mapY) * this.gridSize +
+          -this.areas[this.areaIndex[this.focusarea]].mapY * this.gridSize +
           this.mapSize / 2
         );
       } else {
@@ -189,37 +231,37 @@ export default {
       const areas = this.areas;
       const self = this;
 
-      return (
-        this.links
-          .filter(
-            link =>
-              areas[areaIndex[link.toId]] != undefined &&
-              areas[areaIndex[link.fromId]] != undefined
-          )
-          .map(function(link: LinkInterface) {
-            const toArea = areas[areaIndex[link.toId]];
-            const fromArea = areas[areaIndex[link.fromId]];
+      const links = this.links
+        .filter(
+          link =>
+            areas[areaIndex[link.toId]] != undefined &&
+            areas[areaIndex[link.fromId]] != undefined
+        )
+        .map(function(link: LinkInterface) {
+          const toArea = areas[areaIndex[link.toId]];
+          const fromArea = areas[areaIndex[link.fromId]];
 
-            return {
-              id: link.id,
-              x1: fromArea.mapX * gridSize + mapSize / 2,
-              y1: -(fromArea.mapY) * gridSize + mapSize / 2,
-              x2: toArea.mapX * gridSize + mapSize / 2,
-              y2: -(toArea.mapY) * gridSize + mapSize / 2,
-              stroke: self.maplinkhighlights[link.id] || 'white'
-            };
-          })
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .sort(function(firstLink: any, secondLink: any) {
-            if (self.maplinkhighlights[firstLink.id] != undefined) {
-              return 1;
-            } else if (self.maplinkhighlights[secondLink.id] != undefined) {
-              return -1;
-            } else {
-              return 0;
-            }
-          })
-      );
+          return {
+            id: link.id,
+            x1: fromArea.mapX * gridSize + mapSize / 2,
+            y1: -fromArea.mapY * gridSize + mapSize / 2,
+            x2: toArea.mapX * gridSize + mapSize / 2,
+            y2: -toArea.mapY * gridSize + mapSize / 2,
+            stroke: self.maplinkhighlights[link.id] || 'white'
+          };
+        })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .sort(function(firstLink: any, secondLink: any) {
+          if (self.maplinkhighlights[firstLink.id] != undefined) {
+            return 1;
+          } else if (self.maplinkhighlights[secondLink.id] != undefined) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+
+      return links;
     },
     squares: function(): Record<string, unknown>[] {
       // To take care of the case of displaying incorrect lines/squares configuration while map is loading
@@ -230,20 +272,48 @@ export default {
       const gridSize = this.gridSize;
       const mapSize = this.mapSize;
       const self = this;
+      const areas = this.areas;
 
-      return this.areas.map(function(area: AreaInterface) {
-        return {
-          key: area.id,
-          x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
-          y: -(area.mapY) * gridSize + mapSize / 2 - area.mapSize / 2,
-          width: area.mapSize,
-          height: area.mapSize,
-          fill: self.mapareahighlights[area.id] || 'blue',
-          name: area.name,
-          area: area
-        };
+      const squares = areas.map(function(area: AreaInterface) {
+        const color =
+          self.maplinkpreviewarea == area.id ||
+          self.mapareapreview.id == area.id
+            ? 'orange'
+            : self.mapareahighlights[area.id] || 'blue';
+        return buildSquare(area, gridSize, mapSize, color);
       });
+
+      if (this.showmapareapreview) {
+        squares.push(
+          buildSquare(this.mapareapreview, gridSize, mapSize, 'orange')
+        );
+      }
+
+      return squares;
     },
+    strokes: function(): Record<string, unknown>[] {
+      // To take care of the case of displaying incorrect lines/squares configuration while map is loading
+      if (this.focusarea == '' || this.maplinkpreviewarea == '') {
+        return [];
+      }
+
+      const toArea = this.areas[this.areaIndex[this.maplinkpreviewarea]];
+      const fromArea = this.areas[this.areaIndex[this.focusarea]];
+      const gridSize = this.gridSize;
+      const mapSize = this.mapSize;
+      const self = this;
+      return [
+        {
+          id: 'preview',
+          x1: fromArea.mapX * gridSize + mapSize / 2,
+          y1: -fromArea.mapY * gridSize + mapSize / 2,
+          x2: toArea.mapX * gridSize + mapSize / 2,
+          y2: -toArea.mapY * gridSize + mapSize / 2,
+          stroke: 'orange'
+        }
+      ];
+    },
+    // <path stroke-dasharray="10,10" d="M5 40 l215 0" />
     ...mapGetters({
       instanceBeingBuilt: 'instances/instanceBeingBuilt'
       // isAreaSelected: 'builder/isAreaSelected',

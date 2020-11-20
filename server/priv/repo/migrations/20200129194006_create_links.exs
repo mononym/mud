@@ -10,8 +10,8 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:departure_text, :citext)
       add(:arrival_text, :citext)
       add(:icon, :citext)
-      add(:from_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
-      add(:to_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
+      add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
+      add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
       add(:instance_id, references(:instances, on_delete: :delete_all, type: :binary_id))
 
       timestamps()

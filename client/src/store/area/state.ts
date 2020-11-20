@@ -16,7 +16,7 @@ const state: AreaInterface = {
   name: '',
   mapX: 0,
   mapY: 0,
-  mapSize: 0,
+  mapSize: 20,
   mapId: '',
   instanceId: '',
   regionId: '',

@@ -5,9 +5,13 @@ import Vue from 'vue'
 
 const mutation: MutationTree<LinksInterface> = {
     putLink(state: LinksInterface, link: LinkInterface) {
-      Vue.set(state.linkIndex, link.id, state.links.length);
-  
-      state.links.push(link);
+      if (state.linkIndex[link.id] != undefined) {
+        Vue.set(state.links, state.linkIndex[link.id], link);
+      } else {
+        Vue.set(state.linkIndex, link.id, state.links.length);
+    
+        state.links.push(link);
+      }
     },
     putLinks(state: LinksInterface, links: LinkInterface[]) {
       state.links = links;

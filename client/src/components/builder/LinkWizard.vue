@@ -15,7 +15,6 @@
         filled
         :options="mapOptions"
         color="teal"
-        clearable
         options-selected-class="text-deep-orange"
         label="Map containing the other Area"
         emit-value
@@ -26,18 +25,20 @@
         filled
         :options="otherAreaOptions"
         color="teal"
-        clearable
         options-selected-class="text-deep-orange"
         label="Area on the other side of the link"
         emit-value
-        :display-value="otherArea.name"
-      />
+        @input="previewLink"
+      >
+        <template v-slot:selected>
+          {{ otherArea.name }}
+        </template>
+      </q-select>
       <q-select
         v-model="workingLink.type"
         filled
         :options="['direction', 'object']"
         color="teal"
-        clearable
         options-selected-class="text-deep-orange"
         label="Type"
       />
@@ -47,9 +48,9 @@
         filled
         :options="iconOptions"
         color="teal"
-        clearable
         options-selected-class="text-deep-orange"
         emit-value
+        label="Icon"
       >
         <template v-slot:option="scope">
           <q-item v-bind="scope.itemProps" v-on="scope.itemEvents">
@@ -66,8 +67,31 @@
           <q-icon :name="workingLink.icon" />
         </template>
       </q-select>
-      <q-input
+      <q-select
+        v-show="workingLink.type == 'direction'"
         v-model="workingLink.shortDescription"
+        filled
+        :options="[
+          'north',
+          'south',
+          'east',
+          'west',
+          'northeast',
+          'northwest',
+          'southwest',
+          'southeast',
+          'up',
+          'down',
+          'in',
+          'out'
+        ]"
+        color="teal"
+        options-selected-class="text-deep-orange"
+        label="Short Description"
+      />
+      <q-input
+        v-show="workingLink.type == 'object'"
+        v-model.lazy="workingLink.shortDescription"
         label="Short Description"
       />
 
@@ -81,11 +105,7 @@
         v-model="workingLink.departureText"
         label="Departure Text"
       />
-      <q-input
-        v-show="workingLink.type == 'object'"
-        v-model="workingLink.arrivalText"
-        label="Arrival Text"
-      />
+      <q-input v-model="workingLink.arrivalText" label="Arrival Text" />
     </q-form>
     <q-btn-group spread class="col-shrink">
       <q-btn flat @click="save">Save</q-btn>
@@ -124,6 +144,10 @@ export default {
       type: Object as Prop<AreaInterface>,
       required: true
     },
+    otherarea: {
+      type: Object as Prop<AreaInterface>,
+      required: true
+    },
     maps: {
       type: Array,
       required: true
@@ -135,8 +159,8 @@ export default {
   },
   data() {
     return {
+      otherAreaForValidation: { ...this.areaState },
       loadedAreas: [],
-      otherArea: { ...areaState },
       mapForOtherArea: { ...mapState },
       linkDirection: 'outgoing',
       workingLink: { ...linkState },
@@ -166,7 +190,8 @@ export default {
             'An unpaved path. Smaller and less "formal" than a road.',
           icon: 'fas fa-wand'
         }
-      ]
+      ],
+      otherArea: { ...areaState }
     };
   },
   computed: {
@@ -174,6 +199,9 @@ export default {
       return this.maps.map(function(map) {
         return { label: map.name, value: map };
       });
+    },
+    otherAreaName: function(): string {
+      return this.otherArea.name;
     },
     otherAreaOptions: function(): Array<Record<string, unknown>> {
       if (
@@ -190,89 +218,84 @@ export default {
       return this.loadedAreas.map(function(area) {
         return { label: area.name, value: area };
       });
-    },
-    descriptionContinueButtonDisabled: function(): boolean {
-      return (
-        this.link.shortDescription === '' || this.link.longDescription === ''
-      );
-    },
-    textContinueButtonDisabled: function(): boolean {
-      return this.link.arrivalText === '' || this.link.departureText === '';
-    },
-    workingLinkFromArea: function(): AreaInterface {
-      const result: AreaInterface[] = this.areas.filter(
-        area => area.id == this.workingLink.fromId
-      );
-
-      if (result.length > 0) {
-        return result[0];
-      } else {
-        return { ...areaState };
+    }
+  },
+  watch: {
+    otherarea: function(newArea: AreaInterface) {
+      if (newArea.id != this.otherAreaForValidation.id) {
+        this.otherAreaForValidation = newArea;
+        this.otherArea = newArea;
       }
-    },
-    workingLinkToArea: function(): AreaInterface {
-      const result: AreaInterface[] = this.areas.filter(
-        area => area.id == this.workingLink.toId
-      );
-
-      if (result.length > 0) {
-        return result[0];
-      } else {
-        return { ...areaState };
-      }
-    },
-    saveButtonDisabled: function(): boolean {
-      return (
-        this.link.shortDescription === '' ||
-        this.link.longDescription === '' ||
-        this.link.arrivalText === '' ||
-        this.link.departureText === ''
-      );
-    },
-    allowNameHeaderSelect: function(): boolean {
-      return !this.isNew;
-    },
-    isNew: function(): boolean {
-      return this.workingLink.id == '';
-    },
-    mapOptions: function(): Record<string, string> {
-      return this.maps.map((map: Record<string, string>) => {
-        map.label = map.name;
-        map.value = map.id;
-      });
     }
   },
   created() {
     this.workingLink = { ...this.link };
     this.loadedAreas = this.areas;
     this.mapForOtherArea = this.map;
+    this.otherAreaForValidation = this.otherArea;
+
+    if (this.workingLink.id != '') {
+      const otherAreaId =
+        this.area.id == this.link.toId ? this.link.fromId : this.link.toId;
+
+      this.otherArea = this.areas.filter(area => area.id == otherAreaId)[0];
+
+      this.$emit('preview', this.otherArea.id)
+
+      if (this.workingLink.toId == this.area.id) {
+        this.linkDirection = 'incoming';
+      }
+    }
   },
+  // updated() {
+  //   if (this.otherarea.id != this.otherAreaForValidation.id) {
+  //     this.otherAreaForValidation = this.otherarea
+  //     this.otherArea = this.otherarea
+  //   }
+  // },
   methods: {
-    cancel() {},
-    save() {},
-    saveLink() {
+    previewLink(area: AreaInterface) {
+      this.$emit('preview', area.id);
+    },
+    cancel() {
+      this.$emit('cancel');
+    },
+    save() {
+      const fromId =
+        this.linkDirection == 'incoming' ? this.otherArea.id : this.area.id;
+      const toId =
+        this.linkDirection == 'outgoing' ? this.otherArea.id : this.area.id;
+      const icon =
+        this.workingLink.type == 'direction'
+          ? 'fas fa-compass'
+          : this.workingLink.icon;
+
+      const isNew = this.workingLink.id == '';
       const params = {
         link: {
           arrival_text: this.workingLink.arrivalText,
           departure_text: this.workingLink.departureText,
           short_description: this.workingLink.shortDescription,
           long_description: this.workingLink.longDescription,
-          icon: this.workingLink.icon,
-          to_id: this.workingLink.toId,
-          from_id: this.workingLink.fromId
+          icon: icon,
+          to_id: toId,
+          from_id: fromId,
+          type: this.workingLink.type
         }
       };
       let request;
-      if (this.isNew) {
+      if (isNew) {
         request = this.$axios.post('/links', params);
       } else {
         const id: string = this.workingLink.id;
         request = this.$axios.patch('/links/' + id, params);
       }
 
+      const self = this;
+
       request
         .then(function(result: AxiosResponse) {
-          this.$emit('saved', result.data);
+          self.$emit('save', result.data);
         })
         .catch(function() {
           alert('Error saving');

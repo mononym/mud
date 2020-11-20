@@ -22,6 +22,12 @@
             </q-item-section>
 
             <q-item-section>{{ link.arrivalText }}</q-item-section>
+            <q-item-section top side>
+              <div class="text-grey-8 q-gutter-xs">
+                <q-btn flat icon="fas fa-edit" @click="editLink(link)" />
+                <q-btn flat icon="fas fa-trash" @click="promptForDelete(link.arrivalText, deleteLink, link)" />
+              </div>
+            </q-item-section>
           </q-item>
         </q-list>
       </div>
@@ -36,6 +42,12 @@
             </q-item-section>
 
             <q-item-section>{{ link.shortDescription }}</q-item-section>
+            <q-item-section top side>
+              <div class="text-grey-8 q-gutter-xs">
+                <q-btn flat icon="fas fa-edit" @click="editLink(link)" />
+                <q-btn flat icon="fas fa-trash" @click="promptForDelete(link.shortDescription, deleteLink, link)" />
+              </div>
+            </q-item-section>
           </q-item>
         </q-list>
       </div>
@@ -161,11 +173,11 @@ export default {
     createLink() {
       this.$emit('createLink');
     },
-    deleteLink() {
-      this.$emit('deleteLink');
+    deleteLink(link: LinkInterface) {
+      this.$emit('deleteLink', link);
     },
-    editLink() {
-      this.$emit('editLink');
+    editLink(link: LinkInterface) {
+      this.$emit('editLink', link);
     },
     linkTableGetPaginationLabel(
       start: number,
@@ -175,7 +187,7 @@ export default {
       return total.toString() + ' Link(s)';
     },
     // Common stuff
-    promptForDelete(name: string, callback) {
+    promptForDelete(name: string, callback, link) {
       this.$q
         .dialog({
           title: "Delete '" + name + "'?",
@@ -189,7 +201,7 @@ export default {
           persistent: true
         })
         .onOk(() => {
-          callback();
+          callback(link);
         });
     }
   }

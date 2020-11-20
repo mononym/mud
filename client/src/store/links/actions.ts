@@ -34,6 +34,23 @@ const actions: ActionTree<LinksInterface, StateInterface> = {
 
       resolve();
     });
+  },
+  deleteLink({ commit }, linkId: string) {
+    return new Promise((resolve, reject) => {
+      axios
+        .delete('/links/' + linkId)
+        .then(function() {
+          commit('removeLink', linkId);
+
+          resolve();
+        })
+        .catch(function(e) {
+          alert('Error when deleting link');
+          alert(e);
+
+          reject();
+        });
+    });
   }
 };
 
