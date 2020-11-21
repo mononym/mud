@@ -12,12 +12,12 @@
           :mapareapreview="{ ...areaUnderConstruction }"
           :showmapareapreview="showMapAreaPreview"
           :focusarea="focusArea"
-          :readonly="view == 'map'"
+          :readonly="view == 'map' || areaView != 'details'"
           @selectArea="mapSelectArea"
         />
       </div>
       <div class="col">
-        <map-table v-if="view == 'map'" @select="selectMap" />
+        <map-table v-show="view == 'map'" @select="selectMap" />
         <area-table
           v-if="view == 'area'"
           :selectedrow="areaTableSelectedRow"
@@ -73,12 +73,13 @@
     <div v-if="view == 'area'" class="col flex column">
       <div class="col">
         <area-details
-          v-if="areaView == 'details'"
+          v-show="areaView == 'details'"
           :area="{ ...selectedArea }"
           :areas="areas"
           :links="selectedAreaLinks"
           @editLink="areaDetailsEditLink"
           @deleteLink="areaDetailsDeleteLink"
+          @highlightLink="areaDetailsHighlightLink"
         />
         <area-wizard
           v-if="areaView == 'edit'"
@@ -93,7 +94,7 @@
           :area="{ ...selectedArea }"
           :otherarea="{ ...linkWizardOtherArea }"
           :map="{ ...selectedMap }"
-          :link="{ ...selectedLink }"
+          :link="{ ...linkUnderConstruction }"
           :maps="maps"
           :areas="areas"
           @cancel="linkWizardCancel"
@@ -119,6 +120,13 @@
         >
       </q-btn-group>
     </div>
+    <q-page-sticky
+      v-show="view == 'area'"
+      position="top-left"
+      :offset="[110, 10]"
+    >
+      <q-btn fab icon="fas fa-reply" color="primary" @click="backToMapView" />
+    </q-page-sticky>
   </div>
 </template>
 
@@ -268,6 +276,7 @@ export default {
     areaUnderConstruction: AreaInterface;
     // Link stuff
     selectedLink: LinkInterface;
+    linkUnderConstruction: LinkInterface;
     linkTableColumns: CommonColumnInterface[];
     linkTableSelectedRow: LinkInterface[];
     linkingAreas: boolean;
@@ -401,12 +410,27 @@ export default {
       this.mapView = 'details';
     },
     selectMap(map: MapInterface): void {
+      this.mapLinkHighlights = {};
+      this.mapAreaHighlights = {};
       this.$store
         .dispatch('areas/loadForMap', map.id)
         .then(() => {
           return this.$store.dispatch('links/loadForMap', map.id);
         })
         .then(() => (this.selectedMap = map));
+    },
+    backToMapView(): void {
+      this.mapLinkPreviewArea = ''
+      this.mapLinkHighlights = {};
+      this.mapAreaHighlights = {};
+      this.areaTableSelectedRow = [];
+      this.selectedArea = { ...areaState };
+      this.areaUnderConstruction = { ...areaState };
+      this.selectedLink = { ...linkState };
+      this.linkTableSelectedRow = [];
+      this.showMapAreaPreview = false;
+      this.areaView = 'details';
+      this.view = 'map';
     },
     // Area stuff
     areaWizardCancel(): void {
@@ -416,15 +440,16 @@ export default {
       this.areaView = 'details';
     },
     linkArea(): void {
+      this.mapLinkHighlights = {};
       this.selectedArea = this.areaTableSelectedRow[0];
       this.areaView = 'link';
     },
     areaTableSelect(area: AreaInterface): void {
+      this.mapLinkHighlights = {};
       this.mapSelectArea(area);
     },
     areaDetailsEditLink(link: LinkInterface): void {
-      this.selectedLink = link;
-      this.selectedArea = this.areaTableSelectedRow[0];
+      this.linkUnderConstruction = link;
       this.areaView = 'link';
     },
     areaWizardSave(area: AreaInterface): void {
@@ -458,6 +483,7 @@ export default {
       }
     },
     areaTableCreate(): void {
+      this.mapLinkHighlights = {};
       this.mapAreaHighlights = {};
       this.areaTableSelectedRow = [];
       this.selectedArea = { ...areaState };
@@ -491,12 +517,16 @@ export default {
     areaDetailsDeleteLink(link: LinkInterface): void {
       this.$store.dispatch('links/deleteLink', link.id);
     },
+    areaDetailsHighlightLink(linkId: string): void {
+      this.mapLinkHighlights = {};
+      this.mapLinkHighlights[linkId] = 'green';
+    },
     // Link stuff
     linkWizardPreview(areaId: string): void {
       this.mapLinkPreviewArea = areaId;
     },
     linkWizardCancel(): void {
-      this.selectedLink = { ...linkState };
+      this.linkUnderConstruction = {...linkState}
       this.mapLinkPreviewArea = '';
       this.creatingNewLink = false;
       this.areaView = 'details';
@@ -505,6 +535,7 @@ export default {
       this.$store.dispatch('links/putLink', link).then(() => {
         this.mapLinkPreviewArea = '';
         this.creatingNewLink = false;
+        this.linkUnderConstruction = {...linkState}
         this.areaView = 'details';
       });
     },

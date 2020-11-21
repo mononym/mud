@@ -295,6 +295,7 @@ export default {
 
       request
         .then(function(result: AxiosResponse) {
+          self.$emit('highlightLink', 'result.data.id');
           self.$emit('save', result.data);
         })
         .catch(function() {

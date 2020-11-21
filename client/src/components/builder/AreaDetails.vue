@@ -16,16 +16,28 @@
           <q-toolbar-title>Incoming Links</q-toolbar-title>
         </q-toolbar>
         <q-list bordered separator>
-          <q-item v-for="link in incomingLinks" :key="link.id">
+          <q-item
+            v-for="incoming in incomingLinks"
+            :key="incoming.id"
+            clickable
+            :active="incoming.id == highlightedLink"
+            @click="highlightLink(incoming)"
+          >
             <q-item-section avatar>
-              <q-icon color="primary" :name="link.icon" />
+              <q-icon color="primary" :name="incoming.icon" />
             </q-item-section>
 
-            <q-item-section>{{ link.arrivalText }}</q-item-section>
+            <q-item-section>{{ incoming.arrivalText }}</q-item-section>
             <q-item-section top side>
               <div class="text-grey-8 q-gutter-xs">
-                <q-btn flat icon="fas fa-edit" @click="editLink(link)" />
-                <q-btn flat icon="fas fa-trash" @click="promptForDelete(link.arrivalText, deleteLink, link)" />
+                <q-btn flat icon="fas fa-edit" @click="editLink(incoming)" />
+                <q-btn
+                  flat
+                  icon="fas fa-trash"
+                  @click="
+                    promptForDelete(incoming.arrivalText, deleteLink, link)
+                  "
+                />
               </div>
             </q-item-section>
           </q-item>
@@ -36,16 +48,28 @@
           <q-toolbar-title>Outgoing Links</q-toolbar-title>
         </q-toolbar>
         <q-list bordered separator>
-          <q-item v-for="link in outgoingLinks" :key="link.id">
+          <q-item
+            v-for="outgoing in outgoingLinks"
+            :key="outgoing.id"
+            clickable
+            :active="outgoing.id == highlightedLink"
+            @click="highlightLink(outgoing)"
+          >
             <q-item-section avatar>
-              <q-icon color="primary" :name="link.icon" />
+              <q-icon color="primary" :name="outgoing.icon" />
             </q-item-section>
 
-            <q-item-section>{{ link.shortDescription }}</q-item-section>
+            <q-item-section>{{ outgoing.shortDescription }}</q-item-section>
             <q-item-section top side>
               <div class="text-grey-8 q-gutter-xs">
-                <q-btn flat icon="fas fa-edit" @click="editLink(link)" />
-                <q-btn flat icon="fas fa-trash" @click="promptForDelete(link.shortDescription, deleteLink, link)" />
+                <q-btn flat icon="fas fa-edit" @click="editLink(outgoing)" />
+                <q-btn
+                  flat
+                  icon="fas fa-trash"
+                  @click="
+                    promptForDelete(outgoing.shortDescription, deleteLink, link)
+                  "
+                />
               </div>
             </q-item-section>
           </q-item>
@@ -128,6 +152,7 @@ export default {
       linkTableColumns,
       selectedArea: defaultArea,
       confirmDelete: false,
+      highlightedLink: '',
       tab: 'description',
       link: null,
       initialPagination: {
@@ -160,31 +185,23 @@ export default {
     },
     linkButtonsDisabled(): boolean {
       return this.linkTableSelectedRow.length == 0;
-    },
-    ...mapGetters({
-      selectedLink: 'builder/selectedLink',
-      isLinkSelected: 'builder/isLinkSelected'
-    })
+    }
   },
   methods: {
-    linkTableToggleSingleRow(row: LinkInterface) {
-      this.$emit('selectLink', row);
+    highlightLink(link: LinkInterface) {
+      this.highlightedLink = link.id;
+      this.$emit('highlightLink', link.id);
     },
     createLink() {
+      this.$emit('highlightLink', '');
       this.$emit('createLink');
     },
     deleteLink(link: LinkInterface) {
+      this.$emit('highlightLink', '');
       this.$emit('deleteLink', link);
     },
     editLink(link: LinkInterface) {
       this.$emit('editLink', link);
-    },
-    linkTableGetPaginationLabel(
-      start: number,
-      end: number,
-      total: number
-    ): string {
-      return total.toString() + ' Link(s)';
     },
     // Common stuff
     promptForDelete(name: string, callback, link) {
