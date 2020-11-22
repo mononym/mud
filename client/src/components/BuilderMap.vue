@@ -50,11 +50,11 @@
           v-for="label in labels"
           :key="label.id"
           :fill="label.fill"
-          v-bind:font-size="label.size + 'px'"
-          v-bind:font-weight="label.weight"
-          v-bind:font-style="label.style"
-          v-bind:font-family="label.family"
-          v-bind:inline-size="label.inlineSize"
+          :font-size="label.size + 'px'"
+          :font-weight="label.weight"
+          :font-style="label.style"
+          :font-family="label.family"
+          :inline-size="label.inlineSize"
           text-anchor="middle"
           :transform="
             'translate(' +
@@ -365,14 +365,20 @@ export default {
     labels: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
       const viewSize = this.viewSize;
+      let previewLabelPreviewedAlready = false
       const self = this;
       const labels = this.map.labels.map(function(label: LabelInterface) {
         if (label.id == self.maplabelpreview.id) {
+          previewLabelPreviewedAlready = true
           return buildText(self.maplabelpreview, gridSize, viewSize);
         } else {
           return buildText(label, gridSize, viewSize);
         }
       });
+
+      if (!previewLabelPreviewedAlready && this.maplabelpreview.id != '') {
+        labels.push(buildText(self.maplabelpreview, gridSize, viewSize))
+      }
 
       return labels;
     },

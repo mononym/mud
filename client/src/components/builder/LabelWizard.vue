@@ -21,13 +21,14 @@
         :step="1"
         :max="50"
         snap
+        markers
         label
         label-always
         :label-value="'font-size: ' + workingLabel.size + 'px'"
       />
       <q-input
-        filled
         v-model="workingLabel.color"
+        filled
         :rules="['anyColor']"
         label="Text Color"
         class="my-input"

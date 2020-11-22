@@ -97,7 +97,8 @@ export default {
           description: this.mapUnderConstruction.description,
           view_size: this.mapUnderConstruction.viewSize,
           grid_size: this.mapUnderConstruction.gridSize,
-          labels: this.mapUnderConstruction.labels
+          labels: this.mapUnderConstruction.labels,
+          instance_id: this.mapUnderConstruction.instanceId
         }
       };
 

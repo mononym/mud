@@ -14,6 +14,9 @@
       <div class="col">
         <q-toolbar class="bg-primary text-white shadow-2">
           <q-toolbar-title>Labels</q-toolbar-title>
+          <q-space />
+          <q-btn flat @click="createLabel">Create Label</q-btn
+        >
         </q-toolbar>
         <q-list bordered separator>
           <q-item

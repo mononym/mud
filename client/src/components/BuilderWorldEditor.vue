@@ -31,16 +31,17 @@
       <div v-if="mapView == 'details'" class="col">
         <map-details
           :map="{ ...selectedMap }"
+          @createLabel="mapDetailsCreateLabel"
           @editLabel="mapDetailsEditLabel"
           @deleteLabel="mapDetailsDeleteLabel"
           @highlightLabel="mapDetailsHighlightLabel"
         />
       </div>
 
-      <div class="col" v-if="mapView != 'details'">
+      <div v-if="mapView != 'details'" class="col">
         <map-wizard
           v-if="mapView == 'edit'"
-          :map="{ ...selectedMap }"
+          :map="{ ...mapUnderConstruction }"
           @cancel="mapWizardCancel"
           @save="mapWizardSave"
         />
@@ -52,6 +53,22 @@
           @preview="labelWizardPreview"
         />
       </div>
+
+      <q-btn-group v-if="mapView == 'details'" spread class="col-shrink">
+        <q-btn flat @click="createMap">Create</q-btn>
+        <q-btn :disabled="mapDetailsButtonsDisabled" flat @click="buildMap"
+          >Build</q-btn
+        >
+        <q-btn :disabled="mapDetailsButtonsDisabled" flat @click="editMap"
+          >Edit</q-btn
+        >
+        <q-btn
+          :disabled="mapDetailsButtonsDisabled"
+          flat
+          @click="promptForDelete(selectedMap.name, deleteMap)"
+          >Delete</q-btn
+        >
+      </q-btn-group>
     </div>
     <div v-if="view == 'area'" class="col flex column">
       <div class="col">
@@ -384,6 +401,10 @@ export default {
       this.labelUnderConstruction = { ...LabelState };
       this.mapView = 'details';
     },
+    mapDetailsCreateLabel(): void {
+      this.labelUnderConstruction = { ...LabelState };
+      this.mapView = 'label';
+    },
     mapDetailsEditLabel(label: LabelInterface): void {
       this.labelUnderConstruction = { ...label };
       this.mapView = 'label';
@@ -417,9 +438,6 @@ export default {
     mapDetailsHighlightLabel(labelId: string): void {
       this.selectedLabel = labelId;
     },
-    mapDetailsCreateLabel(): void {
-      this.mapView = 'label';
-    },
     deleteMap(): void {
       this.$store.dispatch('maps/deleteMap', this.selectedMap.id).then(() => {
         this.selectedMap = { ...mapState };
@@ -433,14 +451,21 @@ export default {
         this.mapView = 'details';
       });
     },
+    createMap(): void {
+      this.selectedMap = { ...mapState };
+      this.mapUnderConstruction = { ...this.selectedMap };
+      this.mapUnderConstruction.instanceId = this.instanceBeingBuilt.id;
+      this.mapView = 'edit';
+    },
     buildMap(): void {
       this.view = 'area';
     },
     editMap(): void {
+      this.mapUnderConstruction = { ...this.selectedMap };
       this.mapView = 'edit';
     },
     mapWizardCancel(): void {
-      this.mapUnderConstruction = { ...this.selectedMap };
+      this.mapUnderConstruction = { ...mapState };
       this.mapView = 'details';
     },
     mapWizardSave(map: MapInterface): void {
@@ -557,6 +582,7 @@ export default {
       this.areaTableSelectedRow = [];
       this.selectedArea = { ...areaState };
       this.areaUnderConstruction = { ...areaState };
+      this.areaUnderConstruction.instanceId = this.instanceBeingBuilt.id;
       this.showMapAreaPreview = true;
       this.areaView = 'edit';
     },

@@ -35,6 +35,7 @@ export interface MapInterface {
   viewSize: number;
   gridSize: number;
   labels: LabelInterface[]
+  instanceId: string
 }
 
 const state: MapInterface = {
@@ -43,7 +44,8 @@ const state: MapInterface = {
   name: '',
   viewSize: 5000,
   gridSize: 10,
-  labels: []
+  labels: [],
+  instanceId: ''
 };
 
 export default state;
