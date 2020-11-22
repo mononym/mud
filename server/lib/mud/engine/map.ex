@@ -5,18 +5,31 @@ defmodule Mud.Engine.Map do
   alias Mud.Engine.{Area, Link}
   alias Mud.Engine.Instance
   import Ecto.Query
+  require Protocol
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
+  @derive Jason.Encoder
   schema "maps" do
     field(:description, :string)
     field(:name, :string)
-    field(:map_size, :integer)
-    field(:grid_size, :integer)
-    field(:max_zoom, :integer)
-    field(:min_zoom, :integer)
-    field(:default_zoom, :integer)
+    field(:view_size, :integer, default: 10000)
+    field(:grid_size, :integer, default: 50)
     belongs_to(:instance, Instance, type: :binary_id)
+
+    embeds_many :labels, Label, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:text, :string, default: "")
+      field(:x, :integer, default: 0)
+      field(:y, :integer, default: 0)
+      field(:rotation, :integer, default: 0)
+      field(:color, :string, default: "white")
+      field(:size, :integer, default: 20)
+      field(:inline_size, :integer, default: 200)
+      field(:style, :string, default: "normal")
+      field(:weight, :string, default: "normal")
+      field(:family, :string, default: "sans-sarif")
+    end
 
     has_many(:areas, Area)
 
@@ -192,30 +205,49 @@ defmodule Mud.Engine.Map do
 
   """
   def changeset(%__MODULE__{} = map, attrs \\ %{}) do
-    IO.inspect(map, label: "map")
-    IO.inspect(attrs, label: "attrs")
-
     map
     |> cast(attrs, [
       :name,
       :description,
-      :map_size,
+      :view_size,
       :grid_size,
-      :max_zoom,
-      :min_zoom,
-      :default_zoom,
       :instance_id
     ])
     |> validate_required([
       :name,
       :description,
-      :map_size,
+      :view_size,
       :grid_size,
-      :max_zoom,
-      :min_zoom,
-      :default_zoom,
       :instance_id
     ])
-    |> IO.inspect(label: "after cast")
+    |> cast_embed(:labels, with: &labels_changeset/2)
+  end
+
+  defp labels_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :text,
+      :x,
+      :y,
+      :rotation,
+      :color,
+      :size,
+      :inline_size,
+      :style,
+      :weight,
+      :family
+    ])
+    |> validate_required([
+      :text,
+      :x,
+      :y,
+      :rotation,
+      :color,
+      :size,
+      :inline_size,
+      :style,
+      :weight,
+      :family
+    ])
   end
 end

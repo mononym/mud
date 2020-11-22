@@ -165,26 +165,11 @@ export default {
     };
   },
   computed: {
-    areaNameIndex(): Record<string, string> {
-      const index = {};
-      this.areas.forEach(area => (index[area.id] = area.name));
-      return index;
-    },
     incomingLinks(): LinkInterface[] {
       return this.links.filter(link => link.toId == this.area.id);
     },
     outgoingLinks(): LinkInterface[] {
       return this.links.filter(link => link.fromId == this.area.id);
-    },
-    linkTableSelectedRow(): LinkInterface[] {
-      // if (this.link.id != '') {
-      //   return [this.link];
-      // } else {
-      return [];
-      // }
-    },
-    linkButtonsDisabled(): boolean {
-      return this.linkTableSelectedRow.length == 0;
     }
   },
   methods: {

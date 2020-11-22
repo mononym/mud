@@ -53,70 +53,32 @@ export default {
             label: 'Description',
             subLabel: 'A description of the area the map represents.'
           },
-          // {
-          //   id: 'mapSize',
-          //   component: 'QSlider',
-          //   label: 'Map Size',
-          //   subLabel:
-          //     'The total area available for the map. Impacts zooming behaviour',
-          //   // component props:
-          //   min: 100,
-          //   max: 10000,
-          //   labelAlways: true,
-          //   default: 5000,
-          //   step: 100
-          // },
-          // {
-          //   id: 'gridSize',
-          //   component: 'QSlider',
-          //   label: 'Grid Size',
-          //   subLabel:
-          //     'The pixel separation of the grid lines. Impacts how rooms are placed in relation to each other',
-          //   // component props:
-          //   min: 10,
-          //   max: 100,
-          //   labelAlways: true,
-          //   default: 50,
-          //   step: 10
-          // },
-          // {
-          //   id: 'maxZoom',
-          //   component: 'QSlider',
-          //   label: 'Max Zoom',
-          //   subLabel:
-          //     'The largest the map can be made when viewing. Must be lower than Min Zoom.',
-          //   // component props:
-          //   min: 100,
-          //   max: 10000,
-          //   labelAlways: true,
-          //   default: 500,
-          //   step: 100
-          // },
-          // {
-          //   id: 'minZoom',
-          //   component: 'QSlider',
-          //   label: 'Min Zoom',
-          //   subLabel:
-          //     'The smallest the map can be made when viewing. Must be higher than Max Zoom.',
-          //   // component props:
-          //   min: 100,
-          //   max: 10000,
-          //   labelAlways: true,
-          //   default: 5000,
-          //   step: 100
-          // },
-          // {
-          //   id: 'defaultZoom',
-          //   component: 'QSlider',
-          //   label: 'Default Zoom',
-          //   subLabel: 'The default zoom level when a map is opened',
-          //   // component props:
-          //   min: 500,
-          //   max: 10000,
-          //   labelAlways: true,
-          //   default: 5000,
-          //   step: 100
-          // }
+          {
+            id: 'viewSize',
+            component: 'QSlider',
+            label: 'Map Size',
+            subLabel:
+              'The total area available for the map. Impacts zooming behaviour',
+            // component props:
+            min: 1000,
+            max: 10000,
+            labelAlways: true,
+            default: 5000,
+            step: 100
+          },
+          {
+            id: 'gridSize',
+            component: 'QSlider',
+            label: 'Grid Size',
+            subLabel:
+              'The pixel separation of the grid lines. Impacts how rooms are placed in relation to each other',
+            // component props:
+            min: 10,
+            max: 100,
+            labelAlways: true,
+            default: 50,
+            step: 10
+          }
         ]
       };
     }
@@ -133,11 +95,9 @@ export default {
         map: {
           name: this.mapUnderConstruction.name,
           description: this.mapUnderConstruction.description,
-          map_size: this.mapUnderConstruction.mapSize,
+          view_size: this.mapUnderConstruction.viewSize,
           grid_size: this.mapUnderConstruction.gridSize,
-          max_zoom: this.mapUnderConstruction.maxZoom,
-          min_zoom: this.mapUnderConstruction.minZoom,
-          default_zoom: this.mapUnderConstruction.defaultZoom
+          labels: this.mapUnderConstruction.labels
         }
       };
 

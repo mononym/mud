@@ -1,23 +1,49 @@
+export interface LabelInterface {
+    id: string;
+    x: number;
+    y: number;
+    text: string
+    rotation: number
+    color: string
+    size: number
+    inlineSize: number
+    style: string
+    weight: string
+    family: string
+  }
+
+  const LabelState: LabelInterface =  {
+  id: '',
+  x: 0,
+  y: 0,
+  text: '',
+  rotation: 0,
+  color: '',
+  size: 20,
+  inlineSize: 200,
+  style: 'normal',
+  weight: 'normal',
+  family: 'sans-sarif'
+}
+
+export {LabelState}
+
 export interface MapInterface {
   id: string;
   description: string;
   name: string;
-  mapSize: number;
+  viewSize: number;
   gridSize: number;
-  maxZoom: number;
-  minZoom: number;
-  defaultZoom: number;
+  labels: LabelInterface[]
 }
 
 const state: MapInterface = {
   id: '',
   description: '',
   name: '',
-  mapSize: 1000,
+  viewSize: 5000,
   gridSize: 10,
-  maxZoom: 500,
-  minZoom: 1000,
-  defaultZoom: 1000
+  labels: []
 };
 
 export default state;

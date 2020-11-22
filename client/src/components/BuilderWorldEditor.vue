@@ -3,13 +3,14 @@
     <div class="col flex column full-height">
       <div class="col">
         <builder-map
-          :map="selectedMap"
+          :map="{ ...selectedMap }"
           :areas="areas"
           :links="links"
           :mapareahighlights="mapAreaHighlights"
           :maplinkhighlights="mapLinkHighlights"
           :maplinkpreviewarea="mapLinkPreviewArea"
           :mapareapreview="{ ...areaUnderConstruction }"
+          :maplabelpreview="{ ...labelUnderConstruction }"
           :showmapareapreview="showMapAreaPreview"
           :focusarea="focusArea"
           :readonly="view == 'map' || areaView != 'details'"
@@ -27,46 +28,28 @@
       </div>
     </div>
     <div v-if="view == 'map'" class="col flex column">
-      <q-card v-if="mapView == 'details'" class="col flex column">
-        <q-card-section class="col-shrink">
-          <div class="text-h6">{{ selectedMap.name }}</div>
-        </q-card-section>
+      <div v-if="mapView == 'details'" class="col">
+        <map-details
+          :map="{ ...selectedMap }"
+          @editLabel="mapDetailsEditLabel"
+          @deleteLabel="mapDetailsDeleteLabel"
+          @highlightLabel="mapDetailsHighlightLabel"
+        />
+      </div>
 
-        <q-card-section class="col">
-          {{ selectedMap.description }}
-        </q-card-section>
-
-        <q-separator class="col-1px" dark />
-
-        <q-card-actions class="flex col-shrink">
-          <q-btn
-            class="col"
-            flat
-            :disabled="mapDetailsButtonsDisabled"
-            @click="buildMap"
-            >Build</q-btn
-          >
-          <q-btn
-            class="col"
-            flat
-            :disabled="mapDetailsButtonsDisabled"
-            @click="editMap"
-            >Edit</q-btn
-          >
-          <q-btn
-            class="col"
-            flat
-            :disabled="mapDetailsButtonsDisabled"
-            @click="promptForDelete(selectedMap.name, deleteMap)"
-            >Delete</q-btn
-          >
-        </q-card-actions>
-      </q-card>
-      <div v-if="mapView == 'edit'" class="col">
+      <div class="col" v-if="mapView != 'details'">
         <map-wizard
+          v-if="mapView == 'edit'"
           :map="{ ...selectedMap }"
           @cancel="mapWizardCancel"
           @save="mapWizardSave"
+        />
+        <label-wizard
+          v-if="mapView == 'label'"
+          :label="{ ...labelUnderConstruction }"
+          @cancel="labelWizardCancel"
+          @save="labelWizardSave"
+          @preview="labelWizardPreview"
         />
       </div>
     </div>
@@ -143,8 +126,10 @@ import AreaWizard from '../components/AreaWizard.vue';
 import AreaTable from '../components/AreaTable.vue';
 import MapTable from '../components/MapTable.vue';
 import MapWizard from '../components/MapWizard.vue';
+import MapDetails from '../components/builder/MapDetails.vue';
 import LinkWizard from '../components/builder/LinkWizard.vue';
-import { MapInterface } from 'src/store/map/state';
+import LabelWizard from '../components/builder/LabelWizard.vue';
+import { LabelState, LabelInterface, MapInterface } from 'src/store/map/state';
 import mapState from 'src/store/map/state';
 import { AreaInterface } from 'src/store/area/state';
 import areaState from 'src/store/area/state';
@@ -265,7 +250,9 @@ export default {
     LinkWizard,
     MapTable,
     MapWizard,
-    AreaDetails
+    AreaDetails,
+    MapDetails,
+    LabelWizard
   },
   data(): {
     selectedMap: MapInterface;
@@ -299,8 +286,10 @@ export default {
     mapLinkPreviewArea: string;
     showMapAreaPreview: boolean;
     // Map stuff
+    labelUnderConstruction: LabelInterface;
     mapAreaHighlights: Record<string, string>;
     mapLinkHighlights: Record<string, string>;
+    selectedLabel: string;
   } {
     return {
       selectedMap: { ...mapState },
@@ -309,6 +298,7 @@ export default {
       areaTableSelectedRow: [],
       selectedArea: { ...areaState },
       areaUnderConstruction: { ...areaState },
+      labelUnderConstruction: { ...LabelState },
       // Link stuff
       selectedLink: { ...linkState },
       linkTableColumns,
@@ -316,6 +306,7 @@ export default {
       linkingAreas: false,
       linkWizardOtherArea: { ...areaState },
       creatingNewLink: false,
+      linkUnderConstruction: { ...linkState },
       // UI stuff
       bottomLeftPanel: 'mapTable',
       bottomRightPanel: 'areaTable',
@@ -336,7 +327,8 @@ export default {
       // Map stuff
       mapAreaHighlights: {},
       mapLinkHighlights: {},
-      mapLinkPreviewArea: ''
+      mapLinkPreviewArea: '',
+      selectedLabel: ''
     };
   },
   computed: {
@@ -380,6 +372,54 @@ export default {
   },
   methods: {
     // Map stuff
+    labelWizardPreview(label: LabelInterface): void {
+      console.log('preview');
+      if (label.id == '') {
+        label.id = 'preview';
+      }
+
+      this.labelUnderConstruction = { ...label };
+    },
+    labelWizardCancel(): void {
+      this.labelUnderConstruction = { ...LabelState };
+      this.mapView = 'details';
+    },
+    mapDetailsEditLabel(label: LabelInterface): void {
+      this.labelUnderConstruction = { ...label };
+      this.mapView = 'label';
+    },
+    labelWizardSave(label: LabelInterface): void {
+      const map: MapInterface = { ...this.selectedMap };
+
+      const params = {
+        id: map.id,
+        description: map.description,
+        name: map.name,
+        viewSize: map.viewSize,
+        gridSize: map.gridSize,
+        labels: map.labels.filter(lab => lab.id != label.id)
+      };
+
+      params.labels.push(label);
+
+      this.saveMap(params);
+      this.selectedMap = params;
+      this.labelUnderConstruction = { ...LabelState };
+      this.mapView = 'details';
+    },
+    mapDetailsDeleteLabel(labelId: string): void {
+      this.selectedMap.labels = this.selectedMap.labels.filter(function(label) {
+        return label.id != labelId;
+      });
+
+      this.saveMap(this.selectedMap);
+    },
+    mapDetailsHighlightLabel(labelId: string): void {
+      this.selectedLabel = labelId;
+    },
+    mapDetailsCreateLabel(): void {
+      this.mapView = 'label';
+    },
     deleteMap(): void {
       this.$store.dispatch('maps/deleteMap', this.selectedMap.id).then(() => {
         this.selectedMap = { ...mapState };
@@ -404,10 +444,39 @@ export default {
       this.mapView = 'details';
     },
     mapWizardSave(map: MapInterface): void {
-      this.$store.dispatch('maps/putMap', map);
-      this.selectedMap = map;
+      this.saveMap(map);
+      this.selectedMap = { ...map };
       this.mapUnderConstruction = { ...mapState };
       this.mapView = 'details';
+    },
+    saveMap(map: MapInterface): void {
+      const params = {
+        map: {
+          id: map.id,
+          name: map.name,
+          description: map.description,
+          view_size: map.viewSize,
+          grid_size: map.gridSize,
+          labels: map.labels
+        }
+      };
+
+      let request;
+      let id: string = map.id;
+
+      if (map.id == '') {
+        request = this.$axios.post('/maps', params);
+      } else {
+        request = this.$axios.patch('/maps/' + id, params);
+      }
+
+      request
+        .then(result => {
+          this.$store.dispatch('maps/putMap', result.data);
+        })
+        .catch(function() {
+          alert('Error saving');
+        });
     },
     selectMap(map: MapInterface): void {
       this.mapLinkHighlights = {};
@@ -417,10 +486,10 @@ export default {
         .then(() => {
           return this.$store.dispatch('links/loadForMap', map.id);
         })
-        .then(() => (this.selectedMap = map));
+        .then(() => (this.selectedMap = { ...map }));
     },
     backToMapView(): void {
-      this.mapLinkPreviewArea = ''
+      this.mapLinkPreviewArea = '';
       this.mapLinkHighlights = {};
       this.mapAreaHighlights = {};
       this.areaTableSelectedRow = [];
@@ -526,7 +595,7 @@ export default {
       this.mapLinkPreviewArea = areaId;
     },
     linkWizardCancel(): void {
-      this.linkUnderConstruction = {...linkState}
+      this.linkUnderConstruction = { ...linkState };
       this.mapLinkPreviewArea = '';
       this.creatingNewLink = false;
       this.areaView = 'details';
@@ -535,7 +604,7 @@ export default {
       this.$store.dispatch('links/putLink', link).then(() => {
         this.mapLinkPreviewArea = '';
         this.creatingNewLink = false;
-        this.linkUnderConstruction = {...linkState}
+        this.linkUnderConstruction = { ...linkState };
         this.areaView = 'details';
       });
     },

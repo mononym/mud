@@ -46,8 +46,33 @@
         >
           <title>{{ square.name }}</title>
         </rect>
+        <text
+          v-for="label in labels"
+          :key="label.id"
+          :fill="label.fill"
+          v-bind:font-size="label.size + 'px'"
+          v-bind:font-weight="label.weight"
+          v-bind:font-style="label.style"
+          v-bind:font-family="label.family"
+          v-bind:inline-size="label.inlineSize"
+          text-anchor="middle"
+          :transform="
+            'translate(' +
+              label.x +
+              ',' +
+              label.y +
+              ') rotate(' +
+              label.rotate +
+              ')'
+          "
+        >
+          {{ label.text }}
+        </text>
       </svg>
     </q-card-section>
+
+    <!-- <rect x="50" y="20" width="150" height="150"
+  style="fill:blue;stroke:pink;stroke-width:5;fill-opacity:0.1;stroke-opacity:0.9" /> -->
 
     <q-separator class="col-1px full-width" dark />
 
@@ -73,7 +98,7 @@
 <script lang="ts">
 import { AreaInterface } from 'src/store/area/state';
 import { LinkInterface } from 'src/store/link/state';
-import { MapInterface } from 'src/store/map/state';
+import { LabelInterface, MapInterface } from 'src/store/map/state';
 import { mapGetters } from 'vuex';
 import { Prop } from 'vue/types/options';
 import { PropOptions } from 'vue';
@@ -81,18 +106,38 @@ import { PropOptions } from 'vue';
 function buildSquare(
   area: AreaInterface,
   gridSize: number,
-  mapSize: number,
+  viewSize: number,
   fill: string
 ): Record<string, unknown> {
   return {
     key: area.id,
-    x: area.mapX * gridSize + mapSize / 2 - area.mapSize / 2,
-    y: -area.mapY * gridSize + mapSize / 2 - area.mapSize / 2,
+    x: area.mapX * gridSize + viewSize / 2 - area.mapSize / 2,
+    y: -area.mapY * gridSize + viewSize / 2 - area.mapSize / 2,
     width: area.mapSize,
     height: area.mapSize,
     fill: fill,
     name: area.name,
     area: area
+  };
+}
+
+function buildText(
+  label: LabelInterface,
+  gridSize: number,
+  viewSize: number
+): Record<string, unknown> {
+  return {
+    key: label.id,
+    x: label.x * gridSize + viewSize / 2,
+    y: -label.y * gridSize + viewSize / 2,
+    text: label.text,
+    fill: label.color,
+    size: label.size,
+    weight: label.weight,
+    style: label.style,
+    rotate: label.rotation,
+    family: label.family,
+    inlineSize: label.inlineSize
   };
 }
 
@@ -118,6 +163,10 @@ export default {
     },
     mapareapreview: {
       type: Object as Prop<AreaInterface>,
+      required: true
+    },
+    maplabelpreview: {
+      type: Object as Prop<LabelInterface>,
       required: true
     },
     map: {
@@ -183,20 +232,20 @@ export default {
       if (this.areaIndex[this.focusarea] != undefined) {
         return (
           this.areas[this.areaIndex[this.focusarea]].mapX * this.gridSize +
-          this.mapSize / 2
+          this.viewSize / 2
         );
       } else {
-        return this.mapSize / 2;
+        return this.viewSize / 2;
       }
     },
     yCenterPoint: function(): number {
       if (this.areaIndex[this.focusarea] != undefined) {
         return (
           -this.areas[this.areaIndex[this.focusarea]].mapY * this.gridSize +
-          this.mapSize / 2
+          this.viewSize / 2
         );
       } else {
-        return this.mapSize / 2;
+        return this.viewSize / 2;
       }
     },
     aspectRatioMultiplier: function(): number {
@@ -206,13 +255,13 @@ export default {
       return this.map.gridSize;
     },
     viewBoxXSize: function(): number {
-      return this.mapSize * this.zoomMultiplier;
+      return this.viewSize * this.zoomMultiplier;
     },
     viewBoxYSize: function(): number {
-      return this.mapSize * this.aspectRatioMultiplier * this.zoomMultiplier;
+      return this.viewSize * this.aspectRatioMultiplier * this.zoomMultiplier;
     },
-    mapSize: function(): number {
-      return this.map.mapSize;
+    viewSize: function(): number {
+      return this.map.viewSize;
     },
     viewbox: function(): string {
       return `${this.viewBoxX.toString()} ${this.viewBoxY.toString()} ${this.viewBoxXSize.toString()} ${this.viewBoxYSize.toString()}`;
@@ -227,7 +276,7 @@ export default {
       }
       const areaIndex = this.areaIndex;
       const gridSize = this.map.gridSize;
-      const mapSize = this.mapSize;
+      const viewSize = this.viewSize;
       const areas = this.areas;
       const self = this;
 
@@ -243,10 +292,10 @@ export default {
 
           return {
             id: link.id,
-            x1: fromArea.mapX * gridSize + mapSize / 2,
-            y1: -fromArea.mapY * gridSize + mapSize / 2,
-            x2: toArea.mapX * gridSize + mapSize / 2,
-            y2: -toArea.mapY * gridSize + mapSize / 2,
+            x1: fromArea.mapX * gridSize + viewSize / 2,
+            y1: -fromArea.mapY * gridSize + viewSize / 2,
+            x2: toArea.mapX * gridSize + viewSize / 2,
+            y2: -toArea.mapY * gridSize + viewSize / 2,
             stroke: self.maplinkhighlights[link.id] || 'white'
           };
         })
@@ -270,7 +319,7 @@ export default {
       }
 
       const gridSize = this.gridSize;
-      const mapSize = this.mapSize;
+      const viewSize = this.viewSize;
       const self = this;
       const areas = this.areas;
 
@@ -280,12 +329,12 @@ export default {
           self.mapareapreview.id == area.id
             ? 'orange'
             : self.mapareahighlights[area.id] || 'blue';
-        return buildSquare(area, gridSize, mapSize, color);
+        return buildSquare(area, gridSize, viewSize, color);
       });
 
       if (this.showmapareapreview) {
         squares.push(
-          buildSquare(this.mapareapreview, gridSize, mapSize, 'orange')
+          buildSquare(this.mapareapreview, gridSize, viewSize, 'orange')
         );
       }
 
@@ -300,27 +349,35 @@ export default {
       const toArea = this.areas[this.areaIndex[this.maplinkpreviewarea]];
       const fromArea = this.areas[this.areaIndex[this.focusarea]];
       const gridSize = this.gridSize;
-      const mapSize = this.mapSize;
+      const viewSize = this.viewSize;
       const self = this;
       return [
         {
           id: 'preview',
-          x1: fromArea.mapX * gridSize + mapSize / 2,
-          y1: -fromArea.mapY * gridSize + mapSize / 2,
-          x2: toArea.mapX * gridSize + mapSize / 2,
-          y2: -toArea.mapY * gridSize + mapSize / 2,
+          x1: fromArea.mapX * gridSize + viewSize / 2,
+          y1: -fromArea.mapY * gridSize + viewSize / 2,
+          x2: toArea.mapX * gridSize + viewSize / 2,
+          y2: -toArea.mapY * gridSize + viewSize / 2,
           stroke: 'orange'
         }
       ];
     },
-    // <path stroke-dasharray="10,10" d="M5 40 l215 0" />
+    labels: function(): Record<string, unknown>[] {
+      const gridSize = this.gridSize;
+      const viewSize = this.viewSize;
+      const self = this;
+      const labels = this.map.labels.map(function(label: LabelInterface) {
+        if (label.id == self.maplabelpreview.id) {
+          return buildText(self.maplabelpreview, gridSize, viewSize);
+        } else {
+          return buildText(label, gridSize, viewSize);
+        }
+      });
+
+      return labels;
+    },
     ...mapGetters({
       instanceBeingBuilt: 'instances/instanceBeingBuilt'
-      // isAreaSelected: 'builder/isAreaSelected',
-      // isAreaUnderConstruction: 'builder/isAreaUnderConstruction',
-      // isMapUnderConstruction: 'builder/isMapUnderConstruction',
-      // workingArea: 'builder/workingArea',
-      // workingLink: 'builder/workingLink'
     })
   },
   methods: {
@@ -335,15 +392,6 @@ export default {
       if (!this.readonly) {
         this.$emit('selectArea', area);
       }
-      // if (areaId !== this.workingArea.id) {
-      //   const id: string = areaId.toString();
-      //   this.$store.dispatch(
-      //     'builder/selectArea',
-      //     this.areas[this.areaIndex[id]]
-      //   );
-
-      //   this.$store.dispatch('builder/clearSelectedLink');
-      // }
     }
   }
 };

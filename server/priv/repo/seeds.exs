@@ -11,7 +11,7 @@
 # and so on) as they will fail if something goes wrong.
 alias Mud.Engine.{Map, Region, Area, Instance, Link}
 
-# Region insertions
+# Instance insertions
 instance =
   Mud.Repo.insert!(%Instance{
     name: "Prime",
@@ -26,17 +26,15 @@ region =
     instance_id: instance.id
   })
 
-# Region insertions
+# Map insertions
 {:ok, map} =
   Map.create(%{
     instance_id: instance.id,
     name: "Torinthian Royal Palace Exterior",
     description: "The complete grounds of the Torinthian Royal Palace",
     map_size: 5000,
-    min_zoom: 5000,
-    max_zoom: 500,
-    default_zoom: 1000,
-    grid_size: 50
+    grid_size: 50,
+    labels: [%{text: "Hello World"}]
   })
 
 # Room insertions
@@ -83,7 +81,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: -1,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -96,7 +94,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: 1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -109,7 +107,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: 1,
-    map_y: -1,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -122,7 +120,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: 1,
-    map_y: 1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -135,7 +133,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: -1,
-    map_y: -1,
+    map_y: 1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -148,7 +146,7 @@ region =
   Area.create(%{
     instance_id: instance.id,
     map_x: -1,
-    map_y: 1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -178,7 +176,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_1.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -190,7 +188,7 @@ Mud.Repo.insert!(%Link{
   to_id: east_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -214,7 +212,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_2.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -226,7 +224,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_1.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -236,7 +234,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 3,
-    map_y: 1,
+    map_y: -1,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -250,7 +248,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_3.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -262,7 +260,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_2.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -272,7 +270,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 3,
-    map_y: 2,
+    map_y: -2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -286,7 +284,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_4.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -298,7 +296,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_3.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -308,7 +306,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 3,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -322,7 +320,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_5.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -334,7 +332,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_4.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -344,7 +342,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 4,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -358,7 +356,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_6.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -370,7 +368,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_5.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -380,7 +378,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 5,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -394,7 +392,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_7.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -406,7 +404,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_6.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -416,7 +414,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 5,
-    map_y: 2,
+    map_y: -2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -430,7 +428,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_8.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -442,7 +440,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_7.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -452,7 +450,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 4,
-    map_y: 2,
+    map_y: -2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -466,7 +464,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_8.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -478,7 +476,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_9.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -488,7 +486,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 6,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -502,7 +500,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_10.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -514,7 +512,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_7.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -524,7 +522,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 7,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -538,7 +536,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_11.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -550,7 +548,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_10.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -560,7 +558,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 8,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -574,7 +572,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_12.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -586,7 +584,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_11.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -596,7 +594,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 8,
-    map_y: 4,
+    map_y: -4,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -610,7 +608,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_12.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -622,7 +620,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_13.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -632,7 +630,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 8,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -646,7 +644,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_13.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -658,7 +656,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_14.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -668,7 +666,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 7,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -682,7 +680,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_14.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -694,7 +692,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_15.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -704,7 +702,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 6,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -718,7 +716,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_15.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -730,7 +728,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_16.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -740,7 +738,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 5,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -754,7 +752,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_16.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -766,7 +764,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_17.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -776,7 +774,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 4,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -790,7 +788,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_17.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -802,7 +800,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_18.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -812,7 +810,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 3,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -826,7 +824,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_18.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -838,7 +836,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_19.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -848,7 +846,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 2,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -862,7 +860,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_19.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -874,7 +872,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_20.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -884,7 +882,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 1,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -898,7 +896,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_20.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -910,7 +908,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_21.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -920,7 +918,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: 5,
+    map_y: -5,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -934,7 +932,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_21.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -946,7 +944,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_22.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -956,7 +954,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: 4,
+    map_y: -4,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -970,7 +968,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_23.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -982,7 +980,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_22.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -992,7 +990,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: 3,
+    map_y: -3,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -1006,7 +1004,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_24.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1018,7 +1016,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_23.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1028,7 +1026,7 @@ Mud.Repo.insert!(%Link{
   Area.create(%{
     instance_id: instance.id,
     map_x: 0,
-    map_y: 2,
+    map_y: -2,
     map_size: 20,
     region_id: region.id,
     map_id: map.id,
@@ -1042,7 +1040,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_25.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1054,7 +1052,7 @@ Mud.Repo.insert!(%Link{
   to_id: maze_24.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1066,7 +1064,7 @@ Mud.Repo.insert!(%Link{
   to_id: south_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1103,7 +1101,7 @@ Mud.Repo.insert!(%Link{
   to_id: east_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1115,7 +1113,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1128,7 +1126,7 @@ Mud.Repo.insert!(%Link{
   to_id: west_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1140,7 +1138,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1153,7 +1151,7 @@ Mud.Repo.insert!(%Link{
   to_id: north_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1165,7 +1163,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1178,7 +1176,7 @@ Mud.Repo.insert!(%Link{
   to_id: south_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1190,7 +1188,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1203,7 +1201,7 @@ Mud.Repo.insert!(%Link{
   to_id: southeast_room.id,
   departure_text: "southeast",
   arrival_text: "the northwest",
-  type: "obvious",
+  type: "direction",
   short_description: "southeast",
   long_description: "southeast",
   icon: "fas fa-compass"
@@ -1215,7 +1213,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "northwest",
   arrival_text: "the southeast",
-  type: "obvious",
+  type: "direction",
   short_description: "northwest",
   long_description: "northwest",
   icon: "fas fa-compass"
@@ -1228,7 +1226,7 @@ Mud.Repo.insert!(%Link{
   to_id: southwest_room.id,
   departure_text: "southwest",
   arrival_text: "the northeast",
-  type: "obvious",
+  type: "direction",
   short_description: "southwest",
   long_description: "southwest",
   icon: "fas fa-compass"
@@ -1240,7 +1238,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "northeast",
   arrival_text: "the southwest",
-  type: "obvious",
+  type: "direction",
   short_description: "northeast",
   long_description: "northeast",
   icon: "fas fa-compass"
@@ -1253,7 +1251,7 @@ Mud.Repo.insert!(%Link{
   to_id: northwest_room.id,
   departure_text: "northwest",
   arrival_text: "the southeast",
-  type: "obvious",
+  type: "direction",
   short_description: "northwest",
   long_description: "northwest",
   icon: "fas fa-compass"
@@ -1265,7 +1263,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "southeast",
   arrival_text: "the northwest",
-  type: "obvious",
+  type: "direction",
   short_description: "southeast",
   long_description: "southeast",
   icon: "fas fa-compass"
@@ -1278,7 +1276,7 @@ Mud.Repo.insert!(%Link{
   to_id: northeast_room.id,
   departure_text: "northeast",
   arrival_text: "the southwest",
-  type: "obvious",
+  type: "direction",
   short_description: "northeast",
   long_description: "northeast",
   icon: "fas fa-compass"
@@ -1290,7 +1288,7 @@ Mud.Repo.insert!(%Link{
   to_id: center_room.id,
   departure_text: "southwest",
   arrival_text: "the northeast",
-  type: "obvious",
+  type: "direction",
   short_description: "southwest",
   long_description: "southwest",
   icon: "fas fa-compass"
@@ -1303,7 +1301,7 @@ Mud.Repo.insert!(%Link{
   to_id: northeast_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1315,7 +1313,7 @@ Mud.Repo.insert!(%Link{
   to_id: north_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1328,7 +1326,7 @@ Mud.Repo.insert!(%Link{
   to_id: northwest_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1340,7 +1338,7 @@ Mud.Repo.insert!(%Link{
   to_id: north_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1353,7 +1351,7 @@ Mud.Repo.insert!(%Link{
   to_id: southeast_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1365,7 +1363,7 @@ Mud.Repo.insert!(%Link{
   to_id: south_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1378,7 +1376,7 @@ Mud.Repo.insert!(%Link{
   to_id: southwest_room.id,
   departure_text: "west",
   arrival_text: "the east",
-  type: "obvious",
+  type: "direction",
   short_description: "west",
   long_description: "west",
   icon: "fas fa-compass"
@@ -1390,7 +1388,7 @@ Mud.Repo.insert!(%Link{
   to_id: south_room.id,
   departure_text: "east",
   arrival_text: "the west",
-  type: "obvious",
+  type: "direction",
   short_description: "east",
   long_description: "east",
   icon: "fas fa-compass"
@@ -1403,7 +1401,7 @@ Mud.Repo.insert!(%Link{
   to_id: northeast_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1415,7 +1413,7 @@ Mud.Repo.insert!(%Link{
   to_id: east_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1428,7 +1426,7 @@ Mud.Repo.insert!(%Link{
   to_id: southeast_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1440,7 +1438,7 @@ Mud.Repo.insert!(%Link{
   to_id: east_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1453,7 +1451,7 @@ Mud.Repo.insert!(%Link{
   to_id: northwest_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1465,7 +1463,7 @@ Mud.Repo.insert!(%Link{
   to_id: west_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1478,7 +1476,7 @@ Mud.Repo.insert!(%Link{
   to_id: southwest_room.id,
   departure_text: "south",
   arrival_text: "the north",
-  type: "obvious",
+  type: "direction",
   short_description: "south",
   long_description: "south",
   icon: "fas fa-compass"
@@ -1490,7 +1488,7 @@ Mud.Repo.insert!(%Link{
   to_id: west_room.id,
   departure_text: "north",
   arrival_text: "the south",
-  type: "obvious",
+  type: "direction",
   short_description: "north",
   long_description: "north",
   icon: "fas fa-compass"
@@ -1501,11 +1499,12 @@ Mud.Repo.insert!(%Link{
   instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: northeast_room.id,
-  departure_text: "into a shimmering portal",
-  arrival_text: "a shimmering portal",
-  type: "obvious",
+  departure_text: "into",
+  arrival_text: "through",
+  type: "object",
   short_description: "a shimmering portal",
-  long_description: "a shimmering portal",
+  long_description:
+    "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
   icon: "fas fa-circle"
 })
 
@@ -1513,11 +1512,12 @@ Mud.Repo.insert!(%Link{
   instance_id: instance.id,
   from_id: southwest_room.id,
   to_id: northwest_room.id,
-  departure_text: "into a glimmering portal",
-  arrival_text: "a glimmering portal",
-  type: "obvious",
+  departure_text: "into",
+  arrival_text: "through",
+  type: "object",
   short_description: "a glimmering portal",
-  long_description: "a glimmering portal",
+  long_description:
+    "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
   icon: "fas fa-circle"
 })
 
@@ -1525,11 +1525,12 @@ Mud.Repo.insert!(%Link{
   instance_id: instance.id,
   from_id: northwest_room.id,
   to_id: southwest_room.id,
-  departure_text: "into a glimmering portal",
-  arrival_text: "a glimmering portal",
-  type: "obvious",
+  departure_text: "into",
+  arrival_text: "through",
+  type: "object",
   short_description: "a glimmering portal",
-  long_description: "a glimmering portal",
+  long_description:
+    "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
   icon: "fas fa-circle"
 })
 
@@ -1537,11 +1538,12 @@ Mud.Repo.insert!(%Link{
   instance_id: instance.id,
   from_id: northeast_room.id,
   to_id: southwest_room.id,
-  departure_text: "into a shimmering portal",
-  arrival_text: "from a shimmering portal",
-  type: "obvious",
+  departure_text: "into",
+  arrival_text: "through",
+  type: "object",
   short_description: "a shimmering portal",
-  long_description: "a shimmering portal",
+  long_description:
+    "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
   icon: "fas fa-circle"
 })
 
