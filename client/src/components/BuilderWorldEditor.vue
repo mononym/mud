@@ -507,11 +507,14 @@ export default {
       this.mapLinkHighlights = {};
       this.mapAreaHighlights = {};
       this.$store
-        .dispatch('areas/loadForMap', map.id)
-        .then(() => {
-          return this.$store.dispatch('links/loadForMap', map.id);
-        })
+        .dispatch('maps/loadDataForMap', map.id)
         .then(() => (this.selectedMap = { ...map }));
+      // this.$store
+      //   .dispatch('areas/loadForMap', map.id)
+      //   .then(() => {
+      //     return this.$store.dispatch('links/loadForMap', map.id);
+      //   })
+      //   .then(() => (this.selectedMap = { ...map }));
     },
     backToMapView(): void {
       this.mapLinkPreviewArea = '';

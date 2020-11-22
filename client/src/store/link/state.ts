@@ -8,6 +8,12 @@ export interface LinkInterface {
   icon: string;
   toId: string;
   fromId: string;
+  localToX: number
+  localToY: number
+  localToSize: number
+  localFromX: number
+  localFromY: number
+  localFromSize: number
 }
 
 const state: LinkInterface = {
@@ -20,6 +26,12 @@ const state: LinkInterface = {
   type: '',
   toId: '',
   fromId: '',
+  localFromX: 0,
+  localFromY: 0,
+  localFromSize: 20,
+  localToX: 0,
+  localToY: 0,
+  localToSize: 20,
 };
 
 export default state;

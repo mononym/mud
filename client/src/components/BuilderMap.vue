@@ -107,14 +107,18 @@ function buildSquare(
   area: AreaInterface,
   gridSize: number,
   viewSize: number,
-  fill: string
+  fill: string,
+  x: number,
+  y: number,
+  size: number
 ): Record<string, unknown> {
+  console.log('buildsquare');
   return {
     key: area.id,
-    x: area.mapX * gridSize + viewSize / 2 - area.mapSize / 2,
-    y: -area.mapY * gridSize + viewSize / 2 - area.mapSize / 2,
-    width: area.mapSize,
-    height: area.mapSize,
+    x: x * gridSize + viewSize / 2 - size / 2,
+    y: -y * gridSize + viewSize / 2 - size / 2,
+    width: size,
+    height: size,
     fill: fill,
     name: area.name,
     area: area
@@ -289,13 +293,33 @@ export default {
         .map(function(link: LinkInterface) {
           const toArea = areas[areaIndex[link.toId]];
           const fromArea = areas[areaIndex[link.fromId]];
+          let fromMapX = fromArea.mapX;
+          let fromMapY = fromArea.mapY;
+          let toMapX = toArea.mapX;
+          let toMapY = toArea.mapY;
+
+          // Handle links to external areas
+          // External areas will be included and must use their local position which is specified in the link
+          if (toArea.mapId != fromArea.mapId) {
+            const link = self.links.find(link => link.toId == toArea.id);
+
+            console.log('different maps');
+
+            if (toArea.mapId != self.map.id) {
+              toMapX = link.localToX;
+              toMapY = link.localToY;
+            } else {
+              fromMapX = link.localFromX;
+              fromMapY = link.localFromY;
+            }
+          }
 
           return {
             id: link.id,
-            x1: fromArea.mapX * gridSize + viewSize / 2,
-            y1: -fromArea.mapY * gridSize + viewSize / 2,
-            x2: toArea.mapX * gridSize + viewSize / 2,
-            y2: -toArea.mapY * gridSize + viewSize / 2,
+            x1: fromMapX * gridSize + viewSize / 2,
+            y1: -fromMapY * gridSize + viewSize / 2,
+            x2: toMapX * gridSize + viewSize / 2,
+            y2: -toMapY * gridSize + viewSize / 2,
             stroke: self.maplinkhighlights[link.id] || 'white'
           };
         })
@@ -324,17 +348,38 @@ export default {
       const areas = this.areas;
 
       const squares = areas.map(function(area: AreaInterface) {
+        let mapX = area.mapX;
+        let mapY = area.mapY;
+        let size = area.mapSize;
+        // Handle links to external areas
+        // External areas will be included and must use their local position which is specified in the link
+        if (area.mapId != self.map.id) {
+          const link = self.links.find(link => link.toId == area.id);
+          mapX = link.localToX;
+          mapY = link.localToY;
+          size = link.localToSize;
+        }
+
         const color =
           self.maplinkpreviewarea == area.id ||
           self.mapareapreview.id == area.id
             ? 'orange'
             : self.mapareahighlights[area.id] || 'blue';
-        return buildSquare(area, gridSize, viewSize, color);
+
+        return buildSquare(area, gridSize, viewSize, color, mapX, mapY, size);
       });
 
       if (this.showmapareapreview) {
         squares.push(
-          buildSquare(this.mapareapreview, gridSize, viewSize, 'orange')
+          buildSquare(
+            this.mapareapreview,
+            gridSize,
+            viewSize,
+            'orange',
+            this.mapareapreview.mapX,
+            this.mapareapreview.mapY,
+            this.mapareapreview.mapSize
+          )
         );
       }
 
@@ -342,7 +387,7 @@ export default {
     },
     strokes: function(): Record<string, unknown>[] {
       // To take care of the case of displaying incorrect lines/squares configuration while map is loading
-      if (this.focusarea == '' || this.maplinkpreviewarea == '') {
+      if (this.focusarea == '' && this.maplinkpreviewarea == '') {
         return [];
       }
 
@@ -351,13 +396,24 @@ export default {
       const gridSize = this.gridSize;
       const viewSize = this.viewSize;
       const self = this;
+
+      let mapX = toArea.mapX;
+      let mapY = toArea.mapY;
+      // Handle links to external areas
+      // External areas will be included and must use their local position which is specified in the link
+      if (toArea.mapId != fromArea.mapId) {
+        const link = self.links.find(link => link.toId == area.id);
+        mapX = link.localToX;
+        mapY = link.localToY;
+      }
+
       return [
         {
           id: 'preview',
           x1: fromArea.mapX * gridSize + viewSize / 2,
           y1: -fromArea.mapY * gridSize + viewSize / 2,
-          x2: toArea.mapX * gridSize + viewSize / 2,
-          y2: -toArea.mapY * gridSize + viewSize / 2,
+          x2: mapX * gridSize + viewSize / 2,
+          y2: -mapY * gridSize + viewSize / 2,
           stroke: 'orange'
         }
       ];
@@ -365,11 +421,11 @@ export default {
     labels: function(): Record<string, unknown>[] {
       const gridSize = this.gridSize;
       const viewSize = this.viewSize;
-      let previewLabelPreviewedAlready = false
+      let previewLabelPreviewedAlready = false;
       const self = this;
       const labels = this.map.labels.map(function(label: LabelInterface) {
         if (label.id == self.maplabelpreview.id) {
-          previewLabelPreviewedAlready = true
+          previewLabelPreviewedAlready = true;
           return buildText(self.maplabelpreview, gridSize, viewSize);
         } else {
           return buildText(label, gridSize, viewSize);
@@ -377,7 +433,7 @@ export default {
       });
 
       if (!previewLabelPreviewedAlready && this.maplabelpreview.id != '') {
-        labels.push(buildText(self.maplabelpreview, gridSize, viewSize))
+        labels.push(buildText(self.maplabelpreview, gridSize, viewSize));
       }
 
       return labels;

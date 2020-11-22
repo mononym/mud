@@ -34,6 +34,48 @@
           {{ otherArea.name }}
         </template>
       </q-select>
+      <q-input
+        v-show="linkDirection == 'outgoing'"
+        v-model.number="workingLink.localToX"
+        type="number"
+        filled
+        label="Map X Coordinate"
+      />
+      <q-input
+        v-show="linkDirection == 'outgoing'"
+        v-model.number="workingLink.localToY"
+        type="number"
+        filled
+        label="Map Y Coordinate"
+      />
+      <q-input
+        v-show="linkDirection == 'outgoing'"
+        v-model.number="workingLink.localToSize"
+        type="number"
+        filled
+        label="Size of area in pixels on map"
+      />
+      <q-input
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'incoming'"
+        v-model.number="workingLink.localFromX"
+        type="number"
+        filled
+        label="Map X Coordinate"
+      />
+      <q-input
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'incoming'"
+        v-model.number="workingLink.localFromY"
+        type="number"
+        filled
+        label="Map Y Coordinate"
+      />
+      <q-input
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'incoming'"
+        v-model.number="workingLink.localFromSize"
+        type="number"
+        filled
+        label="Size of area in pixels on map"
+      />
       <q-select
         v-model="workingLink.type"
         filled
@@ -240,7 +282,7 @@ export default {
 
       this.otherArea = this.areas.filter(area => area.id == otherAreaId)[0];
 
-      this.$emit('preview', this.otherArea.id)
+      this.$emit('preview', this.otherArea.id);
 
       if (this.workingLink.toId == this.area.id) {
         this.linkDirection = 'incoming';
@@ -255,7 +297,9 @@ export default {
   // },
   methods: {
     previewLink(area: AreaInterface) {
-      this.$emit('preview', area.id);
+      if (this.mapForOtherArea.id == this.map.id) {
+        this.$emit('preview', area.id);
+      }
     },
     cancel() {
       this.$emit('cancel');

@@ -22,6 +22,9 @@ const actions: ActionTree<LinksInterface, StateInterface> = {
         });
     });
   },
+  putLinks({ commit }, links: LinkInterface[]) {
+    commit('putLinks', links);
+  },
   putLink({ commit }, link: LinkInterface) {
     commit('putLink', link);
   },

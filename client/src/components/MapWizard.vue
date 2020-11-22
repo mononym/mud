@@ -26,20 +26,11 @@ export default {
   },
   data(): {
     mapUnderConstruction: MapInterface;
+    mapForm: Record<string, unknown>;
   } {
     return {
-      mapUnderConstruction: { ...mapState }
-    };
-  },
-  computed: {
-    saveDisabled(): boolean {
-      return (
-        this.mapUnderConstruction.name == '' ||
-        this.mapUnderConstruction.description == ''
-      );
-    },
-    mapForm: function(): Record<string, unknown> {
-      return {
+      mapUnderConstruction: { ...mapState },
+      mapForm: {
         schema: [
           {
             id: 'name',
@@ -80,7 +71,15 @@ export default {
             step: 10
           }
         ]
-      };
+      }
+    };
+  },
+  computed: {
+    saveDisabled(): boolean {
+      return (
+        this.mapUnderConstruction.name == '' ||
+        this.mapUnderConstruction.description == ''
+      );
     }
   },
   created() {

@@ -22,6 +22,9 @@ const actions: ActionTree<AreasInterface, StateInterface> = {
         });
     });
   },
+  putAreas({ commit }, areas: AreaInterface[]) {
+    commit('putAreas', areas);
+  },
   putArea({ commit }, area: AreaInterface) {
     commit('putArea', area);
   },
