@@ -35,21 +35,21 @@
         </template>
       </q-select>
       <q-input
-        v-show="linkDirection == 'outgoing'"
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'outgoing'"
         v-model.number="workingLink.localToX"
         type="number"
         filled
-        label="Map X Coordinate"
+        label="Map tX Coordinate"
       />
       <q-input
-        v-show="linkDirection == 'outgoing'"
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'outgoing'"
         v-model.number="workingLink.localToY"
         type="number"
         filled
-        label="Map Y Coordinate"
+        label="Map tY Coordinate"
       />
       <q-input
-        v-show="linkDirection == 'outgoing'"
+        v-show="mapForOtherArea.id != map.id && linkDirection == 'outgoing'"
         v-model.number="workingLink.localToSize"
         type="number"
         filled
@@ -60,14 +60,14 @@
         v-model.number="workingLink.localFromX"
         type="number"
         filled
-        label="Map X Coordinate"
+        label="Map fX Coordinate"
       />
       <q-input
         v-show="mapForOtherArea.id != map.id && linkDirection == 'incoming'"
         v-model.number="workingLink.localFromY"
         type="number"
         filled
-        label="Map Y Coordinate"
+        label="Map fY Coordinate"
       />
       <q-input
         v-show="mapForOtherArea.id != map.id && linkDirection == 'incoming'"
@@ -257,9 +257,11 @@ export default {
         this.otherArea = { ...areaState };
       }
 
-      return this.loadedAreas.map(function(area) {
-        return { label: area.name, value: area };
-      });
+      return this.loadedAreas
+        .filter(area => area.id != this.area.id)
+        .map(function(area) {
+          return { label: area.name, value: area };
+        });
     }
   },
   watch: {

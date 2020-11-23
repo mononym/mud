@@ -37,6 +37,28 @@ region =
     labels: [%{text: "Hello World"}]
   })
 
+{:ok, map2} =
+  Map.create(%{
+    instance_id: instance.id,
+    name: "Torinthian Royal Castle",
+    description: "The interior of the Royal Castle",
+    map_size: 5000,
+    grid_size: 50,
+    labels: []
+  })
+
+{:ok, center_room2} =
+  Area.create(%{
+    instance_id: instance.id,
+    map_x: 0,
+    map_y: 0,
+    map_size: 20,
+    region_id: region.id,
+    map_id: map2.id,
+    name: "Great Hall",
+    description: "The huge hall spans the length of the castle."
+  })
+
 # Room insertions
 {:ok, center_room} =
   Area.create(%{
@@ -1545,6 +1567,38 @@ Mud.Repo.insert!(%Link{
   long_description:
     "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
   icon: "fas fa-circle"
+})
+
+Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
+  from_id: center_room2.id,
+  to_id: maze_23.id,
+  departure_text: "northeast",
+  arrival_text: "the southwest",
+  type: "direction",
+  short_description: "northeast",
+  long_description: "northeast",
+  icon: "fas fa-compass",
+  local_to_x: 1,
+  local_to_y: 1,
+  local_from_x: -1,
+  local_from_y: -6
+})
+
+Mud.Repo.insert!(%Link{
+  instance_id: instance.id,
+  from_id: maze_23.id,
+  to_id: center_room2.id,
+  departure_text: "southwest",
+  arrival_text: "the northeast",
+  type: "direction",
+  short_description: "southwest",
+  long_description: "southwest",
+  icon: "fas fa-compass",
+  local_to_x: -1,
+  local_to_y: -6,
+  local_from_x: 1,
+  local_from_y: 1
 })
 
 # Object insertions

@@ -21,6 +21,12 @@ defmodule Mud.Engine.Link do
     field(:long_description, :string)
     field(:type, :string)
     field(:icon, :string, default: "fas fa-compass")
+    field(:local_from_x, :integer, default: 0)
+    field(:local_from_y, :integer, default: 0)
+    field(:local_from_size, :integer, default: 20)
+    field(:local_to_x, :integer, default: 0)
+    field(:local_to_y, :integer, default: 0)
+    field(:local_to_size, :integer, default: 20)
 
     belongs_to(:from, Area,
       type: :binary_id,
@@ -47,7 +53,13 @@ defmodule Mud.Engine.Link do
       :from_id,
       :to_id,
       :short_description,
-      :icon
+      :icon,
+      :local_to_x,
+      :local_to_y,
+      :local_to_size,
+      :local_from_x,
+      :local_from_y,
+      :local_from_size
     ])
     |> validate_required([
       :type,

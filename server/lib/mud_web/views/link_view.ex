@@ -21,6 +21,12 @@ defmodule MudWeb.LinkView do
       icon: link.icon,
       toId: link.to_id,
       fromId: link.from_id,
+      localFromX: link.local_from_x,
+      localFromY: link.local_from_y,
+      localFromSize: link.local_from_size,
+      localToX: link.local_to_x,
+      localToY: link.local_to_y,
+      localToSize: link.local_to_size,
       insertedAt: link.inserted_at,
       updatedAt: link.updated_at
     }

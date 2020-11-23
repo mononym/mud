@@ -13,7 +13,9 @@
           :maplabelpreview="{ ...labelUnderConstruction }"
           :showmapareapreview="showMapAreaPreview"
           :focusarea="focusArea"
-          :readonly="view == 'map' || areaView != 'details'"
+          :readonly="
+            view == 'map' || (areaView != 'details' && areaView != 'link')
+          "
           @selectArea="mapSelectArea"
         />
       </div>
@@ -546,6 +548,15 @@ export default {
       this.mapSelectArea(area);
     },
     areaDetailsEditLink(link: LinkInterface): void {
+      if (link.toId != this.selectedArea.id) {
+        this.linkWizardOtherArea = this.areas.find(
+          area => area.id == link.toId
+        );
+      } else {
+        this.linkWizardOtherArea = this.areas.find(
+          area => area.id == link.fromId
+        );
+      }
       this.linkUnderConstruction = link;
       this.areaView = 'link';
     },
@@ -564,7 +575,10 @@ export default {
       });
     },
     mapSelectArea(area: AreaInterface): void {
-      if (
+      if (area.id != this.selectedArea.id && this.areaView == 'link') {
+        this.linkWizardOtherArea = area;
+        this.mapLinkPreviewArea = area.id;
+      } else if (
         area.id != this.selectedArea.id &&
         this.mapLinkPreviewArea == '' &&
         !this.creatingNewLink
@@ -627,6 +641,7 @@ export default {
       this.linkUnderConstruction = { ...linkState };
       this.mapLinkPreviewArea = '';
       this.creatingNewLink = false;
+      this.linkWizardOtherArea = { ...areaState };
       this.areaView = 'details';
     },
     linkWizardSave(link: LinkInterface): void {
