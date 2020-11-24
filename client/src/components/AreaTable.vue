@@ -63,6 +63,10 @@ export default {
     selectedrow: {
       type: Array,
       required: true
+    },
+    areas: {
+      type: Array,
+      required: true
     }
   },
   data() {
@@ -82,9 +86,7 @@ export default {
       return this.selectedMap.id;
     },
     ...mapGetters({
-      areas: 'areas/listAll',
-      selectedArea: 'builder/selectedArea',
-      selectedMap: 'builder/selectedMap'
+      // areas: 'areas/listAll'
     })
   },
   methods: {

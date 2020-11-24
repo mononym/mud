@@ -1,5 +1,5 @@
 <template>
-  <q-card v-show="area.id != ''" class="fit flex column" flat bordered>
+  <q-card class="fit flex column" flat bordered>
     <q-card-section class="col-shrink q-pb-none">
       <p class="text-h6 text-center">
         {{ area.name }}
@@ -10,7 +10,7 @@
       {{ area.description }}
     </q-card-section>
 
-    <q-card-section class="q-pa-none col-auto flex">
+    <q-card-section v-show="showCard" class="q-pa-none col-auto flex">
       <div class="col">
         <q-toolbar class="bg-primary text-white shadow-2">
           <q-toolbar-title>Incoming Links</q-toolbar-title>
@@ -35,7 +35,7 @@
                   flat
                   icon="fas fa-trash"
                   @click="
-                    promptForDelete(incoming.arrivalText, deleteLink, link)
+                    promptForDelete(incoming.arrivalText, deleteLink, incoming)
                   "
                 />
               </div>
@@ -67,7 +67,7 @@
                   flat
                   icon="fas fa-trash"
                   @click="
-                    promptForDelete(outgoing.shortDescription, deleteLink, link)
+                    promptForDelete(outgoing.shortDescription, deleteLink, outgoing)
                   "
                 />
               </div>
@@ -150,21 +150,15 @@ export default {
   data() {
     return {
       linkTableColumns,
-      selectedArea: defaultArea,
-      confirmDelete: false,
       highlightedLink: '',
-      tab: 'description',
-      link: null,
-      initialPagination: {
-        rowsPerPage: 0
-      },
-      icons: {
-        'door-closed': 'fas fa-door-closed',
-        'door-open': 'fas fa-door-closed'
-      }
+      link: null
     };
   },
   computed: {
+    showCard(): boolean {
+      console.log('show');
+      return this.area.id != '';
+    },
     incomingLinks(): LinkInterface[] {
       return this.links.filter(link => link.toId == this.area.id);
     },

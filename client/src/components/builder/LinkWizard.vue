@@ -19,6 +19,7 @@
         label="Map containing the other Area"
         emit-value
         :display-value="mapForOtherArea.name"
+        @input="changeSelectedMap"
       />
       <q-select
         v-model="otherArea"
@@ -201,7 +202,6 @@ export default {
   },
   data() {
     return {
-      otherAreaForValidation: { ...this.areaState },
       loadedAreas: [],
       mapForOtherArea: { ...mapState },
       linkDirection: 'outgoing',
@@ -233,7 +233,8 @@ export default {
           icon: 'fas fa-wand'
         }
       ],
-      otherArea: { ...areaState }
+      otherArea: { ...areaState },
+      otherAreaOptions: []
     };
   },
   computed: {
@@ -241,33 +242,31 @@ export default {
       return this.maps.map(function(map) {
         return { label: map.name, value: map };
       });
-    },
-    otherAreaName: function(): string {
-      return this.otherArea.name;
-    },
-    otherAreaOptions: function(): Array<Record<string, unknown>> {
-      if (
-        this.mapForOtherArea.id != '' &&
-        this.mapForOtherArea.id != this.loadedAreas[0].mapId
-      ) {
-        this.$axios
-          .get('/areas/map/' + this.mapForOtherArea.id)
-          .then(result => (this.loadedAreas = result.data));
-
-        this.otherArea = { ...areaState };
-      }
-
-      return this.loadedAreas
-        .filter(area => area.id != this.area.id)
-        .map(function(area) {
-          return { label: area.name, value: area };
-        });
     }
+    //   otherAreaOptions: function(): Array<Record<string, unknown>> {
+    //     if (
+    //       this.mapForOtherArea.id != '' &&
+    //       this.mapForOtherArea.id != this.area.mapId
+    //     ) {
+    //       this.$axios
+    //         .get('/areas/map/' + this.mapForOtherArea.id)
+    //         .then(result => (this.loadedAreas = result.data));
+
+    //       if (this.otherArea.mapId != this.mapForOtherArea.id) {
+    //         this.otherArea = { ...areaState };
+    //       }
+    //     }
+
+    //     return this.loadedAreas
+    //       .filter(area => area.id != this.area.id)
+    //       .map(function(area) {
+    //         return { label: area.name, value: area };
+    //       });
+    //   }
   },
   watch: {
-    otherarea: function(newArea: AreaInterface) {
-      if (newArea.id != this.otherAreaForValidation.id) {
-        this.otherAreaForValidation = newArea;
+    otherarea: function(newArea: AreaInterface, oldArea: AreaInterface) {
+      if (newArea.id != oldArea.id && newArea.id != this.otherArea.id) {
         this.otherArea = newArea;
       }
     }
@@ -276,13 +275,14 @@ export default {
     this.workingLink = { ...this.link };
     this.loadedAreas = this.areas;
     this.mapForOtherArea = this.map;
-    this.otherAreaForValidation = this.otherArea;
 
     if (this.workingLink.id != '') {
       const otherAreaId =
         this.area.id == this.link.toId ? this.link.fromId : this.link.toId;
 
       this.otherArea = this.areas.filter(area => area.id == otherAreaId)[0];
+
+      console.log('created');
 
       this.$emit('preview', this.otherArea.id);
 
@@ -291,16 +291,28 @@ export default {
       }
     }
   },
-  // updated() {
-  //   if (this.otherarea.id != this.otherAreaForValidation.id) {
-  //     this.otherAreaForValidation = this.otherarea
-  //     this.otherArea = this.otherarea
-  //   }
-  // },
   methods: {
     previewLink(area: AreaInterface) {
       if (this.mapForOtherArea.id == this.map.id) {
         this.$emit('preview', area.id);
+      }
+    },
+    changeSelectedMap(newMap: MapInterface) {
+      if (newMap.id != this.otherArea.mapId) {
+        this.otherArea = { ...areaState };
+        this.$emit('preview', '');
+        const self = this;
+
+        if (newMap.id != '') {
+          this.$axios.get('/areas/map/' + newMap.id).then(function(result) {
+            self.loadedAreas = result.data;
+            self.otherAreaOptions = self.loadedAreas
+              .filter(area => area.id != self.area.id)
+              .map(function(area) {
+                return { label: area.name, value: area };
+              });
+          });
+        }
       }
     },
     cancel() {

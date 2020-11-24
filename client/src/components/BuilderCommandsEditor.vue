@@ -116,7 +116,12 @@
                   persistent
                   :disable="segment.type == 'command'"
                 >
-                  <q-input v-model="segment.key" dense autofocus />
+                  <q-input
+                    v-model="segment.key"
+                    dense
+                    autofocus
+                    hint="The key the segment will be saved as in the context"
+                  />
                 </q-popup-edit>
               </q-card-section>
 
@@ -125,7 +130,12 @@
               >
                 Match: {{ segment.match }}
                 <q-popup-edit v-model="segment.match" buttons persistent>
-                  <q-input v-model="segment.match" dense autofocus />
+                  <q-input
+                    v-model="segment.match"
+                    dense
+                    autofocus
+                    hint="Must be a valid regex expression"
+                  />
                 </q-popup-edit>
               </q-card-section>
 
@@ -203,7 +213,9 @@
               <q-separator v-if="segment.type != 'command'" dark />
 
               <q-card-actions v-if="segment.type != 'command'">
-                <q-btn flat @click="promptForDeleteSegment(segment.id)">Delete</q-btn>
+                <q-btn flat @click="promptForDeleteSegment(segment.id)"
+                  >Delete</q-btn
+                >
               </q-card-actions>
             </q-card>
           </div>
@@ -509,6 +521,7 @@ export default {
       this.step = 2;
     },
     saveCommand() {
+      console.log('saving');
       this.commandUnderConstruction.instance_id = this.instanceBeingBuilt.id;
 
       let request;

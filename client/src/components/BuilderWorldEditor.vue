@@ -24,6 +24,7 @@
         <area-table
           v-if="view == 'area'"
           :selectedrow="areaTableSelectedRow"
+          :areas="filteredAreas"
           @select="areaTableSelect"
           @create="areaTableCreate"
         />
@@ -352,6 +353,9 @@ export default {
   },
   computed: {
     // Map Stuff
+    filteredAreas: function(): boolean {
+      return this.areas.filter(area => area.mapId == this.selectedMap.id);
+    },
     mapDetailsButtonsDisabled: function(): boolean {
       return this.selectedMap.id == '';
     },
@@ -548,6 +552,7 @@ export default {
       this.mapSelectArea(area);
     },
     areaDetailsEditLink(link: LinkInterface): void {
+      console.log('edit link');
       if (link.toId != this.selectedArea.id) {
         this.linkWizardOtherArea = this.areas.find(
           area => area.id == link.toId
@@ -575,9 +580,11 @@ export default {
       });
     },
     mapSelectArea(area: AreaInterface): void {
+      // If modifying a link, selecting an area on the map should trigger a link preview
       if (area.id != this.selectedArea.id && this.areaView == 'link') {
         this.linkWizardOtherArea = area;
         this.mapLinkPreviewArea = area.id;
+        // If
       } else if (
         area.id != this.selectedArea.id &&
         this.mapLinkPreviewArea == '' &&
