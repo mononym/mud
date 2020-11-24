@@ -163,8 +163,6 @@ defmodule Mud.Engine.Character do
       :position,
       :race,
       :reflexes,
-      :relative_item_id,
-      :relative_position,
       :skin_color,
       :stamina,
       :strength,
@@ -555,7 +553,6 @@ defmodule Mud.Engine.Character do
   @spec update(character :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(character, attrs \\ %{}) do
-
     character
     |> changeset(attrs)
     |> Repo.update()

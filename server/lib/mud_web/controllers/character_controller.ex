@@ -40,6 +40,7 @@ defmodule MudWeb.CharacterController do
         if Mud.Util.changeset_has_error?(changeset, :player_id, "does not exist") do
           resp(conn, 401, "invalid session")
         else
+          IO.inspect(changeset)
           resp(conn, 400, "error")
         end
     end

@@ -92,7 +92,7 @@
       appropriate for a fantasy setting, and please avoid any names belonging to
       an existing IP.
 
-      <q-input v-model="name" label="Name" />
+      <q-input v-model="featuresFormValue.name" label="Name" />
 
       <q-stepper-navigation>
         <q-btn
@@ -334,38 +334,38 @@ export default {
     },
     createCharacter(action: string) {
       console.log('createCharacter');
-      // const values = {
-      //     age: this.selectedAge,
-      //     eye_accent_color: this.selectedEyeAccentColor,
-      //     eye_color: this.selectedEyeColor,
-      //     eye_color_type: this.selectedEyeColorType,
-      //     hair_color: this.selectedHairColor,
-      //     hair_length: this.selectedHairLength,
-      //     hair_style: this.selectedHairStyle,
-      //     height: this.selectedHeight,
-      //     name: this.name,
-      //     race: this.selectedRace,
-      //     skin_color: this.selectedSkinColor
-      //   };
+      const values = {
+        age: this.featuresFormValue.age,
+        primary_eye_color: this.featuresFormValue.primaryEyeColor,
+        secondary_eye_color: this.featuresFormValue.seconaryEyeColor,
+        eye_color_type: this.featuresFormValue.selectedEyeColorType,
+        hair_color: this.featuresFormValue.selectedHairColor,
+        hair_length: this.featuresFormValue.selectedHairLength,
+        hair_style: this.featuresFormValue.selectedHairStyle,
+        height: this.featuresFormValue.selectedHeight,
+        name: this.featuresFormValue.name,
+        race: this.featuresFormValue.selectedRace,
+        skin_color: this.featuresFormValue.selectedSkinColor
+      };
 
-      //   const store = this.$store;
-      //   const router = this.$router;
+      const store = this.$store;
+      const router = this.$router;
 
-      //   void this.$axios
-      //     .post('characters/create', values)
-      //     .then(function(result: AxiosResponse) {
-      //       store
-      //         .dispatch('characters/addCharacter', result.data)
-      //         .then(function() {
-      //           let slug: string = result.data.slug;
-      //           let url: string =
-      //             action == 'view' ? '/characters/' + slug : '/play/' + slug;
-      //           router.push(url);
-      //         });
-      //       // if successful, redirect to the character overview screen which will have a quick link to play the character
-      //       // effectively it will be the character's dashboard, showing off statistics and information about the character
-      //       // as well as being able to view inventory and vault contents and quest progress and messages and so on
-      //     });
+      void this.$axios
+        .post('characters/create', this.featuresFormValue)
+        .then(function(result: AxiosResponse) {
+          store
+            .dispatch('characters/addCharacter', result.data)
+            .then(function() {
+              let slug: string = result.data.slug;
+              let url: string =
+                action == 'view' ? '/characters/' + slug : '/play/' + slug;
+              router.push(url);
+            });
+          // if successful, redirect to the character overview screen which will have a quick link to play the character
+          // effectively it will be the character's dashboard, showing off statistics and information about the character
+          // as well as being able to view inventory and vault contents and quest progress and messages and so on
+        });
     }
   }
 };
