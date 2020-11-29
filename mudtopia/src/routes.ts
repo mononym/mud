@@ -6,6 +6,7 @@ import {wrap} from 'svelte-spa-router/wrap'
 import type {RouteDefinition} from 'svelte-spa-router'
 import {authenticated} from './stores/auth'
 import {replace} from 'svelte-spa-router'
+import { get } from 'svelte/store';
 
 export default <RouteDefinition>{
     // '/': Home,
@@ -16,13 +17,15 @@ export default <RouteDefinition>{
         // List of route pre-conditions
         conditions: [
             () => {
+                console.log('authenticated')
+                console.log(get(authenticated))
                 // Must not be authenticated
-                if (authenticated) {
+                if (get(authenticated)) {
                     // Replace with desired route
                     replace('/dashboard')
                 }
                 // Expects a boolean return value
-                return !authenticated
+                return !get(authenticated)
             },
         ]
     }),

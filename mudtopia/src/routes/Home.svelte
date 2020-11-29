@@ -35,10 +35,7 @@
           Enter your email to start the sign in process
         </h2>
       </div>
-      <form
-        class="mt-8 space-y-6"
-        action="http://localhost:4000/authenticate/email"
-        method="POST">
+      <form class="mt-8 space-y-6">
         <input type="hidden" name="remember" value="true" />
         <div class="rounded-md shadow-sm -space-y-px">
           <div>

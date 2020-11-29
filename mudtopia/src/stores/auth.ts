@@ -1,15 +1,18 @@
 import { writable } from "svelte/store";
 import {
+  logout,
   submitEmailForAuth,
   submitTokenForAuth,
   syncPlayer
 } from "../api/server";
 import {player} from './player'
+import PlayerState from './../models/player'
 
 
 export const authenticated = writable(false);
 export const isAuthenticating = writable(false);
 export const isSyncing = writable(false);
+export const loggingOut = writable(false);
 
 function createAuthStore() {
 
@@ -49,6 +52,18 @@ function createAuthStore() {
         alert(e.message);
       } finally {
         isAuthenticating.set(false)
+      }
+    },
+    logout: async () => {
+      loggingOut.set(true)
+      try {
+        await logout();
+        authenticated.set(false)
+        player.set({...PlayerState})
+      } catch (e) {
+        alert(e.message);
+      } finally {
+        loggingOut.set(false)
       }
     },
 
