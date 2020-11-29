@@ -1,7 +1,6 @@
 <script>
   import { push } from "svelte-spa-router";
   import { AuthStore, isSyncing } from "../stores/auth";
-  import { onMount } from "svelte";
   import { Circle2 } from "svelte-loading-spinners";
 
   let email = "";
@@ -9,10 +8,6 @@
   function authenticate() {
     AuthStore.initLoginWithEmail(email).then(() => push("/authenticate/token"));
   }
-
-  onMount(async () => {
-    AuthStore.syncPlayer();
-  });
 </script>
 
 <style>
