@@ -51,7 +51,7 @@ defmodule MudWeb.Router do
     # get("/authenticate/token/:token", PlayerAuthController, :validate_auth_token)
     # get("/authenticate/token", PlayerAuthController, :show_auth_token_form)
     post("/authenticate/token", PlayerAuthController, :validate_auth_token)
-    post("/authenticate/sync", PlayerAuthController, :sync_status)
+    get("/authenticate/sync", PlayerAuthController, :sync_status)
     post("/authenticate/logout", PlayerAuthController, :logout)
 
     # Player related stuff

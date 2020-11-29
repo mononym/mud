@@ -1,5 +1,10 @@
 const { app, BrowserWindow, screen } = require('electron');
-require('electron-reload')(__dirname);
+
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
+require('electron-reload')(__dirname, {
+    electron: require(`${__dirname}/node_modules/electron`)
+});
 
 const createWindow = () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;

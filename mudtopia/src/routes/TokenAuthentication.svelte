@@ -1,13 +1,11 @@
 <script>
-  import axios from "axios";
+  import { authStore } from "../stores/auth";
+  import { push } from "svelte-spa-router";
 
   let token = "";
 
-  function authenticate() {
-    console.log(token);
-    axios
-      .post("/authenticate/token", { token: token })
-      .then((response) => console.log(response));
+  function validate() {
+    authStore.completeLoginWithToken(token).then(() => push("/dashboard"));
   }
 </script>
 
@@ -47,7 +45,7 @@
 
       <div>
         <button
-          on:click={authenticate}
+          on:click={validate}
           type="button"
           class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           <span class="absolute left-0 inset-y-0 flex items-center pl-3">
