@@ -1,11 +1,11 @@
 <script>
-  import { authStore } from "../stores/auth";
+  import { AuthStore } from "../stores/auth";
   import { push } from "svelte-spa-router";
 
   let token = "";
 
   function validate() {
-    authStore.completeLoginWithToken(token).then(() => push("/dashboard"));
+    AuthStore.completeLoginWithToken(token).then(() => push("/dashboard"));
   }
 </script>
 

@@ -4,7 +4,7 @@
   import Tailwindcss from "./Tailwind.svelte";
 </script>
 
-<main>
+<main class="w-screen h-screen bg-gray-900">
   <Router {routes} />
   <Tailwindcss />
 </main>

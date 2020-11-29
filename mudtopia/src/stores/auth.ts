@@ -4,49 +4,51 @@ import {
   submitTokenForAuth,
   syncPlayer
 } from "../api/server";
-import PlayerState from '../models/player'
+import {player} from './player'
 
-const initialState = {
-  authenticated: false,
-  player: {...PlayerState},
-  isAuthenticating: false,
-  isSyncing: false
-};
+
+export const authenticated = writable(false);
+export const isAuthenticating = writable(false);
+export const isSyncing = writable(false);
+
 function createAuthStore() {
-  const { subscribe, update } = writable(initialState);
 
   return {
-    subscribe,
     syncPlayer: async () => {
-      update(state => (state = { ...state, isSyncing: true }));
+      isSyncing.set(true)
       try {
         const res = (await syncPlayer()).data;
-        update(state => (state = { ...state, authenticated: res.authenticated, player: res.authenticated ? res.player : state.player }));
+        if (res.authenticated) {
+          player.set(res.player)
+        }
+
+        authenticated.set(res.authenticated)
       } catch (e) {
         alert(e.message);
       } finally {
-        update(state => (state = { ...state, isSyncing: false }));
+        isSyncing.set(false)
       }
     },
     initLoginWithEmail: async (email: string) => {
-      update(state => (state = { ...state, isAuthenticating: true }));
+      isAuthenticating.set(true)
       try {
         await submitEmailForAuth(email);
       } catch (e) {
         alert(e.message);
       } finally {
-        update(state => (state = { ...state, isAuthenticating: false }));
+        isAuthenticating.set(false)
       }
     },
     completeLoginWithToken: async (token: string) => {
-      update(state => (state = { ...state, isAuthenticating: true }));
+      isAuthenticating.set(true)
       try {
         const res = await submitTokenForAuth(token);
-        update(state => (state = { ...state, authenticated: true, player: res.data }));
+        player.set(res.data)
+        authenticated.set(true)
       } catch (e) {
         alert(e.message);
       } finally {
-        update(state => (state = { ...state, isAuthenticating: false }));
+        isAuthenticating.set(false)
       }
     },
 
@@ -72,7 +74,7 @@ function createAuthStore() {
   };
 }
 
-export const authStore = createAuthStore();
+export const AuthStore = createAuthStore();
 
 /* computed values */
 // export const getTotalHeroes = derived(

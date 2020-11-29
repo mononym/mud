@@ -7,5 +7,7 @@
   }
 </style>
 
-<h1>Not Found</h1>
-<p>This route doesn't exist.</p>
+<div class="h-full w-full flex flex-col justify-center items-center">
+  <h1>Not Found</h1>
+  <p class="text-white">This route doesn't exist.</p>
+</div>
