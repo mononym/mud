@@ -17,8 +17,6 @@ export default <RouteDefinition>{
         // List of route pre-conditions
         conditions: [
             () => {
-                console.log('authenticated')
-                console.log(get(authenticated))
                 // Must not be authenticated
                 if (get(authenticated)) {
                     // Replace with desired route
@@ -29,8 +27,24 @@ export default <RouteDefinition>{
             },
         ]
     }),
+    '/dashboard': wrap({
+        // The Svelte component used by the route
+        component: Dashboard,
+
+        // List of route pre-conditions
+        conditions: [
+            () => {
+                // Must not be authenticated
+                if (!get(authenticated)) {
+                    // Replace with desired route
+                    replace('/')
+                }
+                // Expects a boolean return value
+                return get(authenticated)
+            },
+        ]
+    }),
     '/authenticate/token': TokenAuthentication,
-    '/dashboard': Dashboard,
     // The catch-all route must always be last
     '*': NotFound
 };
