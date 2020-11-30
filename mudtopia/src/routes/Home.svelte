@@ -26,16 +26,14 @@
   <div
     class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8">
-      <div>
-        <img
-          class="mx-auto h-12 w-auto"
-          src="https://tailwindui.com/img/logos/workflow-mark-indigo-600.svg"
-          alt="Workflow" />
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+      <div class="flex flex-col">
+        <i class="fas fa-dice-d20 text-6xl flex-shrink self-center" />
+        <h2
+          class="mt-6 text-center text-3xl font-extrabold text-gray-900 flex-1 self-center">
           Enter your email to start the sign in process
         </h2>
       </div>
-      <form class="mt-8 space-y-6">
+      <form class="mt-8 space-y-6" on:submit|preventDefault="{authenticate}">
         <input type="hidden" name="remember" value="true" />
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
@@ -54,7 +52,7 @@
         <div>
           <button
             on:click={authenticate}
-            type="button"
+            type="submit"
             class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
               <i class="fas fa-lock" />

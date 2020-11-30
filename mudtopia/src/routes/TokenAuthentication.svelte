@@ -17,12 +17,12 @@
   class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
   <div class="max-w-md w-full space-y-8">
     <div>
-      <i class="fas fa-dice-d20"></i>
+      <i class="fas fa-dice-d20 text-6xl flex-shrink self-center" />
       <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
         Enter the Token sent to the provided email
       </h2>
     </div>
-    <form class="mt-8 space-y-6">
+    <form class="mt-8 space-y-6" on:submit|preventDefault={validate}>
       <input type="hidden" name="remember" value="true" />
       <div class="rounded-md shadow-sm -space-y-px">
         <div>

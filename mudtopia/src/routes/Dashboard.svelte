@@ -60,9 +60,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <div class="flex items-center">
-          <div class="flex-shrink-0">
-            <i class="fas fa-dice-d20"></i>
-          </div>
+          <div class="flex-shrink-0"><i class="fas fa-dice-d20" /></div>
           <div class="hidden md:block">
             <div class="ml-10 flex items-baseline space-x-4">
               <a
@@ -112,7 +110,7 @@
             <div class="ml-3 relative">
               <div>
                 <button
-                  use:clickOutside={{ enabled: menuOpen, cb: () => (menuOpen = false) }}
+                  use:clickOutside={{ enabled: true, cb: () => (menuOpen ? (menuOpen = false) : (menuOpen = menuOpen)) }}
                   on:click={toggleMenu}
                   class="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                   id="user-menu"
