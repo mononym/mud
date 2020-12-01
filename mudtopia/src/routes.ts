@@ -2,6 +2,7 @@ import Home from './routes/Home.svelte';
 import TokenAuthentication from './routes/TokenAuthentication.svelte';
 import NotFound from './routes/NotFound.svelte';
 import Dashboard from './routes/Dashboard.svelte';
+import Build from './routes/Build.svelte';
 import {wrap} from 'svelte-spa-router/wrap'
 import type {RouteDefinition} from 'svelte-spa-router'
 import {authenticated} from './stores/auth'
@@ -44,7 +45,40 @@ export default <RouteDefinition>{
             },
         ]
     }),
-    '/authenticate/token': TokenAuthentication,
+    '/build': wrap({
+        // The Svelte component used by the route
+        component: Build,
+
+        // List of route pre-conditions
+        conditions: [
+            () => {
+                // Must not be authenticated
+                if (!get(authenticated)) {
+                    // Replace with desired route
+                    replace('/')
+                }
+                // Expects a boolean return value
+                return get(authenticated)
+            },
+        ]
+    }),
+    '/authenticate/token': wrap({
+        // The Svelte component used by the route
+        component: TokenAuthentication,
+
+        // List of route pre-conditions
+        conditions: [
+            () => {
+                // Must not be authenticated
+                if (get(authenticated)) {
+                    // Replace with desired route
+                    replace('/dashboard')
+                }
+                // Expects a boolean return value
+                return !get(authenticated)
+            },
+        ]
+    }),
     // The catch-all route must always be last
     '*': NotFound
 };
