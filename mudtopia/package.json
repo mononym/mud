@@ -2,8 +2,9 @@
   "name": "svelte-app",
   "version": "1.0.0",
   "scripts": {
-    "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "build": "routify -b && rollup -c",
+    "dev": "routify -c server",
+    "server": "rollup -c -w",
     "start": "electron .",
     "validate": "svelte-check"
   },
@@ -11,6 +12,7 @@
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.0.0",
+    "@roxi/routify": "^2.7.3",
     "@tsconfig/svelte": "^1.0.0",
     "rollup": "^2.3.4",
     "rollup-plugin-copy": "^3.3.0",
