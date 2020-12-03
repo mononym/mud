@@ -1,14 +1,18 @@
+const defaultTheme = require("tailwindcss/defaultTheme");
+
 module.exports = {
-  purge: [
-    './src/**/*.html',
-    './src/**/*.js',
-  ],
-  darkMode: 'class', // or 'media' or 'class'
+  future: {
+    removeDeprecatedGapUtilities: true,
+    purgeLayersByDefault: true,
+  },
+  purge: ["./src/**/*.svelte"],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: [...defaultTheme.fontFamily.sans],
+      },
+    },
   },
-  variants: {
-    extend: {},
-  },
+  variants: {},
   plugins: [],
-}
+};

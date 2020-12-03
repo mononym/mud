@@ -1,8 +1,5 @@
 <script>
     import { url } from '@roxi/routify'
-
-    console.log('url')
-    console.log($url())
 </script>
 
 <style>

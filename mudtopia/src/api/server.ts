@@ -16,6 +16,6 @@ export async function syncPlayer(): Promise<AxiosResponse<{authenticated: boolea
   return await <Promise<AxiosResponse<{authenticated: boolean, player: PlayerInterface}>>>Api.get("/authenticate/sync");
 }
 
-export async function logout(): Promise<AxiosResponse<string>> {
+export async function logoutPlayer(): Promise<AxiosResponse<string>> {
   return await <Promise<AxiosResponse<string>>>Api.post("/authenticate/logout", '');
 }

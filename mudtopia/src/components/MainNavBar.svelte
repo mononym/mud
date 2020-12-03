@@ -1,14 +1,14 @@
 <script>
-  import { push } from "svelte-spa-router";
   import { AuthStore } from "../stores/auth";
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
+  import { goto } from "@roxi/routify";
 
   let email = "";
   let menuOpen = false;
 
   function logout() {
-    AuthStore.logout().then(() => push("/"));
+    AuthStore.logout().then(() => $goto('/'));
   }
 
   function toggleMenu() {
