@@ -1,11 +1,11 @@
 <script>
-  import { AuthStore } from "./../../stores/auth";
+  import { AuthStore } from "../../../stores/auth";
   import { goto } from "@roxi/routify";
 
-  let email = "";
+  let token = "";
 
   function authenticate() {
-    AuthStore.initLoginWithEmail(email).then(() => $goto("/token"));
+    AuthStore.completeLoginWithToken(token).then(() => $goto('/auth/dashboard'));
   }
 </script>
 
@@ -16,22 +16,22 @@
       <i class="fas fa-dice-d20 text-gray-500 text-4xl self-center" />
       <h2
         class="mt-6 text-center text-3xl font-extrabold text-gray-500 self-center">
-        Enter your email to start the sign in process
+        Enter the token sent to the previously provided email
       </h2>
     </div>
-    <form class="mt-8 space-y-6" on:submit|preventDefault={authenticate}>
+    <form
+      class="mt-8 space-y-6" on:submit|preventDefault="{authenticate}">
       <input type="hidden" name="remember" value="true" />
       <div class="rounded-md shadow-sm -space-y-px">
         <div>
-          <label for="email" class="sr-only">Email address</label>
+          <label for="token" class="sr-only">Token</label>
           <input
-            id="email"
-            name="email"
-            type="email"
+            id="token"
+            name="token"
             required
             class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-            placeholder="Email address"
-            bind:value={email} />
+            placeholder="Token"
+            bind:value={token} />
         </div>
       </div>
 
@@ -42,7 +42,7 @@
           <span class="absolute left-0 inset-y-0 flex items-center pl-3">
             <i class="fas fa-lock" />
           </span>
-          Start Sign in
+          Complete Log In
         </button>
       </div>
     </form>

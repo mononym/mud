@@ -9,12 +9,10 @@ defmodule Mud.Repo.Migrations.CreateCharacterRaces do
       add :adjective, :string
       add :portrait, :string
       add :description, :text
-      add :instance_id, references(:instances, on_delete: :nothing, type: :binary_id)
 
       timestamps()
     end
 
-    create index(:character_races, [:instance_id])
     create unique_index(:character_races, [:singular])
     create unique_index(:character_races, [:plural])
     create unique_index(:character_races, [:adjective])

@@ -18,7 +18,6 @@ defmodule Mud.Engine.CharacterRaceFeature do
     field(:field, :string)
     field(:key, :string)
     field(:type, :string)
-    field(:instance_id, :binary_id)
 
     embeds_many :options, Option, on_replace: :delete do
       @derive Jason.Encoder
@@ -54,8 +53,8 @@ defmodule Mud.Engine.CharacterRaceFeature do
   @doc false
   def changeset(character_race_feature, attrs) do
     character_race_feature
-    |> cast(attrs, [:name, :field, :key, :type, :instance_id])
-    |> validate_required([:name, :field, :key, :type, :instance_id])
+    |> cast(attrs, [:name, :field, :key, :type])
+    |> validate_required([:name, :field, :key, :type])
     |> cast_embed(:options, with: &option_changeset/2)
   end
 

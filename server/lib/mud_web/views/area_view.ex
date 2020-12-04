@@ -18,7 +18,6 @@ defmodule MudWeb.AreaView do
       mapY: area.map_y,
       mapSize: area.map_size,
       mapId: area.map_id,
-      instanceId: area.instance_id,
       insertedAt: area.inserted_at,
       updatedAt: area.updated_at}
   end

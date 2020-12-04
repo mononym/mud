@@ -1,14 +1,14 @@
 <script>
-  import { AuthStore } from "../stores/auth";
+  import { AuthStore } from "../../../stores/auth";
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
-  import { goto } from "@roxi/routify";
+  import { isActive, goto, url } from "@roxi/routify";
 
   let email = "";
   let menuOpen = false;
 
   function logout() {
-    AuthStore.logout().then(() => $goto('/'));
+    AuthStore.logout().then(() => $goto("/unauth/login"));
   }
 
   function toggleMenu() {
@@ -40,21 +40,18 @@
   }
 </script>
 
-<nav class="bg-gray-800">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<nav class="bg-gray-800 flex-shrink">
+  <div class="mx-auto px-2">
     <div class="flex items-center justify-between h-16">
-      <div class="flex items-center">
-        <div class="flex-shrink-0"><i class="fas fa-dice-d20" /></div>
-        <div class="hidden md:block">
-          <div class="ml-10 flex items-baseline space-x-4">
-            <a
-              href="#/dashboard"
-              class="px-3 py-2 rounded-md text-sm font-medium text-white bg-gray-900">Dashboard</a>
+      <div class="flex">
+        <div class="flex items-baseline space-x-4">
+          <a
+            href={$url('/auth/dashboard')}
+            class="px-3 py-2 rounded-md text-sm font-medium {$isActive('/auth/dashboard') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Dashboard</a>
 
-            <a
-              href="#/build"
-              class="px-3 py-2 rounded-md text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700">Build</a>
-          </div>
+          <a
+            href={$url('/auth/build/world')}
+            class="px-3 py-2 rounded-md text-sm font-medium {$isActive('/auth/build') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Build</a>
         </div>
       </div>
       <div class="hidden md:block">

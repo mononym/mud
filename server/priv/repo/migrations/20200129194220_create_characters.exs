@@ -40,8 +40,6 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
       add(:auto_lock_containers, :boolean)
       add(:auto_unlock_containers, :boolean)
 
-      add(:instance_id, references(:instances, on_delete: :delete_all, type: :binary_id))
-
       timestamps()
     end
 
@@ -71,6 +69,5 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
     create(unique_index(:characters, [:name]))
     create(unique_index(:characters, [:slug]))
     execute("CREATE INDEX name_tgm_idx ON characters USING GIN (name gin_trgm_ops)")
-    create(index(:characters, [:instance_id]))
   end
 end

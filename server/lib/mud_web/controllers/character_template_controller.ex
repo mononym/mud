@@ -11,11 +11,6 @@ defmodule MudWeb.CharacterTemplateController do
     render(conn, "index.json", character_templates: character_templates)
   end
 
-  def list_by_instance(conn, %{"instance_id" => instance_id}) do
-    character_templates = CharacterTemplate.list_by_instance(instance_id)
-    render(conn, "index.json", character_templates: character_templates)
-  end
-
   def create(conn, character_template_params) do
     with {:ok, %CharacterTemplate{} = character_template} <-
            CharacterTemplate.create(character_template_params) do

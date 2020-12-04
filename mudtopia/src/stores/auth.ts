@@ -8,15 +8,12 @@ import {
 import {player} from './player'
 import PlayerState from './../models/player'
 
-
-
 function createAuthStore() {
   const authenticated = writable(false);
   const isAuthenticating = writable(false);
   const isSyncing = writable(false);
   const loggingOut = writable(false);
 
-    
   async function sync(){
     isSyncing.set(true)
     try {

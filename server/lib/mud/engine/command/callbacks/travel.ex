@@ -37,27 +37,27 @@ defmodule Mud.Engine.Command.Travel do
       )
     else
       if Util.is_uuid4(context.command.ast.thing.input) do
-        area = Area.get!(ast.thing.input)
+        # area = Area.get!(ast.thing.input)
 
-        raw_data = Region.list_area_and_link_ids(area.region_id)
+        # raw_data = Region.list_area_and_link_ids(area.region_id)
 
-        raw_data =
-          Map.put(
-            raw_data,
-            :link_ids,
-            Enum.map(raw_data[:link_ids], fn {lid, l1, l2} ->
-              {l1, l2, [label: lid, weight: 1]}
-            end)
-          )
+        # raw_data =
+        #   Map.put(
+        #     raw_data,
+        #     :link_ids,
+        #     Enum.map(raw_data[:link_ids], fn {lid, l1, l2} ->
+        #       {l1, l2, [label: lid, weight: 1]}
+        #     end)
+        #   )
 
-        graph =
-          Graph.new(type: :directed)
-          |> Graph.add_edges(raw_data[:link_ids])
-          |> Graph.add_vertices(raw_data[:area_ids])
+        # graph =
+        #   Graph.new(type: :directed)
+        #   |> Graph.add_edges(raw_data[:link_ids])
+        #   |> Graph.add_vertices(raw_data[:area_ids])
 
-        path = Graph.dijkstra(graph, context.character.area_id, area.id)
+        # path = Graph.dijkstra(graph, context.character.area_id, area.id)
 
-        :ok = Script.attach(context.character, "auto_travel", Script.Travel, path)
+        # :ok = Script.attach(context.character, "auto_travel", Script.Travel, path)
 
         context
       else

@@ -15,8 +15,7 @@ defmodule MudWeb.CharacterTemplateView do
       id: character_template.id,
       name: character_template.name,
       description: character_template.description,
-      template: character_template.template,
-      instance_id: character_template.instance_id
+      template: character_template.template
     }
   end
 end

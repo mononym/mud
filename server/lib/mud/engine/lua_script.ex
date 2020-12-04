@@ -21,8 +21,8 @@ defmodule Mud.Engine.LuaScript do
   @doc false
   def changeset(lua_script, attrs) do
     lua_script
-    |> cast(attrs, [:name, :type, :code, :description, :instance_id])
-    |> validate_required([:name, :type, :code, :description, :instance_id])
+    |> cast(attrs, [:name, :type, :code, :description])
+    |> validate_required([:name, :type, :code, :description])
   end
 
   @doc """
@@ -36,19 +36,6 @@ defmodule Mud.Engine.LuaScript do
   """
   def list do
     Repo.all(__MODULE__)
-  end
-
-  @doc """
-  Returns the list of character_templates.
-
-  ## Examples
-
-      iex> list_by_instance(instance_id)
-      [%LuaScript{}, ...]
-
-  """
-  def list_by_instance(instance_id) do
-    Repo.all(from(script in __MODULE__, where: script.instance_id == ^instance_id))
   end
 
   @doc """

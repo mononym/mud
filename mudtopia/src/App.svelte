@@ -12,11 +12,11 @@
   });
 </script>
 
-<main class="w-screen h-screen bg-gray-900">
+<main class="bg-gray-900 h-full w-full max-h-full max-w-full">
   <Tailwindcss />
   {#if $isSyncing}
     <div
-      class="min-h-screen flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      class="h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Circle2 />
       <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
         Syncing session with server

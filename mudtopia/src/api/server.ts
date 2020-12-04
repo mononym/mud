@@ -1,6 +1,7 @@
 import Api from "../services/api";
 import type {AxiosResponse} from 'axios'
 import type { PlayerInterface } from "../models/player";
+import type { MapInterface } from "../models/map";
 
 // Method to begin login/signup process by submitting an email address
 export async function submitEmailForAuth(email: string): Promise<AxiosResponse<unknown>> {
@@ -18,4 +19,9 @@ export async function syncPlayer(): Promise<AxiosResponse<{authenticated: boolea
 
 export async function logoutPlayer(): Promise<AxiosResponse<string>> {
   return await <Promise<AxiosResponse<string>>>Api.post("/authenticate/logout", '');
+}
+
+
+export async function loadMaps(): Promise<AxiosResponse<MapInterface[]>> {
+  return await <Promise<AxiosResponse<MapInterface[]>>>Api.get("/maps");
 }

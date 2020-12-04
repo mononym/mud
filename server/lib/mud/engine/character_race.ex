@@ -18,7 +18,6 @@ defmodule Mud.Engine.CharacterRace do
     field(:plural, :string)
     field(:portrait, :string)
     field(:singular, :string)
-    field(:instance_id, :binary_id)
 
     many_to_many(
       :features,
@@ -54,21 +53,6 @@ defmodule Mud.Engine.CharacterRace do
 
     #       from(p in Post, preload: [tags: ^preload_query])
     #       |> PreloadTest.Repo.all()
-  end
-
-  @doc """
-  Returns the list of character_races.
-
-  ## Examples
-
-      iex> list_by_instance(instance_id)
-      [%CharacterRace{}, ...]
-
-  """
-  def list_by_instance(instance_id) do
-    Repo.all(
-      from(race in __MODULE__, where: race.instance_id == ^instance_id, preload: [:features])
-    )
   end
 
   @doc """
@@ -174,8 +158,8 @@ defmodule Mud.Engine.CharacterRace do
   @doc false
   def changeset(character_race, attrs) do
     character_race
-    |> cast(attrs, [:singular, :plural, :adjective, :portrait, :description, :instance_id])
-    |> validate_required([:singular, :plural, :adjective, :description, :instance_id])
+    |> cast(attrs, [:singular, :plural, :adjective, :portrait, :description])
+    |> validate_required([:singular, :plural, :adjective, :description])
   end
 
   # def changeset_update_projects(%User{} = user, projects) do

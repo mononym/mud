@@ -8,7 +8,6 @@ defmodule Mud.Repo.Migrations.CreateMaps do
       add(:description, :text)
       add(:grid_size, :integer)
       add(:view_size, :integer)
-      add(:instance_id, references(:instances, on_delete: :delete_all, type: :binary_id))
       add(:labels, {:array, :map}, default: [])
 
       timestamps()

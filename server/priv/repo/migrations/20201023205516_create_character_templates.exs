@@ -7,12 +7,10 @@ defmodule Mud.Repo.Migrations.CreateCharacterTemplates do
       add(:name, :string)
       add(:description, :string)
       add(:template, :text)
-      add(:instance_id, references(:instances, on_delete: :nothing, type: :binary_id))
 
       timestamps()
     end
 
-    create(index(:character_templates, [:instance_id]))
-    create(unique_index(:character_templates, [:name, :instance_id]))
+    create(unique_index(:character_templates, [:name]))
   end
 end

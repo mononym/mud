@@ -10,11 +10,6 @@ defmodule MudWeb.CommandController do
     render(conn, "index.json", commands: commands)
   end
 
-  def list_by_instance(conn, %{"instance_id" => instance_id}) do
-    commands = Command.list_by_instance(instance_id)
-    render(conn, "index.json", commands: commands)
-  end
-
   def create(conn, command_params) do
     with {:ok, %Command{} = command} <- Command.create(command_params) do
       conn

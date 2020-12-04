@@ -11,7 +11,6 @@ defmodule Mud.Engine.Command do
   schema "commands" do
     field(:description, :string)
     field(:name, :string)
-    field(:instance_id, :binary_id)
     field(:lua_script_id, :binary_id)
 
     embeds_many :segments, Segment, on_replace: :delete do
@@ -40,19 +39,6 @@ defmodule Mud.Engine.Command do
   """
   def list do
     Repo.all(__MODULE__)
-  end
-
-  @doc """
-  Returns the list of character_templates.
-
-  ## Examples
-
-      iex> list_by_instance(instance_id)
-      [%Command{}, ...]
-
-  """
-  def list_by_instance(instance_id) do
-    Repo.all(from(command in __MODULE__, where: command.instance_id == ^instance_id))
   end
 
   @doc """
@@ -140,14 +126,23 @@ defmodule Mud.Engine.Command do
   @doc false
   def changeset(command, attrs) do
     command
-    |> cast(attrs, [:name, :description, :instance_id, :lua_script_id])
+    |> cast(attrs, [:name, :description, :lua_script_id])
     |> cast_embed(:segments, with: &segment_changeset/2)
-    |> validate_required([:name, :description, :segments, :instance_id, :lua_script_id])
+    |> validate_required([:name, :description, :segments, :lua_script_id])
   end
 
   defp segment_changeset(schema, params) do
     schema
-    |> cast(params, [:match, :key, :greedy, :dropWhitespace, :transformer, :type, :multiple, :follows])
+    |> cast(params, [
+      :match,
+      :key,
+      :greedy,
+      :dropWhitespace,
+      :transformer,
+      :type,
+      :multiple,
+      :follows
+    ])
     |> validate_required([:match, :key, :type])
   end
 end

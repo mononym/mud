@@ -14,7 +14,7 @@ defmodule Mud.Engine.Script do
   system.
   """
 
-  alias Mud.Engine.{Area, Character, Item, Link, Region}
+  alias Mud.Engine.{Area, Character, Item, Link}
   alias Mud.Engine.Util
   alias Mud.Engine.Script.Context
   alias Mud.Engine.ScriptData
@@ -116,10 +116,6 @@ defmodule Mud.Engine.Script do
 
   def thing_to_id_key(%Area{}) do
     :area_id
-  end
-
-  def thing_to_id_key(%Region{}) do
-    :region_id
   end
 
   @doc """

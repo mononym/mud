@@ -18,7 +18,6 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:local_to_size, :integer)
       add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
       add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
-      add(:instance_id, references(:instances, on_delete: :delete_all, type: :binary_id))
 
       timestamps()
     end
@@ -32,6 +31,5 @@ defmodule Mud.Repo.Migrations.CreateLinks do
     create(index(:links, [:from_id]))
     create(index(:links, [:to_id]))
     create(unique_index(:links, [:type, :from_id, :to_id]))
-    create(index(:links, [:instance_id]))
   end
 end

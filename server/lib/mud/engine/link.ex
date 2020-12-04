@@ -85,24 +85,6 @@ defmodule Mud.Engine.Link do
     Repo.all(__MODULE__)
   end
 
-  def list_in_region(region) when is_struct(region) do
-    list_in_region(region.id)
-  end
-
-  def list_in_region(region_id) do
-    Repo.all(
-      from(
-        link in __MODULE__,
-        join: area in Area,
-        on: area.region_id == ^region_id
-      )
-    )
-  end
-
-  def list_map_links(map) when is_struct(map) do
-    list_in_region(map.id)
-  end
-
   def list_map_links(map_id) do
     Repo.all(
       from(

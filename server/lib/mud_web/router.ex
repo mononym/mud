@@ -80,7 +80,6 @@ defmodule MudWeb.Router do
     # Map related stuff
     resources("/maps", MapController, except: [:new, :edit])
     get("/maps/:map_id/data", MapController, :fetch_data)
-    get("/maps/instance/:instance_id", MapController, :list_by_instance)
 
     # Area related stuff
     resources("/areas", AreaController, except: [:new, :edit])
@@ -92,12 +91,6 @@ defmodule MudWeb.Router do
 
     # Lua related stuff
     resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
-
-    get(
-      "/lua_scripts/instance/:instance_id",
-      LuaScriptController,
-      :list_by_instance
-    )
 
     # Character race stuff
     resources("/character_races", CharacterRaceController, except: [:new, :edit])
@@ -113,25 +106,12 @@ defmodule MudWeb.Router do
     )
 
     post("/character_races/upload_image", CharacterRaceController, :upload_image)
-    get("/character_races/instance/:instance_id", CharacterRaceController, :list_by_instance)
 
     # Character template stuff
     resources("/character_templates", CharacterTemplateController, except: [:new, :edit])
     post("/character_templates/preview", CharacterTemplateController, :preview)
 
-    get(
-      "/character_templates/instance/:instance_id",
-      CharacterTemplateController,
-      :list_by_instance
-    )
-
     # Commands stuff
     resources("/commands", CommandController, except: [:new, :edit])
-
-    get(
-      "/commands/instance/:instance_id",
-      CommandController,
-      :list_by_instance
-    )
   end
 end

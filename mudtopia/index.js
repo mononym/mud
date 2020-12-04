@@ -18,6 +18,7 @@ const createWindow = () => {
         
     });
 
+    window.webContents.openDevTools()
     window.loadFile('public/index.html');
 };
 

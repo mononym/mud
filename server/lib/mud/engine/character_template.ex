@@ -11,7 +11,6 @@ defmodule Mud.Engine.CharacterTemplate do
     field(:description, :string)
     field(:name, :string)
     field(:template, :string)
-    field(:instance_id, :binary_id)
 
     many_to_many(
       :features,
@@ -35,19 +34,6 @@ defmodule Mud.Engine.CharacterTemplate do
   """
   def list do
     Repo.all(CharacterTemplate)
-  end
-
-  @doc """
-  Returns the list of character_templates.
-
-  ## Examples
-
-      iex> list_by_instance(instance_id)
-      [%CharacterTemplate{}, ...]
-
-  """
-  def list_by_instance(instance_id) do
-    Repo.all(from(template in __MODULE__, where: template.instance_id == ^instance_id))
   end
 
   @doc """
@@ -129,8 +115,8 @@ defmodule Mud.Engine.CharacterTemplate do
   """
   def changeset(%__MODULE__{} = character_template, attrs \\ %{}) do
     character_template
-    |> cast(attrs, [:name, :description, :template, :instance_id])
-    |> validate_required([:name, :description, :template, :instance_id])
-    |> unique_constraint([:name, :instance_id])
+    |> cast(attrs, [:name, :description, :template])
+    |> validate_required([:name, :description, :template])
+    |> unique_constraint([:name])
   end
 end

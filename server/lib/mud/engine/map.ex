@@ -56,19 +56,6 @@ defmodule Mud.Engine.Map do
   end
 
   @doc """
-  Returns the list of maps.
-
-  ## Examples
-
-      iex> list_by_instance(instance_id)
-      [%Map{}, ...]
-
-  """
-  def list_by_instance(instance_id) do
-    Repo.all(from(map in __MODULE__, where: map.instance_id == ^instance_id))
-  end
-
-  @doc """
   Gets a single map.
 
   Raises `Ecto.NoResultsError` if the Map does not exist.
@@ -211,14 +198,12 @@ defmodule Mud.Engine.Map do
       :description,
       :view_size,
       :grid_size,
-      :instance_id
     ])
     |> validate_required([
       :name,
       :description,
       :view_size,
       :grid_size,
-      :instance_id
     ])
     |> cast_embed(:labels, with: &labels_changeset/2)
   end

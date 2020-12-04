@@ -24,8 +24,7 @@ defmodule MudWeb.CharacterRaceView do
           character_race.features,
           CharacterRaceFeatureView,
           "character_race_feature.json"
-        ),
-      instance_id: character_race.instance_id
+        )
     }
   end
 end
