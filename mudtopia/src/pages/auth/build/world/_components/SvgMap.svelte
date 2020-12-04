@@ -48,22 +48,38 @@
     viewBox =
       viewBoxX + " " + viewBoxY + " " + viewBoxXSize + " " + viewBoxYSize;
   });
+
+  function zoomIn() {
+    zoomMultierIndex = --zoomMultierIndex;
+  }
+
+  function zoomOut() {
+    zoomMultierIndex = ++zoomMultierIndex;
+  }
 </script>
 
-<div class="h-full w-full flex flex-col">
+<div
+  class="p-1 h-full w-full flex flex-col {$mapSelected ? '' : 'place-content-center'}">
   {#if $mapSelected}
+    <p class="flex-shrink text-gray-300 w-full text-center">
+      {$selectedMap.name}
+    </p>
     <svg class="flex-1" {viewBox} preserveAspectRatio="xMidYMid meet" />
     <div class="flex">
       <button
+        on:click={zoomIn}
+        disabled={zoomInButtonDisabled}
         type="button"
-        class="flex-1 bg-gray-300 rounded-l-md p-2 text-black hover:text-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"><i
+        class="flex-1 rounded-l-md {zoomInButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {zoomInButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"><i
           class="fas fa-plus" /></button>
       <button
+        on:click={zoomOut}
+        disabled={zoomOutButtonDisabled}
         type="button"
-        class="flex-1 bg-gray-300 rounded-r-md p-2 text-black hover:text-gray-500 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"><i
+        class="flex-1 rounded-r-md {zoomOutButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {zoomOutButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"><i
           class="fas fa-minus" /></button>
     </div>
   {:else}
-    <p>Select a map</p>
+    <p class="text-gray-300 text-center">Select a map</p>
   {/if}
 </div>

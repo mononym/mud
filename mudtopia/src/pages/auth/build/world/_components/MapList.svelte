@@ -9,7 +9,7 @@
   }
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col p-1">
   <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
     <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
       <div
@@ -37,7 +37,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             {#each $maps as map, i}
               <tr
-                class="{$selectedMap.id == map.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'}"
+                class="{$selectedMap.id == map.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} cursor-pointer"
                 on:click={selectMap(map)}>
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-100">{map.name}</div>
