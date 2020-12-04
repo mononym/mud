@@ -9,7 +9,7 @@
   }
 </script>
 
-<div class="flex-grow flex flex-col justify-center">
+<div class="h-full flex flex-col justify-center">
   <i class="fas fa-dice-d20 text-gray-500 text-4xl self-center" />
   <h2
     class="mt-6 text-center text-3xl font-extrabold text-gray-500 self-center">
