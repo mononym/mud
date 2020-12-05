@@ -6,31 +6,15 @@
   export let viewBox = "0 0 0 0";
   export let preserveAspectRatio = "xMidYMid meet";
   export let shapes = [];
-
-  let shapes2 = [
-    {
-      type: "rect",
-      x: 2490,
-      y: 2490,
-      width: 20,
-      height: 20,
-      fill: "blue",
-      class: "cursor-pointer",
-    },
-  ];
-
   console.log(viewBox);
 
   function selectArea(area) {
-    console.log("selectArea");
-    console.log(area);
-
     dispatch("selectArea", area);
   }
 </script>
 
 <svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
-  {#each shapes2 as shape}
+  {#each shapes as shape}
     {#if shape.type == 'line'}
       <line
         x1={shape.x1}
@@ -49,7 +33,9 @@
         width={shape.width}
         height={shape.height}
         fill={shape.fill}
-        class={shape.class} />
+        class={shape.cls}>
+        <title>{shape.name}</title>
+      </rect>
     {:else if shape.type == 'text'}
       <text
         fill={shape.fill}

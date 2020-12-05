@@ -6,7 +6,15 @@ function createWorldBuilderStore() {
   const loadingMapData = writable(false);
   const mapDataLoaded = writable(false);
   const areas = writable([]);
+  const areasIndex = derived(
+    areas,
+    $areas => $areas.reduce((obj, area) => (obj[area.id] = area, obj) ,{})
+  )
   const links = writable([]);
+  const linksIndex = derived(
+    links,
+    $links => $links.reduce((obj, link) => (obj[link.id] = link, obj) ,{})
+  )
   const selectedMap = writable({...MapState});
   const mapSelected = derived(
     selectedMap,
@@ -26,7 +34,9 @@ function createWorldBuilderStore() {
   
 return {
   areas,
+  areasIndex,
   links,
+  linksIndex,
   loadingMapData,
   mapDataLoaded,
   selectedMap,

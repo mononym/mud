@@ -1,4 +1,4 @@
-<script>
+<script language="typescript">
   import ConfirmWithInput from "../../../../components/ConfirmWithInput.svelte";
   import MapEditor from "./_components/MapEditor.svelte";
   import MapDetails from "./_components/MapDetails.svelte";
@@ -19,6 +19,7 @@
   let showDeletePrompt = false;
   let deleteCallback;
   let deleteMatchString = "";
+  let mapReadOnly = true;
 
   onMount(async () => {
     MapsStore.load();
@@ -56,6 +57,7 @@
   }
 
   function cancelEditMap(map) {
+    mapUnderConstruction = { ...mapState };
     mapView = "details";
   }
 </script>
@@ -63,7 +65,7 @@
 <div class="inline-flex flex-grow overflow-hidden">
   <div class="h-full max-h-full w-1/2">
     <div class="h-1/2 max-h-1/2 w-full">
-      <SvgMap />
+      <SvgMap readOnly={mapReadOnly} />
     </div>
     <div class="h-1/2 max-h-1/2 w-full">
       {#if view == 'map'}
@@ -87,7 +89,10 @@
       {#if mapView == 'details'}
         <MapDetails />
       {:else}
-        <MapEditor map={mapUnderConstruction} on:save={mapSaved} />
+        <MapEditor
+          map={mapUnderConstruction}
+          on:save={mapSaved}
+          on:cancel={cancelEditMap} />
       {/if}
     {:else if view == 'area'}
       {#if areaView == 'details'}

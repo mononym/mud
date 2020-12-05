@@ -1,7 +1,11 @@
-<script>
+<script lang="ts">
   import { Circle2 } from "svelte-loading-spinners";
+  import App from "../../../../../App.svelte";
   import Svg from "../../../../../components/Svg.svelte";
+  import type { AreaInterface } from "../../../../../models/area";
+  import type { LinkInterface } from "../../../../../models/link";
   import { MapsStore } from "../../../../../stores/maps";
+  import BottomNav from "../../../../example/transitions/tabs/_components/BottomNav.svelte";
   const { maps } = MapsStore;
   import { WorldBuilderStore } from "./state";
   const {
@@ -9,9 +13,12 @@
     selectedMap,
     loadAllMapData,
     areas,
+    areasIndex,
     links,
     loadingMapData,
   } = WorldBuilderStore;
+
+  export let readOnly = true;
 
   // Stuff to draw
   $: if ($mapSelected) {
@@ -43,6 +50,7 @@
     chosenMap = newMap;
     xCenterPoint = chosenMap.viewSize / 2;
     yCenterPoint = chosenMap.viewSize / 2;
+    console.log("selectedMap subscribe");
     calculateViewBox();
   });
 
@@ -50,12 +58,81 @@
     viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
     viewBoxYSize =
       chosenMap.viewSize *
-      (svgWrapperWidth / svgWrapperHeight) *
+      (svgWrapperWidth / (svgWrapperHeight - 64)) *
       zoomMultipliers[zoomMultierIndex];
-    viewBoxX = (xCenterPoint - viewBoxXSize / 2).toString();
-    viewBoxY = (yCenterPoint - viewBoxYSize / 2).toString();
+    viewBoxX = xCenterPoint - viewBoxXSize / 2;
+    viewBoxY = yCenterPoint - viewBoxYSize / 2;
     viewBox =
       viewBoxX + " " + viewBoxY + " " + viewBoxXSize + " " + viewBoxYSize;
+
+    console.log("calculating");
+    console.log(viewBox);
+  }
+
+  let svgAreaShapes = [];
+  areas.subscribe((newAreas) => {
+    svgAreaShapes = newAreas.map(function (area: AreaInterface) {
+      return buildSquare(
+        area,
+        $selectedMap.gridSize,
+        $selectedMap.viewSize,
+        "blue",
+        area.mapX,
+        area.mapY,
+        area.mapSize,
+        readOnly ? "cursor-auto" : "cursor-pointer"
+      );
+    });
+  });
+
+  let svglinkShapes = [];
+  links.subscribe((newLinks) => {
+    svglinkShapes = newLinks.map(function (link: LinkInterface) {
+      const toArea = $areasIndex[link.toId];
+      const fromArea = $areasIndex[link.fromId];
+      const fromMapX = fromArea.mapX;
+      const fromMapY = fromArea.mapY;
+      const toMapX = toArea.mapX;
+      const toMapY = toArea.mapY;
+      const stroke = "white";
+      const gridSize = $selectedMap.gridSize;
+      const viewSize = $selectedMap.viewSize;
+
+      return {
+        id: link.id,
+        type: "line",
+        x1: fromMapX * gridSize + viewSize / 2,
+        y1: -fromMapY * gridSize + viewSize / 2,
+        x2: toMapX * gridSize + viewSize / 2,
+        y2: -toMapY * gridSize + viewSize / 2,
+        stroke: stroke,
+        link: link,
+      };
+    });
+  });
+
+  function buildSquare(
+    area: AreaInterface,
+    gridSize: number,
+    viewSize: number,
+    fill: string,
+    x: number,
+    y: number,
+    size: number,
+    cls: string
+  ): Record<string, unknown> {
+    return {
+      id: area.id,
+      type: "rect",
+      x: x * gridSize + viewSize / 2 - size / 2,
+      y: -y * gridSize + viewSize / 2 - size / 2,
+      width: size,
+      height: size,
+      fill: fill,
+      name: area.name,
+      area: area,
+      cls: cls,
+    };
   }
 
   function zoomIn() {
@@ -70,6 +147,8 @@
 </script>
 
 <div
+  bind:clientWidth={svgWrapperWidth}
+  bind:clientHeight={svgWrapperHeight}
   class="p-1 h-full w-full max-w-full max-h-full flex flex-col {$mapSelected ? '' : 'place-content-center'}">
   {#if $mapSelected}
     {#if $loadingMapData}
@@ -83,11 +162,8 @@
       <p class="flex-shrink text-gray-300 w-full text-center">
         {$selectedMap.name}
       </p>
-      <div
-        class="flex-1 overflow-hidden"
-        bind:clientWidth={svgWrapperWidth}
-        bind:clientHeight={svgWrapperHeight}>
-        <Svg {viewBox} />
+      <div class="flex-1 overflow-hidden">
+        <Svg {viewBox} shapes={[...svglinkShapes, ...svgAreaShapes]} />
       </div>
       <div class="flex">
         <button

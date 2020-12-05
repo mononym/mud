@@ -8,15 +8,15 @@ defmodule Mud.Engine.Map do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-  # @derive Jason.Encoder
   schema "maps" do
+    @derive Jason.Encoder
     field(:description, :string)
     field(:name, :string)
     field(:view_size, :integer, default: 5000)
     field(:grid_size, :integer, default: 50)
 
     embeds_many :labels, Label, on_replace: :delete do
-      # @derive Jason.Encoder
+      @derive Jason.Encoder
       field(:text, :string, default: "")
       field(:x, :integer, default: 0)
       field(:y, :integer, default: 0)
