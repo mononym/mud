@@ -1,4 +1,8 @@
 <script>
+  import { createEventDispatcher } from "svelte";
+
+  const dispatch = createEventDispatcher();
+
   import { MapsStore } from "../../../../../stores/maps";
   const { maps } = MapsStore;
   import { WorldBuilderStore } from "./state";
@@ -6,6 +10,21 @@
 
   function selectMap(map) {
     $selectedMap = map;
+  }
+
+  function editMap(map) {
+    $selectedMap = map;
+    dispatch("editMap", map);
+  }
+
+  function buildMap(map) {
+    $selectedMap = map;
+    dispatch("buildMap", map);
+  }
+
+  function deleteMap(map) {
+    $selectedMap = map;
+    dispatch("deleteMap", map);
   }
 </script>
 
@@ -47,6 +66,7 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
+                    on:click={buildMap(map)}
                     class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     style="transition: all .15s ease">
@@ -54,6 +74,7 @@
                     Build
                   </button>
                   <button
+                    on:click={editMap(map)}
                     class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     style="transition: all .15s ease">
@@ -61,6 +82,7 @@
                     Edit
                   </button>
                   <button
+                    on:click={deleteMap(map)}
                     class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     style="transition: all .15s ease">

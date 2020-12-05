@@ -30,3 +30,11 @@ export async function loadMaps(): Promise<AxiosResponse<MapInterface[]>> {
 export async function loadMapData(mapId: string): Promise<AxiosResponse<{areas: AreaInterface[], links: LinkInterface[]}>> {
   return await <Promise<AxiosResponse<{areas: AreaInterface[], links: LinkInterface[]}>>>Api.get("/maps/" + mapId + "/data");
 }
+
+export async function createMap(params: Record<string, unknown>): Promise<AxiosResponse<MapInterface>> {
+  return await <Promise<AxiosResponse<MapInterface>>>Api.post("/maps", params);
+}
+
+export async function updateMap(params: Record<string, unknown>): Promise<AxiosResponse<MapInterface>> {
+  return await <Promise<AxiosResponse<MapInterface>>>Api.patch("/maps/" + params.id, {map: params});
+}
