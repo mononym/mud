@@ -38,3 +38,7 @@ export async function createMap(params: Record<string, unknown>): Promise<AxiosR
 export async function updateMap(params: Record<string, unknown>): Promise<AxiosResponse<MapInterface>> {
   return await <Promise<AxiosResponse<MapInterface>>>Api.patch("/maps/" + params.id, {map: params});
 }
+
+export async function deleteMap(mapId: string): Promise<AxiosResponse<string>> {
+  return await <Promise<AxiosResponse<string>>>Api.delete("/maps/" + mapId, '');
+}

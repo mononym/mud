@@ -3,22 +3,20 @@ defmodule Mud.Engine.Map do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.{Area, Link}
-  alias Mud.Engine.Instance
   import Ecto.Query
   require Protocol
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
-  @derive Jason.Encoder
+  # @derive Jason.Encoder
   schema "maps" do
     field(:description, :string)
     field(:name, :string)
-    field(:view_size, :integer, default: 10000)
+    field(:view_size, :integer, default: 5000)
     field(:grid_size, :integer, default: 50)
-    belongs_to(:instance, Instance, type: :binary_id)
 
     embeds_many :labels, Label, on_replace: :delete do
-      @derive Jason.Encoder
+      # @derive Jason.Encoder
       field(:text, :string, default: "")
       field(:x, :integer, default: 0)
       field(:y, :integer, default: 0)
@@ -197,13 +195,13 @@ defmodule Mud.Engine.Map do
       :name,
       :description,
       :view_size,
-      :grid_size,
+      :grid_size
     ])
     |> validate_required([
       :name,
       :description,
       :view_size,
-      :grid_size,
+      :grid_size
     ])
     |> cast_embed(:labels, with: &labels_changeset/2)
   end

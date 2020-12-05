@@ -93,8 +93,6 @@ defmodule Mud.Engine.Character do
     #
 
     has_many(:raw_skills, Skill)
-
-    belongs_to(:instance, Instance, type: :binary_id)
   end
 
   ##

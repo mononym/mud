@@ -2,7 +2,8 @@ import { derived, writable } from "svelte/store";
 import {
   loadMaps,
   createMap,
-  updateMap
+  updateMap,
+  deleteMap as delMap
 } from "../api/server";
 import type { MapInterface } from "../models/map";
 
@@ -38,9 +39,22 @@ function createMapsStore() {
       loadingMaps.set(false)
     }
   }
+  
+  async function deleteMap(map: MapInterface){
+    deletingMaps.set(true)
+
+    try {
+      await delMap(map.id);
+
+      mapsMap.update(function(mm) {delete mm[map.id]; return mm})
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      deletingMaps.set(false)
+    }
+  }
 
   async function saveMap(map: MapInterface){
-    console.log('save map')
     savingMaps.set(true)
     let oldData;
     const isNew = map.id == ''
@@ -83,7 +97,7 @@ function createMapsStore() {
   
 return {
   load,
-  loaded, loadingMaps, savingMaps, deletingMaps, maps, saveMap
+  loaded, loadingMaps, savingMaps, deletingMaps, maps, saveMap, deleteMap
   }
 }
 

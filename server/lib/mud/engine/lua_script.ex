@@ -13,7 +13,6 @@ defmodule Mud.Engine.LuaScript do
     field(:type, :string)
     field(:description, :string)
     many_to_many(:dependencies, Mud.Engine.LuaScript, join_through: "lua_scripts_dependencies")
-    belongs_to(:instance, Instance, type: :binary_id)
 
     timestamps()
   end

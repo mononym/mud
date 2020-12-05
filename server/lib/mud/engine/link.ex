@@ -38,8 +38,6 @@ defmodule Mud.Engine.Link do
       foreign_key: :to_id
     )
 
-    belongs_to(:instance, Instance, type: :binary_id)
-
     timestamps()
   end
 

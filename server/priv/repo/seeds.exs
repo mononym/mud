@@ -9,7 +9,7 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias Mud.Engine.{Map, Region, Area, Instance, Link}
+alias Mud.Engine.{Map, Area, Link}
 
 # Map insertions
 {:ok, map} =
@@ -25,7 +25,7 @@ alias Mud.Engine.{Map, Region, Area, Instance, Link}
   Map.create(%{
     name: "Torinthian Royal Castle",
     description: "The interior of the Royal Castle",
-    map_size: 5000,
+    view_size: 5000,
     grid_size: 50,
     labels: []
   })

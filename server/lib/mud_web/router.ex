@@ -73,10 +73,6 @@ defmodule MudWeb.Router do
     # post "/characters/update", CharacterController, :update
     get("/characters/get-creation-data", CharacterController, :get_creation_data)
 
-    # Instance related stuff
-    get("/instances", InstanceController, :list_all)
-    get("/instances/slug/:instance", InstanceController, :get_by_slug)
-
     # Map related stuff
     resources("/maps", MapController, except: [:new, :edit])
     get("/maps/:map_id/data", MapController, :fetch_data)

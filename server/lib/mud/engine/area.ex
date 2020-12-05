@@ -21,7 +21,6 @@ defmodule Mud.Engine.Area do
     field(:map_size, :integer)
 
     belongs_to(:map, Map, type: :binary_id)
-    belongs_to(:instance, Instance, type: :binary_id)
 
     has_many(:characters, Character)
     has_many(:items, Item)

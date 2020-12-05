@@ -25,8 +25,6 @@ defmodule Mud.Engine.Item do
 
     timestamps()
 
-    belongs_to(:instance, Instance, type: :binary_id)
-
     # The state of the item
     field(:is_hidden, :boolean, default: false)
 
