@@ -1,10 +1,10 @@
 <script lang="ts">
-  import Tailwindcss from "./Tailwind.svelte";
   import { onMount } from "svelte";
   import { AuthStore } from "./stores/auth";
   import { Circle2 } from "svelte-loading-spinners";
   import Router from "@roxi/routify/runtime/Router.svelte";
   import { routes } from "../.routify/routes";
+  import Tailwindcss from "./Tailwind.svelte";
   const { isSyncing } = AuthStore;
 
   onMount(async () => {

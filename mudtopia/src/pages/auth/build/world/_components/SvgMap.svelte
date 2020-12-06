@@ -1,21 +1,19 @@
 <script lang="ts">
   import { Circle2 } from "svelte-loading-spinners";
-  import App from "../../../../../App.svelte";
   import Svg from "../../../../../components/Svg.svelte";
   import type { AreaInterface } from "../../../../../models/area";
   import type { LinkInterface } from "../../../../../models/link";
-  import { MapsStore } from "../../../../../stores/maps";
-  import BottomNav from "../../../../example/transitions/tabs/_components/BottomNav.svelte";
-  const { maps } = MapsStore;
+  import { AreasStore } from "../../../../../stores/areas";
+  import { LinksStore } from "../../../../../stores/links";
+  const { links } = LinksStore;
+  const { areas, areasMap } = AreasStore;
   import { WorldBuilderStore } from "./state";
   const {
     mapSelected,
     selectedMap,
     loadAllMapData,
-    areas,
-    areasIndex,
-    links,
     loadingMapData,
+    selectedArea,
   } = WorldBuilderStore;
 
   export let readOnly = true;
@@ -50,7 +48,6 @@
     chosenMap = newMap;
     xCenterPoint = chosenMap.viewSize / 2;
     yCenterPoint = chosenMap.viewSize / 2;
-    console.log("selectedMap subscribe");
     calculateViewBox();
   });
 
@@ -64,25 +61,31 @@
     viewBoxY = yCenterPoint - viewBoxYSize / 2;
     viewBox =
       viewBoxX + " " + viewBoxY + " " + viewBoxXSize + " " + viewBoxYSize;
-
-    console.log("calculating");
-    console.log(viewBox);
   }
 
   let svgAreaShapes = [];
-  areas.subscribe((newAreas) => {
-    svgAreaShapes = newAreas.map(function (area: AreaInterface) {
+
+  function buildSvgAreaShapes(areas: AreaInterface[]) {
+    svgAreaShapes = areas.map(function (area: AreaInterface) {
       return buildSquare(
         area,
         $selectedMap.gridSize,
         $selectedMap.viewSize,
-        "blue",
+        $selectedArea.id == area.id ? "green" : "blue",
         area.mapX,
         area.mapY,
         area.mapSize,
         readOnly ? "cursor-auto" : "cursor-pointer"
       );
     });
+  }
+
+  areas.subscribe((newAreas) => {
+    buildSvgAreaShapes(newAreas);
+  });
+
+  selectedArea.subscribe(() => {
+    buildSvgAreaShapes($areas);
   });
 
   let svglinkShapes = [];
@@ -90,13 +93,13 @@
     svglinkShapes = newLinks
       .filter(function (link: LinkInterface) {
         return (
-          $areasIndex[link.toId] != undefined &&
-          $areasIndex[link.fromId] != undefined
+          $areasMap[link.toId] != undefined &&
+          $areasMap[link.fromId] != undefined
         );
       })
       .map(function (link: LinkInterface) {
-        const toArea = $areasIndex[link.toId];
-        const fromArea = $areasIndex[link.fromId];
+        const toArea = $areasMap[link.toId];
+        const fromArea = $areasMap[link.fromId];
         const fromMapX = fromArea.mapX;
         const fromMapY = fromArea.mapY;
         const toMapX = toArea.mapX;
@@ -151,6 +154,10 @@
     zoomMultierIndex = ++zoomMultierIndex;
     calculateViewBox();
   }
+
+  function handleSelectArea(event) {
+    $selectedArea = event.detail;
+  }
 </script>
 
 <div
@@ -170,7 +177,10 @@
         {$selectedMap.name}
       </p>
       <div class="flex-1 overflow-hidden">
-        <Svg {viewBox} shapes={[...svglinkShapes, ...svgAreaShapes]} />
+        <Svg
+          {viewBox}
+          shapes={[...svglinkShapes, ...svgAreaShapes]}
+          on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">
         <button

@@ -6,7 +6,6 @@
   export let viewBox = "0 0 0 0";
   export let preserveAspectRatio = "xMidYMid meet";
   export let shapes = [];
-  console.log(viewBox);
 
   function selectArea(area) {
     dispatch("selectArea", area);

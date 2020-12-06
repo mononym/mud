@@ -2,7 +2,7 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Instance, Item, Map, Region}
+  alias Mud.Engine.{Character, Link, Item, Map}
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -53,14 +53,51 @@ defmodule Mud.Engine.Area do
       [%__MODULE__{}, ...]
 
   """
-  def list_by_map(map_id) do
-    Repo.all(
-      from(
-        area in __MODULE__,
-        where: area.map_id == ^map_id,
-        order_by: [desc: area.updated_at]
+  def list_by_map(map_id, include_linked) do
+    if include_linked do
+      internal_areas =
+        Repo.all(
+          from(
+            area in __MODULE__,
+            where: area.map_id == ^map_id
+          )
+        )
+
+      internal_ids = Enum.map(internal_areas, & &1.id)
+
+      links =
+        Repo.all(
+          from(
+            link in Link,
+            where: link.to_id in ^internal_ids or link.from_id in ^internal_ids
+          )
+        )
+
+      external_ids =
+        links
+        |> Stream.flat_map(&[&1.to_id, &1.from_id])
+        |> Stream.uniq()
+        |> Enum.filter(&(&1 not in internal_ids))
+
+      external_areas =
+        Repo.all(
+          from(
+            area in __MODULE__,
+            where: area.id in ^external_ids
+          )
+        )
+
+      Stream.concat([external_areas, internal_areas])
+      |> Enum.sort_by(& &1.updated_at, &(&2 <= &1))
+    else
+      Repo.all(
+        from(
+          area in __MODULE__,
+          where: area.map_id == ^map_id,
+          order_by: [desc: area.updated_at]
+        )
       )
-    )
+    end
   end
 
   @doc """

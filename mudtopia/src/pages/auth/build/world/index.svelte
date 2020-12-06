@@ -2,19 +2,21 @@
   import ConfirmWithInput from "../../../../components/ConfirmWithInput.svelte";
   import MapEditor from "./_components/MapEditor.svelte";
   import MapDetails from "./_components/MapDetails.svelte";
+  import AreaDetails from "./_components/AreaDetails.svelte";
   import MapList from "./_components/MapList.svelte";
+  import AreaList from "./_components/AreaList.svelte";
   import SvgMap from "./_components/SvgMap.svelte";
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
   import { Circle2 } from "svelte-loading-spinners";
   const { deleteMap, loadingMaps } = MapsStore;
   import { WorldBuilderStore } from "./_components/state";
-  const { mapSelected, selectedMap } = WorldBuilderStore;
+  const { mapSelected, selectedMap, selectedArea } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
+  import areaState from "../../../../models/area.ts";
 
   let view = "map";
   let mapView = "details";
-  let areaView = "details";
   let mapUnderConstruction = { ...mapState };
   let showDeletePrompt = false;
   let deleteCallback;
@@ -26,14 +28,16 @@
   });
 
   function mapSaved(event) {
-    // mapUnderConstruction = { ...mapState };
     $selectedMap = event.detail;
     mapView = "details";
   }
 
-  function buildMap(map) {
+  function handleBuildMap(event) {
     view = "area";
+    mapReadOnly = false;
   }
+
+  // Map stuff
 
   function editMap(event) {
     mapUnderConstruction = { ...event.detail };
@@ -60,6 +64,32 @@
     mapUnderConstruction = { ...mapState };
     mapView = "details";
   }
+
+  // Area stuff
+
+  let areaView = "details";
+  let areaUnderConstruction = { ...areaState };
+
+  function handleEditArea(event) {
+    areaUnderConstruction = { ...event.detail };
+    areaView = "editor";
+  }
+
+  function handleDeleteArea(event) {
+    deleteCallback = function () {
+      delArea(event.detail);
+    };
+    deleteMatchString = event.detail.name;
+    showDeletePrompt = false;
+    showDeletePrompt = true;
+  }
+
+  function delArea(area) {
+    deleteArea(area).then(function () {
+      $selectedArea = { ...areaState };
+      areaView = "details";
+    });
+  }
 </script>
 
 <div class="inline-flex flex-grow overflow-hidden">
@@ -75,11 +105,16 @@
       <div class="h-1/2 max-h-1/2 w-full">
         <SvgMap readOnly={mapReadOnly} />
       </div>
-      <div class="h-1/2 max-h-1/2 w-full">
+      <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
         {#if view == 'map'}
-          <MapList on:editMap={editMap} on:deleteMap={handleDeleteMap} />
+          <MapList
+            on:editMap={editMap}
+            on:deleteMap={handleDeleteMap}
+            on:buildMap={handleBuildMap} />
         {:else}
-          <p>area list</p>
+          <AreaList
+            on:editArea={handleEditArea}
+            on:deleteArea={handleDeleteArea} />
         {/if}
       </div>
     </div>
@@ -95,7 +130,7 @@
         {/if}
       {:else if view == 'area'}
         {#if areaView == 'details'}
-          <p>details</p>
+          <AreaDetails />
         {:else}
           <p>editor</p>
         {/if}

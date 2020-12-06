@@ -19,7 +19,7 @@
 
   function buildMap(map) {
     $selectedMap = map;
-    dispatch("buildMap", map);
+    dispatch("buildMap");
   }
 
   function deleteMap(map) {
