@@ -87,28 +87,35 @@
 
   let svglinkShapes = [];
   links.subscribe((newLinks) => {
-    svglinkShapes = newLinks.map(function (link: LinkInterface) {
-      const toArea = $areasIndex[link.toId];
-      const fromArea = $areasIndex[link.fromId];
-      const fromMapX = fromArea.mapX;
-      const fromMapY = fromArea.mapY;
-      const toMapX = toArea.mapX;
-      const toMapY = toArea.mapY;
-      const stroke = "white";
-      const gridSize = $selectedMap.gridSize;
-      const viewSize = $selectedMap.viewSize;
+    svglinkShapes = newLinks
+      .filter(function (link: LinkInterface) {
+        return (
+          $areasIndex[link.toId] != undefined &&
+          $areasIndex[link.fromId] != undefined
+        );
+      })
+      .map(function (link: LinkInterface) {
+        const toArea = $areasIndex[link.toId];
+        const fromArea = $areasIndex[link.fromId];
+        const fromMapX = fromArea.mapX;
+        const fromMapY = fromArea.mapY;
+        const toMapX = toArea.mapX;
+        const toMapY = toArea.mapY;
+        const stroke = "white";
+        const gridSize = $selectedMap.gridSize;
+        const viewSize = $selectedMap.viewSize;
 
-      return {
-        id: link.id,
-        type: "line",
-        x1: fromMapX * gridSize + viewSize / 2,
-        y1: -fromMapY * gridSize + viewSize / 2,
-        x2: toMapX * gridSize + viewSize / 2,
-        y2: -toMapY * gridSize + viewSize / 2,
-        stroke: stroke,
-        link: link,
-      };
-    });
+        return {
+          id: link.id,
+          type: "line",
+          x1: fromMapX * gridSize + viewSize / 2,
+          y1: -fromMapY * gridSize + viewSize / 2,
+          x2: toMapX * gridSize + viewSize / 2,
+          y2: -toMapY * gridSize + viewSize / 2,
+          stroke: stroke,
+          link: link,
+        };
+      });
   });
 
   function buildSquare(
