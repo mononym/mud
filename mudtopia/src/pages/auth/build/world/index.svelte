@@ -63,47 +63,47 @@
 </script>
 
 <div class="inline-flex flex-grow overflow-hidden">
-  <div class="h-full max-h-full w-1/2">
-    <div class="h-1/2 max-h-1/2 w-full">
-      <SvgMap readOnly={mapReadOnly} />
+  {#if $loadingMaps}
+    <div class="flex-1 flex flex-col justify-center items-center">
+      <Circle2 />
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
+        Loading maps
+      </h2>
     </div>
-    <div class="h-1/2 max-h-1/2 w-full">
-      {#if view == 'map'}
-        {#if $loadingMaps}
-          <div class="fit flex flex-col items-center justify-center">
-            <Circle2 />
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
-              Loading maps
-            </h2>
-          </div>
-        {:else}
+  {:else}
+    <div class="h-full max-h-full w-1/2">
+      <div class="h-1/2 max-h-1/2 w-full">
+        <SvgMap readOnly={mapReadOnly} />
+      </div>
+      <div class="h-1/2 max-h-1/2 w-full">
+        {#if view == 'map'}
           <MapList on:editMap={editMap} on:deleteMap={handleDeleteMap} />
+        {:else}
+          <p>area list</p>
         {/if}
-      {:else}
-        <p>area list</p>
+      </div>
+    </div>
+    <div class="flex-1">
+      {#if view == 'map'}
+        {#if mapView == 'details'}
+          <MapDetails />
+        {:else}
+          <MapEditor
+            map={mapUnderConstruction}
+            on:save={mapSaved}
+            on:cancel={cancelEditMap} />
+        {/if}
+      {:else if view == 'area'}
+        {#if areaView == 'details'}
+          <p>details</p>
+        {:else}
+          <p>editor</p>
+        {/if}
       {/if}
     </div>
-  </div>
-  <div class="flex-1">
-    {#if view == 'map'}
-      {#if mapView == 'details'}
-        <MapDetails />
-      {:else}
-        <MapEditor
-          map={mapUnderConstruction}
-          on:save={mapSaved}
-          on:cancel={cancelEditMap} />
-      {/if}
-    {:else if view == 'area'}
-      {#if areaView == 'details'}
-        <p>details</p>
-      {:else}
-        <p>editor</p>
-      {/if}
-    {/if}
-  </div>
-  <ConfirmWithInput
-    show={showDeletePrompt}
-    callback={deleteCallback}
-    matchString={deleteMatchString} />
+    <ConfirmWithInput
+      show={showDeletePrompt}
+      callback={deleteCallback}
+      matchString={deleteMatchString} />
+  {/if}
 </div>
