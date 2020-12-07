@@ -82,25 +82,41 @@
             bind:value={$areaUnderConstruction.mapSize}
             type="number"
             min="5"
-            max="100"
-            step="1"
+            max="99"
+            step="2"
             name="mapSize"
             id="mapSize"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+
+          <div class="col-span-3">
+            <label
+              for="mapCorners"
+              class="block text-sm font-medium text-gray-300">How rounded the
+              corners are</label>
+            <input
+              bind:value={$areaUnderConstruction.mapCorners}
+              type="number"
+              min="0"
+              max={Math.ceil($areaUnderConstruction.mapSize / 2).toString()}
+              step="1"
+              name="mapCorners"
+              id="mapCorners"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
         </div>
       </div>
-    </div>
-    <div class="px-4 py-3 text-right sm:px-6">
-      <button
-        type="submit"
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Save
-      </button>
-      <button
-        on:click={cancel}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Cancel
-      </button>
+      <div class="px-4 py-3 text-right sm:px-6">
+        <button
+          type="submit"
+          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Save
+        </button>
+        <button
+          on:click={cancel}
+          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
 </form>

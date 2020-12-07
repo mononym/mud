@@ -77,6 +77,7 @@
           area.mapX,
           area.mapY,
           area.mapSize,
+          area.mapCorners,
           readOnly ? "cursor-auto" : "cursor-pointer"
         );
       })
@@ -158,6 +159,7 @@
     x: number,
     y: number,
     size: number,
+    corners: number,
     cls: string
   ): Record<string, unknown> {
     return {
@@ -167,6 +169,7 @@
       y: -y * gridSize + viewSize / 2 - size / 2,
       width: size,
       height: size,
+      corners: corners,
       fill: fill,
       name: area.name,
       area: area,

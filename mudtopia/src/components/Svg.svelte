@@ -31,6 +31,7 @@
         y={shape.y}
         width={shape.width}
         height={shape.height}
+        rx={shape.corners}
         fill={shape.fill}
         class={shape.cls}>
         <title>{shape.name}</title>
