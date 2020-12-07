@@ -14,6 +14,7 @@
     loadAllMapData,
     loadingMapData,
     selectedArea,
+    areaUnderConstruction,
   } = WorldBuilderStore;
 
   export let readOnly = true;
@@ -66,18 +67,28 @@
   let svgAreaShapes = [];
 
   function buildSvgAreaShapes(areas: AreaInterface[]) {
-    svgAreaShapes = areas.map(function (area: AreaInterface) {
-      return buildSquare(
-        area,
-        $selectedMap.gridSize,
-        $selectedMap.viewSize,
-        $selectedArea.id == area.id ? "green" : "blue",
-        area.mapX,
-        area.mapY,
-        area.mapSize,
-        readOnly ? "cursor-auto" : "cursor-pointer"
-      );
-    });
+    svgAreaShapes = areas
+      .map(function (area: AreaInterface) {
+        return buildSquare(
+          area,
+          $selectedMap.gridSize,
+          $selectedMap.viewSize,
+          $selectedArea.id == area.id ? "green" : "blue",
+          area.mapX,
+          area.mapY,
+          area.mapSize,
+          readOnly ? "cursor-auto" : "cursor-pointer"
+        );
+      })
+      .sort(function (area1, area2) {
+        if (area1.id == $areaUnderConstruction.id) {
+          return 1;
+        } else if (area2.id == $areaUnderConstruction.id) {
+          return -1;
+        } else {
+          area1 <= area2;
+        }
+      });
   }
 
   areas.subscribe((newAreas) => {
@@ -90,7 +101,11 @@
 
   let svglinkShapes = [];
   links.subscribe((newLinks) => {
-    svglinkShapes = newLinks
+    buildSvgLinkShapes(newLinks);
+  });
+
+  function buildSvgLinkShapes(links: LinkInterface[]) {
+    svglinkShapes = links
       .filter(function (link: LinkInterface) {
         return (
           $areasMap[link.toId] != undefined &&
@@ -98,8 +113,14 @@
         );
       })
       .map(function (link: LinkInterface) {
-        const toArea = $areasMap[link.toId];
-        const fromArea = $areasMap[link.fromId];
+        const toArea =
+          link.toId == $areaUnderConstruction.id
+            ? $areaUnderConstruction
+            : $areasMap[link.toId];
+        const fromArea =
+          link.fromId == $areaUnderConstruction.id
+            ? $areaUnderConstruction
+            : $areasMap[link.fromId];
         const fromMapX = fromArea.mapX;
         const fromMapY = fromArea.mapY;
         const toMapX = toArea.mapX;
@@ -119,6 +140,14 @@
           link: link,
         };
       });
+  }
+
+  areaUnderConstruction.subscribe((newArea) => {
+    const mappedAreas = $areas.map((area) =>
+      area.id == newArea.id ? newArea : area
+    );
+    buildSvgAreaShapes(mappedAreas);
+    buildSvgLinkShapes($links);
   });
 
   function buildSquare(

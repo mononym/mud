@@ -2,13 +2,14 @@
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   import { WorldBuilderStore } from "./state";
-  const { mapSelected, selectedMap } = WorldBuilderStore;
-  import mapState from "../../../../../models/map";
-
-  export let map = { ...mapState };
+  const { area, areaUnderConstruction } = WorldBuilderStore;
+  import areaState from "../../../../../models/area";
+  import { AreasStore } from "../../../../../stores/areas";
 
   function save() {
-    saveMap(map).then((updatedMap) => dispatch("save", updatedMap));
+    AreasStore.saveArea(area).then((updatedArea) =>
+      dispatch("save", updatedArea)
+    );
   }
 
   function cancel() {
@@ -27,7 +28,7 @@
             for="name"
             class="block text-sm font-medium text-gray-300">Name</label>
           <input
-            bind:value={map.name}
+            bind:value={$areaUnderConstruction.name}
             type="text"
             name="name"
             id="name"
@@ -39,39 +40,52 @@
             for="description"
             class="block text-sm font-medium text-gray-300">Description</label>
           <textarea
-            bind:value={map.description}
+            bind:value={$areaUnderConstruction.description}
             name="description"
             id="description"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
         </div>
 
         <div class="col-span-3">
-          <label
-            for="viewSize"
-            class="block text-sm font-medium text-gray-300">Initial View Size</label>
+          <label for="mapX" class="block text-sm font-medium text-gray-300">Map
+            X Coordinate</label>
           <input
-            bind:value={map.viewSize}
+            bind:value={$areaUnderConstruction.mapX}
             type="number"
-            min="100"
+            min="-5000"
             max="5000"
-            step="100"
-            name="viewSize"
-            id="viewSize"
+            step="1"
+            name="mapX"
+            id="mapX"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+        </div>
+
+        <div class="col-span-3">
+          <label for="mapY" class="block text-sm font-medium text-gray-300">Map
+            Y Coordinate</label>
+          <input
+            bind:value={$areaUnderConstruction.mapY}
+            type="number"
+            min="-5000"
+            max="5000"
+            step="1"
+            name="mapY"
+            id="mapY"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
         </div>
 
         <div class="col-span-3">
           <label
-            for="gridSize"
-            class="block text-sm font-medium text-gray-300">Grid Size</label>
+            for="mapSize"
+            class="block text-sm font-medium text-gray-300">Map Size</label>
           <input
-            bind:value={map.gridSize}
+            bind:value={$areaUnderConstruction.mapSize}
             type="number"
-            min="10"
+            min="5"
             max="100"
-            step="2"
-            name="gridSize"
-            id="gridSize"
+            step="1"
+            name="mapSize"
+            id="mapSize"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
         </div>
       </div>

@@ -7,6 +7,7 @@ import { AreasStore } from "../../../../../stores/areas";
 import { LinksStore } from "../../../../../stores/links";
 
 function createWorldBuilderStore() {
+  const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
   const mapDataLoaded = writable(false);
   const links = writable([]);
@@ -33,8 +34,8 @@ function createWorldBuilderStore() {
     try {
       const res = (await loadMapData(mapId)).data;
 
-      AreasStore.putAreas(res.areas)
-      LinksStore.putLinks(res.links)
+      AreasStore.putAreas(res.areas);
+      LinksStore.putLinks(res.links);
     } catch (e) {
       alert(e.message);
     }
@@ -42,6 +43,7 @@ function createWorldBuilderStore() {
 
   return {
     // Area stuff
+    areaUnderConstruction,
     areaSelected,
     selectedArea,
     // Links stuff

@@ -1,5 +1,6 @@
 <script language="typescript">
   import ConfirmWithInput from "../../../../components/ConfirmWithInput.svelte";
+  import AreaEditor from "./_components/AreaEditor.svelte";
   import MapEditor from "./_components/MapEditor.svelte";
   import MapDetails from "./_components/MapDetails.svelte";
   import AreaDetails from "./_components/AreaDetails.svelte";
@@ -11,9 +12,10 @@
   import { Circle2 } from "svelte-loading-spinners";
   const { deleteMap, loadingMaps } = MapsStore;
   import { WorldBuilderStore } from "./_components/state";
-  const { mapSelected, selectedMap, selectedArea } = WorldBuilderStore;
+  const { mapSelected, selectedMap, selectedArea, areaUnderConstruction } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
+  import linkState from "../../../../models/link.ts";
 
   let view = "map";
   let mapView = "details";
@@ -26,11 +28,6 @@
   onMount(async () => {
     MapsStore.load();
   });
-
-  function mapSaved(event) {
-    $selectedMap = event.detail;
-    mapView = "details";
-  }
 
   function handleBuildMap(event) {
     view = "area";
@@ -65,13 +62,17 @@
     mapView = "details";
   }
 
+  function mapSaved(event) {
+    $selectedMap = event.detail;
+    mapView = "details";
+  }
+
   // Area stuff
 
   let areaView = "details";
-  let areaUnderConstruction = { ...areaState };
 
   function handleEditArea(event) {
-    areaUnderConstruction = { ...event.detail };
+    $areaUnderConstruction = { ...event.detail };
     areaView = "editor";
   }
 
@@ -84,7 +85,44 @@
     showDeletePrompt = true;
   }
 
-  function delArea(area) {
+  function delArea(event) {
+    deleteArea(event.detail).then(function () {
+      $selectedArea = { ...areaState };
+      areaView = "details";
+    });
+  }
+
+  function cancelEditArea(event) {
+    $areaUnderConstruction = { ...areaState };
+    areaView = "details";
+  }
+
+  function areaSaved(event) {
+    $areaUnderConstruction = { ...areaState };
+    $selectedArea = event.detail;
+    areaView = "details";
+  }
+
+  // Link stuff
+
+  let linkView = "details";
+  let linkUnderConstruction = { ...linkState };
+
+  function handleEditLink(event) {
+    $areaUnderConstruction = { ...event.detail };
+    areaView = "editor";
+  }
+
+  function handleDeleteLink(event) {
+    deleteCallback = function () {
+      delArea(event.detail);
+    };
+    deleteMatchString = event.detail.name;
+    showDeletePrompt = false;
+    showDeletePrompt = true;
+  }
+
+  function delLink(area) {
     deleteArea(area).then(function () {
       $selectedArea = { ...areaState };
       areaView = "details";
@@ -132,7 +170,9 @@
         {#if areaView == 'details'}
           <AreaDetails />
         {:else}
-          <p>editor</p>
+          <AreaEditor
+            on:save={areaSaved}
+            on:cancel={cancelEditArea} />
         {/if}
       {/if}
     </div>
