@@ -22,6 +22,7 @@ function createWorldBuilderStore() {
   );
 
   // Links stuff
+  const linkEditorMapForOtherAreaId = writable("");
   const selectedLink = writable({ ...LinkState });
   const linkSelected = derived(
     selectedLink,
@@ -79,6 +80,14 @@ function createWorldBuilderStore() {
     // linking of the 'selectedArea', which means it needs to both trigger actions in the
     // link editor as well as making sure the map shows a preview of where the link will go.
     if (get(mode) == "link") {
+      // Detect if the map for other area is set to different map. If so set it back
+      if (get(linkEditorMapForOtherAreaId) != get(selectedMap).id) {
+        linkEditorMapForOtherAreaId.set(get(selectedMap).id);
+        loadAreasForLinkEditor(get(selectedMap).id);
+      }
+
+      // If area being set is the same area already selected do nothing
+      // If the link does not have to and from id's set it's not really constructed yet, so do nothing
       if (
         (get(linkUnderConstruction).toId == "" &&
           get(linkUnderConstruction).fromId == "") ||
@@ -87,6 +96,7 @@ function createWorldBuilderStore() {
         return;
       }
 
+      // Check which direction the link under construction is going in, and make sure to set the right id
       if (get(linkUnderConstruction).toId == get(selectedArea).id) {
         linkUnderConstruction.update(function (link) {
           link.fromId = area.id;
@@ -138,7 +148,8 @@ function createWorldBuilderStore() {
 
     if (mapId == get(selectedMap).id) {
       const filteredAreas = get(AreasStore.areas).filter(
-        (area) => area.mapId == get(selectedMap).id
+        (area) =>
+          area.mapId == get(selectedMap).id && area.id != get(selectedArea).id
       );
       areasForLinkEditor.set(filteredAreas);
       areasToMap = filteredAreas;
@@ -169,6 +180,7 @@ function createWorldBuilderStore() {
     selectedLink,
     linkPreviewAreaId,
     showPreviewLink,
+    linkEditorMapForOtherAreaId,
     // Map stuff
     loadingMapData,
     mapDataLoaded,

@@ -84,7 +84,11 @@
           area.mapY,
           area.mapSize,
           area.mapCorners,
-          $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
+          $svgMapAllowIntraMapAreaSelection
+            ? area.id == $selectedArea.id
+              ? "cursor-not-allowed"
+              : "cursor-pointer"
+            : "cursor-auto"
         );
       })
       .sort(function (area1, area2) {
@@ -107,11 +111,13 @@
    */
   let svgPreviewLinkShapes = [];
   function buildSvgPreviewLinkShapes() {
+    console.log("buildSvgPreviewLinkShapes");
+    console.log($linkUnderConstruction);
     if (
       $linkUnderConstruction.toId == "" ||
       $linkUnderConstruction.fromId == ""
     ) {
-      svgPreviewLinkAreaShapes = [];
+      svgPreviewLinkShapes = [];
       return;
     }
 

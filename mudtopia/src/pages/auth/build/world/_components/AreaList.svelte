@@ -4,30 +4,36 @@
   const dispatch = createEventDispatcher();
 
   import { WorldBuilderStore } from "./state";
-  const { selectedArea, selectedMap } = WorldBuilderStore;
+  const { selectedArea, selectedMap, view } = WorldBuilderStore;
   import { AreasStore } from "../../../../../stores/areas";
   const { areas } = AreasStore;
-
-  export let readOnly = false;
 
   $: filteredAreas = $areas.filter((area) => area.mapId == $selectedMap.id);
 
   function selectArea(area) {
-    WorldBuilderStore.selectArea(area);
+    if (area.id != $selectedArea.id) {
+      WorldBuilderStore.selectArea(area);
+    }
   }
 
   function editArea(area) {
-    $selectedArea = area;
-    dispatch("editArea", area);
+    if ($view != "edit") {
+      $selectedArea = area;
+      dispatch("editArea", area);
+    }
   }
 
   function linkArea(area) {
-    WorldBuilderStore.linkArea(area);
+    if ($view != "edit") {
+      WorldBuilderStore.linkArea(area);
+    }
   }
 
   function deleteArea(area) {
-    $selectedArea = area;
-    dispatch("deleteArea", area);
+    if ($view != "edit") {
+      $selectedArea = area;
+      dispatch("deleteArea", area);
+    }
   }
 </script>
 
@@ -73,7 +79,7 @@
           {#each filteredAreas as area, i}
             <tr
               id={area.id}
-              class="{$selectedArea.id == area.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {readOnly ? 'cursor-not-allowed' : 'cursor-pointer'}"
+              class="{$selectedArea.id == area.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {$selectedArea.id == area.id ? 'cursor-not-allowed' : 'cursor-pointer'}"
               on:click={selectArea(area)}>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-100">{area.name}</div>
@@ -93,7 +99,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                 <button
                   on:click={linkArea(area)}
-                  class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+                  class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                   type="button"
                   style="transition: all .15s ease">
                   <i class="fas fa-link" />
@@ -101,7 +107,7 @@
                 </button>
                 <button
                   on:click={editArea(area)}
-                  class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+                  class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                   type="button"
                   style="transition: all .15s ease">
                   <i class="fas fa-edit" />
@@ -109,7 +115,7 @@
                 </button>
                 <button
                   on:click={deleteArea(area)}
-                  class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+                  class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                   type="button"
                   style="transition: all .15s ease">
                   <i class="fas fa-trash" />

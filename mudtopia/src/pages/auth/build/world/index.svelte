@@ -19,7 +19,6 @@
     selectedLink,
     areaUnderConstruction,
     linkUnderConstruction,
-    linkPreviewAreaId,
     mode,
     view,
   } = WorldBuilderStore;
@@ -27,12 +26,9 @@
   import areaState from "../../../../models/area.ts";
   import linkState from "../../../../models/link.ts";
 
-  let mapUnderConstruction = { ...mapState };
   let showDeletePrompt = false;
   let deleteCallback;
   let deleteMatchString = "";
-  let mapReadOnly = true;
-  let linkMapPreviewAreaId = "";
 
   onMount(async () => {
     MapsStore.load();

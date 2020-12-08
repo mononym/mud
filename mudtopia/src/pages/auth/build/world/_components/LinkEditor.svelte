@@ -10,6 +10,7 @@
     linkPreviewAreaId,
     areasForLinkEditor,
     loadAreasForLinkEditor,
+    linkEditorMapForOtherAreaId,
   } = WorldBuilderStore;
   import { LinksStore } from "../../../../../stores/links";
   import { MapsStore } from "../../../../../stores/maps";
@@ -19,7 +20,6 @@
   import { onMount } from "svelte";
 
   let direction;
-  let mapForOtherAreaId = get(selectedMap).id;
 
   let otherAreaId = "";
 
@@ -44,30 +44,15 @@
     dispatch("cancel");
   }
 
-  // async function handleMapForOtherAreaChange() {
-  //   dispatch("handleMapForOtherAreaChange");
-  //   otherAreaId = "";
-  //   $linkPreviewAreaId = "";
+  async function handleMapForOtherAreaChange() {
+    if (direction == "incoming") {
+      $linkUnderConstruction.fromId = "";
+    } else {
+      $linkUnderConstruction.toId = "";
+    }
 
-  //   if (direction == "incoming") {
-  //     $linkUnderConstruction.fromId = "";
-  //   } else {
-  //     $linkUnderConstruction.toId = "";
-  //   }
-
-  //   WorldBuilderStore.loadAreasForLinkEditor(mapForOtherAreaId);
-  // }
-
-  // function handleOtherAreaChange() {
-  //   // Do whatever is needed to trigger highlight update in map
-  //   $linkPreviewAreaId = otherAreaId;
-
-  //   if (direction == "incoming") {
-  //     $linkUnderConstruction.fromId = otherAreaId;
-  //   } else {
-  //     $linkUnderConstruction.toId = otherAreaId;
-  //   }
-  // }
+    WorldBuilderStore.loadAreasForLinkEditor($linkEditorMapForOtherAreaId);
+  }
 
   function handleTypeChange() {
     // Do whatever is needed
@@ -86,8 +71,10 @@
   }
 
   onMount(async () => {
+    $linkEditorMapForOtherAreaId = $selectedMap.id;
+
     setOutgoing();
-    loadAreasForLinkEditor(mapForOtherAreaId);
+    loadAreasForLinkEditor($linkEditorMapForOtherAreaId);
   });
 </script>
 
@@ -122,7 +109,8 @@
           <!-- svelte-ignore a11y-no-onchange -->
           <select
             id="mapForOtherArea"
-            bind:value={mapForOtherAreaId}
+            bind:value={$linkEditorMapForOtherAreaId}
+            on:change={handleMapForOtherAreaChange}
             name="mapForOtherArea"
             class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             {#each $maps as map}
@@ -164,7 +152,7 @@
           {/if}
         </div>
 
-        {#if mapForOtherAreaId != $selectedMap.id && direction == 'outgoing'}
+        {#if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'outgoing'}
           <label for="mtxc" class="block text-sm font-medium text-gray-300">Map
             Local To X Coordinate</label>
           <input
@@ -215,7 +203,7 @@
               id="localToCorners"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-        {:else if mapForOtherAreaId != $selectedMap.id && direction == 'incoming'}
+        {:else if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'incoming'}
           <div class="col-span-3">
             <label
               for="mfxc"
