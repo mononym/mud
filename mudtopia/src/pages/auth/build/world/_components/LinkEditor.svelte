@@ -11,6 +11,7 @@
     areasForLinkEditor,
     loadAreasForLinkEditor,
     linkEditorMapForOtherAreaId,
+    cancelLinkArea,
   } = WorldBuilderStore;
   import { LinksStore } from "../../../../../stores/links";
   import { MapsStore } from "../../../../../stores/maps";
@@ -41,7 +42,7 @@
   }
 
   function cancel() {
-    dispatch("cancel");
+    cancelLinkArea();
   }
 
   async function handleMapForOtherAreaChange() {

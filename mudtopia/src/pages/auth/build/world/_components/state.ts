@@ -125,6 +125,12 @@ function createWorldBuilderStore() {
     view.set("edit");
   }
 
+  async function cancelLinkArea() {
+    linkUnderConstruction.set({ ...LinkState });
+    mode.set("area");
+    view.set("details");
+  }
+
   // Whether or not to allow for clicking on the areas within a map depends on what mode is UI is in
   const svgMapAllowIntraMapAreaSelection = derived(
     [mode, view],
@@ -196,6 +202,7 @@ function createWorldBuilderStore() {
     selectArea,
     loadAreasForLinkEditor,
     linkArea,
+    cancelLinkArea,
   };
 }
 

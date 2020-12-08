@@ -34,12 +34,12 @@ const state: LinkInterface = {
   localFromY: 0,
   localFromCorners: 5,
   localFromSize: 21,
-  localFromColor: "teal",
+  localFromColor: "#008080",
   localToX: 0,
   localToY: 0,
   localToCorners: 5,
   localToSize: 21,
-  localToColor: "teal",
+  localToColor: "#008080",
 };
 
 export default state;
