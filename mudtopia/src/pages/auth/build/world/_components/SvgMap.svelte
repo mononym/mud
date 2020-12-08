@@ -71,19 +71,52 @@
   function buildSvgAreaShapes(areas: AreaInterface[]) {
     svgAreaShapes = areas
       .map(function (area: AreaInterface) {
-        return buildSquare(
-          area,
-          $selectedMap.gridSize,
-          $selectedMap.viewSize,
+        let corners = area.mapCorners;
+        let size = area.mapSize;
+        let x = area.mapX;
+        let y = area.mapY;
+        let color =
           $selectedArea.id == area.id
             ? "green"
             : $linkPreviewAreaId == area.id
             ? "orange"
-            : "blue",
-          area.mapX,
-          area.mapY,
-          area.mapSize,
-          area.mapCorners,
+            : "blue";
+
+        if (area.mapId != $selectedMap.id) {
+          // find link for map to override where this is drawn
+          const link = $links.find(
+            (link) => link.toId == area.id || link.fromId == area.id
+          );
+          console.log(link);
+
+          if (link != undefined) {
+            if (link.fromId == area.id) {
+              // outgoing link, use from values
+              corners = link.localFromCorners;
+              size = link.localFromSize;
+              x = link.localFromX;
+              y = link.localFromY;
+              color = link.localFromColor;
+            } else {
+              // incoming link, use to values
+              corners = link.localToCorners;
+              size = link.localToSize;
+              x = link.localToX;
+              y = link.localToY;
+              color = link.localToColor;
+            }
+          }
+        }
+
+        return buildSquare(
+          area,
+          $selectedMap.gridSize,
+          $selectedMap.viewSize,
+          color,
+          x,
+          y,
+          size,
+          corners,
           $svgMapAllowIntraMapAreaSelection
             ? area.id == $selectedArea.id
               ? "cursor-not-allowed"
@@ -111,8 +144,6 @@
    */
   let svgPreviewLinkShapes = [];
   function buildSvgPreviewLinkShapes() {
-    console.log("buildSvgPreviewLinkShapes");
-    console.log($linkUnderConstruction);
     if (
       $linkUnderConstruction.toId == "" ||
       $linkUnderConstruction.fromId == ""
@@ -244,6 +275,10 @@
     buildSvgAreaShapes(newAreas);
   });
 
+  links.subscribe(() => {
+    buildSvgAreaShapes($areas);
+  });
+
   selectedArea.subscribe(() => {
     buildSvgAreaShapes($areas);
   });
@@ -281,10 +316,14 @@
           link.fromId == $areaUnderConstruction.id
             ? $areaUnderConstruction
             : $areasMap[link.fromId];
-        const fromMapX = fromArea.mapX;
-        const fromMapY = fromArea.mapY;
-        const toMapX = toArea.mapX;
-        const toMapY = toArea.mapY;
+        const fromMapX =
+          fromArea.mapId == $selectedMap.id ? fromArea.mapX : link.localFromX;
+        const fromMapY =
+          fromArea.mapId == $selectedMap.id ? fromArea.mapY : link.localFromY;
+        const toMapX =
+          toArea.mapId == $selectedMap.id ? toArea.mapX : link.localToX;
+        const toMapY =
+          toArea.mapId == $selectedMap.id ? toArea.mapY : link.localToY;
         const stroke = "white";
         const gridSize = $selectedMap.gridSize;
         const viewSize = $selectedMap.viewSize;
