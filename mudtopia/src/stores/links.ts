@@ -59,6 +59,8 @@ function createLinksStore() {
       local_to_y: link.localToY,
       long_description: link.longDescription,
       short_description: link.shortDescription,
+      arrival_text: link.arrivalText,
+      departure_text: link.departureText,
       to_id: link.toId,
     };
 

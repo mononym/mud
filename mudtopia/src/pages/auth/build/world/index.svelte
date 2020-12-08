@@ -2,6 +2,7 @@
   import ConfirmWithInput from "../../../../components/ConfirmWithInput.svelte";
   import AreaEditor from "./_components/AreaEditor.svelte";
   import MapEditor from "./_components/MapEditor.svelte";
+  import LinkEditor from "./_components/LinkEditor.svelte";
   import MapDetails from "./_components/MapDetails.svelte";
   import AreaDetails from "./_components/AreaDetails.svelte";
   import MapList from "./_components/MapList.svelte";
@@ -10,29 +11,32 @@
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
   import { Circle2 } from "svelte-loading-spinners";
-  const { deleteMap, loadingMaps } = MapsStore;
+  const { deleteMap, loadingMaps, mapsMap } = MapsStore;
   import { WorldBuilderStore } from "./_components/state";
-  const { mapSelected, selectedMap, selectedArea, areaUnderConstruction } = WorldBuilderStore;
+  const {
+    selectedMap,
+    selectedArea,
+    selectedLink,
+    areaUnderConstruction,
+    linkUnderConstruction,
+    linkPreviewAreaId,
+    mode,
+    view,
+  } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
   import linkState from "../../../../models/link.ts";
 
-  let view = "map";
-  let mapView = "details";
   let mapUnderConstruction = { ...mapState };
   let showDeletePrompt = false;
   let deleteCallback;
   let deleteMatchString = "";
   let mapReadOnly = true;
+  let linkMapPreviewAreaId = "";
 
   onMount(async () => {
     MapsStore.load();
   });
-
-  function handleBuildMap(event) {
-    view = "area";
-    mapReadOnly = false;
-  }
 
   // Map stuff
 
@@ -103,14 +107,30 @@
     areaView = "details";
   }
 
+  selectedArea.subscribe((newArea) => {
+    if (newArea.mapId != $selectedMap.id) {
+      $selectedMap = $mapsMap[newArea.mapId];
+      view = "map";
+      mapView = "details";
+      areaView = "details";
+      linkView = "details";
+      $areaUnderConstruction = { ...areaState };
+      $linkUnderConstruction = { ...linkState };
+      mapUnderConstruction = { ...mapState };
+    }
+  });
+
+  function handleListSelectArea(event) {
+    if (areaView == "details") {
+      $selectedArea = event.detail;
+    }
+  }
+
   // Link stuff
 
-  let linkView = "details";
-  let linkUnderConstruction = { ...linkState };
-
-  function handleEditLink(event) {
-    $areaUnderConstruction = { ...event.detail };
-    areaView = "editor";
+  function handleLinkArea(event) {
+    $linkUnderConstruction = { ...linkState };
+    areaView = "link";
   }
 
   function handleDeleteLink(event) {
@@ -128,6 +148,19 @@
       areaView = "details";
     });
   }
+
+  function linkSaved(event) {
+    $linkUnderConstruction = { ...linkState };
+    $selectedLink = event.detail;
+    areaView = "details";
+  }
+
+  function cancelEditLink(event) {
+    $areaUnderConstruction = { ...areaState };
+    areaView = "details";
+  }
+
+  // Map stuff
 </script>
 
 <div class="inline-flex flex-grow overflow-hidden">
@@ -141,39 +174,31 @@
   {:else}
     <div class="h-full max-h-full w-1/2">
       <div class="h-1/2 max-h-1/2 w-full">
-        <SvgMap readOnly={mapReadOnly} />
+        <SvgMap />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
-        {#if view == 'map'}
-          <MapList
-            on:editMap={editMap}
-            on:deleteMap={handleDeleteMap}
-            on:buildMap={handleBuildMap} />
+        {#if $mode == 'map'}
+          <MapList />
         {:else}
-          <AreaList
-            on:editArea={handleEditArea}
-            on:deleteArea={handleDeleteArea} />
+          <AreaList />
         {/if}
       </div>
     </div>
     <div class="flex-1">
-      {#if view == 'map'}
-        {#if mapView == 'details'}
+      {#if $mode == 'map'}
+        {#if $view == 'details'}
           <MapDetails />
         {:else}
-          <MapEditor
-            map={mapUnderConstruction}
-            on:save={mapSaved}
-            on:cancel={cancelEditMap} />
+          <MapEditor />
         {/if}
-      {:else if view == 'area'}
-        {#if areaView == 'details'}
+      {:else if $mode == 'area'}
+        {#if $view == 'details'}
           <AreaDetails />
         {:else}
-          <AreaEditor
-            on:save={areaSaved}
-            on:cancel={cancelEditArea} />
+          <AreaEditor />
         {/if}
+      {:else}
+        <LinkEditor />
       {/if}
     </div>
     <ConfirmWithInput

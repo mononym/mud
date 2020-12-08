@@ -15,9 +15,11 @@
     loadingMapData,
     selectedArea,
     areaUnderConstruction,
+    linkPreviewAreaId,
+    linkUnderConstruction,
+    svgMapAllowIntraMapAreaSelection,
   } = WorldBuilderStore;
-
-  export let readOnly = true;
+  import { createEventDispatcher } from "svelte";
 
   // Stuff to draw
   $: if ($mapSelected) {
@@ -73,12 +75,16 @@
           area,
           $selectedMap.gridSize,
           $selectedMap.viewSize,
-          $selectedArea.id == area.id ? "green" : "blue",
+          $selectedArea.id == area.id
+            ? "green"
+            : $linkPreviewAreaId == area.id
+            ? "orange"
+            : "blue",
           area.mapX,
           area.mapY,
           area.mapSize,
           area.mapCorners,
-          readOnly ? "cursor-auto" : "cursor-pointer"
+          $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
         );
       })
       .sort(function (area1, area2) {
@@ -92,12 +98,159 @@
       });
   }
 
+  /**
+   * Draw the lines to show a preview of where a link will go and how it will look.
+   *
+   * @access     private
+   *
+   * @return {void}
+   */
+  let svgPreviewLinkShapes = [];
+  function buildSvgPreviewLinkShapes() {
+    if (
+      $linkUnderConstruction.toId == "" ||
+      $linkUnderConstruction.fromId == ""
+    ) {
+      svgPreviewLinkAreaShapes = [];
+      return;
+    }
+
+    let x1 = $selectedArea.mapX;
+    let x2 = $selectedArea.mapY;
+    let y1 = 0;
+    let y2 = 0;
+
+    if ($selectedArea.id == $linkUnderConstruction.toId) {
+      // incoming: Link is coming "from" other area
+      const otherArea = $areasMap[$linkUnderConstruction.fromId];
+
+      if (otherArea.mapId != $selectedArea.mapId) {
+        // Different maps
+        x2 = $linkUnderConstruction.localFromX;
+        y2 = $linkUnderConstruction.localFromY;
+      } else {
+        // Same map
+        x2 = otherArea.mapX;
+        y2 = otherArea.mapY;
+      }
+    } else {
+      // Outgoing Link is going "to" other area so take the local to coordinate
+      const otherArea = $areasMap[$linkUnderConstruction.toId];
+
+      if (otherArea.mapId != $selectedArea.mapId) {
+        // Different maps
+        x2 = $linkUnderConstruction.localToX;
+        y2 = $linkUnderConstruction.localToY;
+      } else {
+        // Same map
+        x2 = otherArea.mapX;
+        y2 = otherArea.mapY;
+      }
+    }
+
+    const stroke = "orange";
+    const dashArray = "5";
+    const gridSize = $selectedMap.gridSize;
+    const viewSize = $selectedMap.viewSize;
+
+    svgPreviewLinkShapes = [
+      {
+        id: "preview",
+        type: "line",
+        x1: x1 * gridSize + viewSize / 2,
+        y1: -y1 * gridSize + viewSize / 2,
+        x2: x2 * gridSize + viewSize / 2,
+        y2: -y2 * gridSize + viewSize / 2,
+        stroke: stroke,
+        link: $linkUnderConstruction,
+        strokeDashArray: dashArray,
+      },
+    ];
+  }
+
+  let svgPreviewLinkAreaShapes = [];
+  function buildSvgPreviewLinkAreaShapes() {
+    if (
+      $selectedArea.mapId == "" ||
+      $linkUnderConstruction.fromId == "" ||
+      $linkUnderConstruction.toId == "" ||
+      ($selectedArea.mapId == $areasMap[$linkUnderConstruction.fromId].mapId &&
+        $selectedArea.mapId == $areasMap[$linkUnderConstruction.toId].mapId)
+    ) {
+      svgPreviewLinkAreaShapes = [];
+      return;
+    }
+
+    let x;
+    let y;
+    let otherArea;
+    let color;
+    let size;
+    let corners;
+
+    if (
+      $selectedArea.id !== "" &&
+      $selectedArea.id == $linkUnderConstruction.toId
+    ) {
+      // incoming: Link is coming "from" other area so take the local from coordinate
+      x = $linkUnderConstruction.localFromX;
+      y = $linkUnderConstruction.localFromY;
+      otherArea = $areasMap[$linkUnderConstruction.fromId];
+      color = $linkUnderConstruction.localFromColor;
+      size = $linkUnderConstruction.localFromSize;
+      corners = $linkUnderConstruction.localFromCorners;
+    } else if (
+      $selectedArea.id !== "" &&
+      $selectedArea.id == $linkUnderConstruction.fromId
+    ) {
+      // Outgoing Link is going "to" other area so take the local to coordinate
+      x = $linkUnderConstruction.localToX;
+      y = $linkUnderConstruction.localToY;
+      otherArea = $areasMap[$linkUnderConstruction.toId];
+      color = $linkUnderConstruction.localToColor;
+      size = $linkUnderConstruction.localToSize;
+      corners = $linkUnderConstruction.localToCorners;
+    } else {
+      return;
+    }
+
+    const stroke = "orange";
+    const dashArray = "5";
+    const gridSize = $selectedMap.gridSize;
+    const viewSize = $selectedMap.viewSize;
+
+    svgPreviewLinkAreaShapes = [
+      buildSquare(
+        otherArea,
+        $selectedMap.gridSize,
+        $selectedMap.viewSize,
+        color,
+        x,
+        y,
+        size,
+        corners,
+        $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
+      ),
+    ];
+  }
+
   areas.subscribe((newAreas) => {
     buildSvgAreaShapes(newAreas);
   });
 
   selectedArea.subscribe(() => {
     buildSvgAreaShapes($areas);
+  });
+
+  linkPreviewAreaId.subscribe(() => {
+    buildSvgAreaShapes($areas);
+    buildSvgPreviewLinkShapes();
+    buildSvgPreviewLinkAreaShapes();
+  });
+
+  linkUnderConstruction.subscribe(() => {
+    buildSvgPreviewLinkShapes();
+    buildSvgPreviewLinkAreaShapes();
   });
 
   let svglinkShapes = [];
@@ -139,6 +292,7 @@
           y2: -toMapY * gridSize + viewSize / 2,
           stroke: stroke,
           link: link,
+          strokeDashArray: "0",
         };
       });
   }
@@ -188,7 +342,9 @@
   }
 
   function handleSelectArea(event) {
-    $selectedArea = event.detail;
+    if ($svgMapAllowIntraMapAreaSelection) {
+      WorldBuilderStore.selectArea(event.detail);
+    }
   }
 </script>
 
@@ -211,7 +367,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...svglinkShapes, ...svgAreaShapes]}
+          shapes={[...svglinkShapes, ...svgPreviewLinkShapes, ...svgAreaShapes, ...svgPreviewLinkAreaShapes]}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">

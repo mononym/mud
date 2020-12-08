@@ -6,8 +6,6 @@
   const { authenticated } = AuthStore;
   // $redirect("/login");
 
-  console.log(authenticated);
-  console.log($authenticated);
   // $: $authenticated ? $goto("/auth/dashboard") : $goto("/unauth/login");
 </script>
 

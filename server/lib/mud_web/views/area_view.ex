@@ -11,14 +11,17 @@ defmodule MudWeb.AreaView do
   end
 
   def render("area.json", %{area: area}) do
-    %{id: area.id,
+    %{
+      id: area.id,
       name: area.name,
       description: area.description,
       mapX: area.map_x,
       mapY: area.map_y,
       mapSize: area.map_size,
       mapId: area.map_id,
+      mapCorners: area.map_corners,
       insertedAt: area.inserted_at,
-      updatedAt: area.updated_at}
+      updatedAt: area.updated_at
+    }
   end
 end

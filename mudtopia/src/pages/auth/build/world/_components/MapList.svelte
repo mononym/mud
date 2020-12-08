@@ -18,8 +18,7 @@
   }
 
   function buildMap(map) {
-    $selectedMap = map;
-    dispatch("buildMap");
+    WorldBuilderStore.buildMap(map);
   }
 
   function deleteMap(map) {

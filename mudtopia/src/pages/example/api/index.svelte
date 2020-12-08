@@ -6,7 +6,6 @@
     writeHeaders: true // useful for debugging
   };
   const { movies } = scoped;
-  // console.log(movies)
 </script>
 
 <div style="text-align: center">

@@ -13,9 +13,13 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:local_from_x, :integer)
       add(:local_from_y, :integer)
       add(:local_from_size, :integer)
+      add(:local_from_corners, :integer)
+      add(:local_from_color, :string)
       add(:local_to_x, :integer)
       add(:local_to_y, :integer)
       add(:local_to_size, :integer)
+      add(:local_to_corners, :integer)
+      add(:local_to_color, :string)
       add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
       add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
 

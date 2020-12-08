@@ -26,6 +26,26 @@ function createAreasStore() {
     areasMap.set(newAreasArea);
   }
 
+  // async function loadForMap(mapId: string) {
+  //   loa.set(true);
+  //   try {
+  //     let res = (await loadMaps()).data;
+
+  //     const newMapsMap = {};
+  //     for (var i = 0; i < res.length; i++) {
+  //       newMapsMap[res[i].id] = res[i];
+  //     }
+
+  //     mapsMap.set(newMapsMap);
+
+  //     loaded.set(true);
+  //   } catch (e) {
+  //     alert(e.message);
+  //   } finally {
+  //     loadingMaps.set(false);
+  //   }
+  // }
+
   async function deleteArea(area: AreaInterface) {
     deleting.set(true);
 

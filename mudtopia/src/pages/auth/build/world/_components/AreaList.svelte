@@ -8,10 +8,12 @@
   import { AreasStore } from "../../../../../stores/areas";
   const { areas } = AreasStore;
 
+  export let readOnly = false;
+
   $: filteredAreas = $areas.filter((area) => area.mapId == $selectedMap.id);
 
   function selectArea(area) {
-    $selectedArea = area;
+    WorldBuilderStore.selectArea(area);
   }
 
   function editArea(area) {
@@ -20,8 +22,7 @@
   }
 
   function linkArea(area) {
-    $selectedArea = area;
-    dispatch("linkArea");
+    WorldBuilderStore.linkArea(area);
   }
 
   function deleteArea(area) {
@@ -72,7 +73,7 @@
           {#each filteredAreas as area, i}
             <tr
               id={area.id}
-              class="{$selectedArea.id == area.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} cursor-pointer"
+              class="{$selectedArea.id == area.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {readOnly ? 'cursor-not-allowed' : 'cursor-pointer'}"
               on:click={selectArea(area)}>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm text-gray-100">{area.name}</div>

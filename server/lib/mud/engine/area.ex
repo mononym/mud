@@ -16,9 +16,10 @@ defmodule Mud.Engine.Area do
     ##
     ##
 
-    field(:map_x, :integer)
-    field(:map_y, :integer)
-    field(:map_size, :integer)
+    field(:map_x, :integer, default: 0)
+    field(:map_y, :integer, default: 0)
+    field(:map_size, :integer, default: 21)
+    field(:map_corners, :integer, default: 5)
 
     belongs_to(:map, Map, type: :binary_id)
 
@@ -194,7 +195,8 @@ defmodule Mud.Engine.Area do
       :map_id,
       :map_x,
       :map_y,
-      :map_size
+      :map_size,
+      :map_corners
     ])
     |> validate_required([
       :name,
@@ -202,7 +204,8 @@ defmodule Mud.Engine.Area do
       :map_id,
       :map_x,
       :map_y,
-      :map_size
+      :map_size,
+      :map_corners
     ])
   end
 

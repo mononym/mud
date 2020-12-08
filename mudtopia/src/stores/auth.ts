@@ -55,7 +55,6 @@ function createAuthStore() {
   }
 
   async function logout(){
-    console.log('logging out')
     loggingOut.set(true)
     try {
       await logoutPlayer();

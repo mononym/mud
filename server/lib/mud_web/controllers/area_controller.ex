@@ -11,7 +11,7 @@ defmodule MudWeb.AreaController do
   end
 
   def list_by_map(conn, params) do
-    areas = Area.list_by_map(params["map_id"], conn.query_params["include_linked"])
+    areas = Area.list_by_map(params["map_id"], conn.query_params["include_linked"] == "true")
     render(conn, "index.json", areas: areas)
   end
 

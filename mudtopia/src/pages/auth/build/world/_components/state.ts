@@ -1,8 +1,8 @@
-import { derived, writable } from "svelte/store";
-import MapState from "../../../../../models/map";
-import AreaState from "../../../../../models/area";
+import { derived, writable, get } from "svelte/store";
+import MapState, { MapInterface } from "../../../../../models/map";
+import AreaState, { AreaInterface } from "../../../../../models/area";
 import LinkState from "../../../../../models/link";
-import { loadMapData } from "../../../../../api/server";
+import { loadMapData, loadAreasForMap } from "../../../../../api/server";
 import { AreasStore } from "../../../../../stores/areas";
 import { LinksStore } from "../../../../../stores/links";
 
@@ -10,10 +10,6 @@ function createWorldBuilderStore() {
   const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
   const mapDataLoaded = writable(false);
-  const links = writable([]);
-  const linksIndex = derived(links, ($links) =>
-    $links.reduce((obj, link) => ((obj[link.id] = link), obj), {})
-  );
   const selectedMap = writable({ ...MapState });
   const mapSelected = derived(
     selectedMap,
@@ -24,11 +20,14 @@ function createWorldBuilderStore() {
     selectedArea,
     ($selectedArea) => $selectedArea.id != ""
   );
+
+  // Links stuff
   const selectedLink = writable({ ...LinkState });
   const linkSelected = derived(
     selectedLink,
     ($selectedLink) => $selectedLink.id != ""
   );
+  const linkUnderConstruction = writable({ ...LinkState });
 
   async function loadAllMapData(mapId) {
     try {
@@ -41,20 +40,150 @@ function createWorldBuilderStore() {
     }
   }
 
+  // what do I need to manage all UI state for world builder from the store?
+  // mode: map, area, link
+  const mode = writable("map");
+  // view: details, edit
+  const view = writable("details");
+
+  // The ID of the area for which the link is being previewed
+  // This is not the area that is being linked from/to in the interface, but the 'other' area
+  const linkPreviewAreaId = derived(
+    [linkUnderConstruction, selectedArea],
+    function ([$linkUnderConstruction, $selectedArea]) {
+      if (
+        $linkUnderConstruction.toId != "" &&
+        $linkUnderConstruction.fromId != ""
+      ) {
+        if ($linkUnderConstruction.toId == $selectedArea.id) {
+          return $linkUnderConstruction.fromId;
+        } else {
+          return $linkUnderConstruction.toId;
+        }
+      } else {
+        return "";
+      }
+    }
+  );
+
+  // previewLink: boolean
+  // Show a preview of a link only if a valid preview area id has been set
+  const showPreviewLink = derived(
+    linkPreviewAreaId,
+    ($linkPreviewAreaId) => $linkPreviewAreaId != ""
+  );
+
+  async function selectArea(area: AreaInterface) {
+    // If an area is selected while an area is being linked, it is not the 'selectedArea'
+    // that needs updating, but the selected area should be treated as the target for the
+    // linking of the 'selectedArea', which means it needs to both trigger actions in the
+    // link editor as well as making sure the map shows a preview of where the link will go.
+    if (get(mode) == "link") {
+      if (
+        (get(linkUnderConstruction).toId == "" &&
+          get(linkUnderConstruction).fromId == "") ||
+        area.id == get(selectedArea).id
+      ) {
+        return;
+      }
+
+      if (get(linkUnderConstruction).toId == get(selectedArea).id) {
+        linkUnderConstruction.update(function (link) {
+          link.fromId = area.id;
+          return link;
+        });
+      } else if (get(linkUnderConstruction).fromId == get(selectedArea).id) {
+        linkUnderConstruction.update(function (link) {
+          link.toId = area.id;
+          return link;
+        });
+      }
+    } else {
+      selectedArea.set(area);
+    }
+  }
+
+  async function buildMap(map: MapInterface) {
+    selectedMap.set(map);
+    mode.set("area");
+  }
+
+  async function linkArea(area: AreaInterface) {
+    linkUnderConstruction.set({ ...LinkState });
+    selectedArea.set(area);
+    mode.set("link");
+    view.set("edit");
+  }
+
+  // Whether or not to allow for clicking on the areas within a map depends on what mode is UI is in
+  const svgMapAllowIntraMapAreaSelection = derived(
+    [mode, view],
+    ([$mode, $view]) =>
+      ($mode == "area" && $view == "details") ||
+      ($mode == "link" && $view == "edit")
+  );
+
+  // Whether to allow for clicking inter map links depends on what mode is UI is in
+  const svgMapAllowInterMapAreaSelection = derived(
+    [mode, view],
+    ([$mode, $view]) => $mode == "map" || ($mode == "link" && $view == "edit")
+  );
+
+  // When a link is being edited, the normal set of areas should be left alone in case areas need to be looked up for linking
+  const areasForLinkEditor = writable(<AreaInterface[]>[]);
+  const areasForLinkEditorMap = writable(<Record<string, AreaInterface>>{});
+
+  async function loadAreasForLinkEditor(mapId: string) {
+    let areasToMap = [];
+
+    if (mapId == get(selectedMap).id) {
+      const filteredAreas = get(AreasStore.areas).filter(
+        (area) => area.mapId == get(selectedMap).id
+      );
+      areasForLinkEditor.set(filteredAreas);
+      areasToMap = filteredAreas;
+    } else {
+      let res = (await loadAreasForMap(mapId, false)).data;
+      areasForLinkEditor.set(res);
+      areasToMap = res;
+    }
+
+    const newMapsMap = {};
+    for (var i = 0; i < areasToMap.length; i++) {
+      newMapsMap[areasToMap[i].id] = areasToMap[i];
+    }
+
+    areasForLinkEditorMap.set(newMapsMap);
+  }
+
   return {
     // Area stuff
     areaUnderConstruction,
     areaSelected,
     selectedArea,
+    areasForLinkEditor,
+    areasForLinkEditorMap,
     // Links stuff
+    linkUnderConstruction,
     linkSelected,
     selectedLink,
+    linkPreviewAreaId,
+    showPreviewLink,
     // Map stuff
-    loadAllMapData,
     loadingMapData,
     mapDataLoaded,
     selectedMap,
     mapSelected,
+    svgMapAllowIntraMapAreaSelection,
+    // UI stuff,
+    mode,
+    view,
+    // Methods
+    buildMap,
+    loadAllMapData,
+    selectArea,
+    loadAreasForLinkEditor,
+    linkArea,
   };
 }
 
