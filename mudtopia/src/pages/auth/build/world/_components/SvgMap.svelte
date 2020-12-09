@@ -133,20 +133,18 @@
     });
 
   $: svgPreviewLinkShapes = [linkUnderConstruction]
-    .filter(
-      (link) =>
-        link.toId != "" &&
-        link.fromId != "" &&
-        areasMap[link.toId] != undefined &&
-        areasMap[link.fromId] != undefined
-    )
+    .filter((link) => link.toId != "" && link.fromId != "")
     .map(function (link) {
       let x1 = selectedArea.mapX;
       let y1 = selectedArea.mapY;
       let x2 = 0;
       let y2 = 0;
 
-      if (selectedArea.id == link.toId) {
+      // the selected area can only belong to another map if we're looking from the perspective of the secondary map
+      // Use that to determine which coordinates to use
+      const sameMap = selectedArea.mapId == chosenMap.id;
+
+      if (sameMap && selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area
         const otherArea = areasMap[link.fromId];
 
@@ -162,7 +160,7 @@
           x2 = otherArea.mapX;
           y2 = otherArea.mapY;
         }
-      } else {
+      } else if (sameMap && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
         const otherArea = areasMap[link.toId];
         console.log("svgPreviewLinkShapes2");
@@ -180,12 +178,32 @@
           x2 = otherArea.mapX;
           y2 = otherArea.mapY;
         }
+      } else if (!sameMap) {
+        console.log("not same map");
+        if (link.toId == linkPreviewAreaId) {
+          x2 = link.localFromX;
+          y2 = link.localFromY;
+        } else {
+          x2 = link.localToX;
+          y2 = link.localToY;
+        }
       }
 
       const stroke = "orange";
       const dashArray = "5";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
+      console.log({
+        id: "preview",
+        type: "line",
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
+        stroke: stroke,
+        link: link,
+        strokeDashArray: dashArray,
+      });
 
       return {
         id: "preview",

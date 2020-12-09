@@ -153,8 +153,8 @@
           {/if}
         </div>
 
-        {#if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'outgoing'}
-          <div class="col-span-3">
+        {#if $linkEditorMapForOtherAreaId != $selectedMap.id}
+          <div class="col-span-2">
             <label
               for="mtxc"
               class="block text-sm font-medium text-gray-300">Map Local To X
@@ -169,7 +169,7 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
 
-          <div class="col-span-3">
+          <div class="col-span-2">
             <label
               for="mtyc"
               class="block text-sm font-medium text-gray-300">Map Local To Y
@@ -184,7 +184,7 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
 
-          <div class="col-span-3">
+          <div class="col-span-2">
             <label
               for="mtsize"
               class="block text-sm font-medium text-gray-300">Map Local Size</label>
@@ -226,8 +226,7 @@
               id="localToColor"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-        {:else if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'incoming'}
-          <div class="col-span-3">
+          <div class="col-span-2">
             <label
               for="mfxc"
               class="block text-sm font-medium text-gray-300">Map Local From X
@@ -241,7 +240,7 @@
               max="5000"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-          <div class="col-span-3">
+          <div class="col-span-2">
             <label
               for="mfyc"
               class="block text-sm font-medium text-gray-300">Map Local From Y
@@ -255,7 +254,7 @@
               max="5000"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-          <div class="col-span-3">
+          <div class="col-span-2">
             <label
               for="mfsize"
               class="block text-sm font-medium text-gray-300">Map Local Size</label>

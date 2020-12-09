@@ -246,10 +246,10 @@
                 chosenMap={$mapsMap[$linkEditorMapForOtherAreaId]}
                 mapSelected={true}
                 loadingMapData={$loadingLinkEditorData}
-                selectedArea={$linkUnderConstruction.toId == $selectedArea.id ? $areasForLinkEditorMap[$linkUnderConstruction.fromId] : $areasForLinkEditorMap[$linkUnderConstruction.toId]}
+                selectedArea={$selectedArea}
                 areas={$areasForLinkEditor}
                 areaUnderConstruction={$areaUnderConstruction}
-                linkPreviewAreaId={$selectedArea.id}
+                linkPreviewAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId}
                 linkUnderConstruction={$linkUnderConstruction}
                 mapsMap={$mapsMap}
                 svgMapAllowInterMapAreaSelection={true}
