@@ -194,6 +194,7 @@ function createWorldBuilderStore() {
     if (get(mode) == "link" && get(view) == "edit") {
       // Editing
       if (area.mapId != get(linkEditorMapForOtherAreaId)) {
+        linkEditorMapForOtherAreaId.set(area.mapId);
         // Selected area is for a different map than is loaded in editor
 
         // Load the data
@@ -202,10 +203,8 @@ function createWorldBuilderStore() {
           areasForLinkEditorMap.set(get(areasMap));
           linksForLinkEditor.set(get(links));
         } else {
-          loadDataForLinkEditor(area.mapId);
+          await loadDataForLinkEditor(area.mapId);
         }
-
-        linkEditorMapForOtherAreaId.set(area.mapId);
       }
 
       if (get(areaSelected)) {

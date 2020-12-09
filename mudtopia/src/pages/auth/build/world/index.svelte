@@ -252,8 +252,8 @@
                 linkPreviewAreaId={$selectedArea.id}
                 linkUnderConstruction={$linkUnderConstruction}
                 mapsMap={$mapsMap}
-                svgMapAllowInterMapAreaSelection={false}
-                svgMapAllowIntraMapAreaSelection={false}
+                svgMapAllowInterMapAreaSelection={true}
+                svgMapAllowIntraMapAreaSelection={true}
                 areasMap={$areasForLinkEditorMap}
                 links={$linksForLinkEditor} />
             </div>
