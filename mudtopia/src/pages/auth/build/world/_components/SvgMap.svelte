@@ -43,10 +43,12 @@
   $: xCenterPoint = chosenMap.viewSize / 2;
   $: yCenterPoint = chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
-  $: viewBoxYSize =
+  $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
-    (svgWrapperWidth / (svgWrapperHeight - 64)) *
-    zoomMultipliers[zoomMultierIndex];
+      (svgWrapperWidth / (svgWrapperHeight - 64)) *
+      zoomMultipliers[zoomMultierIndex],
+    0
+  );
   $: viewBoxX = xCenterPoint - viewBoxXSize / 2;
   $: viewBoxY = yCenterPoint - viewBoxYSize / 2;
   $: viewBox =

@@ -28,6 +28,7 @@
     linkPreviewAreaId,
     svgMapAllowInterMapAreaSelection,
     svgMapAllowIntraMapAreaSelection,
+    linkEditorMapForOtherAreaId,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
@@ -109,19 +110,6 @@
     $selectedArea = event.detail;
     areaView = "details";
   }
-
-  // selectedArea.subscribe((newArea) => {
-  //   if (newArea.mapId != $selectedMap.id) {
-  //     $selectedMap = $mapsMap[newArea.mapId];
-  //     $view = "map";
-  //     mapView = "details";
-  //     areaView = "details";
-  //     linkView = "details";
-  //     $areaUnderConstruction = { ...areaState };
-  //     $linkUnderConstruction = { ...linkState };
-  //     mapUnderConstruction = { ...mapState };
-  //   }
-  // });
 
   function handleListSelectArea(event) {
     if (areaView == "details") {
@@ -212,7 +200,29 @@
           <AreaEditor />
         {/if}
       {:else}
-        <LinkEditor />
+        <div class="h-full w-full flex flex-col">
+          {#if $selectedMap.id != $linkEditorMapForOtherAreaId}
+            <div class="flex-1 overflow-hidden">
+              <SvgMap
+                chosenMap={$selectedMap}
+                mapSelected={$mapSelected}
+                loadingMapData={$loadingMapData}
+                selectedArea={$selectedArea}
+                areas={$areas}
+                areaUnderConstruction={$areaUnderConstruction}
+                linkPreviewAreaId={$linkPreviewAreaId}
+                linkUnderConstruction={$linkUnderConstruction}
+                mapsMap={$mapsMap}
+                svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
+                svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
+            </div>
+          {:else}
+            <div class="flex-1">foo</div>
+          {/if}
+          <div class="flex-1">
+            <LinkEditor />
+          </div>
+        </div>
       {/if}
     </div>
     <ConfirmWithInput
