@@ -187,7 +187,7 @@
             name="mtsize"
             id="mtsize"
             min="1"
-            max="99"
+            max="999"
             step="2"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
 
@@ -204,6 +204,18 @@
               step="1"
               name="localToCorners"
               id="localToCorners"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
+          <div class="col-span-3">
+            <label
+              for="localToColor"
+              class="block text-sm font-medium text-gray-300">The color of local
+              area</label>
+            <input
+              bind:value={$linkUnderConstruction.localToColor}
+              type="color"
+              name="localToColor"
+              id="localToColor"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
         {:else if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'incoming'}
@@ -263,14 +275,14 @@
           </div>
           <div class="col-span-3">
             <label
-              for="localFromColors"
+              for="localFromColor"
               class="block text-sm font-medium text-gray-300">The color of local
               area</label>
             <input
               bind:value={$linkUnderConstruction.localFromColor}
               type="color"
-              name="localFromCorners"
-              id="localFromCorners"
+              name="localFromColor"
+              id="localFromColor"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
         {/if}

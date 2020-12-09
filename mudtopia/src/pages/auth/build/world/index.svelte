@@ -26,6 +26,8 @@
     mode,
     view,
     linkPreviewAreaId,
+    svgMapAllowInterMapAreaSelection,
+    svgMapAllowIntraMapAreaSelection,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
@@ -183,7 +185,10 @@
           areas={$areas}
           areaUnderConstruction={$areaUnderConstruction}
           linkPreviewAreaId={$linkPreviewAreaId}
-          linkUnderConstruction={$linkUnderConstruction} />
+          linkUnderConstruction={$linkUnderConstruction}
+          mapsMap={$mapsMap}
+          svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
+          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
         {#if $mode == 'map'}

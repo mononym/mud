@@ -150,7 +150,8 @@ function createWorldBuilderStore() {
   // Whether to allow for clicking inter map links depends on what mode is UI is in
   const svgMapAllowInterMapAreaSelection = derived(
     [mode, view],
-    ([$mode, $view]) => $mode == "map" || ($mode == "link" && $view == "edit")
+    ([$mode, $view]) =>
+      $mode == "map" || ($mode == "area" && $view == "details")
   );
 
   // When a link is being edited, the normal set of areas should be left alone in case areas need to be looked up for linking
@@ -201,6 +202,7 @@ function createWorldBuilderStore() {
     selectedMap,
     mapSelected,
     svgMapAllowIntraMapAreaSelection,
+    svgMapAllowInterMapAreaSelection,
     // UI stuff,
     mode,
     view,

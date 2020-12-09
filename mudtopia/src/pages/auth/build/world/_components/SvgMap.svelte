@@ -8,7 +8,6 @@
   const { links } = LinksStore;
   const { areasMap } = AreasStore;
   import { WorldBuilderStore } from "./state";
-  const { svgMapAllowIntraMapAreaSelection } = WorldBuilderStore;
 
   export let mapSelected;
   export let loadingMapData;
@@ -17,6 +16,9 @@
   export let areaUnderConstruction;
   export let linkPreviewAreaId;
   export let linkUnderConstruction;
+  export let mapsMap;
+  export let svgMapAllowIntraMapAreaSelection;
+  export let svgMapAllowInterMapAreaSelection;
 
   // Zoom stuff
   let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
@@ -62,14 +64,25 @@
           : linkPreviewAreaId == area.id
           ? "orange"
           : "blue";
+      let name = area.name;
+      let cls = svgMapAllowIntraMapAreaSelection
+        ? area.id == selectedArea.id
+          ? "cursor-not-allowed"
+          : "cursor-pointer"
+        : "cursor-auto";
 
       if (area.mapId != chosenMap.id) {
+        name =
+          (mapsMap[area.mapId] != undefined ? mapsMap[area.mapId].name : "") +
+          ": " +
+          area.name;
+        cls = svgMapAllowInterMapAreaSelection
+          ? "cursor-pointer"
+          : "cursor-auto";
         // find link for map to override where this is drawn
         const link = $links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
-        console.log("svgAreaShapes");
-        console.log(link);
 
         if (link != undefined) {
           if (link.fromId == area.id) {
@@ -99,11 +112,12 @@
         y,
         size,
         corners,
-        $svgMapAllowIntraMapAreaSelection
+        svgMapAllowIntraMapAreaSelection
           ? area.id == selectedArea.id
             ? "cursor-not-allowed"
             : "cursor-pointer"
-          : "cursor-auto"
+          : "cursor-auto",
+        name
       );
     })
     .sort(function (area1, area2) {
@@ -119,9 +133,6 @@
   $: svgPreviewLinkShapes = [linkUnderConstruction]
     .filter((link) => link.toId != "" && link.fromId != "")
     .map(function (link) {
-      console.log("svgPreviewLinkShapes");
-      console.log(link);
-      console.log(selectedArea);
       let x1 = selectedArea.mapX;
       let y1 = selectedArea.mapY;
       let x2 = 0;
@@ -143,7 +154,6 @@
       } else {
         // Outgoing Link is going "to" other area so take the local to coordinate
         const otherArea = $areasMap[link.toId];
-        console.log(otherArea);
 
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
@@ -160,18 +170,6 @@
       const dashArray = "5";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
-
-      console.log({
-        id: "preview",
-        type: "line",
-        x1: x1 * gridSize + viewSize / 2,
-        y1: -y1 * gridSize + viewSize / 2,
-        x2: x2 * gridSize + viewSize / 2,
-        y2: -y2 * gridSize + viewSize / 2,
-        stroke: stroke,
-        link: link,
-        strokeDashArray: dashArray,
-      });
 
       return {
         id: "preview",
@@ -201,6 +199,7 @@
       let color;
       let size;
       let corners;
+      let otherMap;
 
       if (selectedArea.id !== "" && selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area so take the local from coordinate
@@ -210,6 +209,7 @@
         color = link.localFromColor;
         size = link.localFromSize;
         corners = link.localFromCorners;
+        otherMap = mapsMap[otherArea.mapId];
       } else if (selectedArea.id !== "" && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
         x = link.localToX;
@@ -218,6 +218,7 @@
         color = link.localToColor;
         size = link.localToSize;
         corners = link.localToCorners;
+        otherMap = mapsMap[otherArea.mapId];
       } else {
         return;
       }
@@ -231,7 +232,8 @@
         y,
         size,
         corners,
-        $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
+        svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto",
+        otherMap.name + ": " + otherArea.name
       );
     });
 
@@ -300,7 +302,8 @@
     y: number,
     size: number,
     corners: number,
-    cls: string
+    cls: string,
+    name: string
   ): Record<string, unknown> {
     return {
       id: area.id,
@@ -311,7 +314,7 @@
       height: size,
       corners: corners,
       fill: fill,
-      name: area.name,
+      name: name,
       area: area,
       cls: cls,
     };
@@ -328,7 +331,7 @@
   }
 
   function handleSelectArea(event) {
-    if ($svgMapAllowIntraMapAreaSelection) {
+    if (svgMapAllowIntraMapAreaSelection) {
       WorldBuilderStore.selectArea(event.detail);
     }
   }
