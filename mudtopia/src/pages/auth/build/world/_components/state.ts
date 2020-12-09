@@ -87,6 +87,25 @@ function createWorldBuilderStore() {
         selectedMap.set(get(mapsMap)[area.mapId]);
         WorldBuilderStore.loadAllMapData(area.mapId);
         selectedArea.set({ ...AreaState });
+      } else if (get(mode) == "link" && get(view) == "edit") {
+        // Otherwise in editing links mode, selecting another map is the same as changing the map selection dropdown
+
+        if (get(linkUnderConstruction).toId == get(selectedArea).id) {
+          // incoming
+          linkUnderConstruction.update(function (luc) {
+            luc.fromId = "";
+            return luc;
+          });
+        } else {
+          linkUnderConstruction.update(function (luc) {
+            luc.toId = "";
+            return luc;
+          });
+        }
+
+        linkEditorMapForOtherAreaId.set(area.mapId);
+
+        WorldBuilderStore.loadAreasForLinkEditor(area.mapId);
       }
 
       return;
@@ -167,7 +186,9 @@ function createWorldBuilderStore() {
   const svgMapAllowInterMapAreaSelection = derived(
     [mode, view],
     ([$mode, $view]) =>
-      $mode == "map" || ($mode == "area" && $view == "details")
+      $mode == "map" ||
+      ($mode == "area" && $view == "details") ||
+      ($mode == "link" && $view == "edit")
   );
 
   // When a link is being edited, the normal set of areas should be left alone in case areas need to be looked up for linking
