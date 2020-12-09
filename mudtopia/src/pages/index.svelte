@@ -1,5 +1,5 @@
 <script>
-  import { metatags, url } from "@roxi/routify";
+  import { metatags, url, goto } from "@roxi/routify";
   metatags.title = "My Routify app";
   metatags.description = "Description coming soon...";
   import { AuthStore } from "../stores/auth";

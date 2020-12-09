@@ -1,25 +1,28 @@
 <script lang="ts">
   import { Circle2 } from "svelte-loading-spinners";
   import Svg from "../../../../../components/Svg.svelte";
+  import AreaState from "../../../../../models/area";
   import type { AreaInterface } from "../../../../../models/area";
+  import LinkState from "../../../../../models/link";
   import type { LinkInterface } from "../../../../../models/link";
-  import { AreasStore } from "../../../../../stores/areas";
-  import { LinksStore } from "../../../../../stores/links";
-  const { links } = LinksStore;
-  const { areasMap } = AreasStore;
+  import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
 
-  export let mapSelected;
-  export let loadingMapData;
-  export let selectedArea;
-  export let areas;
-  export let areaUnderConstruction;
-  export let linkPreviewAreaId;
-  export let linkUnderConstruction;
-  export let mapsMap;
-  export let svgMapAllowIntraMapAreaSelection;
-  export let svgMapAllowInterMapAreaSelection;
+  const dispatch = createEventDispatcher();
 
+  export let mapSelected = true;
+  export let loadingMapData = false;
+  export let selectedArea = { ...AreaState };
+  export let areas = [];
+  export let areaUnderConstruction = { ...AreaState };
+  export let linkPreviewAreaId = "";
+  export let linkUnderConstruction = { ...LinkState };
+  export let mapsMap = {};
+  export let svgMapAllowIntraMapAreaSelection = false;
+  export let svgMapAllowInterMapAreaSelection = false;
+  export let links = [];
+
+  export let areasMap;
   // Zoom stuff
   let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
   let zoomMultierIndex = 3;
@@ -61,18 +64,19 @@
       let x = area.mapX;
       let y = area.mapY;
       let color =
-        selectedArea.id == area.id
+        selectedArea != undefined && selectedArea.id == area.id
           ? "green"
           : linkPreviewAreaId == area.id
           ? "orange"
           : "blue";
       let name = area.name;
       let cls = svgMapAllowIntraMapAreaSelection
-        ? area.id == selectedArea.id
+        ? selectedArea != undefined && area.id == selectedArea.id
           ? "cursor-not-allowed"
           : "cursor-pointer"
         : "cursor-auto";
-
+      console.log("svgAreaShapes");
+      console.log(area);
       if (area.mapId != chosenMap.id) {
         name =
           (mapsMap[area.mapId] != undefined ? mapsMap[area.mapId].name : "") +
@@ -82,7 +86,7 @@
           ? "cursor-pointer"
           : "cursor-auto";
         // find link for map to override where this is drawn
-        const link = $links.find(
+        const link = links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
 
@@ -129,7 +133,13 @@
     });
 
   $: svgPreviewLinkShapes = [linkUnderConstruction]
-    .filter((link) => link.toId != "" && link.fromId != "")
+    .filter(
+      (link) =>
+        link.toId != "" &&
+        link.fromId != "" &&
+        areasMap[link.toId] != undefined &&
+        areasMap[link.fromId] != undefined
+    )
     .map(function (link) {
       let x1 = selectedArea.mapX;
       let y1 = selectedArea.mapY;
@@ -138,8 +148,11 @@
 
       if (selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area
-        const otherArea = $areasMap[link.fromId];
+        const otherArea = areasMap[link.fromId];
 
+        console.log("svgPreviewLinkShapes1");
+        console.log(otherArea);
+        console.log(selectedArea);
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
           x2 = link.localFromX;
@@ -151,7 +164,12 @@
         }
       } else {
         // Outgoing Link is going "to" other area so take the local to coordinate
-        const otherArea = $areasMap[link.toId];
+        const otherArea = areasMap[link.toId];
+        console.log("svgPreviewLinkShapes2");
+        console.log(areasMap);
+        console.log(link);
+        console.log(otherArea);
+        console.log(selectedArea);
 
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
@@ -187,8 +205,11 @@
       (link) =>
         link.toId != "" &&
         link.fromId != "" &&
-        (selectedArea.mapId != $areasMap[link.fromId].mapId ||
-          selectedArea.mapId != $areasMap[link.toId].mapId)
+        selectedArea != undefined &&
+        areasMap[link.toId] != undefined &&
+        areasMap[link.fromId] != undefined &&
+        (selectedArea.mapId != areasMap[link.fromId].mapId ||
+          selectedArea.mapId != areasMap[link.toId].mapId)
     )
     .map(function (link) {
       let x;
@@ -203,7 +224,7 @@
         // incoming: Link is coming "from" other area so take the local from coordinate
         x = link.localFromX;
         y = link.localFromY;
-        otherArea = $areasMap[link.fromId];
+        otherArea = areasMap[link.fromId];
         color = link.localFromColor;
         size = link.localFromSize;
         corners = link.localFromCorners;
@@ -212,7 +233,7 @@
         // Outgoing Link is going "to" other area so take the local to coordinate
         x = link.localToX;
         y = link.localToY;
-        otherArea = $areasMap[link.toId];
+        otherArea = areasMap[link.toId];
         color = link.localToColor;
         size = link.localToSize;
         corners = link.localToCorners;
@@ -235,61 +256,44 @@
       );
     });
 
-  let svglinkShapes = [];
-  links.subscribe((newLinks) => {
-    buildSvgLinkShapes(newLinks);
-  });
+  $: svglinkShapes = links
+    .filter(function (link: LinkInterface) {
+      return (
+        areasMap[link.toId] != undefined && areasMap[link.fromId] != undefined
+      );
+    })
+    .map(function (link: LinkInterface) {
+      console.log("svglinkShapes");
+      const toArea =
+        link.toId == areaUnderConstruction.id
+          ? areaUnderConstruction
+          : areasMap[link.toId];
+      const fromArea =
+        link.fromId == areaUnderConstruction.id
+          ? areaUnderConstruction
+          : areasMap[link.fromId];
+      const fromMapX =
+        fromArea.mapId == chosenMap.id ? fromArea.mapX : link.localFromX;
+      const fromMapY =
+        fromArea.mapId == chosenMap.id ? fromArea.mapY : link.localFromY;
+      const toMapX = toArea.mapId == chosenMap.id ? toArea.mapX : link.localToX;
+      const toMapY = toArea.mapId == chosenMap.id ? toArea.mapY : link.localToY;
+      const stroke = "white";
+      const gridSize = chosenMap.gridSize;
+      const viewSize = chosenMap.viewSize;
 
-  function buildSvgLinkShapes(links: LinkInterface[]) {
-    svglinkShapes = links
-      .filter(function (link: LinkInterface) {
-        return (
-          $areasMap[link.toId] != undefined &&
-          $areasMap[link.fromId] != undefined
-        );
-      })
-      .map(function (link: LinkInterface) {
-        const toArea =
-          link.toId == areaUnderConstruction.id
-            ? areaUnderConstruction
-            : $areasMap[link.toId];
-        const fromArea =
-          link.fromId == areaUnderConstruction.id
-            ? areaUnderConstruction
-            : $areasMap[link.fromId];
-        const fromMapX =
-          fromArea.mapId == chosenMap.id ? fromArea.mapX : link.localFromX;
-        const fromMapY =
-          fromArea.mapId == chosenMap.id ? fromArea.mapY : link.localFromY;
-        const toMapX =
-          toArea.mapId == chosenMap.id ? toArea.mapX : link.localToX;
-        const toMapY =
-          toArea.mapId == chosenMap.id ? toArea.mapY : link.localToY;
-        const stroke = "white";
-        const gridSize = chosenMap.gridSize;
-        const viewSize = chosenMap.viewSize;
-
-        return {
-          id: link.id,
-          type: "line",
-          x1: fromMapX * gridSize + viewSize / 2,
-          y1: -fromMapY * gridSize + viewSize / 2,
-          x2: toMapX * gridSize + viewSize / 2,
-          y2: -toMapY * gridSize + viewSize / 2,
-          stroke: stroke,
-          link: link,
-          strokeDashArray: "0",
-        };
-      });
-  }
-
-  // areaUnderConstruction.subscribe((newArea) => {
-  //   const mappedAreas = areas.map((area) =>
-  //     area.id == newArea.id ? newArea : area
-  //   );
-  //   // buildSvgAreaShapes(mappedAreas);
-  //   buildSvgLinkShapes($links);
-  // });
+      return {
+        id: link.id,
+        type: "line",
+        x1: fromMapX * gridSize + viewSize / 2,
+        y1: -fromMapY * gridSize + viewSize / 2,
+        x2: toMapX * gridSize + viewSize / 2,
+        y2: -toMapY * gridSize + viewSize / 2,
+        stroke: stroke,
+        link: link,
+        strokeDashArray: "0",
+      };
+    });
 
   function buildSquare(
     area: AreaInterface,
@@ -329,6 +333,8 @@
   }
 
   function handleSelectArea(event) {
+    console.log("handleSelectArea");
+    console.log(event);
     if (
       (svgMapAllowIntraMapAreaSelection &&
         event.detail.mapId == chosenMap.id) ||

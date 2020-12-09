@@ -1,4 +1,5 @@
 import { derived, writable, get } from "svelte/store";
+import type { LinkInterface } from "../../../../../models/link";
 import MapState, { MapInterface } from "../../../../../models/map";
 import AreaState, { AreaInterface } from "../../../../../models/area";
 import LinkState from "../../../../../models/link";
@@ -7,6 +8,8 @@ import { AreasStore } from "../../../../../stores/areas";
 import { MapsStore } from "../../../../../stores/maps";
 import { LinksStore } from "../../../../../stores/links";
 const { mapsMap } = MapsStore;
+const { areasMap } = AreasStore;
+const { links } = LinksStore;
 
 function createWorldBuilderStore() {
   const areaUnderConstruction = writable({ ...AreaState });
@@ -76,78 +79,6 @@ function createWorldBuilderStore() {
     ($linkPreviewAreaId) => $linkPreviewAreaId != ""
   );
 
-  async function selectArea(area: AreaInterface) {
-    // Special rules apply when the selected area does not match up with the currently selected map
-    if (area.mapId != get(selectedMap).id) {
-      // if in map details mode, or area details mode, switch maps
-      if (
-        (get(mode) == "map" || get(mode) == "area") &&
-        get(view) == "details"
-      ) {
-        selectedMap.set(get(mapsMap)[area.mapId]);
-        WorldBuilderStore.loadAllMapData(area.mapId);
-        selectedArea.set({ ...AreaState });
-      } else if (get(mode) == "link" && get(view) == "edit") {
-        // Otherwise in editing links mode, selecting another map is the same as changing the map selection dropdown
-
-        if (get(linkUnderConstruction).toId == get(selectedArea).id) {
-          // incoming
-          linkUnderConstruction.update(function (luc) {
-            luc.fromId = "";
-            return luc;
-          });
-        } else {
-          linkUnderConstruction.update(function (luc) {
-            luc.toId = "";
-            return luc;
-          });
-        }
-
-        linkEditorMapForOtherAreaId.set(area.mapId);
-
-        WorldBuilderStore.loadAreasForLinkEditor(area.mapId);
-      }
-
-      return;
-    }
-    // If an area is selected while an area is being linked, it is not the 'selectedArea'
-    // that needs updating, but the selected area should be treated as the target for the
-    // linking of the 'selectedArea', which means it needs to both trigger actions in the
-    // link editor as well as making sure the map shows a preview of where the link will go.
-    if (get(mode) == "link") {
-      // Detect if the map for other area is set to different map. If so set it back
-      if (get(linkEditorMapForOtherAreaId) != get(selectedMap).id) {
-        linkEditorMapForOtherAreaId.set(get(selectedMap).id);
-        loadAreasForLinkEditor(get(selectedMap).id);
-      }
-
-      // If area being set is the same area already selected do nothing
-      // If the link does not have to and from id's set it's not really constructed yet, so do nothing
-      if (
-        (get(linkUnderConstruction).toId == "" &&
-          get(linkUnderConstruction).fromId == "") ||
-        area.id == get(selectedArea).id
-      ) {
-        return;
-      }
-
-      // Check which direction the link under construction is going in, and make sure to set the right id
-      if (get(linkUnderConstruction).toId == get(selectedArea).id) {
-        linkUnderConstruction.update(function (link) {
-          link.fromId = area.id;
-          return link;
-        });
-      } else if (get(linkUnderConstruction).fromId == get(selectedArea).id) {
-        linkUnderConstruction.update(function (link) {
-          link.toId = area.id;
-          return link;
-        });
-      }
-    } else {
-      selectedArea.set(area);
-    }
-  }
-
   async function selectMap(map: MapInterface) {
     selectedMap.set(map);
   }
@@ -192,31 +123,118 @@ function createWorldBuilderStore() {
   );
 
   // When a link is being edited, the normal set of areas should be left alone in case areas need to be looked up for linking
-  const areasForLinkEditor = writable(<AreaInterface[]>[]);
+  const linksForLinkEditor = writable(<LinkInterface[]>[]);
   const areasForLinkEditorMap = writable(<Record<string, AreaInterface>>{});
+  const areasForLinkEditor = derived(
+    areasForLinkEditorMap,
+    ($areasForLinkEditorMap) => Object.values($areasForLinkEditorMap)
+  );
+  const areasForLinkEditorFilteredMap = derived(
+    areasForLinkEditor,
+    ($areasForLinkEditor) =>
+      $areasForLinkEditor.filter(
+        (area) => area.mapId == get(linkEditorMapForOtherAreaId)
+      )
+  );
+  const areasForLinkEditorFiltered = derived(
+    areasForLinkEditorFilteredMap,
+    ($areasForLinkEditorFilteredMap) =>
+      Object.values($areasForLinkEditorFilteredMap)
+  );
+  const loadingLinkEditorData = writable(false);
+  const linkEditorDataLoaded = writable(false);
 
-  async function loadAreasForLinkEditor(mapId: string) {
+  async function loadDataForLinkEditor(mapId: string) {
+    loadingLinkEditorData.set(true);
+    linkEditorDataLoaded.set(false);
     let areasToMap = [];
+    let newLinks = [];
 
     if (mapId == get(selectedMap).id) {
       const filteredAreas = get(AreasStore.areas).filter(
-        (area) =>
-          area.mapId == get(selectedMap).id && area.id != get(selectedArea).id
+        (area) => area.mapId == mapId && area.id != get(selectedArea).id
       );
-      areasForLinkEditor.set(filteredAreas);
+
       areasToMap = filteredAreas;
+
+      newLinks = get(links);
     } else {
-      let res = (await loadAreasForMap(mapId, false)).data;
-      areasForLinkEditor.set(res);
-      areasToMap = res;
+      const res = (await loadMapData(mapId)).data;
+
+      areasToMap = res.areas;
+
+      newLinks = res.links;
     }
 
-    const newMapsMap = {};
+    const newAreasMap = {};
     for (var i = 0; i < areasToMap.length; i++) {
-      newMapsMap[areasToMap[i].id] = areasToMap[i];
+      newAreasMap[areasToMap[i].id] = areasToMap[i];
     }
 
-    areasForLinkEditorMap.set(newMapsMap);
+    areasForLinkEditorMap.set(newAreasMap);
+    linksForLinkEditor.set(newLinks);
+    loadingLinkEditorData.set(false);
+    linkEditorDataLoaded.set(true);
+  }
+
+  async function selectArea(area: AreaInterface) {
+    console.log("selecting area");
+    console.log(area);
+    // selecting area can come from two different places
+    // one is the main map
+    // second is the map that only shows during editing links
+    // if a link is selected on the second map during editing there are three cases to handle
+    // the area selected is for the same set of links and areas loaded for the link editor
+    // the area selected is for the primary map
+    // the area selected is for a new map that is neither the primary nor the one already loaded for the editor
+
+    // if editing link
+    // if area selected differs from the map area selected, load areas for the new map
+    // if area is part of already loaded data, set the area as
+    if (get(mode) == "link" && get(view) == "edit") {
+      // Editing
+      if (area.mapId != get(linkEditorMapForOtherAreaId)) {
+        // Selected area is for a different map than is loaded in editor
+
+        // Load the data
+        if (area.mapId == get(selectedMap).id) {
+          // Selected area is for the 'main' map that is being build, don't load from db again but use local copy
+          areasForLinkEditorMap.set(get(areasMap));
+          linksForLinkEditor.set(get(links));
+        } else {
+          loadDataForLinkEditor(area.mapId);
+        }
+
+        linkEditorMapForOtherAreaId.set(area.mapId);
+      }
+
+      if (get(areaSelected)) {
+        if (get(linkUnderConstruction).toId == get(selectedArea).id) {
+          // incoming
+          linkUnderConstruction.update(function (luc) {
+            luc.fromId = area.id;
+            return luc;
+          });
+        } else {
+          linkUnderConstruction.update(function (luc) {
+            luc.toId = area.id;
+            return luc;
+          });
+        }
+      }
+    } else if (
+      (get(mode) == "map" || get(mode) == "area") &&
+      get(view) == "details"
+    ) {
+      // Not editing link, but just looking at the map/area lists/details
+      // Selecting an area here actually changes that something is selected, and if it happens to be a new map then we jump over to that
+      if (area.mapId != get(selectedMap).id) {
+        selectedMap.set(get(mapsMap)[area.mapId]);
+        loadAllMapData(area.mapId);
+      }
+
+      selectedArea.set(area);
+    }
   }
 
   return {
@@ -226,6 +244,8 @@ function createWorldBuilderStore() {
     selectedArea,
     areasForLinkEditor,
     areasForLinkEditorMap,
+    areasForLinkEditorFilteredMap,
+    areasForLinkEditorFiltered,
     // Links stuff
     linkUnderConstruction,
     linkSelected,
@@ -233,6 +253,9 @@ function createWorldBuilderStore() {
     linkPreviewAreaId,
     showPreviewLink,
     linkEditorMapForOtherAreaId,
+    linksForLinkEditor,
+    loadingLinkEditorData,
+    linkEditorDataLoaded,
     // Map stuff
     loadingMapData,
     mapDataLoaded,
@@ -248,7 +271,7 @@ function createWorldBuilderStore() {
     loadAllMapData,
     selectArea,
     selectMap,
-    loadAreasForLinkEditor,
+    loadDataForLinkEditor,
     linkArea,
     cancelLinkArea,
   };

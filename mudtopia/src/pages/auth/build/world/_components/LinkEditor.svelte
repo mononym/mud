@@ -1,5 +1,4 @@
 <script>
-  import { get } from "svelte/store";
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
   import { WorldBuilderStore } from "./state";
@@ -7,9 +6,8 @@
     linkUnderConstruction,
     selectedMap,
     selectedArea,
-    linkPreviewAreaId,
-    areasForLinkEditor,
-    loadAreasForLinkEditor,
+    areasForLinkEditorFiltered,
+    loadDataForLinkEditor,
     linkEditorMapForOtherAreaId,
     cancelLinkArea,
   } = WorldBuilderStore;
@@ -52,7 +50,7 @@
       $linkUnderConstruction.toId = "";
     }
 
-    WorldBuilderStore.loadAreasForLinkEditor($linkEditorMapForOtherAreaId);
+    WorldBuilderStore.loadDataForLinkEditor($linkEditorMapForOtherAreaId);
   }
 
   function handleTypeChange() {
@@ -75,7 +73,7 @@
     $linkEditorMapForOtherAreaId = $selectedMap.id;
 
     setOutgoing();
-    loadAreasForLinkEditor($linkEditorMapForOtherAreaId);
+    loadDataForLinkEditor($linkEditorMapForOtherAreaId);
   });
 </script>
 
@@ -103,7 +101,7 @@
             Incoming
           </button>
         </div>
-        <div class="col-span-6">
+        <div class="col-span-3">
           <label
             for="mapForOtherArea"
             class="block text-sm font-medium text-gray-300">Map containing the
@@ -120,7 +118,7 @@
             {/each}
           </select>
         </div>
-        <div class="col-span-6">
+        <div class="col-span-3">
           <label
             for="mapForOtherArea"
             class="block text-sm font-medium text-gray-300">Area on the other
@@ -135,7 +133,7 @@
               <option hidden disabled selected value>
                 -- select an area --
               </option>
-              {#each $areasForLinkEditor as area}
+              {#each $areasForLinkEditorFiltered as area}
                 <option value={area.id}>{area.name}</option>
               {/each}
             </select>
@@ -148,7 +146,7 @@
               <option hidden disabled selected value>
                 -- select an area --
               </option>
-              {#each $areasForLinkEditor as area}
+              {#each $areasForLinkEditorFiltered as area}
                 <option value={area.id}>{area.name}</option>
               {/each}
             </select>
@@ -156,40 +154,50 @@
         </div>
 
         {#if $linkEditorMapForOtherAreaId != $selectedMap.id && direction == 'outgoing'}
-          <label for="mtxc" class="block text-sm font-medium text-gray-300">Map
-            Local To X Coordinate</label>
-          <input
-            bind:value={$linkUnderConstruction.localToX}
-            type="number"
-            name="mtxc"
-            id="mtxc"
-            min="-5000"
-            max="5000"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          <div class="col-span-3">
+            <label
+              for="mtxc"
+              class="block text-sm font-medium text-gray-300">Map Local To X
+              Coordinate</label>
+            <input
+              bind:value={$linkUnderConstruction.localToX}
+              type="number"
+              name="mtxc"
+              id="mtxc"
+              min="-5000"
+              max="5000"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
 
-          <label for="mtyc" class="block text-sm font-medium text-gray-300">Map
-            Local To Y Coordinate</label>
-          <input
-            bind:value={$linkUnderConstruction.localToY}
-            type="number"
-            name="mtyc"
-            id="mtyc"
-            min="-5000"
-            max="5000"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          <div class="col-span-3">
+            <label
+              for="mtyc"
+              class="block text-sm font-medium text-gray-300">Map Local To Y
+              Coordinate</label>
+            <input
+              bind:value={$linkUnderConstruction.localToY}
+              type="number"
+              name="mtyc"
+              id="mtyc"
+              min="-5000"
+              max="5000"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
 
-          <label
-            for="mtsize"
-            class="block text-sm font-medium text-gray-300">Map Local Size</label>
-          <input
-            bind:value={$linkUnderConstruction.localToSize}
-            type="number"
-            name="mtsize"
-            id="mtsize"
-            min="1"
-            max="999"
-            step="2"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          <div class="col-span-3">
+            <label
+              for="mtsize"
+              class="block text-sm font-medium text-gray-300">Map Local Size</label>
+            <input
+              bind:value={$linkUnderConstruction.localToSize}
+              type="number"
+              name="mtsize"
+              id="mtsize"
+              min="1"
+              max="999"
+              step="2"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
 
           <div class="col-span-3">
             <label
@@ -286,7 +294,7 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
         {/if}
-        <div class="col-span-6">
+        <div class="col-span-3">
           <label for="type" class="block text-sm font-medium text-gray-300">Link
             Type</label>
           <select
@@ -304,7 +312,7 @@
             <i
               class="{$linkUnderConstruction.icon} text-center text-4xl text-gray-200" />
           </div>
-          <div class="col-span-5">
+          <div class="col-span-2">
             <label
               for="icon"
               class="block text-sm font-medium text-gray-300">Icon</label>
@@ -323,29 +331,27 @@
               <option>fas fa-certificate</option>
             </select>
           </div>
-          <div class="col-span-6">
+          <div class="col-span-2">
             <label
               for="shortDescription"
               class="block text-sm font-medium text-gray-300">Short Description</label>
-            <input
+            <textarea
               bind:value={$linkUnderConstruction.shortDescription}
-              type="text"
               name="shortDescription"
               id="shortDescription"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-          <div class="col-span-6">
+          <div class="col-span-4">
             <label
               for="longDescription"
               class="block text-sm font-medium text-gray-300">Long Description</label>
-            <input
+            <textarea
               bind:value={$linkUnderConstruction.longDescription}
-              type="text"
               name="longDescription"
               id="longDescription"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-          <div class="col-span-6">
+          <div class="col-span-3">
             <label
               for="departureText"
               class="block text-sm font-medium text-gray-300">Departure Text</label>
@@ -357,7 +363,7 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
         {:else}
-          <div class="col-span-6">
+          <div class="col-span-3">
             <label
               for="shortDescription"
               class="block text-sm font-medium text-gray-300">Short Description</label>
@@ -384,7 +390,7 @@
             </select>
           </div>
         {/if}
-        <div class="col-span-6">
+        <div class="col-span-3">
           <label
             for="arrivalText"
             class="block text-sm font-medium text-gray-300">Arrival Text</label>

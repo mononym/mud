@@ -11,9 +11,11 @@
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
   import { AreasStore } from "../../../../stores/areas.ts";
+  import { LinksStore } from "../../../../stores/links.ts";
   import { Circle2 } from "svelte-loading-spinners";
   const { deleteMap, loadingMaps, mapsMap } = MapsStore;
-  const { areas } = AreasStore;
+  const { areas, areasMap } = AreasStore;
+  const { links } = LinksStore;
   import { WorldBuilderStore } from "./_components/state";
   const {
     loadingMapData,
@@ -29,10 +31,17 @@
     svgMapAllowInterMapAreaSelection,
     svgMapAllowIntraMapAreaSelection,
     linkEditorMapForOtherAreaId,
+    areasForLinkEditorMap,
+    areasForLinkEditor,
+    linksForLinkEditor,
+    loadingLinkEditorData,
+    linkEditorDataLoaded,
+    areasForLinkEditorFiltered,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
   import linkState from "../../../../models/link.ts";
+  import { get } from "svelte/store";
 
   let showDeletePrompt = false;
   let deleteCallback;
@@ -151,6 +160,32 @@
     areaView = "details";
   }
 
+  function handlePrimaryMapSelectArea(event) {
+    WorldBuilderStore.selectArea(event.detail);
+  }
+
+  function handleSecondaryMapSelectArea(event) {
+    // if something is selected on the secondary map it is done while something is being linked
+    // if the area being selected on the map is not the area being lined, set that as the other area
+    // if the area belongs to another map, change the map for the link area
+    // $linkUnderConstruction.toId == $selectedArea.id ? $areasForLinkEditorMap[$linkUnderConstruction.fromId] : $areasForLinkEditorMap[$linkUnderConstruction.toId]
+
+    const area = event.detail;
+    if (area.mapId == linkEditorMapForOtherAreaId) {
+      if (get(linkUnderConstruction).toId == get(selectedArea).id) {
+        linkUnderConstruction.update(function (link) {
+          link.fromId = area.id;
+          return link;
+        });
+      } else if (get(linkUnderConstruction).fromId == get(selectedArea).id) {
+        linkUnderConstruction.update(function (link) {
+          link.toId = area.id;
+          return link;
+        });
+      }
+    }
+  }
+
   // Map stuff
 </script>
 
@@ -166,6 +201,7 @@
     <div class="h-full max-h-full w-1/2">
       <div class="h-1/2 max-h-1/2 w-full">
         <SvgMap
+          on:selectArea={handlePrimaryMapSelectArea}
           chosenMap={$selectedMap}
           mapSelected={$mapSelected}
           loadingMapData={$loadingMapData}
@@ -176,7 +212,9 @@
           linkUnderConstruction={$linkUnderConstruction}
           mapsMap={$mapsMap}
           svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
-          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
+          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
+          areasMap={$areasMap}
+          links={$links} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
         {#if $mode == 'map'}
@@ -201,20 +239,23 @@
         {/if}
       {:else}
         <div class="h-full w-full flex flex-col">
-          {#if $selectedMap.id != $linkEditorMapForOtherAreaId}
+          {#if $selectedMap.id != $linkEditorMapForOtherAreaId && $linkEditorMapForOtherAreaId != ''}
             <div class="flex-1 overflow-hidden">
               <SvgMap
-                chosenMap={$selectedMap}
-                mapSelected={$mapSelected}
-                loadingMapData={$loadingMapData}
-                selectedArea={$selectedArea}
-                areas={$areas}
+                on:selectArea={handleSecondaryMapSelectArea}
+                chosenMap={$mapsMap[$linkEditorMapForOtherAreaId]}
+                mapSelected={true}
+                loadingMapData={$loadingLinkEditorData}
+                selectedArea={$linkUnderConstruction.toId == $selectedArea.id ? $areasForLinkEditorMap[$linkUnderConstruction.fromId] : $areasForLinkEditorMap[$linkUnderConstruction.toId]}
+                areas={$areasForLinkEditor}
                 areaUnderConstruction={$areaUnderConstruction}
-                linkPreviewAreaId={$linkPreviewAreaId}
+                linkPreviewAreaId={$selectedArea.id}
                 linkUnderConstruction={$linkUnderConstruction}
                 mapsMap={$mapsMap}
-                svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
-                svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
+                svgMapAllowInterMapAreaSelection={false}
+                svgMapAllowIntraMapAreaSelection={false}
+                areasMap={$areasForLinkEditorMap}
+                links={$linksForLinkEditor} />
             </div>
           {:else}
             <div class="flex-1">foo</div>
