@@ -16,6 +16,7 @@
   {#each shapes as shape}
     {#if shape.type == 'line'}
       <line
+        name={shapes.id}
         x1={shape.x1}
         y1={shape.y1}
         x2={shape.x2}
@@ -33,7 +34,8 @@
         height={shape.height}
         rx={shape.corners}
         fill={shape.fill}
-        class={shape.cls}>
+        class={shape.cls}
+        name={shape.area.id} >
         <title>{shape.name}</title>
       </rect>
     {:else if shape.type == 'text'}

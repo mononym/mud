@@ -25,6 +25,7 @@
     linkUnderConstruction,
     mode,
     view,
+    linkPreviewAreaId,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
@@ -179,7 +180,10 @@
           mapSelected={$mapSelected}
           loadingMapData={$loadingMapData}
           selectedArea={$selectedArea}
-          areas={$areas} />
+          areas={$areas}
+          areaUnderConstruction={$areaUnderConstruction}
+          linkPreviewAreaId={$linkPreviewAreaId}
+          linkUnderConstruction={$linkUnderConstruction} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
         {#if $mode == 'map'}

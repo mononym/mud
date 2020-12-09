@@ -106,7 +106,8 @@
         <div class="col-span-6">
           <label
             for="mapForOtherArea"
-            class="block text-sm font-medium text-gray-700" />
+            class="block text-sm font-medium text-gray-300">Map containing the
+            area on the other side of the link</label>
           <!-- svelte-ignore a11y-no-onchange -->
           <select
             id="mapForOtherArea"
@@ -121,8 +122,9 @@
         </div>
         <div class="col-span-6">
           <label
-            for="otherArea"
-            class="block text-sm font-medium text-gray-700" />
+            for="mapForOtherArea"
+            class="block text-sm font-medium text-gray-300">Area on the other
+            side of the link</label>
           <!-- svelte-ignore a11y-no-onchange -->
           {#if direction == 'incoming'}
             <select
@@ -273,7 +275,7 @@
           </div>
         {/if}
         <div class="col-span-6">
-          <label for="type" class="block text-sm font-medium text-gray-700">Link
+          <label for="type" class="block text-sm font-medium text-gray-300">Link
             Type</label>
           <select
             id="type"
@@ -293,7 +295,7 @@
           <div class="col-span-5">
             <label
               for="icon"
-              class="block text-sm font-medium text-gray-700">Icon</label>
+              class="block text-sm font-medium text-gray-300">Icon</label>
             <select
               id="icon"
               bind:value={$linkUnderConstruction.icon}
@@ -346,7 +348,7 @@
           <div class="col-span-6">
             <label
               for="shortDescription"
-              class="block text-sm font-medium text-gray-700">Short Description</label>
+              class="block text-sm font-medium text-gray-300">Short Description</label>
             <select
               id="shortDescription"
               bind:value={$linkUnderConstruction.shortDescription}

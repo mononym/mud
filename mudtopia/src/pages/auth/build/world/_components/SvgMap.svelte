@@ -8,17 +8,15 @@
   const { links } = LinksStore;
   const { areasMap } = AreasStore;
   import { WorldBuilderStore } from "./state";
-  const {
-    areaUnderConstruction,
-    linkPreviewAreaId,
-    linkUnderConstruction,
-    svgMapAllowIntraMapAreaSelection,
-  } = WorldBuilderStore;
+  const { svgMapAllowIntraMapAreaSelection } = WorldBuilderStore;
 
   export let mapSelected;
   export let loadingMapData;
   export let selectedArea;
   export let areas;
+  export let areaUnderConstruction;
+  export let linkPreviewAreaId;
+  export let linkUnderConstruction;
 
   // Zoom stuff
   let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
@@ -61,7 +59,7 @@
       let color =
         selectedArea.id == area.id
           ? "green"
-          : $linkPreviewAreaId == area.id
+          : linkPreviewAreaId == area.id
           ? "orange"
           : "blue";
 
@@ -70,6 +68,7 @@
         const link = $links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
+        console.log("svgAreaShapes");
         console.log(link);
 
         if (link != undefined) {
@@ -108,16 +107,16 @@
       );
     })
     .sort(function (area1, area2) {
-      if (area1.id == $areaUnderConstruction.id) {
+      if (area1.id == areaUnderConstruction.id) {
         return 1;
-      } else if (area2.id == $areaUnderConstruction.id) {
+      } else if (area2.id == areaUnderConstruction.id) {
         return -1;
       } else {
         area1 <= area2;
       }
     });
 
-  $: svgPreviewLinkShapes = [$linkUnderConstruction]
+  $: svgPreviewLinkShapes = [linkUnderConstruction]
     .filter((link) => link.toId != "" && link.fromId != "")
     .map(function (link) {
       console.log("svgPreviewLinkShapes");
@@ -187,13 +186,13 @@
       };
     });
 
-  $: svgPreviewLinkAreaShapes = [$linkUnderConstruction]
+  $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
     .filter(
       (link) =>
         link.toId != "" &&
         link.fromId != "" &&
-        selectedArea.mapId == $areasMap[link.fromId].mapId &&
-        selectedArea.mapId == $areasMap[link.toId].mapId
+        (selectedArea.mapId != $areasMap[link.fromId].mapId ||
+          selectedArea.mapId != $areasMap[link.toId].mapId)
     )
     .map(function (link) {
       let x;
@@ -223,11 +222,6 @@
         return;
       }
 
-      const stroke = "orange";
-      const dashArray = "5";
-      const gridSize = chosenMap.gridSize;
-      const viewSize = chosenMap.viewSize;
-
       return buildSquare(
         otherArea,
         chosenMap.gridSize,
@@ -240,71 +234,6 @@
         $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
       );
     });
-
-  // function buildSvgPreviewLinkAreaShapes() {
-  //   if (
-  //     selectedArea.mapId == "" ||
-  //     $linkUnderConstruction.fromId == "" ||
-  //     $linkUnderConstruction.toId == "" ||
-  //     (selectedArea.mapId == $areasMap[$linkUnderConstruction.fromId].mapId &&
-  //       selectedArea.mapId == $areasMap[$linkUnderConstruction.toId].mapId)
-  //   ) {
-  //     svgPreviewLinkAreaShapes = [];
-  //     return;
-  //   }
-
-  //   let x;
-  //   let y;
-  //   let otherArea;
-  //   let color;
-  //   let size;
-  //   let corners;
-
-  //   if (
-  //     selectedArea.id !== "" &&
-  //     selectedArea.id == $linkUnderConstruction.toId
-  //   ) {
-  //     // incoming: Link is coming "from" other area so take the local from coordinate
-  //     x = $linkUnderConstruction.localFromX;
-  //     y = $linkUnderConstruction.localFromY;
-  //     otherArea = $areasMap[$linkUnderConstruction.fromId];
-  //     color = $linkUnderConstruction.localFromColor;
-  //     size = $linkUnderConstruction.localFromSize;
-  //     corners = $linkUnderConstruction.localFromCorners;
-  //   } else if (
-  //     selectedArea.id !== "" &&
-  //     selectedArea.id == $linkUnderConstruction.fromId
-  //   ) {
-  //     // Outgoing Link is going "to" other area so take the local to coordinate
-  //     x = $linkUnderConstruction.localToX;
-  //     y = $linkUnderConstruction.localToY;
-  //     otherArea = $areasMap[$linkUnderConstruction.toId];
-  //     color = $linkUnderConstruction.localToColor;
-  //     size = $linkUnderConstruction.localToSize;
-  //     corners = $linkUnderConstruction.localToCorners;
-  //   } else {
-  //     return;
-  //   }
-
-  //   const stroke = "orange";
-  //   const dashArray = "5";
-  //   const gridSize = chosenMap.gridSize;
-  //   const viewSize = chosenMap.viewSize;
-
-  //   svgPreviewLinkAreaShapes = [
-  //     buildSquare(
-  //       otherArea,
-  //       chosenMap.gridSize,
-  //       chosenMap.viewSize,
-  //       color,
-  //       x,
-  //       y,
-  //       size,
-  //       corners,
-  //       $svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto"
-  //     ),
-  //   ];
-  // }
 
   let svglinkShapes = [];
   links.subscribe((newLinks) => {
@@ -321,12 +250,12 @@
       })
       .map(function (link: LinkInterface) {
         const toArea =
-          link.toId == $areaUnderConstruction.id
-            ? $areaUnderConstruction
+          link.toId == areaUnderConstruction.id
+            ? areaUnderConstruction
             : $areasMap[link.toId];
         const fromArea =
-          link.fromId == $areaUnderConstruction.id
-            ? $areaUnderConstruction
+          link.fromId == areaUnderConstruction.id
+            ? areaUnderConstruction
             : $areasMap[link.fromId];
         const fromMapX =
           fromArea.mapId == chosenMap.id ? fromArea.mapX : link.localFromX;
@@ -354,13 +283,13 @@
       });
   }
 
-  areaUnderConstruction.subscribe((newArea) => {
-    const mappedAreas = areas.map((area) =>
-      area.id == newArea.id ? newArea : area
-    );
-    // buildSvgAreaShapes(mappedAreas);
-    buildSvgLinkShapes($links);
-  });
+  // areaUnderConstruction.subscribe((newArea) => {
+  //   const mappedAreas = areas.map((area) =>
+  //     area.id == newArea.id ? newArea : area
+  //   );
+  //   // buildSvgAreaShapes(mappedAreas);
+  //   buildSvgLinkShapes($links);
+  // });
 
   function buildSquare(
     area: AreaInterface,
