@@ -112,11 +112,7 @@
         y,
         size,
         corners,
-        svgMapAllowIntraMapAreaSelection
-          ? area.id == selectedArea.id
-            ? "cursor-not-allowed"
-            : "cursor-pointer"
-          : "cursor-auto",
+        cls,
         name
       );
     })
@@ -331,7 +327,11 @@
   }
 
   function handleSelectArea(event) {
-    if (svgMapAllowIntraMapAreaSelection) {
+    if (
+      (svgMapAllowIntraMapAreaSelection &&
+        event.detail.mapId == chosenMap.id) ||
+      (svgMapAllowInterMapAreaSelection && event.detail.mapId != chosenMap.id)
+    ) {
       WorldBuilderStore.selectArea(event.detail);
     }
   }

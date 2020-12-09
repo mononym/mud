@@ -45,13 +45,13 @@
 
   function editMap(event) {
     mapUnderConstruction = { ...event.detail };
-    mapView = "editor";
+    $view = "edit";
   }
 
   function del(map) {
     deleteMap(map).then(function () {
       $selectedMap = { ...mapState };
-      mapView = "details";
+      $view = "details";
     });
   }
 
@@ -66,12 +66,12 @@
 
   function cancelEditMap(map) {
     mapUnderConstruction = { ...mapState };
-    mapView = "details";
+    $view = "details";
   }
 
   function mapSaved(event) {
     $selectedMap = event.detail;
-    mapView = "details";
+    $view = "details";
   }
 
   // Area stuff
@@ -80,7 +80,7 @@
 
   function handleEditArea(event) {
     $areaUnderConstruction = { ...event.detail };
-    areaView = "editor";
+    $view = "edit";
   }
 
   function handleDeleteArea(event) {
@@ -110,18 +110,18 @@
     areaView = "details";
   }
 
-  selectedArea.subscribe((newArea) => {
-    if (newArea.mapId != $selectedMap.id) {
-      $selectedMap = $mapsMap[newArea.mapId];
-      view = "map";
-      mapView = "details";
-      areaView = "details";
-      linkView = "details";
-      $areaUnderConstruction = { ...areaState };
-      $linkUnderConstruction = { ...linkState };
-      mapUnderConstruction = { ...mapState };
-    }
-  });
+  // selectedArea.subscribe((newArea) => {
+  //   if (newArea.mapId != $selectedMap.id) {
+  //     $selectedMap = $mapsMap[newArea.mapId];
+  //     $view = "map";
+  //     mapView = "details";
+  //     areaView = "details";
+  //     linkView = "details";
+  //     $areaUnderConstruction = { ...areaState };
+  //     $linkUnderConstruction = { ...linkState };
+  //     mapUnderConstruction = { ...mapState };
+  //   }
+  // });
 
   function handleListSelectArea(event) {
     if (areaView == "details") {

@@ -4,7 +4,9 @@ import AreaState, { AreaInterface } from "../../../../../models/area";
 import LinkState from "../../../../../models/link";
 import { loadMapData, loadAreasForMap } from "../../../../../api/server";
 import { AreasStore } from "../../../../../stores/areas";
+import { MapsStore } from "../../../../../stores/maps";
 import { LinksStore } from "../../../../../stores/links";
+const { mapsMap } = MapsStore;
 
 function createWorldBuilderStore() {
   const areaUnderConstruction = writable({ ...AreaState });
@@ -75,6 +77,20 @@ function createWorldBuilderStore() {
   );
 
   async function selectArea(area: AreaInterface) {
+    // Special rules apply when the selected area does not match up with the currently selected map
+    if (area.mapId != get(selectedMap).id) {
+      // if in map details mode, or area details mode, switch maps
+      if (
+        (get(mode) == "map" || get(mode) == "area") &&
+        get(view) == "details"
+      ) {
+        selectedMap.set(get(mapsMap)[area.mapId]);
+        WorldBuilderStore.loadAllMapData(area.mapId);
+        selectedArea.set({ ...AreaState });
+      }
+
+      return;
+    }
     // If an area is selected while an area is being linked, it is not the 'selectedArea'
     // that needs updating, but the selected area should be treated as the target for the
     // linking of the 'selectedArea', which means it needs to both trigger actions in the
