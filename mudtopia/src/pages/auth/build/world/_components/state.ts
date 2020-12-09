@@ -113,7 +113,15 @@ function createWorldBuilderStore() {
     }
   }
 
+  async function selectMap(map: MapInterface) {
+    selectedMap.set(map);
+  }
+
   async function buildMap(map: MapInterface) {
+    if (map.id != get(selectedMap).id) {
+      loadAllMapData(map.id);
+    }
+
     selectedMap.set(map);
     mode.set("area");
   }
@@ -200,6 +208,7 @@ function createWorldBuilderStore() {
     buildMap,
     loadAllMapData,
     selectArea,
+    selectMap,
     loadAreasForLinkEditor,
     linkArea,
     cancelLinkArea,

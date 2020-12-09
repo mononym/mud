@@ -10,10 +10,14 @@
   import SvgMap from "./_components/SvgMap.svelte";
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
+  import { AreasStore } from "../../../../stores/areas.ts";
   import { Circle2 } from "svelte-loading-spinners";
   const { deleteMap, loadingMaps, mapsMap } = MapsStore;
+  const { areas } = AreasStore;
   import { WorldBuilderStore } from "./_components/state";
   const {
+    loadingMapData,
+    mapSelected,
     selectedMap,
     selectedArea,
     selectedLink,
@@ -170,7 +174,12 @@
   {:else}
     <div class="h-full max-h-full w-1/2">
       <div class="h-1/2 max-h-1/2 w-full">
-        <SvgMap />
+        <SvgMap
+          chosenMap={$selectedMap}
+          mapSelected={$mapSelected}
+          loadingMapData={$loadingMapData}
+          selectedArea={$selectedArea}
+          areas={$areas} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
         {#if $mode == 'map'}

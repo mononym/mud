@@ -6,10 +6,11 @@
   import { MapsStore } from "../../../../../stores/maps";
   const { maps } = MapsStore;
   import { WorldBuilderStore } from "./state";
-  const { selectedMap } = WorldBuilderStore;
+  const { loadAllMapData, selectedMap } = WorldBuilderStore;
 
   function selectMap(map) {
-    $selectedMap = map;
+    WorldBuilderStore.selectMap(map);
+    loadAllMapData(map.id);
   }
 
   function editMap(map) {
