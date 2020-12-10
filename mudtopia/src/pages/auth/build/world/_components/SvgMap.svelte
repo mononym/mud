@@ -169,6 +169,10 @@
           y2 = otherArea.mapY;
         }
       } else if (!sameMap) {
+        const otherArea = areasMap[linkPreviewAreaId];
+        x1 = otherArea.mapX;
+        y1 = otherArea.mapY;
+
         if (link.toId == linkPreviewAreaId) {
           x2 = link.localFromX;
           y2 = link.localFromY;
@@ -242,7 +246,10 @@
 
       // In this case same map means the "source" map which is being linked from
       if (sameMap) {
-        name = mapsMap[areasMap[linkPreviewAreaId].mapId].name + ": " + areasMap[linkPreviewAreaId].name;
+        name =
+          mapsMap[areasMap[linkPreviewAreaId].mapId].name +
+          ": " +
+          areasMap[linkPreviewAreaId].name;
       } else {
         name = mapsMap[selectedArea.mapId].name + ": " + selectedArea.name;
       }
