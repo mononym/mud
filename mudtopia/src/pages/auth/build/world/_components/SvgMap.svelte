@@ -198,35 +198,21 @@
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
     .filter(function (link) {
-      console.log("svgPreviewLinkAreaShapes filter");
-      console.log(areasMap);
-      console.log(link);
-      console.log(selectedArea);
-      console.log(chosenMap);
       return (
         (link.toId != "" || link.fromId != "") &&
         linkPreviewAreaId != "" &&
         ((selectedArea.mapId == chosenMap.id &&
           areasMap[linkPreviewAreaId].mapId != chosenMap.id) ||
           selectedArea.mapId != chosenMap.id)
-        // selectedArea != undefined && selectedArea.mapId == chosenMap.id
-        // (areasMap[link.toId] != undefined ||
-        // areasMap[link.fromId] != undefined)
-        // (selectedArea.mapId != areasMap[link.fromId].mapId ||
-        //   selectedArea.mapId != areasMap[link.toId].mapId)
       );
     })
     .map(function (link) {
-      console.log("svgPreviewLinkAreaShapes");
-      console.log(linkPreviewAreaId);
-      console.log(link);
-      console.log(areasMap);
       let x;
       let y;
       let color;
       let size;
       let corners;
-      let otherMap;
+      let name;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -242,7 +228,6 @@
         color = link.localFromColor;
         size = link.localFromSize;
         corners = link.localFromCorners;
-        otherMap = mapsMap[selectedArea.mapId];
       } else if (
         (sameMap && link.fromId == selectedArea.id) ||
         (!sameMap && link.fromId == linkPreviewAreaId)
@@ -253,11 +238,14 @@
         color = link.localToColor;
         size = link.localToSize;
         corners = link.localToCorners;
-        otherMap = mapsMap[selectedArea.mapId];
       }
 
-      console.log(mapsMap);
-      console.log(mapsMap[selectedArea.mapId]);
+      // In this case same map means the "source" map which is being linked from
+      if (sameMap) {
+        name = mapsMap[areasMap[linkPreviewAreaId].mapId].name + ": " + areasMap[linkPreviewAreaId].name;
+      } else {
+        name = mapsMap[selectedArea.mapId].name + ": " + selectedArea.name;
+      }
 
       return buildSquare(
         selectedArea,
@@ -269,7 +257,7 @@
         size,
         corners,
         svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto",
-        otherMap.name + ": " + selectedArea.name
+        name
       );
     });
 
