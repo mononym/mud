@@ -132,7 +132,14 @@
     });
 
   $: svgPreviewLinkShapes = [linkUnderConstruction]
-    .filter((link) => link.toId != "" && link.fromId != "")
+    .filter(
+      (link) =>
+        link.toId != "" &&
+        link.fromId != "" &&
+        ((selectedArea.mapId != chosenMap.id &&
+          areasMap[linkPreviewAreaId] != undefined) ||
+          selectedArea.mapId == chosenMap.id)
+    )
     .map(function (link) {
       let x1 = selectedArea.mapX;
       let y1 = selectedArea.mapY;

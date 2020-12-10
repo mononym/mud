@@ -207,19 +207,17 @@ function createWorldBuilderStore() {
         }
       }
 
-      if (get(areaSelected)) {
-        if (get(linkUnderConstruction).toId == get(selectedArea).id) {
-          // incoming
-          linkUnderConstruction.update(function (luc) {
-            luc.fromId = area.id;
-            return luc;
-          });
-        } else {
-          linkUnderConstruction.update(function (luc) {
-            luc.toId = area.id;
-            return luc;
-          });
-        }
+      if (get(linkUnderConstruction).toId == get(selectedArea).id) {
+        // incoming
+        linkUnderConstruction.update(function (luc) {
+          luc.fromId = area.id;
+          return luc;
+        });
+      } else {
+        linkUnderConstruction.update(function (luc) {
+          luc.toId = area.id;
+          return luc;
+        });
       }
     } else if (
       (get(mode) == "map" || get(mode) == "area") &&
