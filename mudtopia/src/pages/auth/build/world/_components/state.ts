@@ -97,6 +97,14 @@ function createWorldBuilderStore() {
     selectedArea.set(area);
     mode.set("link");
     view.set("edit");
+    console.log(get(linkUnderConstruction));
+  }
+
+  async function saveLink() {
+    LinksStore.saveLink(get(linkUnderConstruction));
+    linkUnderConstruction.set({ ...LinkState });
+    mode.set("area");
+    view.set("details");
   }
 
   async function cancelLinkArea() {
@@ -264,6 +272,7 @@ function createWorldBuilderStore() {
     mode,
     view,
     // Methods
+    saveLink,
     buildMap,
     loadAllMapData,
     selectArea,

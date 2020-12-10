@@ -51,9 +51,13 @@ function createLinksStore() {
 
     const props = {
       icon: link.icon,
+      local_from_corners: link.localFromCorners,
+      local_from_color: link.localFromColor,
       local_from_size: link.localFromSize,
       local_from_x: link.localFromX,
       local_from_y: link.localFromY,
+      local_to_corners: link.localToCorners,
+      local_to_color: link.localToColor,
       local_to_size: link.localToSize,
       local_to_x: link.localToX,
       local_to_y: link.localToY,
@@ -62,6 +66,8 @@ function createLinksStore() {
       arrival_text: link.arrivalText,
       departure_text: link.departureText,
       to_id: link.toId,
+      from_id: link.fromId,
+      type: link.type,
     };
 
     try {

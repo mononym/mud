@@ -1,6 +1,5 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  const dispatch = createEventDispatcher();
   import { WorldBuilderStore } from "./state";
   const {
     linkUnderConstruction,
@@ -11,36 +10,32 @@
     linkEditorMapForOtherAreaId,
     cancelLinkArea,
   } = WorldBuilderStore;
-  import { LinksStore } from "../../../../../stores/links";
   import { MapsStore } from "../../../../../stores/maps";
-  import { AreasStore } from "../../../../../stores/areas";
   const { maps } = MapsStore;
-  const { areas } = AreasStore;
   import { onMount } from "svelte";
 
   let direction;
 
-  let otherAreaId = "";
-
-  function save() {
-    const fromId = direction == "incoming" ? otherAreaId : $selectedArea.id;
-    const toId = direction == "outgoing" ? otherAreaId : $selectedArea.id;
-    const icon =
-      $linkUnderConstruction.type == "direction"
-        ? "fas fa-compass"
-        : this.workingLink.icon;
-
-    $linkUnderConstruction.toId = toId;
-    $linkUnderConstruction.fromId = fromId;
-    $linkUnderConstruction.icon = icon;
-
-    LinksStore.saveLink($linkUnderConstruction).then((updatedLink) =>
-      dispatch("save", updatedLink)
-    );
-  }
+  $: saveButtonDisabled =
+    $linkUnderConstruction.toId == "" ||
+    $linkUnderConstruction.fromId == "" ||
+    $linkUnderConstruction.longDescription == "" ||
+    $linkUnderConstruction.departureText == "" ||
+    $linkUnderConstruction.arrivalText == "" ||
+    $linkUnderConstruction.shortDescription == "" ||
+    $linkUnderConstruction.icon == "" ||
+    $linkUnderConstruction.longDescription == "";
 
   function cancel() {
     cancelLinkArea();
+  }
+  function handleShortDescriptionChange() {
+    if ($linkUnderConstruction.type == "Direction") {
+      $linkUnderConstruction.departureText =
+        $linkUnderConstruction.shortDescription;
+      $linkUnderConstruction.longDescription =
+        $linkUnderConstruction.shortDescription;
+    }
   }
 
   async function handleMapForOtherAreaChange() {
@@ -51,10 +46,6 @@
     }
 
     WorldBuilderStore.loadDataForLinkEditor($linkEditorMapForOtherAreaId);
-  }
-
-  function handleTypeChange() {
-    // Do whatever is needed
   }
 
   function setIncoming() {
@@ -79,7 +70,7 @@
 
 <form
   class="h-full flex flex-col place-content-center"
-  on:submit|preventDefault={save}>
+  on:submit|preventDefault={WorldBuilderStore.saveLink}>
   <div class="overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-6 gap-6">
@@ -299,7 +290,6 @@
           <select
             id="type"
             bind:value={$linkUnderConstruction.type}
-            on:blur={handleTypeChange}
             name="type"
             class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
             <option>Direction</option>
@@ -320,9 +310,7 @@
               bind:value={$linkUnderConstruction.icon}
               name="type"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-              <option hidden disabled selected value>
-                -- select an icon --
-              </option>
+              <option>fas fa-compass</option>
               <option>fas fa-door-closed</option>
               <option>fas fa-dungeon</option>
               <option>fas fa-archway</option>
@@ -366,9 +354,11 @@
             <label
               for="shortDescription"
               class="block text-sm font-medium text-gray-300">Short Description</label>
+            <!-- svelte-ignore a11y-no-onchange -->
             <select
               id="shortDescription"
               bind:value={$linkUnderConstruction.shortDescription}
+              on:change={handleShortDescriptionChange}
               name="type"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
               <option hidden disabled selected value>
@@ -403,8 +393,9 @@
       </div>
       <div class="px-4 py-3 text-right sm:px-6">
         <button
+          disabled={saveButtonDisabled}
           type="submit"
-          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          class="{saveButtonDisabled ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Save
         </button>
         <button

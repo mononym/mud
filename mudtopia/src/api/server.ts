@@ -136,6 +136,6 @@ export async function createLink(
   params: Record<string, unknown>
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
-    Api.post("/links", params)
+    Api.post("/links", {link: params})
   ));
 }
