@@ -19,7 +19,7 @@ defmodule Mud.Engine.Link do
     field(:arrival_text, :string)
     field(:short_description, :string)
     field(:long_description, :string)
-    field(:type, :string)
+    field(:type, :string, default: "Direction")
     field(:icon, :string, default: "fas fa-compass")
     field(:local_from_x, :integer, default: 0)
     field(:local_from_y, :integer, default: 0)
