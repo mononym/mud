@@ -151,11 +151,11 @@ function createWorldBuilderStore() {
     let newLinks = [];
 
     if (mapId == get(selectedMap).id) {
-      const filteredAreas = get(AreasStore.areas).filter(
-        (area) => area.mapId == mapId && area.id != get(selectedArea).id
-      );
+      // const filteredAreas = get(AreasStore.areas).filter(
+      //   (area) => area.mapId == mapId && area.id != get(selectedArea).id
+      // );
 
-      areasToMap = filteredAreas;
+      areasToMap = get(AreasStore.areas);
 
       newLinks = get(links);
     } else {

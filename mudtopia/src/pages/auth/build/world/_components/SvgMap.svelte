@@ -7,6 +7,7 @@
   import type { LinkInterface } from "../../../../../models/link";
   import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
+  import App from "../../../../../App.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -75,8 +76,6 @@
           ? "cursor-not-allowed"
           : "cursor-pointer"
         : "cursor-auto";
-      console.log("svgAreaShapes");
-      console.log(area);
       if (area.mapId != chosenMap.id) {
         name =
           (mapsMap[area.mapId] != undefined ? mapsMap[area.mapId].name : "") +
@@ -147,10 +146,6 @@
       if (sameMap && selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area
         const otherArea = areasMap[link.fromId];
-
-        console.log("svgPreviewLinkShapes1");
-        console.log(otherArea);
-        console.log(selectedArea);
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
           x2 = link.localFromX;
@@ -163,11 +158,6 @@
       } else if (sameMap && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
         const otherArea = areasMap[link.toId];
-        console.log("svgPreviewLinkShapes2");
-        console.log(areasMap);
-        console.log(link);
-        console.log(otherArea);
-        console.log(selectedArea);
 
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
@@ -179,7 +169,6 @@
           y2 = otherArea.mapY;
         }
       } else if (!sameMap) {
-        console.log("not same map");
         if (link.toId == linkPreviewAreaId) {
           x2 = link.localFromX;
           y2 = link.localFromY;
@@ -193,17 +182,6 @@
       const dashArray = "5";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
-      console.log({
-        id: "preview",
-        type: "line",
-        x1: x1,
-        y1: y1,
-        x2: x2,
-        y2: y2,
-        stroke: stroke,
-        link: link,
-        strokeDashArray: dashArray,
-      });
 
       return {
         id: "preview",
@@ -219,49 +197,70 @@
     });
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
-    .filter(
-      (link) =>
-        link.toId != "" &&
-        link.fromId != "" &&
-        selectedArea != undefined &&
-        areasMap[link.toId] != undefined &&
-        areasMap[link.fromId] != undefined &&
-        (selectedArea.mapId != areasMap[link.fromId].mapId ||
-          selectedArea.mapId != areasMap[link.toId].mapId)
-    )
+    .filter(function (link) {
+      console.log("svgPreviewLinkAreaShapes filter");
+      console.log(areasMap);
+      console.log(link);
+      console.log(selectedArea);
+      console.log(chosenMap);
+      return (
+        (link.toId != "" || link.fromId != "") &&
+        linkPreviewAreaId != "" &&
+        ((selectedArea.mapId == chosenMap.id &&
+          areasMap[linkPreviewAreaId].mapId != chosenMap.id) ||
+          selectedArea.mapId != chosenMap.id)
+        // selectedArea != undefined && selectedArea.mapId == chosenMap.id
+        // (areasMap[link.toId] != undefined ||
+        // areasMap[link.fromId] != undefined)
+        // (selectedArea.mapId != areasMap[link.fromId].mapId ||
+        //   selectedArea.mapId != areasMap[link.toId].mapId)
+      );
+    })
     .map(function (link) {
+      console.log("svgPreviewLinkAreaShapes");
+      console.log(linkPreviewAreaId);
+      console.log(link);
+      console.log(areasMap);
       let x;
       let y;
-      let otherArea;
       let color;
       let size;
       let corners;
       let otherMap;
 
-      if (selectedArea.id !== "" && selectedArea.id == link.toId) {
-        // incoming: Link is coming "from" other area so take the local from coordinate
+      // the selected area can only belong to another map if we're looking from the perspective of the secondary map
+      // Use that to determine which coordinates to use
+      const sameMap = selectedArea.mapId == chosenMap.id;
+
+      if (
+        (sameMap && link.toId == selectedArea.id) ||
+        (!sameMap && link.toId == linkPreviewAreaId)
+      ) {
+        console.log("internal matches to");
         x = link.localFromX;
         y = link.localFromY;
-        otherArea = areasMap[link.fromId];
         color = link.localFromColor;
         size = link.localFromSize;
         corners = link.localFromCorners;
-        otherMap = mapsMap[otherArea.mapId];
-      } else if (selectedArea.id !== "" && selectedArea.id == link.fromId) {
-        // Outgoing Link is going "to" other area so take the local to coordinate
+        otherMap = mapsMap[selectedArea.mapId];
+      } else if (
+        (sameMap && link.fromId == selectedArea.id) ||
+        (!sameMap && link.fromId == linkPreviewAreaId)
+      ) {
+        console.log("internal matches from");
         x = link.localToX;
         y = link.localToY;
-        otherArea = areasMap[link.toId];
         color = link.localToColor;
         size = link.localToSize;
         corners = link.localToCorners;
-        otherMap = mapsMap[otherArea.mapId];
-      } else {
-        return;
+        otherMap = mapsMap[selectedArea.mapId];
       }
 
+      console.log(mapsMap);
+      console.log(mapsMap[selectedArea.mapId]);
+
       return buildSquare(
-        otherArea,
+        selectedArea,
         chosenMap.gridSize,
         chosenMap.viewSize,
         color,
@@ -270,7 +269,7 @@
         size,
         corners,
         svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto",
-        otherMap.name + ": " + otherArea.name
+        otherMap.name + ": " + selectedArea.name
       );
     });
 
