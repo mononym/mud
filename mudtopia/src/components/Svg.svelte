@@ -15,16 +15,12 @@
 <svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
   {#each shapes as shape}
     {#if shape.type == 'line'}
-      <line
+      <path
         name={shapes.id}
-        x1={shape.x1}
-        y1={shape.y1}
-        x2={shape.x2}
-        y2={shape.y2}
+        d="M {shape.x1} {shape.y1} L {shape.x2} {shape.y2}"
         stroke={shape.stroke}
         stroke-dasharray={shape.strokeDashArray}
-        stroke-width={shape.strokeWidth}
-        style={shape.style} />
+        stroke-width={shape.strokeWidth} />
     {:else if shape.type == 'rect'}
       <rect
         on:click={selectArea(shape.area)}
