@@ -33,7 +33,7 @@ function createWorldBuilderStore() {
     selectedLink,
     ($selectedLink) => $selectedLink.id != ""
   );
-  const linkUnderConstruction = writable({ ...LinkState });
+  const linkUnderConstruction = writable(<LinkInterface>{ ...LinkState });
 
   async function loadAllMapData(mapId) {
     try {

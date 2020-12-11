@@ -14,13 +14,26 @@
 
 <svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
   {#each shapes as shape}
-    {#if shape.type == 'line'}
+    {#if shape.type == 'path'}
       <path
-        name={shapes.id}
+        id={shape.id}
         d="M {shape.x1} {shape.y1} L {shape.x2} {shape.y2}"
         stroke={shape.stroke}
         stroke-dasharray={shape.strokeDashArray}
         stroke-width={shape.strokeWidth} />
+      {#if shape.label != undefined && shape.label != ''}
+        <text
+          fill="white"
+          font-size={shape.labelFontSize}
+          transform={shape.labelTransform}>
+          <textPath
+            href={'#' + shape.id}
+            startOffSet={shape.labelHorizontalOffset}>
+            <tspan dy={shape.labelVerticalOffset}>{shape.label}</tspan>
+            <tspan />
+          </textPath>
+        </text>
+      {/if}
     {:else if shape.type == 'rect'}
       <rect
         on:click={selectArea(shape.area)}
@@ -31,7 +44,7 @@
         rx={shape.corners}
         fill={shape.fill}
         class={shape.cls}
-        name={shape.area.id} >
+        id={shape.area.id}>
         <title>{shape.name}</title>
       </rect>
     {:else if shape.type == 'text'}

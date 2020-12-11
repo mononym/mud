@@ -68,6 +68,19 @@
   });
 </script>
 
+<style>
+  .toggle__dot {
+    top: -0.25rem;
+    left: -0.25rem;
+    transition: all 0.3s ease-in-out;
+  }
+
+  input:checked ~ .toggle__dot {
+    transform: translateX(100%);
+    background-color: #48bb78;
+  }
+</style>
+
 <form
   class="h-full flex flex-col place-content-center"
   on:submit|preventDefault={WorldBuilderStore.saveLink}>
@@ -391,6 +404,67 @@
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
         </div>
       </div>
+
+      <div class="col-span-3">
+        <label
+          for="label"
+          class="block text-sm font-medium text-gray-300">Label</label>
+        <textarea
+          bind:value={$linkUnderConstruction.label}
+          name="label"
+          id="label"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="verticalOffset"
+          class="block text-sm font-medium text-gray-300">Vertical offset</label>
+        <input
+          bind:value={$linkUnderConstruction.labelVerticalOffset}
+          type="number"
+          name="verticalOffset"
+          id="verticalOffset"
+          min="-200"
+          max="200"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="horizontalOffset"
+          class="block text-sm font-medium text-gray-300">Horizontal offset</label>
+        <input
+          bind:value={$linkUnderConstruction.labelHorizontalOffset}
+          type="number"
+          name="horizontalOffset"
+          id="horizontalOffset"
+          min="-200"
+          max="200"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="fontSize"
+          class="block text-sm font-medium text-gray-300">Font size</label>
+        <input
+          bind:value={$linkUnderConstruction.labelFontSize}
+          type="number"
+          name="fontSize"
+          id="fontSize"
+          min="8"
+          max="100"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+      </div>
+
+      <div class="col-span-2">
+        <label
+          for="labelFlipped"
+          class="block text-sm font-medium text-gray-300">Label Flipped</label>
+        <input
+          id="labelFlipped"
+          type="checkbox"
+          bind:checked={$linkUnderConstruction.labelFlipped} />
+      </div>
+
       <div class="px-4 py-3 text-right sm:px-6">
         <button
           disabled={saveButtonDisabled}

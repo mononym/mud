@@ -7,7 +7,6 @@
   import type { LinkInterface } from "../../../../../models/link";
   import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
-  import App from "../../../../../App.svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -145,6 +144,12 @@
       let y1 = selectedArea.mapY;
       let x2 = 0;
       let y2 = 0;
+      let label;
+      let labelFlipped;
+      let labelHorizontalOffset;
+      let labelVerticalOffset;
+      let labelTransform = "";
+      let labelFontSize = 26;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -189,21 +194,74 @@
         }
       }
 
+      if (sameMap) {
+        label = link.label;
+        labelFlipped = link.labelFlipped;
+        labelHorizontalOffset = link.labelHorizontalOffset;
+        labelVerticalOffset = link.labelVerticalOffset;
+        labelFontSize = link.labelFontSize;
+      } else if (!sameMap && selectedArea.id == link.fromId) {
+        label = link.localFromLabel;
+        labelFlipped = link.localFromLabelFlipped;
+        labelHorizontalOffset = link.localFromLabelHorizontalOffset;
+        labelVerticalOffset = link.localFromLabelVerticalOffset;
+        labelFontSize = link.localFromLabelFontSize;
+      } else if (!sameMap && selectedArea.id == link.toId) {
+        label = link.localToLabel;
+        labelFlipped = link.localToLabelFlipped;
+        labelHorizontalOffset = link.localToLabelHorizontalOffset;
+        labelVerticalOffset = link.localToLabelVerticalOffset;
+        labelFontSize = link.localToLabelFontSize;
+      }
+
       const stroke = "orange";
       const dashArray = "5";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
+      x1 = x1 * gridSize + viewSize / 2;
+      y1 = -y1 * gridSize + viewSize / 2;
+      x2 = x2 * gridSize + viewSize / 2;
+      y2 = -y2 * gridSize + viewSize / 2;
+
+      if (labelFlipped) {
+        labelTransform = `translate(${x1 + x2}, ${y1 + y2}) scale(-1, -1)`;
+      }
+
+      if (label != "") {
+        console.log({
+          id: "preview",
+          type: "path",
+          x1: x1,
+          y1: y1,
+          x2: x2,
+          y2: y2,
+          stroke: stroke,
+          link: link,
+          strokeDashArray: dashArray,
+          label: label,
+          labelHorizontalOffset: `${labelHorizontalOffset}%`,
+          labelVerticalOffset: (-labelVerticalOffset).toString() + "px",
+          labelTransform: labelTransform,
+          labelFontSize: labelFontSize,
+        });
+      }
+
       return {
         id: "preview",
-        type: "line",
-        x1: x1 * gridSize + viewSize / 2,
-        y1: -y1 * gridSize + viewSize / 2,
-        x2: x2 * gridSize + viewSize / 2,
-        y2: -y2 * gridSize + viewSize / 2,
+        type: "path",
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
         stroke: stroke,
         link: link,
         strokeDashArray: dashArray,
+        label: label,
+        labelHorizontalOffset: `${labelHorizontalOffset}%`,
+        labelVerticalOffset: (-labelVerticalOffset).toString(),
+        labelTransform: labelTransform,
+        labelFontSize: labelFontSize,
       };
     });
 
@@ -283,6 +341,9 @@
     })
     .map(function (link: LinkInterface) {
       console.log("svglinkShapes");
+      if (link.label != "") {
+        console.log(link);
+      }
       const toArea =
         link.toId == areaUnderConstruction.id
           ? areaUnderConstruction
@@ -301,16 +362,63 @@
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
+      const sameMap =
+        selectedArea.id == "" || selectedArea.mapId == chosenMap.id;
+      console.log(sameMap);
+      console.log(selectedArea);
+      console.log(chosenMap);
+      let label;
+      let labelFlipped;
+      let labelHorizontalOffset;
+      let labelVerticalOffset;
+      let labelTransform = "";
+      let labelFontSize = 26;
+
+      if (sameMap) {
+        label = link.label;
+        labelFlipped = link.labelFlipped;
+        labelHorizontalOffset = link.labelHorizontalOffset;
+        labelVerticalOffset = link.labelVerticalOffset;
+        labelFontSize = link.labelFontSize;
+      } else if (!sameMap && selectedArea.id == link.fromId) {
+        label = link.localFromLabel;
+        labelFlipped = link.localFromLabelFlipped;
+        labelHorizontalOffset = link.localFromLabelHorizontalOffset;
+        labelVerticalOffset = link.localFromLabelVerticalOffset;
+        labelFontSize = link.localFromLabelFontSize;
+      } else if (!sameMap && selectedArea.id == link.toId) {
+        label = link.localToLabel;
+        labelFlipped = link.localToLabelFlipped;
+        labelHorizontalOffset = link.localToLabelHorizontalOffset;
+        labelVerticalOffset = link.localToLabelVerticalOffset;
+        labelFontSize = link.localToLabelFontSize;
+      }
+
+      const x1 = fromMapX * gridSize + viewSize / 2;
+      const y1 = -fromMapY * gridSize + viewSize / 2;
+      const x2 = toMapX * gridSize + viewSize / 2;
+      const y2 = -toMapY * gridSize + viewSize / 2;
+
+      if (labelFlipped) {
+        labelTransform = `translate(${x1 + x2}, ${y1 + y2}) scale(-1, -1)`;
+      }
+
       return {
         id: link.id,
-        type: "line",
-        x1: fromMapX * gridSize + viewSize / 2,
-        y1: -fromMapY * gridSize + viewSize / 2,
-        x2: toMapX * gridSize + viewSize / 2,
-        y2: -toMapY * gridSize + viewSize / 2,
+        type: "path",
+        x1: x1,
+        y1: y1,
+        x2: x2,
+        y2: y2,
         stroke: stroke,
         link: link,
         strokeDashArray: "0",
+        label: label,
+        labelFlipped: labelFlipped,
+        labelHorizontalOffset: `${labelHorizontalOffset}%`,
+        labelVerticalOffset: (-labelVerticalOffset).toString(),
+        labelTransform: labelTransform,
+        labelFontSize: labelFontSize,
       };
     });
 
