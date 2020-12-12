@@ -4,41 +4,33 @@
   const dispatch = createEventDispatcher();
 
   import { WorldBuilderStore } from "./state";
-  const { selectedArea, view } = WorldBuilderStore;
+  const { selectedArea, selectedLink, view } = WorldBuilderStore;
 
   export let links = [];
   export let areasMap = {};
   export let mapsMap = {};
+  export let showExit = true;
+  export let showArrival = true;
 
   function selectLink(link) {
-    if (link.id != $selectedArea.id) {
+    if (link.id != $selectedLink.id) {
+      console.log(link.id)
+      console.log($selectedLink.id)
       WorldBuilderStore.selectLink(link);
     }
   }
 
   function editLink(link) {
-    if ($view != "edit") {
-      $selectedArea = link;
-      dispatch("editLink", link);
-    }
-  }
-
-  function linklink(link) {
-    if ($view != "edit") {
-      WorldBuilderStore.linklink(link);
-    }
+    WorldBuilderStore.editLink(link)
   }
 
   function deleteLink(link) {
-    if ($view != "edit") {
-      $selectedArea = link;
-      dispatch("deleteLink", link);
-    }
+    WorldBuilderStore.deleteLink(link);
   }
 </script>
 
-<div class="flex flex-col">
-  <table class="divide-y divide-gray-200">
+<div class="h-full w-full flex flex-col overflow-y-auto overflow-x-hidden">
+  <table class="divide-y divide-gray-200 w-full">
     <thead>
       <tr>
         <th
@@ -46,16 +38,20 @@
           class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
           Other Area
         </th>
-        <th
-          scope="col"
-          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Exit
-        </th>
-        <th
-          scope="col"
-          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Arrival Text
-        </th>
+        {#if showExit}
+          <th
+            scope="col"
+            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Exit
+          </th>
+        {/if}
+        {#if showArrival}
+          <th
+            scope="col"
+            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Arrival Text
+          </th>
+        {/if}
         <th
           scope="col"
           class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -67,7 +63,7 @@
       {#each links as link, i}
         <tr
           id={link.id}
-          class="{$selectedArea.id == link.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {$selectedArea.id == link.id ? 'cursor-not-allowed' : 'cursor-pointer'}"
+          class="{$selectedLink.id == link.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {$selectedLink.id == link.id ? 'cursor-not-allowed' : 'cursor-pointer'}"
           on:click={selectLink(link)}>
           <td class="px-4 py-4 whitespace-nowrap">
             {#if link.toId == $selectedArea.id && areasMap[link.fromId].mapId != $selectedArea.mapId}
@@ -80,24 +76,28 @@
               <div class="text-sm text-gray-100">
                 {areasMap[link.fromId].name}
               </div>
-            {:else if link.fromId == $selectedArea.id && areasMap[link.fromId].mapId != $selectedArea.mapId}
+            {:else if link.fromId == $selectedArea.id && areasMap[link.toId].mapId != $selectedArea.mapId}
               <div class="text-sm text-gray-100">
-                {mapsMap[areasMap[link.fromId].mapId].name}
+                {mapsMap[areasMap[link.toId].mapId].name}
                 -
-                {areasMap[link.fromId].name}
+                {areasMap[link.toId].name}
               </div>
-            {:else if link.fromId == $selectedArea.id && areasMap[link.fromId].mapId == $selectedArea.mapId}
+            {:else if link.fromId == $selectedArea.id && areasMap[link.toId].mapId == $selectedArea.mapId}
               <div class="text-sm text-gray-100">
-                {areasMap[link.fromId].name}
+                {areasMap[link.toId].name}
               </div>
             {/if}
           </td>
-          <td class="px-4 py-4">
-            <p class="text-sm text-gray-100">{link.shortDescription}</p>
-          </td>
-          <td class="px-4 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-100">{link.arrivalText}</div>
-          </td>
+          {#if showExit}
+            <td class="px-4 py-4">
+              <p class="text-sm text-gray-100">{link.shortDescription}</p>
+            </td>
+          {/if}
+          {#if showArrival}
+            <td class="px-4 py-4 whitespace-nowrap">
+              <div class="text-sm text-gray-100">{link.arrivalText}</div>
+            </td>
+          {/if}
           <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
             <button
               on:click={editLink(link)}

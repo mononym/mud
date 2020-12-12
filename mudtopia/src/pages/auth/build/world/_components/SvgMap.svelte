@@ -10,6 +10,7 @@
 
   const dispatch = createEventDispatcher();
 
+  export let selectedLink = { ...LinkState };
   export let mapSelected = true;
   export let loadingMapData = false;
   export let selectedArea = { ...AreaState };
@@ -23,6 +24,7 @@
   export let links = [];
   export let focusAreaId = "";
   $: focusOnArea = focusAreaId != "";
+  $: selectedLinkId = selectedLink.id;
 
   export let areasMap;
   // Zoom stuff
@@ -326,6 +328,15 @@
         areasMap[link.toId] != undefined && areasMap[link.fromId] != undefined
       );
     })
+    .sort(function (link1: LinkInterface, link2: LinkInterface) {
+      if (link1.id == selectedLinkId) {
+        return 1;
+      } else if (link2.id == selectedLinkId) {
+        return -1;
+      } else {
+        return link1.id == link2.id ? 0 : link1.id < link2.id ? -1 : 1;
+      }
+    })
     .map(function (link: LinkInterface) {
       const toArea =
         link.toId == areaUnderConstruction.id
@@ -373,7 +384,6 @@
         labelVerticalOffset = link.localToLabelVerticalOffset;
         labelFontSize = link.localToLabelFontSize;
       }
-      console.log(link);
 
       const x1 = fromMapX * gridSize + viewSize / 2;
       const y1 = -fromMapY * gridSize + viewSize / 2;
@@ -392,7 +402,7 @@
         y1: y1,
         x2: x2,
         y2: y2,
-        stroke: stroke,
+        stroke: selectedLinkId == link.id ? "red" : stroke,
         link: link,
         strokeDashArray: "0",
         label: label,

@@ -35,8 +35,6 @@
     areasForLinkEditor,
     linksForLinkEditor,
     loadingLinkEditorData,
-    linkEditorDataLoaded,
-    areasForLinkEditorFiltered,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
@@ -206,6 +204,7 @@
           mapSelected={$mapSelected}
           loadingMapData={$loadingMapData}
           selectedArea={$selectedArea}
+          selectedLink={$selectedLink}
           areas={$areas}
           areaUnderConstruction={$areaUnderConstruction}
           linkPreviewAreaId={$linkPreviewAreaId}

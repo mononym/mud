@@ -28,13 +28,30 @@
     </p>
     <p class="text-center text-gray-300">Map Size: {$selectedArea.mapSize}</p>
     <div class="grid grid-cols-2">
-      <div class="bg-gray-800 text-white rounded-l">
-        <h2 class="text-center border-b-2 border-black">Incoming Links</h2>
-        <LinkList mapsMap={$mapsMap} links={$incomingLinksForSelectedArea} areasMap={$areasMap} />
+      <div class="bg-gray-800 text-white rounded-l flex flex-col">
+        <h2 class="text-center border-b-2 border-black flex-shrink">
+          Incoming Links
+        </h2>
+        <div class="flex-1">
+          <LinkList
+            mapsMap={$mapsMap}
+            links={$incomingLinksForSelectedArea}
+            areasMap={$areasMap}
+            showExit={false} />
+        </div>
       </div>
-      <div class="bg-gray-800 text-white border-l-2 rounded-r border-black">
-        <h2 class="text-center border-b-2 border-black">Outgoing Links</h2>
-        <LinkList mapsMap={$mapsMap} links={$outgoingLinksForSelectedArea} areasMap={$areasMap} />
+      <div
+        class="bg-gray-800 text-white border-l-2 rounded-r border-black flex flex-col">
+        <h2 class="text-center border-b-2 border-black flex-shrink">
+          Outgoing Links
+        </h2>
+        <div class="flex-1">
+          <LinkList
+            mapsMap={$mapsMap}
+            links={$outgoingLinksForSelectedArea}
+            areasMap={$areasMap}
+            showArrival={false} />
+        </div>
       </div>
     </div>
   </div>

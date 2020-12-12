@@ -3,7 +3,7 @@ import type { LinkInterface } from "../../../../../models/link";
 import MapState, { MapInterface } from "../../../../../models/map";
 import AreaState, { AreaInterface } from "../../../../../models/area";
 import LinkState from "../../../../../models/link";
-import { loadMapData, loadAreasForMap } from "../../../../../api/server";
+import { loadMapData, deleteLink as delLink } from "../../../../../api/server";
 import { AreasStore } from "../../../../../stores/areas";
 import { MapsStore } from "../../../../../stores/maps";
 import { LinksStore } from "../../../../../stores/links";
@@ -257,6 +257,35 @@ function createWorldBuilderStore() {
     }
   }
 
+  //
+  //
+  // Link type stuff
+  //
+  //
+
+  let deletingLink = writable(false);
+
+  async function deleteLink(link: LinkInterface) {
+    deletingLink.set(true);
+
+    try {
+      await delLink(link.id);
+
+      linksForLinkEditor.update(function (mm) {
+        delete mm[link.id];
+        return mm;
+      });
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      deletingLink.set(false);
+    }
+  }
+
+  async function selectLink(link: LinkInterface) {
+    selectedLink.set(link);
+  }
+
   return {
     // Area stuff
     areaUnderConstruction,
@@ -278,6 +307,7 @@ function createWorldBuilderStore() {
     linkEditorDataLoaded,
     incomingLinksForSelectedArea,
     outgoingLinksForSelectedArea,
+    deletingLink,
     // Map stuff
     loadingMapData,
     mapDataLoaded,
@@ -289,6 +319,7 @@ function createWorldBuilderStore() {
     mode,
     view,
     // Methods
+    deleteLink,
     saveLink,
     buildMap,
     loadAllMapData,
@@ -297,6 +328,7 @@ function createWorldBuilderStore() {
     loadDataForLinkEditor,
     linkArea,
     cancelLinkArea,
+    selectLink,
   };
 }
 

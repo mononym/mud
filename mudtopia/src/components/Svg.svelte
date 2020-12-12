@@ -12,7 +12,7 @@
   }
 </script>
 
-<svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
+<svg class="h-full w-full" transition="1s ease-in-out" {viewBox} {preserveAspectRatio}>
   {#each shapes as shape}
     {#if shape.type == 'path'}
       <path
