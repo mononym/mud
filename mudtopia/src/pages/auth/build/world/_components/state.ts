@@ -27,6 +27,20 @@ function createWorldBuilderStore() {
   );
 
   // Links stuff
+  const incomingLinksForSelectedArea = derived(
+    [areaSelected, selectedArea],
+    ([$areaSelected, $selectedArea]) =>
+      $areaSelected
+        ? get(links).filter((link) => link.toId == $selectedArea.id)
+        : []
+  );
+  const outgoingLinksForSelectedArea = derived(
+    [areaSelected, selectedArea],
+    ([$areaSelected, $selectedArea]) =>
+      $areaSelected
+        ? get(links).filter((link) => link.fromId == $selectedArea.id)
+        : []
+  );
   const linkEditorMapForOtherAreaId = writable("");
   const selectedLink = writable({ ...LinkState });
   const linkSelected = derived(
@@ -261,6 +275,8 @@ function createWorldBuilderStore() {
     linksForLinkEditor,
     loadingLinkEditorData,
     linkEditorDataLoaded,
+    incomingLinksForSelectedArea,
+    outgoingLinksForSelectedArea,
     // Map stuff
     loadingMapData,
     mapDataLoaded,

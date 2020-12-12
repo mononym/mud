@@ -19,17 +19,17 @@ export interface LinkInterface {
   localFromSize: number;
   localFromColor: string;
   localFromLabel: string;
-  localFromLabelFlipped: boolean;
+  localFromLabelRotation: number;
   localFromLabelHorizontalOffset: number;
   localFromLabelVerticalOffset: number;
   localFromLabelFontSize: number;
   localToLabel: string;
-  localToLabelFlipped: boolean;
+  localToLabelRotation: number;
   localToLabelHorizontalOffset: number;
   localToLabelVerticalOffset: number;
   localToLabelFontSize: number;
   label: string;
-  labelFlipped: boolean;
+  labelRotation: number;
   labelHorizontalOffset: number;
   labelVerticalOffset: number;
   labelFontSize: number;
@@ -56,20 +56,20 @@ const state: LinkInterface = {
   localToSize: 21,
   localToColor: "#008080",
   localFromLabel: "",
-  localFromLabelFlipped: false,
+  localFromLabelRotation: 0,
   localFromLabelHorizontalOffset: 0,
   localFromLabelVerticalOffset: 0,
-  localFromLabelFontSize: 26,
+  localFromLabelFontSize: 12,
   localToLabel: "",
-  localToLabelFlipped: false,
+  localToLabelRotation: 0,
   localToLabelHorizontalOffset: 0,
   localToLabelVerticalOffset: 0,
-  localToLabelFontSize: 26,
+  localToLabelFontSize: 12,
   label: "",
-  labelFlipped: false,
+  labelRotation: 0,
   labelHorizontalOffset: 0,
   labelVerticalOffset: 0,
-  labelFontSize: 26,
+  labelFontSize: 12,
 };
 
 export default state;

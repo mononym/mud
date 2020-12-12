@@ -20,7 +20,7 @@ defmodule Mud.Engine.Link do
     field(:departure_text, :string)
     field(:icon, :string, default: "fas fa-compass")
     field(:label, :string, default: "")
-    field(:label_flipped, :boolean, default: false)
+    field(:label_rotation, :integer, default: 0)
     field(:label_font_size, :integer, default: 26)
     field(:label_horizontal_offset, :integer, default: 0)
     field(:label_vertical_offset, :integer, default: 0)
@@ -32,7 +32,7 @@ defmodule Mud.Engine.Link do
     field(:local_from_color, :string, default: "teal")
     field(:local_from_corners, :integer, default: 5)
     field(:local_from_label, :string, default: "")
-    field(:local_from_label_flipped, :boolean, default: false)
+    field(:local_from_label_rotation, :integer, default: 0)
     field(:local_from_label_font_size, :integer, default: 26)
     field(:local_from_label_horizontal_offset, :integer, default: 0)
     field(:local_from_label_vertical_offset, :integer, default: 0)
@@ -44,7 +44,7 @@ defmodule Mud.Engine.Link do
     field(:local_to_color, :string, default: "teal")
     field(:local_to_corners, :integer, default: 5)
     field(:local_to_label, :string, default: "")
-    field(:local_to_label_flipped, :boolean, default: false)
+    field(:local_to_label_rotation, :integer, default: 0)
     field(:local_to_label_font_size, :integer, default: 26)
     field(:local_to_label_horizontal_offset, :integer, default: 0)
     field(:local_to_label_vertical_offset, :integer, default: 0)
@@ -87,17 +87,17 @@ defmodule Mud.Engine.Link do
       :local_from_corners,
       :local_from_color,
       :local_to_label,
-      :local_to_label_flipped,
+      :local_to_label_rotation,
       :local_to_label_font_size,
       :local_to_label_horizontal_offset,
       :local_to_label_vertical_offset,
       :local_from_label,
-      :local_from_label_flipped,
+      :local_from_label_rotation,
       :local_from_label_font_size,
       :local_from_label_horizontal_offset,
       :local_from_label_vertical_offset,
       :label,
-      :label_flipped,
+      :label_rotation,
       :label_font_size,
       :label_horizontal_offset,
       :label_vertical_offset

@@ -24,14 +24,13 @@
       {#if shape.label != undefined && shape.label != ''}
         <text
           fill="white"
+          text-anchor="middle"
+          x={shape.labelX}
+          y={shape.labelY}
+          dominant-baseline="central"
           font-size={shape.labelFontSize}
           transform={shape.labelTransform}>
-          <textPath
-            href={'#' + shape.id}
-            startOffSet={shape.labelHorizontalOffset}>
-            <tspan dy={shape.labelVerticalOffset}>{shape.label}</tspan>
-            <tspan />
-          </textPath>
+          <tspan>{shape.label}</tspan>
         </text>
       {/if}
     {:else if shape.type == 'rect'}

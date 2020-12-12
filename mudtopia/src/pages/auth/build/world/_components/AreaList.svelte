@@ -39,7 +39,8 @@
 
 <div class="flex flex-col">
   <div class="align-middle inline-block min-w-full">
-    <div class="shadow border-b border-gray-800 sm:rounded-lg">
+    <div
+      class="shadow border-b border-gray-800 sm:rounded-lg overflow-y-scroll">
       <table class="min-w-full divide-y divide-gray-200">
         <thead>
           <tr>

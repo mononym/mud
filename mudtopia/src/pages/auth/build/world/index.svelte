@@ -214,9 +214,10 @@
           svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
           svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
           areasMap={$areasMap}
-          links={$links} />
+          links={$links}
+          focusAreaId={$selectedArea.id} />
       </div>
-      <div class="h-1/2 max-h-1/2 w-full overflow-y-auto">
+      <div class="h-1/2 max-h-1/2 w-full overflow-hidden">
         {#if $mode == 'map'}
           <MapList />
         {:else}
@@ -255,7 +256,8 @@
                 svgMapAllowInterMapAreaSelection={true}
                 svgMapAllowIntraMapAreaSelection={true}
                 areasMap={$areasForLinkEditorMap}
-                links={$linksForLinkEditor} />
+                links={$linksForLinkEditor}
+                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId} />
             </div>
           {:else}
             <div class="flex-1">foo</div>

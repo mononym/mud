@@ -48,7 +48,7 @@ defmodule Mud.Engine.Map do
     Repo.all(
       from(
         map in __MODULE__,
-        order_by: [desc: map.updated_at]
+        order_by: [asc: map.updated_at]
       )
     )
   end

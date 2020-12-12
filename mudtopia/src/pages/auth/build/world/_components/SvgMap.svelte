@@ -21,6 +21,8 @@
   export let svgMapAllowIntraMapAreaSelection = false;
   export let svgMapAllowInterMapAreaSelection = false;
   export let links = [];
+  export let focusAreaId = "";
+  $: focusOnArea = focusAreaId != "";
 
   export let areasMap;
   // Zoom stuff
@@ -43,8 +45,12 @@
   let viewBox = "";
 
   export let chosenMap;
-  $: xCenterPoint = chosenMap.viewSize / 2;
-  $: yCenterPoint = chosenMap.viewSize / 2;
+  $: xCenterPoint = focusOnArea
+    ? areasMap[focusAreaId].mapX * chosenMap.gridSize + chosenMap.viewSize / 2
+    : chosenMap.viewSize / 2;
+  $: yCenterPoint = focusOnArea
+    ? -areasMap[focusAreaId].mapY * chosenMap.gridSize + chosenMap.viewSize / 2
+    : chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
   $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
@@ -145,11 +151,11 @@
       let x2 = 0;
       let y2 = 0;
       let label;
-      let labelFlipped;
+      let labelRotation = 0;
       let labelHorizontalOffset;
       let labelVerticalOffset;
       let labelTransform = "";
-      let labelFontSize = 26;
+      let labelFontSize = 12;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -196,23 +202,24 @@
 
       if (sameMap) {
         label = link.label;
-        labelFlipped = link.labelFlipped;
+        labelRotation = link.labelRotation;
         labelHorizontalOffset = link.labelHorizontalOffset;
         labelVerticalOffset = link.labelVerticalOffset;
         labelFontSize = link.labelFontSize;
       } else if (!sameMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
-        labelFlipped = link.localFromLabelFlipped;
+        labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
         labelVerticalOffset = link.localFromLabelVerticalOffset;
         labelFontSize = link.localFromLabelFontSize;
       } else if (!sameMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
-        labelFlipped = link.localToLabelFlipped;
+        labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
         labelVerticalOffset = link.localToLabelVerticalOffset;
         labelFontSize = link.localToLabelFontSize;
       }
+      console.log(labelRotation);
 
       const stroke = "orange";
       const dashArray = "5";
@@ -224,28 +231,10 @@
       x2 = x2 * gridSize + viewSize / 2;
       y2 = -y2 * gridSize + viewSize / 2;
 
-      if (labelFlipped) {
-        labelTransform = `translate(${x1 + x2}, ${y1 + y2}) scale(-1, -1)`;
-      }
+      const horizontalPosition = ((x1 + x2) / 2).toString();
+      const verticalPosition = ((y1 + y2) / 2).toString();
 
-      if (label != "") {
-        console.log({
-          id: "preview",
-          type: "path",
-          x1: x1,
-          y1: y1,
-          x2: x2,
-          y2: y2,
-          stroke: stroke,
-          link: link,
-          strokeDashArray: dashArray,
-          label: label,
-          labelHorizontalOffset: `${labelHorizontalOffset}%`,
-          labelVerticalOffset: (-labelVerticalOffset).toString() + "px",
-          labelTransform: labelTransform,
-          labelFontSize: labelFontSize,
-        });
-      }
+      labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
 
       return {
         id: "preview",
@@ -258,10 +247,10 @@
         link: link,
         strokeDashArray: dashArray,
         label: label,
-        labelHorizontalOffset: `${labelHorizontalOffset}%`,
-        labelVerticalOffset: (-labelVerticalOffset).toString(),
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
+        labelX: horizontalPosition,
+        labelY: verticalPosition,
       };
     });
 
@@ -291,7 +280,6 @@
         (sameMap && link.toId == selectedArea.id) ||
         (!sameMap && link.toId == linkPreviewAreaId)
       ) {
-        console.log("internal matches to");
         x = link.localFromX;
         y = link.localFromY;
         color = link.localFromColor;
@@ -301,7 +289,6 @@
         (sameMap && link.fromId == selectedArea.id) ||
         (!sameMap && link.fromId == linkPreviewAreaId)
       ) {
-        console.log("internal matches from");
         x = link.localToX;
         y = link.localToY;
         color = link.localToColor;
@@ -340,10 +327,6 @@
       );
     })
     .map(function (link: LinkInterface) {
-      console.log("svglinkShapes");
-      if (link.label != "") {
-        console.log(link);
-      }
       const toArea =
         link.toId == areaUnderConstruction.id
           ? areaUnderConstruction
@@ -364,44 +347,43 @@
 
       const sameMap =
         selectedArea.id == "" || selectedArea.mapId == chosenMap.id;
-      console.log(sameMap);
-      console.log(selectedArea);
-      console.log(chosenMap);
       let label;
-      let labelFlipped;
+      let labelRotation;
       let labelHorizontalOffset;
       let labelVerticalOffset;
       let labelTransform = "";
-      let labelFontSize = 26;
+      let labelFontSize = 12;
 
       if (sameMap) {
         label = link.label;
-        labelFlipped = link.labelFlipped;
+        labelRotation = link.labelRotation;
         labelHorizontalOffset = link.labelHorizontalOffset;
         labelVerticalOffset = link.labelVerticalOffset;
         labelFontSize = link.labelFontSize;
       } else if (!sameMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
-        labelFlipped = link.localFromLabelFlipped;
+        labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
         labelVerticalOffset = link.localFromLabelVerticalOffset;
         labelFontSize = link.localFromLabelFontSize;
       } else if (!sameMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
-        labelFlipped = link.localToLabelFlipped;
+        labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
         labelVerticalOffset = link.localToLabelVerticalOffset;
         labelFontSize = link.localToLabelFontSize;
       }
+      console.log(link);
 
       const x1 = fromMapX * gridSize + viewSize / 2;
       const y1 = -fromMapY * gridSize + viewSize / 2;
       const x2 = toMapX * gridSize + viewSize / 2;
       const y2 = -toMapY * gridSize + viewSize / 2;
 
-      if (labelFlipped) {
-        labelTransform = `translate(${x1 + x2}, ${y1 + y2}) scale(-1, -1)`;
-      }
+      const horizontalPosition = ((x1 + x2) / 2).toString();
+      const verticalPosition = ((y1 + y2) / 2).toString();
+
+      labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
 
       return {
         id: link.id,
@@ -414,11 +396,10 @@
         link: link,
         strokeDashArray: "0",
         label: label,
-        labelFlipped: labelFlipped,
-        labelHorizontalOffset: `${labelHorizontalOffset}%`,
-        labelVerticalOffset: (-labelVerticalOffset).toString(),
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
+        labelX: horizontalPosition,
+        labelY: verticalPosition,
       };
     });
 
@@ -460,8 +441,6 @@
   }
 
   function handleSelectArea(event) {
-    console.log("handleSelectArea");
-    console.log(event);
     if (
       (svgMapAllowIntraMapAreaSelection &&
         event.detail.mapId == chosenMap.id) ||

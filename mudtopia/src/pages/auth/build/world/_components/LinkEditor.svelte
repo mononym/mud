@@ -68,19 +68,6 @@
   });
 </script>
 
-<style>
-  .toggle__dot {
-    top: -0.25rem;
-    left: -0.25rem;
-    transition: all 0.3s ease-in-out;
-  }
-
-  input:checked ~ .toggle__dot {
-    transform: translateX(100%);
-    background-color: #48bb78;
-  }
-</style>
-
 <form
   class="h-full flex flex-col place-content-center"
   on:submit|preventDefault={WorldBuilderStore.saveLink}>
@@ -457,12 +444,16 @@
 
       <div class="col-span-2">
         <label
-          for="labelFlipped"
-          class="block text-sm font-medium text-gray-300">Label Flipped</label>
+          for="labelRotation"
+          class="block text-sm font-medium text-gray-300">Label Rotation</label>
         <input
-          id="labelFlipped"
-          type="checkbox"
-          bind:checked={$linkUnderConstruction.labelFlipped} />
+          bind:value={$linkUnderConstruction.labelRotation}
+          type="number"
+          name="labelRotation"
+          id="labelRotation"
+          min="-359"
+          max="359"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
       </div>
 
       <div class="px-4 py-3 text-right sm:px-6">
