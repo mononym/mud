@@ -29,33 +29,12 @@
     <p class="text-center text-gray-300">Map Size: {$selectedArea.mapSize}</p>
     <div class="grid grid-cols-2">
       <div class="bg-gray-800 text-white rounded-l">
-        <h2 class="text-center">Incoming Links</h2>
+        <h2 class="text-center border-b-2 border-black">Incoming Links</h2>
         <LinkList mapsMap={$mapsMap} links={$incomingLinksForSelectedArea} areasMap={$areasMap} />
-        <!-- {#each $incomingLinksForSelectedArea as link, i}
-          <p class="text-center {i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'}">
-            {#if $areasMap[link.fromId].mapId != $selectedArea.mapId}
-              {$mapsMap[$areasMap[link.fromId].mapId].name}
-              -
-            {/if}
-            {$areasMap[link.fromId].name}
-            :
-            {link.shortDescription}
-            {'->'}
-            {link.arrivalText}
-          </p>
-        {/each} -->
       </div>
       <div class="bg-gray-800 text-white border-l-2 rounded-r border-black">
-        <h2 class="text-center">Outgoing Links</h2>
-        {#each $outgoingLinksForSelectedArea as link, i}
-          <p class="text-center {i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'}">
-            {link.shortDescription}
-            {'->'}
-            {link.arrivalText}
-            :
-            {$areasMap[link.toId].name}
-          </p>
-        {/each}
+        <h2 class="text-center border-b-2 border-black">Outgoing Links</h2>
+        <LinkList mapsMap={$mapsMap} links={$outgoingLinksForSelectedArea} areasMap={$areasMap} />
       </div>
     </div>
   </div>

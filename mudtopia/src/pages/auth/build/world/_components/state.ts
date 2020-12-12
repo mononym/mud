@@ -253,6 +253,7 @@ function createWorldBuilderStore() {
       }
 
       selectedArea.set(area);
+      document.getElementById(`AreaList:${area.id}`).scrollIntoView();
     }
   }
 

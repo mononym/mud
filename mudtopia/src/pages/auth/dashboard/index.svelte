@@ -1,1 +1,1 @@
-<p>dashboard</p>
+<slot/>

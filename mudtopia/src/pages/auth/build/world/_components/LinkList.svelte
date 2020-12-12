@@ -44,7 +44,7 @@
         <th
           scope="col"
           class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Other link
+          Other Area
         </th>
         <th
           scope="col"
@@ -54,7 +54,7 @@
         <th
           scope="col"
           class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Arrival
+          Arrival Text
         </th>
         <th
           scope="col"
@@ -96,7 +96,7 @@
             <p class="text-sm text-gray-100">{link.shortDescription}</p>
           </td>
           <td class="px-4 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-100">{link.arrivaltext}</div>
+            <div class="text-sm text-gray-100">{link.arrivalText}</div>
           </td>
           <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
             <button
