@@ -20,7 +20,7 @@
         d="M {shape.x1} {shape.y1} L {shape.x2} {shape.y2}"
         stroke={shape.stroke}
         stroke-dasharray={shape.strokeDashArray}
-        stroke-width={shape.strokeWidth} />
+        stroke-width="{shape.strokeWidth}px" />
       {#if shape.label != undefined && shape.label != ''}
         <text
           fill="white"

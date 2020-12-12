@@ -14,18 +14,23 @@
 
   function selectLink(link) {
     if (link.id != $selectedLink.id) {
-      console.log(link.id)
-      console.log($selectedLink.id)
+      console.log("selectLink");
+      console.log(link.id);
+      console.log($selectedLink.id);
       WorldBuilderStore.selectLink(link);
     }
   }
 
   function editLink(link) {
-    WorldBuilderStore.editLink(link)
+    WorldBuilderStore.editLink(link);
   }
 
   function deleteLink(link) {
     WorldBuilderStore.deleteLink(link);
+  }
+
+  function followLink(link) {
+    WorldBuilderStore.followLink(link);
   }
 </script>
 
@@ -103,17 +108,25 @@
               on:click={editLink(link)}
               class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
-              style="transition: all .15s ease">
+              style="transition: all .15s ease"
+              title="Edit">
               <i class="fas fa-edit" />
-              Edit
             </button>
             <button
               on:click={deleteLink(link)}
               class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
-              style="transition: all .15s ease">
+              style="transition: all .15s ease"
+              title="Delete">
               <i class="fas fa-trash" />
-              Delete
+            </button>
+            <button
+              on:click|stopPropagation={followLink(link)}
+              class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              type="button"
+              style="transition: all .15s ease"
+              title="Follow Link">
+              <i class="fas fa-external-link" />
             </button>
           </td>
         </tr>

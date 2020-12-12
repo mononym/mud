@@ -1,3 +1,4 @@
+import { tick } from "svelte";
 import { derived, writable, get } from "svelte/store";
 import type { LinkInterface } from "../../../../../models/link";
 import MapState, { MapInterface } from "../../../../../models/map";
@@ -210,6 +211,9 @@ function createWorldBuilderStore() {
     // the area selected is for the primary map
     // the area selected is for a new map that is neither the primary nor the one already loaded for the editor
 
+    // When changing/selecting areas, always clear any links which may have been selected
+    selectedLink.set({ ...LinkState });
+
     // if editing link
     // if area selected differs from the map area selected, load areas for the new map
     // if area is part of already loaded data, set the area as
@@ -241,19 +245,24 @@ function createWorldBuilderStore() {
           return luc;
         });
       }
-    } else if (
-      (get(mode) == "map" || get(mode) == "area") &&
-      get(view) == "details"
-    ) {
+    } else if (get(mode) == "map" && get(view) == "details") {
       // Not editing link, but just looking at the map/area lists/details
       // Selecting an area here actually changes that something is selected, and if it happens to be a new map then we jump over to that
       if (area.mapId != get(selectedMap).id) {
         selectedMap.set(get(mapsMap)[area.mapId]);
         loadAllMapData(area.mapId);
       }
-
-      selectedArea.set(area);
-      document.getElementById(`AreaList:${area.id}`).scrollIntoView();
+    } else if (get(mode) == "area" && get(view) == "details") {
+      // Not editing link, but just looking at the map/area lists/details
+      // Selecting an area here actually changes that something is selected, and if it happens to be a new map then we jump over to that
+      if (area.mapId != get(selectedMap).id) {
+        selectedMap.set(get(mapsMap)[area.mapId]);
+        selectedArea.set({ ...AreaState });
+        loadAllMapData(area.mapId);
+      } else {
+        selectedArea.set(area);
+        document.getElementById(`AreaList:${area.id}`).scrollIntoView();
+      }
     }
   }
 
@@ -283,6 +292,21 @@ function createWorldBuilderStore() {
   }
 
   async function selectLink(link: LinkInterface) {
+    selectedLink.set(link);
+  }
+
+  async function followLink(link: LinkInterface) {
+    // find opposite link if there is one and unset if there is not, otherwise set opposite link as selected
+    // call selectArea
+
+    const otherArea =
+      get(selectedArea).id == link.toId
+        ? get(areasMap)[link.fromId]
+        : get(areasMap)[link.toId];
+
+    selectArea(otherArea);
+    console.log("followLink");
+    console.log(link);
     selectedLink.set(link);
   }
 
@@ -320,6 +344,7 @@ function createWorldBuilderStore() {
     view,
     // Methods
     deleteLink,
+    followLink,
     saveLink,
     buildMap,
     loadAllMapData,

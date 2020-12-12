@@ -253,6 +253,7 @@
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
         labelY: verticalPosition,
+        strokeWidth: 3
       };
     });
 
@@ -410,6 +411,7 @@
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
         labelY: verticalPosition,
+        strokeWidth: 3
       };
     });
 
