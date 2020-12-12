@@ -1,4 +1,3 @@
-import { tick } from "svelte";
 import { derived, writable, get } from "svelte/store";
 import type { LinkInterface } from "../../../../../models/link";
 import MapState, { MapInterface } from "../../../../../models/map";
@@ -29,17 +28,17 @@ function createWorldBuilderStore() {
 
   // Links stuff
   const incomingLinksForSelectedArea = derived(
-    [areaSelected, selectedArea],
-    ([$areaSelected, $selectedArea]) =>
+    [areaSelected, selectedArea, links],
+    ([$areaSelected, $selectedArea, $links]) =>
       $areaSelected
-        ? get(links).filter((link) => link.toId == $selectedArea.id)
+        ? $links.filter((link) => link.toId == $selectedArea.id)
         : []
   );
   const outgoingLinksForSelectedArea = derived(
-    [areaSelected, selectedArea],
-    ([$areaSelected, $selectedArea]) =>
+    [areaSelected, selectedArea, links],
+    ([$areaSelected, $selectedArea, $links]) =>
       $areaSelected
-        ? get(links).filter((link) => link.fromId == $selectedArea.id)
+        ? $links.filter((link) => link.fromId == $selectedArea.id)
         : []
   );
   const linkEditorMapForOtherAreaId = writable("");
@@ -117,6 +116,7 @@ function createWorldBuilderStore() {
 
   async function saveLink() {
     LinksStore.saveLink(get(linkUnderConstruction));
+    selectedLink.set(get(linkUnderConstruction));
     linkUnderConstruction.set({ ...LinkState });
     mode.set("area");
     view.set("details");
@@ -275,20 +275,13 @@ function createWorldBuilderStore() {
   let deletingLink = writable(false);
 
   async function deleteLink(link: LinkInterface) {
-    deletingLink.set(true);
-
-    try {
-      await delLink(link.id);
-
-      linksForLinkEditor.update(function (mm) {
-        delete mm[link.id];
-        return mm;
-      });
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      deletingLink.set(false);
+    LinksStore.deleteLink(link);
+    if (link.id == get(selectedLink).id) {
+      selectedLink.set({ ...LinkState });
     }
+
+    mode.set("area");
+    view.set("details");
   }
 
   async function selectLink(link: LinkInterface) {
