@@ -649,7 +649,6 @@
             class="block text-sm font-medium text-gray-300">Departure Text</label>
           <input
             bind:value={$linkUnderConstruction.departureText}
-            disabled={$linkUnderConstruction.type == 'Object'}
             type="text"
             name="departureText"
             id="departureText"

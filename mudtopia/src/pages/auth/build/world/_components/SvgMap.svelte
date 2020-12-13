@@ -259,6 +259,7 @@
       const verticalPosition = ((y1 + y2) / 2).toString();
 
       labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
+
       const params = {
         id: "preview",
         type: "path",
@@ -277,10 +278,19 @@
         lineDash: lineDash,
         labelColor,
       };
-      console.log(params);
 
-      return params;
-    });
+      if (link.id == selectedLinkId) {
+        const duplicateResults = {
+          ...params,
+          ...{ lineColor: "#FF6600", lineWidth: params.lineWidth + 4 },
+        };
+
+        return [duplicateResults, params];
+      } else {
+        return params;
+      }
+    })
+    .flat();
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
     .filter(function (link) {
@@ -458,7 +468,7 @@
       if (link.id == selectedLinkId) {
         const duplicateResults = {
           ...result,
-          ...{ lineColor: "#FF6600", lineWidth: result.lineWidth + 2 },
+          ...{ lineColor: "#FF6600", lineWidth: result.lineWidth + 4 },
         };
 
         return [duplicateResults, result];

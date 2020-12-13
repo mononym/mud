@@ -1,4 +1,5 @@
 <script>
+  import ConfirmWithInput from "../../../../../components/ConfirmWithInput.svelte";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
@@ -11,12 +12,12 @@
   export let mapsMap = {};
   export let showExit = true;
   export let showArrival = true;
+  let showDeletePrompt = false;
+  let linkForDeleting;
+  let deleteMatchString = "";
 
   function selectLink(link) {
     if (link.id != $selectedLink.id) {
-      console.log("selectLink");
-      console.log(link.id);
-      console.log($selectedLink.id);
       WorldBuilderStore.selectLink(link);
     }
   }
@@ -25,8 +26,15 @@
     WorldBuilderStore.editLink(link);
   }
 
-  function deleteLink(link) {
-    WorldBuilderStore.deleteLink(link);
+  function promptForDeleteLink(link) {
+    deleteMatchString = "delete";
+    linkForDeleting = link;
+    showDeletePrompt = true;
+    console.log("prompting");
+  }
+
+  function deleteCallback() {
+    WorldBuilderStore.deleteLink(linkForDeleting);
   }
 
   function followLink(link) {
@@ -113,7 +121,7 @@
               <i class="fas fa-edit" />
             </button>
             <button
-              on:click|stopPropagation={deleteLink(link)}
+              on:click|stopPropagation={promptForDeleteLink(link)}
               class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"
@@ -133,4 +141,8 @@
       {/each}
     </tbody>
   </table>
+  <ConfirmWithInput
+    bind:show={showDeletePrompt}
+    callback={deleteCallback}
+    matchString={deleteMatchString} />
 </div>

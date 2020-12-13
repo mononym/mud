@@ -111,7 +111,6 @@ function createWorldBuilderStore() {
     selectedArea.set(area);
     mode.set("link");
     view.set("edit");
-    console.log(get(linkUnderConstruction));
   }
 
   async function saveLink() {

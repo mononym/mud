@@ -1,4 +1,5 @@
 <script>
+  import { afterUpdate } from "svelte";
   import { tweened } from "svelte/motion";
   import { cubicOut } from "svelte/easing";
 
@@ -8,6 +9,8 @@
   export let show = false;
   export let matchString = "";
   let input = "";
+  let inputElement;
+  let lastVisibility = show;
   $: disableDeleteButton = input != matchString;
 
   const progress = tweened(0, {
@@ -16,15 +19,27 @@
   });
 
   function confirm() {
-    input = "";
-    callback();
-    show = false;
+    if (input == matchString) {
+      input = "";
+      callback();
+      show = false;
+    }
   }
 
   function cancel() {
     input = "";
     show = false;
   }
+
+  afterUpdate(() => {
+    if (show != lastVisibility) {
+      if (lastVisibility == false) {
+        inputElement.focus();
+      }
+
+      lastVisibility = show;
+    }
+  });
 </script>
 
 <div class="fixed z-10 inset-0 overflow-y-auto {show ? '' : 'hidden'}">
@@ -94,12 +109,15 @@
               </p>
             </div>
             <div class="mt-2">
-              <input
-                bind:value={input}
-                type="text"
-                name="input"
-                id="input"
-                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+              <form on:submit|preventDefault={confirm}>
+                <input
+                  bind:value={input}
+                  bind:this={inputElement}
+                  type="text"
+                  name="input"
+                  id="input"
+                  class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+              </form>
             </div>
           </div>
         </div>
