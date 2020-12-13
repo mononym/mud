@@ -34,7 +34,9 @@
           dominant-baseline="central"
           font-size={shape.labelFontSize}
           transform={shape.labelTransform}>
-          <tspan>{shape.label}</tspan>
+          {#each shape.label as label, i}
+            <tspan x={shape.labelX} y={shape.labelY} dy="{i * shape.labelFontSize}px">{label}</tspan>
+          {/each}
         </text>
       {/if}
     {:else if shape.type == 'rect'}

@@ -248,6 +248,8 @@
         labelColor = link.localToLabelColor;
       }
 
+      console.log(label.split("\n"));
+
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
@@ -269,7 +271,7 @@
         x2: x2,
         y2: y2,
         link: link,
-        label: label,
+        label: label.split("\n"),
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
@@ -283,7 +285,11 @@
       if (link.id == selectedLinkId) {
         const duplicateResults = {
           ...params,
-          ...{ lineColor: "#FF6600", lineWidth: params.lineWidth + 4 },
+          ...{
+            lineColor: "#FF6600",
+            lineWidth: params.lineWidth + 4,
+            label: "",
+          },
         };
 
         return [duplicateResults, params];
@@ -457,7 +463,7 @@
         x2: x2,
         y2: y2,
         link: link,
-        label: label,
+        label: label.split("\n"),
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
@@ -471,7 +477,11 @@
       if (link.id == selectedLinkId) {
         const duplicateResults = {
           ...result,
-          ...{ lineColor: "#FF6600", lineWidth: result.lineWidth + 4 },
+          ...{
+            lineColor: "#FF6600",
+            lineWidth: result.lineWidth + 4,
+            label: "",
+          },
         };
 
         return [duplicateResults, result];
