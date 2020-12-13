@@ -31,9 +31,17 @@
     show = false;
   }
 
+  function maybeHotkey(event) {
+    if (event.key === "Escape") {
+      show = false;
+      window.removeEventListener("keydown", maybeHotkey);
+    }
+  }
+
   afterUpdate(() => {
     if (show != lastVisibility) {
       if (lastVisibility == false) {
+        window.addEventListener("keydown", maybeHotkey);
         inputElement.focus();
       }
 
