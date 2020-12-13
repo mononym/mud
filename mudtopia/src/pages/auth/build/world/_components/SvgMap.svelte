@@ -7,6 +7,7 @@
   import type { LinkInterface } from "../../../../../models/link";
   import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
+  import { get } from "svelte/store";
 
   const dispatch = createEventDispatcher();
 
@@ -361,7 +362,9 @@
   $: svglinkShapes = links
     .filter(function (link: LinkInterface) {
       return (
-        areasMap[link.toId] != undefined && areasMap[link.fromId] != undefined
+        areasMap[link.toId] != undefined &&
+        areasMap[link.fromId] != undefined &&
+        link.id != linkUnderConstruction.id
       );
     })
     .sort(function (link1: LinkInterface, link2: LinkInterface) {

@@ -23,7 +23,7 @@
   }
 
   function editLink(link) {
-    WorldBuilderStore.editLink(link);
+    WorldBuilderStore.editLink({ ...link });
   }
 
   function promptForDeleteLink(link) {
