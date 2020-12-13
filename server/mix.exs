@@ -63,6 +63,7 @@ defmodule Mud.MixProject do
       {:poison, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:pp, "~> 0.1.1"},
+      {:recase, "~> 0.7.0"},
       {:redix, "~> 0.10"},
       {:retry, "~> 0.14.0"},
       {:sandbox, "~> 0.5.0"},

@@ -141,10 +141,13 @@
   $: svgPreviewLinkShapes = [linkUnderConstruction]
     .filter(
       (link) =>
+        // preview only if the link has areas at both ends selected
         link.toId != "" &&
         link.fromId != "" &&
+        // If areas at either end are on different maps, make sure both are loaded
         ((selectedArea.mapId != chosenMap.id &&
           areasMap[linkPreviewAreaId] != undefined) ||
+          // Otherwise if same map continue
           selectedArea.mapId == chosenMap.id)
     )
     .map(function (link) {
@@ -158,6 +161,10 @@
       let labelVerticalOffset;
       let labelTransform = "";
       let labelFontSize = 12;
+      let labelColor = "#000000";
+      let lineWidth = 2;
+      let lineColor = "#000000";
+      let lineDash = 0;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -175,6 +182,8 @@
           x2 = otherArea.mapX;
           y2 = otherArea.mapY;
         }
+
+        lineWidth = link.lineWidth;
       } else if (sameMap && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
         const otherArea = areasMap[link.toId];
@@ -188,6 +197,8 @@
           x2 = otherArea.mapX;
           y2 = otherArea.mapY;
         }
+
+        lineWidth = link.localToLineWidth;
       } else if (!sameMap) {
         const otherArea = areasMap[linkPreviewAreaId];
         x1 = otherArea.mapX;
@@ -200,6 +211,8 @@
           x2 = link.localToX;
           y2 = link.localToY;
         }
+
+        lineWidth = link.localFromLineWidth;
       }
 
       if (sameMap) {
@@ -208,23 +221,32 @@
         labelHorizontalOffset = link.labelHorizontalOffset;
         labelVerticalOffset = link.labelVerticalOffset;
         labelFontSize = link.labelFontSize;
+        lineColor = link.lineColor;
+        lineWidth = link.lineWidth;
+        lineDash = link.lineDash;
+        labelColor = link.labelColor;
       } else if (!sameMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
         labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
         labelVerticalOffset = link.localFromLabelVerticalOffset;
         labelFontSize = link.localFromLabelFontSize;
+        lineColor = link.localFromLineColor;
+        lineWidth = link.localFromLineWidth;
+        lineDash = link.localFromLineDash;
+        labelColor = link.localFromLabelColor;
       } else if (!sameMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
         labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
         labelVerticalOffset = link.localToLabelVerticalOffset;
         labelFontSize = link.localToLabelFontSize;
+        lineColor = link.localToLineColor;
+        lineWidth = link.localToLineWidth;
+        lineDash = link.localToLineDash;
+        labelColor = link.localToLabelColor;
       }
-      console.log(labelRotation);
 
-      const stroke = "orange";
-      const dashArray = "5";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
@@ -237,24 +259,27 @@
       const verticalPosition = ((y1 + y2) / 2).toString();
 
       labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
-
-      return {
+      const params = {
         id: "preview",
         type: "path",
         x1: x1,
         y1: y1,
         x2: x2,
         y2: y2,
-        stroke: stroke,
         link: link,
-        strokeDashArray: dashArray,
         label: label,
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
         labelY: verticalPosition,
-        strokeWidth: 3
+        lineWidth: lineWidth,
+        lineColor: lineColor,
+        lineDash: lineDash,
+        labelColor,
       };
+      console.log(params);
+
+      return params;
     });
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
@@ -353,7 +378,6 @@
         fromArea.mapId == chosenMap.id ? fromArea.mapY : link.localFromY;
       const toMapX = toArea.mapId == chosenMap.id ? toArea.mapX : link.localToX;
       const toMapY = toArea.mapId == chosenMap.id ? toArea.mapY : link.localToY;
-      const stroke = "white";
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
@@ -365,6 +389,10 @@
       let labelVerticalOffset;
       let labelTransform = "";
       let labelFontSize = 12;
+      let lineWidth = 2;
+      let lineColor = "#000000";
+      let lineDash = 0;
+      let labelColor = "#000000";
 
       if (sameMap) {
         label = link.label;
@@ -372,18 +400,30 @@
         labelHorizontalOffset = link.labelHorizontalOffset;
         labelVerticalOffset = link.labelVerticalOffset;
         labelFontSize = link.labelFontSize;
+        lineColor = link.lineColor;
+        lineWidth = link.lineWidth;
+        lineDash = link.lineDash;
+        labelColor = link.labelColor;
       } else if (!sameMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
         labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
         labelVerticalOffset = link.localFromLabelVerticalOffset;
         labelFontSize = link.localFromLabelFontSize;
+        lineColor = link.localFromLineColor;
+        lineWidth = link.localFromLineWidth;
+        lineDash = link.localFromLineDash;
+        labelColor = link.localFromLabelColor;
       } else if (!sameMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
         labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
         labelVerticalOffset = link.localToLabelVerticalOffset;
         labelFontSize = link.localToLabelFontSize;
+        lineColor = link.localToLineColor;
+        lineWidth = link.localToLineWidth;
+        lineDash = link.localToLineDash;
+        labelColor = link.localToLabelColor;
       }
 
       const x1 = fromMapX * gridSize + viewSize / 2;
@@ -396,24 +436,37 @@
 
       labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
 
-      return {
+      const result = {
         id: link.id,
         type: "path",
         x1: x1,
         y1: y1,
         x2: x2,
         y2: y2,
-        stroke: selectedLinkId == link.id ? "red" : stroke,
         link: link,
-        strokeDashArray: "0",
         label: label,
         labelTransform: labelTransform,
         labelFontSize: labelFontSize,
         labelX: horizontalPosition,
         labelY: verticalPosition,
-        strokeWidth: 3
+        lineWidth: lineWidth,
+        lineColor: lineColor,
+        lineDash: lineDash,
+        labelColor: labelColor,
       };
-    });
+
+      if (link.id == selectedLinkId) {
+        const duplicateResults = {
+          ...result,
+          ...{ lineColor: "#FF6600", lineWidth: result.lineWidth + 2 },
+        };
+
+        return [duplicateResults, result];
+      } else {
+        return result;
+      }
+    })
+    .flat();
 
   function buildSquare(
     area: AreaInterface,

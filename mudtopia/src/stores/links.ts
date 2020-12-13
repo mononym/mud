@@ -61,6 +61,7 @@ function createLinksStore() {
       local_from_label_vertical_offset: link.localFromLabelVerticalOffset,
       local_from_label_horizontal_offset: link.localFromLabelHorizontalOffset,
       local_from_label_font_size: link.localFromLabelFontSize,
+      local_from_label_color: link.localFromLabelColor,
       local_to_corners: link.localToCorners,
       local_to_color: link.localToColor,
       local_to_size: link.localToSize,
@@ -71,11 +72,13 @@ function createLinksStore() {
       local_to_label_vertical_offset: link.localToLabelVerticalOffset,
       local_to_label_horizontal_offset: link.localToLabelHorizontalOffset,
       local_to_label_font_size: link.localToLabelFontSize,
+      local_to_label_color: link.localToLabelColor,
       label: link.label,
       label_rotation: link.labelRotation,
       label_vertical_offset: link.labelVerticalOffset,
       label_horizontal_offset: link.labelHorizontalOffset,
       label_font_size: link.labelFontSize,
+      label_color: link.labelColor,
       long_description: link.longDescription,
       short_description: link.shortDescription,
       arrival_text: link.arrivalText,
@@ -94,9 +97,9 @@ function createLinksStore() {
       let res: LinkInterface;
 
       if (isNew) {
-        res = (await createLink(props)).data;
+        res = (await createLink(link)).data;
       } else {
-        res = (await updateLink(props)).data;
+        res = (await updateLink(link.id, link)).data;
       }
 
       linksMap.update(function (mm) {

@@ -6,7 +6,8 @@ defmodule MudWeb.LinkController do
   action_fallback(MudWeb.FallbackController)
 
   def create(conn, %{"link" => link_params}) do
-    with {:ok, %Link{} = link} <- Link.create(link_params) do
+    with {:ok, %Link{} = link} <-
+           Link.create(Recase.Enumerable.convert_keys(link_params, &Recase.to_snake/1)) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.link_path(conn, :show, link))
@@ -27,7 +28,8 @@ defmodule MudWeb.LinkController do
   def update(conn, %{"id" => id, "link" => link_params}) do
     link = Link.get!(id)
 
-    with {:ok, %Link{} = link} <- Link.update(link, link_params) do
+    with {:ok, %Link{} = link} <-
+           Link.update(link, Recase.Enumerable.convert_keys(link_params, &Recase.to_snake/1)) do
       render(conn, "show.json", link: link)
     end
   end

@@ -105,7 +105,7 @@
           {/if}
           <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
             <button
-              on:click={editLink(link)}
+              on:click|stopPropagation={editLink(link)}
               class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"
@@ -113,7 +113,7 @@
               <i class="fas fa-edit" />
             </button>
             <button
-              on:click={deleteLink(link)}
+              on:click|stopPropagation={deleteLink(link)}
               class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"

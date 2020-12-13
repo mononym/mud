@@ -201,8 +201,6 @@ function createWorldBuilderStore() {
   }
 
   async function selectArea(area: AreaInterface) {
-    console.log("selecting area");
-    console.log(area);
     // selecting area can come from two different places
     // one is the main map
     // second is the map that only shows during editing links
@@ -298,9 +296,14 @@ function createWorldBuilderStore() {
         : get(areasMap)[link.toId];
 
     selectArea(otherArea);
-    console.log("followLink");
-    console.log(link);
     selectedLink.set(link);
+  }
+
+  async function editLink(link: LinkInterface) {
+    selectedLink.set(link);
+    linkUnderConstruction.set(link);
+    mode.set("link");
+    view.set("edit");
   }
 
   return {
@@ -337,6 +340,7 @@ function createWorldBuilderStore() {
     view,
     // Methods
     deleteLink,
+    editLink,
     followLink,
     saveLink,
     buildMap,

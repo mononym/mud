@@ -20,37 +20,54 @@ defmodule Mud.Engine.Link do
     field(:departure_text, :string)
     field(:icon, :string, default: "fas fa-compass")
     field(:label, :string, default: "")
+    field(:label_color, :string, default: "#FFFFFF")
     field(:label_rotation, :integer, default: 0)
-    field(:label_font_size, :integer, default: 26)
+    field(:label_font_size, :integer, default: 12)
     field(:label_horizontal_offset, :integer, default: 0)
     field(:label_vertical_offset, :integer, default: 0)
     field(:long_description, :string)
     field(:short_description, :string)
     field(:type, :string, default: "Direction")
+    field(:line_width, :integer, default: 2)
+    field(:line_color, :string, default: "#FFFFFF")
+    field(:line_dash, :integer, default: 0)
+    field(:corners, :integer, default: 5)
+    field(:line_start_horizontal_offset, :integer, default: 0)
+    field(:line_start_vertical_offset, :integer, default: 0)
+    field(:line_end_horizontal_offset, :integer, default: 0)
+    field(:line_end_vertical_offset, :integer, default: 0)
 
     # Local from values
-    field(:local_from_color, :string, default: "teal")
+    field(:local_from_color, :string, default: "#008080")
     field(:local_from_corners, :integer, default: 5)
     field(:local_from_label, :string, default: "")
     field(:local_from_label_rotation, :integer, default: 0)
-    field(:local_from_label_font_size, :integer, default: 26)
+    field(:local_from_label_font_size, :integer, default: 12)
     field(:local_from_label_horizontal_offset, :integer, default: 0)
     field(:local_from_label_vertical_offset, :integer, default: 0)
+    field(:local_from_label_color, :string, default: "#FFFFFF")
     field(:local_from_size, :integer, default: 21)
     field(:local_from_x, :integer, default: 0)
     field(:local_from_y, :integer, default: 0)
+    field(:local_from_line_width, :integer, default: 2)
+    field(:local_from_line_dash, :integer, default: 0)
+    field(:local_from_line_color, :string, default: "#FFFFFF")
 
     # Local to values
-    field(:local_to_color, :string, default: "teal")
+    field(:local_to_color, :string, default: "#008080")
     field(:local_to_corners, :integer, default: 5)
     field(:local_to_label, :string, default: "")
     field(:local_to_label_rotation, :integer, default: 0)
-    field(:local_to_label_font_size, :integer, default: 26)
+    field(:local_to_label_font_size, :integer, default: 12)
     field(:local_to_label_horizontal_offset, :integer, default: 0)
     field(:local_to_label_vertical_offset, :integer, default: 0)
+    field(:local_to_label_color, :string, default: "#FFFFFF")
     field(:local_to_size, :integer, default: 21)
     field(:local_to_x, :integer, default: 0)
     field(:local_to_y, :integer, default: 0)
+    field(:local_to_line_width, :integer, default: 2)
+    field(:local_to_line_dash, :integer, default: 0)
+    field(:local_to_line_color, :string, default: "#FFFFFF")
 
     belongs_to(:from, Area,
       type: :binary_id,
@@ -69,38 +86,56 @@ defmodule Mud.Engine.Link do
   def changeset(link, attrs) do
     link
     |> cast(attrs, [
-      :type,
       :arrival_text,
+      :corners,
       :departure_text,
-      :from_id,
-      :to_id,
-      :short_description,
       :icon,
-      :local_to_x,
-      :local_to_y,
-      :local_to_size,
-      :local_to_corners,
-      :local_to_color,
-      :local_from_x,
-      :local_from_y,
-      :local_from_size,
-      :local_from_corners,
-      :local_from_color,
-      :local_to_label,
-      :local_to_label_rotation,
-      :local_to_label_font_size,
-      :local_to_label_horizontal_offset,
-      :local_to_label_vertical_offset,
-      :local_from_label,
-      :local_from_label_rotation,
-      :local_from_label_font_size,
-      :local_from_label_horizontal_offset,
-      :local_from_label_vertical_offset,
       :label,
-      :label_rotation,
+      :label_color,
       :label_font_size,
       :label_horizontal_offset,
-      :label_vertical_offset
+      :label_rotation,
+      :label_vertical_offset,
+      :line_color,
+      :line_dash,
+      :line_end_horizontal_offset,
+      :line_start_horizontal_offset,
+      :line_end_vertical_offset,
+      :line_start_vertical_offset,
+      :line_width,
+      :long_description,
+      :short_description,
+      :type,
+      :local_to_color,
+      :local_to_corners,
+      :local_to_label,
+      :local_to_label_color,
+      :local_to_label_font_size,
+      :local_to_label_horizontal_offset,
+      :local_to_label_rotation,
+      :local_to_label_vertical_offset,
+      :local_to_line_color,
+      :local_to_line_dash,
+      :local_to_line_width,
+      :local_to_size,
+      :local_to_x,
+      :local_to_y,
+      :to_id,
+      :from_id,
+      :local_from_color,
+      :local_from_corners,
+      :local_from_label,
+      :local_from_label_color,
+      :local_from_label_font_size,
+      :local_from_label_horizontal_offset,
+      :local_from_label_rotation,
+      :local_from_label_vertical_offset,
+      :local_from_line_color,
+      :local_from_line_dash,
+      :local_from_line_width,
+      :local_from_size,
+      :local_from_x,
+      :local_from_y
     ])
     |> validate_required([
       :type,

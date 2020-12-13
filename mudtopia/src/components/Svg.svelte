@@ -12,18 +12,22 @@
   }
 </script>
 
-<svg class="h-full w-full" transition="1s ease-in-out" {viewBox} {preserveAspectRatio}>
+<svg
+  class="h-full w-full"
+  transition="1s ease-in-out"
+  {viewBox}
+  {preserveAspectRatio}>
   {#each shapes as shape}
     {#if shape.type == 'path'}
       <path
         id={shape.id}
         d="M {shape.x1} {shape.y1} L {shape.x2} {shape.y2}"
-        stroke={shape.stroke}
-        stroke-dasharray={shape.strokeDashArray}
-        stroke-width="{shape.strokeWidth}px" />
+        stroke={shape.lineColor}
+        stroke-dasharray={shape.lineDash}
+        stroke-width={shape.lineWidth} />
       {#if shape.label != undefined && shape.label != ''}
         <text
-          fill="white"
+          fill={shape.labelColor}
           text-anchor="middle"
           x={shape.labelX}
           y={shape.labelY}

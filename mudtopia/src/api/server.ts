@@ -109,10 +109,11 @@ export async function createArea(
 // Link Stuff
 
 export async function updateLink(
-  params: Record<string, unknown>
+  id: string,
+  params: LinkInterface
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
-    Api.patch("/links/" + params.id, { link: params })
+    Api.patch("/links/" + id, { link: params })
   ));
 }
 
@@ -133,9 +134,9 @@ export async function loadLinksForMap(
 }
 
 export async function createLink(
-  params: Record<string, unknown>
+  params: LinkInterface
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
-    Api.post("/links", {link: params})
+    Api.post("/links", { link: params })
   ));
 }

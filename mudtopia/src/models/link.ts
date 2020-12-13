@@ -6,8 +6,16 @@ export interface LinkInterface {
   longDescription: string;
   type: string;
   icon: string;
+  corners: number;
   toId: string;
   fromId: string;
+  lineEndHorizontalOffsetWidth: number;
+  lineEndVerticalOffsetWidth: number;
+  lineStartHorizontalOffsetWidth: number;
+  lineStartVerticalOffsetWidth: number;
+  lineWidth: number;
+  lineDash: number;
+  lineColor: string;
   localToX: number;
   localToY: number;
   localToCorners: number;
@@ -19,20 +27,29 @@ export interface LinkInterface {
   localFromSize: number;
   localFromColor: string;
   localFromLabel: string;
+  localFromLabelColor: string;
   localFromLabelRotation: number;
   localFromLabelHorizontalOffset: number;
   localFromLabelVerticalOffset: number;
   localFromLabelFontSize: number;
+  localFromLineWidth: number;
+  localFromLineDash: number;
+  localFromLineColor: string;
   localToLabel: string;
+  localToLabelColor: string;
   localToLabelRotation: number;
   localToLabelHorizontalOffset: number;
   localToLabelVerticalOffset: number;
   localToLabelFontSize: number;
   label: string;
+  labelColor: string;
   labelRotation: number;
   labelHorizontalOffset: number;
   labelVerticalOffset: number;
   labelFontSize: number;
+  localToLineWidth: number;
+  localToLineDash: number;
+  localToLineColor: string;
 }
 
 const state: LinkInterface = {
@@ -50,6 +67,7 @@ const state: LinkInterface = {
   localFromCorners: 5,
   localFromSize: 21,
   localFromColor: "#008080",
+  localFromLabelColor: "#FFFFFF",
   localToX: 0,
   localToY: 0,
   localToCorners: 5,
@@ -65,11 +83,27 @@ const state: LinkInterface = {
   localToLabelHorizontalOffset: 0,
   localToLabelVerticalOffset: 0,
   localToLabelFontSize: 12,
+  localToLabelColor: "#FFFFFF",
+  localToLineWidth: 2,
+  localToLineDash: 0,
+  localToLineColor: "#FFFFFF",
   label: "",
+  labelColor: "#FFFFFF",
   labelRotation: 0,
   labelHorizontalOffset: 0,
   labelVerticalOffset: 0,
   labelFontSize: 12,
+  localFromLineWidth: 2,
+  localFromLineDash: 0,
+  localFromLineColor: "#FFFFFF",
+  lineWidth: 2,
+  lineDash: 0,
+  lineColor: "#FFFFFF",
+  corners: 5,
+  lineEndHorizontalOffsetWidth: 0,
+  lineEndVerticalOffsetWidth: 0,
+  lineStartHorizontalOffsetWidth: 0,
+  lineStartVerticalOffsetWidth: 0,
 };
 
 export default state;
