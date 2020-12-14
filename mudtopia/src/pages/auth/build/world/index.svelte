@@ -44,12 +44,23 @@
   let showDeletePrompt = false;
   let deleteCallback;
   let deleteMatchString = "";
+  $: backToMapViewButtonDisabled = !($view == "details" && $mode == "area");
+  $: createNewAreaButtonDisabled = !($view == "details" && $mode == "area");
 
   onMount(async () => {
     MapsStore.load();
   });
 
   // Map stuff
+
+  function backToMapView() {
+    if (!backToMapViewButtonDisabled) {
+      $view = "details";
+      $mode = "map";
+      $selectedArea = { ...areaState };
+      $selectedLink = { ...linkState };
+    }
+  }
 
   function editMap(event) {
     mapUnderConstruction = { ...event.detail };
@@ -85,6 +96,16 @@
   // Area stuff
 
   let areaView = "details";
+
+  function createArea() {
+    if (!createNewAreaButtonDisabled) {
+      $selectedArea = { ...areaState };
+      $selectedLink = { ...linkState };
+      $areaUnderConstruction = { ...areaState };
+      $linkUnderConstruction = { ...linkState };
+      $view = "edit";
+    }
+  }
 
   function handleEditArea(event) {
     $areaUnderConstruction = { ...event.detail };
@@ -216,11 +237,26 @@
           links={$links}
           focusAreaId={$selectedArea.id} />
       </div>
-      <div class="h-1/2 max-h-1/2 w-full overflow-hidden">
+      <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
           <MapList />
         {:else}
           <AreaList />
+
+          <div class="flex-shrink flex">
+            <button
+              on:click={backToMapView}
+              disabled={backToMapViewButtonDisabled}
+              type="button"
+              class="flex-1 rounded-l-md {backToMapViewButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {backToMapViewButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">Back
+              to Map List</button>
+            <button
+              on:click={createArea}
+              disabled={createNewAreaButtonDisabled}
+              type="button"
+              class="flex-1 rounded-r-md {createNewAreaButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {createNewAreaButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">Create
+              New Area</button>
+          </div>
         {/if}
       </div>
     </div>

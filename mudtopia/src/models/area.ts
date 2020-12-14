@@ -7,6 +7,9 @@ export interface AreaInterface {
   mapId: string;
   mapSize: number;
   mapCorners: number;
+  color: string;
+  borderWidth: number;
+  borderColor: string;
 }
 
 const state: AreaInterface = {
@@ -18,6 +21,9 @@ const state: AreaInterface = {
   mapSize: 21,
   mapCorners: 5,
   mapId: "",
+  color: "#696969",
+  borderColor: "#FFFFFF",
+  borderWidth: 0,
 };
 
 export default state;

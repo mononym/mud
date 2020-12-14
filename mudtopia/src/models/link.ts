@@ -35,12 +35,16 @@ export interface LinkInterface {
   localFromLineWidth: number;
   localFromLineDash: number;
   localFromLineColor: string;
+  localFromBorderWidth: number;
+  localFromBorderColor: string;
   localToLabel: string;
   localToLabelColor: string;
   localToLabelRotation: number;
   localToLabelHorizontalOffset: number;
   localToLabelVerticalOffset: number;
   localToLabelFontSize: number;
+  localToBorderWidth: number;
+  localToBorderColor: string;
   label: string;
   labelColor: string;
   labelRotation: number;
@@ -49,7 +53,7 @@ export interface LinkInterface {
   labelFontSize: number;
   localToLineWidth: number;
   localToLineDash: number;
-  localToLineColor: string;
+  localToLineColor: string
 }
 
 const state: LinkInterface = {
@@ -78,6 +82,8 @@ const state: LinkInterface = {
   localFromLabelHorizontalOffset: 0,
   localFromLabelVerticalOffset: 0,
   localFromLabelFontSize: 12,
+  localFromBorderWidth: 2,
+  localFromBorderColor: "#FFFFFF",
   localToLabel: "",
   localToLabelRotation: 0,
   localToLabelHorizontalOffset: 0,
@@ -87,6 +93,8 @@ const state: LinkInterface = {
   localToLineWidth: 2,
   localToLineDash: 0,
   localToLineColor: "#FFFFFF",
+  localToBorderWidth: 2,
+  localToBorderColor: "#FFFFFF",
   label: "",
   labelColor: "#FFFFFF",
   labelRotation: 0,

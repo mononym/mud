@@ -35,7 +35,12 @@
           font-size={shape.labelFontSize}
           transform={shape.labelTransform}>
           {#each shape.label as label, i}
-            <tspan x={shape.labelX} y={shape.labelY} dy="{i * shape.labelFontSize}px">{label}</tspan>
+            <tspan
+              x={shape.labelX}
+              y={shape.labelY}
+              dy="{i * shape.labelFontSize}px">
+              {label}
+            </tspan>
           {/each}
         </text>
       {/if}
@@ -48,6 +53,8 @@
         height={shape.height}
         rx={shape.corners}
         fill={shape.fill}
+        stroke-width={shape.borderWidth}
+        stroke={shape.borderColor}
         class={shape.cls}
         id={shape.area.id}>
         <title>{shape.name}</title>

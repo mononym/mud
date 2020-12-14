@@ -38,7 +38,6 @@
     "postcss-load-config": "^3.0.0",
     "rollup-plugin-scss": "^2.6.1",
     "sirv-cli": "^1.0.0",
-    "smelte": "^1.0.18",
     "svelte-awesome": "^2.3.0",
     "svelte-loading-spinners": "^0.1.1",
     "svelte-spa-router": "^3.0.5",

@@ -8,6 +8,7 @@
   import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
   import { get } from "svelte/store";
+  import { loadLinksForMap } from "../../../../../api/server";
 
   const dispatch = createEventDispatcher();
 
@@ -16,6 +17,7 @@
   export let loadingMapData = false;
   export let selectedArea = { ...AreaState };
   export let areas = [];
+  export let buildingArea = false;
   export let areaUnderConstruction = { ...AreaState };
   export let linkPreviewAreaId = "";
   export let linkUnderConstruction = { ...LinkState };
@@ -72,18 +74,23 @@
       let size = area.mapSize;
       let x = area.mapX;
       let y = area.mapY;
-      let color =
-        selectedArea != undefined && selectedArea.id == area.id
-          ? "green"
-          : linkPreviewAreaId == area.id
-          ? "orange"
-          : "blue";
+      // let color =
+      //   selectedArea != undefined && selectedArea.id == area.id
+      //     ? "green"
+      //     : linkPreviewAreaId == area.id
+      //     ? "orange"
+      //     : "blue";
       let name = area.name;
       let cls = svgMapAllowIntraMapAreaSelection
         ? selectedArea != undefined && area.id == selectedArea.id
           ? "cursor-not-allowed"
           : "cursor-pointer"
         : "cursor-auto";
+
+      let borderWidth = area.borderWidth;
+      let borderColor = area.borderColor;
+      let color = area.color;
+
       if (area.mapId != chosenMap.id) {
         name =
           (mapsMap[area.mapId] != undefined ? mapsMap[area.mapId].name : "") +
@@ -105,6 +112,8 @@
             x = link.localFromX;
             y = link.localFromY;
             color = link.localFromColor;
+            borderWidth = link.localFromBorderWidth;
+            borderColor = link.localFromBorderColor;
           } else {
             // incoming link, use to values
             corners = link.localToCorners;
@@ -112,11 +121,13 @@
             x = link.localToX;
             y = link.localToY;
             color = link.localToColor;
+            borderWidth = link.localToBorderWidth;
+            borderColor = link.localToBorderColor;
           }
         }
       }
 
-      return buildSquare(
+      const params = buildSquare(
         area,
         chosenMap.gridSize,
         chosenMap.viewSize,
@@ -126,18 +137,33 @@
         size,
         corners,
         cls,
-        name
+        name,
+        borderColor,
+        borderWidth
       );
-    })
-    .sort(function (area1, area2) {
-      if (area1.id == areaUnderConstruction.id) {
-        return 1;
-      } else if (area2.id == areaUnderConstruction.id) {
-        return -1;
-      } else {
-        area1 <= area2;
+
+      if (selectedArea.id == area.id) {
+        return [
+          {
+            ...params,
+            ...{
+              borderWidth: 2,
+              borderColor: "#ff6600",
+              width: <number>params.width + 2,
+              height: <number>params.height + 2,
+              x: <number>params.x - 1,
+              y: <number>params.y - 1,
+              fill: "#ff6600",
+            },
+          },
+          params,
+        ];
       }
-    });
+      {
+        return [params];
+      }
+    })
+    .flat();
 
   $: svgPreviewLinkShapes = [linkUnderConstruction]
     .filter(
@@ -316,6 +342,8 @@
       let size;
       let corners;
       let name;
+      let borderWidth;
+      let borderColor;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -330,6 +358,8 @@
         color = link.localFromColor;
         size = link.localFromSize;
         corners = link.localFromCorners;
+        borderWidth = link.localFromBorderWidth;
+        borderColor = link.localFromBorderColor;
       } else if (
         (sameMap && link.fromId == selectedArea.id) ||
         (!sameMap && link.fromId == linkPreviewAreaId)
@@ -339,6 +369,8 @@
         color = link.localToColor;
         size = link.localToSize;
         corners = link.localToCorners;
+        borderWidth = link.localToBorderWidth;
+        borderColor = link.localToBorderColor;
       }
 
       // In this case same map means the "source" map which is being linked from
@@ -351,7 +383,7 @@
         name = mapsMap[selectedArea.mapId].name + ": " + selectedArea.name;
       }
 
-      return buildSquare(
+      const props = buildSquare(
         selectedArea,
         chosenMap.gridSize,
         chosenMap.viewSize,
@@ -361,9 +393,67 @@
         size,
         corners,
         svgMapAllowIntraMapAreaSelection ? "cursor-pointer" : "cursor-auto",
-        name
+        name,
+        borderColor,
+        borderWidth
       );
+
+      return [
+        props,
+        {
+          ...props,
+          ...{
+            borderColor: "#ff6600",
+            borderWidth: 2,
+            width: <number>props.width + 2,
+            height: <number>props.height + 2,
+            x: <number>props.x - 1,
+            y: <number>props.y - 1,
+            fill: "#ff6600",
+          },
+        },
+      ];
     });
+
+  $: svgAreaUnderConstructionPreviewShapes = [areaUnderConstruction]
+    .filter(function (area) {
+      return buildingArea == true;
+    })
+    .map(function (area) {
+      let cls = svgMapAllowIntraMapAreaSelection
+        ? "cursor-pointer"
+        : "cursor-auto";
+
+      const props = buildSquare(
+        area,
+        chosenMap.gridSize,
+        chosenMap.viewSize,
+        area.color,
+        area.mapX,
+        area.mapY,
+        area.mapSize,
+        area.mapCorners,
+        cls,
+        area.name,
+        area.borderColor,
+        area.borderWidth
+      );
+
+      return [
+        {
+          ...props,
+          ...{
+            borderColor: "#696969",
+            borderWidth: 2,
+            width: <number>props.width + 2,
+            height: <number>props.height + 2,
+            fill: "#696969",
+          },
+        },
+        props,
+      ];
+    })
+    .flat();
 
   $: svglinkShapes = links
     .filter(function (link: LinkInterface) {
@@ -501,7 +591,9 @@
     size: number,
     corners: number,
     cls: string,
-    name: string
+    name: string,
+    borderColor: string,
+    borderWidth: number
   ): Record<string, unknown> {
     return {
       id: area.id,
@@ -515,6 +607,8 @@
       name: name,
       area: area,
       cls: cls,
+      borderColor: borderColor,
+      borderWidth: borderWidth,
     };
   }
 
@@ -558,7 +652,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...svglinkShapes, ...svgPreviewLinkShapes, ...svgAreaShapes, ...svgPreviewLinkAreaShapes]}
+          shapes={[...svglinkShapes, ...svgPreviewLinkShapes, ...svgAreaShapes, ...svgPreviewLinkAreaShapes, ...svgAreaUnderConstructionPreviewShapes]}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">
