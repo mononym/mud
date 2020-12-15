@@ -9,7 +9,7 @@ import { MapsStore } from "../../../../../stores/maps";
 import { LinksStore } from "../../../../../stores/links";
 const { mapsMap } = MapsStore;
 const { areasMap } = AreasStore;
-const { links } = LinksStore;
+const { links, linksMap } = LinksStore;
 
 function createWorldBuilderStore() {
   const areaUnderConstruction = writable({ ...AreaState });
@@ -242,6 +242,25 @@ function createWorldBuilderStore() {
     view.set("details");
   }
 
+  async function deleteArea(area: AreaInterface) {
+    AreasStore.deleteArea(area);
+    if (area.id == get(selectedArea).id) {
+      selectedArea.set({ ...AreaState });
+    }
+
+    linksMap.update(function (map) {
+      get(links).forEach((link) => {
+        if (link.toId == area.id || link.fromId == area.id) {
+          delete map[link.id];
+        }
+      });
+      return map;
+    });
+
+    mode.set("area");
+    view.set("details");
+  }
+
   async function selectArea(area: AreaInterface) {
     // selecting area can come from two different places
     // one is the main map
@@ -392,6 +411,7 @@ function createWorldBuilderStore() {
     cancelLinkArea,
     selectLink,
     // Area stuff
+    deleteArea,
     createArea,
     cancelEditArea,
     saveArea,

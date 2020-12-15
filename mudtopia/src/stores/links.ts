@@ -125,6 +125,7 @@ function createLinksStore() {
     saving,
     deleting,
     links,
+    linksMap,
     saveLink,
     deleteLink,
   };
