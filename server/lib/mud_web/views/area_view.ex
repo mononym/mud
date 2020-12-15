@@ -20,6 +20,9 @@ defmodule MudWeb.AreaView do
       mapSize: area.map_size,
       mapId: area.map_id,
       mapCorners: area.map_corners,
+      borderColor: area.border_color,
+      borderWidth: area.border_width,
+      color: area.color,
       insertedAt: area.inserted_at,
       updatedAt: area.updated_at
     }

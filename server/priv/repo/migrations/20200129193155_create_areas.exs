@@ -9,6 +9,9 @@ defmodule Mud.Repo.Migrations.CreateAreas do
       add(:map_x, :integer)
       add(:map_y, :integer)
       add(:map_size, :integer)
+      add(:border_width, :integer)
+      add(:border_color, :string)
+      add(:color, :string)
 
       timestamps()
     end

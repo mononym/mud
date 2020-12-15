@@ -52,6 +52,8 @@ defmodule Mud.Engine.Link do
     field(:local_from_line_width, :integer, default: 2)
     field(:local_from_line_dash, :integer, default: 0)
     field(:local_from_line_color, :string, default: "#FFFFFF")
+    field(:local_from_border_width, :integer, default: 2)
+    field(:local_from_border_color, :string, default: "#FFFFFF")
 
     # Local to values
     field(:local_to_color, :string, default: "#008080")
@@ -68,6 +70,8 @@ defmodule Mud.Engine.Link do
     field(:local_to_line_width, :integer, default: 2)
     field(:local_to_line_dash, :integer, default: 0)
     field(:local_to_line_color, :string, default: "#FFFFFF")
+    field(:local_to_border_width, :integer, default: 2)
+    field(:local_to_border_color, :string, default: "#FFFFFF")
 
     belongs_to(:from, Area,
       type: :binary_id,
@@ -117,6 +121,8 @@ defmodule Mud.Engine.Link do
       :local_to_line_color,
       :local_to_line_dash,
       :local_to_line_width,
+      :local_to_border_width,
+      :local_to_border_color,
       :local_to_size,
       :local_to_x,
       :local_to_y,
@@ -133,6 +139,8 @@ defmodule Mud.Engine.Link do
       :local_from_line_color,
       :local_from_line_dash,
       :local_from_line_width,
+      :local_from_border_width,
+      :local_from_border_color,
       :local_from_size,
       :local_from_x,
       :local_from_y

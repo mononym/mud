@@ -1,9 +1,5 @@
 import { derived, writable } from "svelte/store";
-import {
-  createArea,
-  updateArea,
-  deleteArea as delArea,
-} from "../api/server";
+import { createArea, updateArea, deleteArea as delArea } from "../api/server";
 import type { AreaInterface } from "../models/area";
 
 function createAreasStore() {
@@ -68,15 +64,18 @@ function createAreasStore() {
     let oldData;
     const isNew = area.id == "";
 
-    const props = {
-      id: area.id,
-      name: area.name,
-      description: area.description,
-      map_x: area.mapX,
-      map_y: area.mapY,
-      map_size: area.mapSize,
-      map_id: area.mapId,
-    };
+    // const props = {
+    //   id: area.id,
+    //   name: area.name,
+    //   description: area.description,
+    //   map_x: area.mapX,
+    //   map_y: area.mapY,
+    //   map_size: area.mapSize,
+    //   map_id: area.mapId,
+    //   map_corners: area.mapCorners,
+    //   border_width: area.borderWidth,
+    //   border_color: area.borderColor,
+    // };
 
     try {
       if (!isNew) {
@@ -87,9 +86,9 @@ function createAreasStore() {
       let res: AreaInterface;
 
       if (isNew) {
-        res = (await createArea(props)).data;
+        res = (await createArea(area)).data;
       } else {
-        res = (await updateArea(props)).data;
+        res = (await updateArea(area)).data;
       }
 
       areasMap.update(function (mm) {

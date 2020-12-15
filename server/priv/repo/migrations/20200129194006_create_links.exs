@@ -26,6 +26,8 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:local_from_line_width, :integer, default: 2)
       add(:local_from_line_dash, :integer, default: 0)
       add(:local_from_line_color, :string, default: "#FFFFFF")
+      add(:local_from_border_width, :integer, default: 2)
+      add(:local_from_border_color, :string, default: "#FFFFFF")
       add(:local_to_x, :integer, default: 0)
       add(:local_to_y, :integer, default: 0)
       add(:local_to_size, :integer, default: 21)
@@ -34,6 +36,8 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:local_to_line_width, :integer, default: 2)
       add(:local_to_line_dash, :integer, default: 0)
       add(:local_to_line_color, :string, default: "#FFFFFF")
+      add(:local_to_border_width, :integer, default: 2)
+      add(:local_to_border_color, :string, default: "#FFFFFF")
       add(:from_id, references(:areas, on_delete: :delete_all, type: :binary_id))
       add(:to_id, references(:areas, on_delete: :delete_all, type: :binary_id))
 

@@ -28,6 +28,10 @@ defmodule Mud.Engine.Area do
     has_many(:to_links, Link, foreign_key: :to_id)
     has_many(:from_links, Link, foreign_key: :from_id)
 
+    field(:border_width, :integer, default: 2)
+    field(:border_color, :string, default: "#FFFFFF")
+    field(:color, :string, default: "#696969")
+
     timestamps()
   end
 
@@ -196,7 +200,10 @@ defmodule Mud.Engine.Area do
       :map_x,
       :map_y,
       :map_size,
-      :map_corners
+      :map_corners,
+      :border_color,
+      :border_width,
+      :color
     ])
     |> validate_required([
       :name,
@@ -205,7 +212,10 @@ defmodule Mud.Engine.Area do
       :map_x,
       :map_y,
       :map_size,
-      :map_corners
+      :map_corners,
+      :border_width,
+      :border_color,
+      :color
     ])
   end
 

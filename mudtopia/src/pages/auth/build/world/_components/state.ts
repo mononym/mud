@@ -199,6 +199,33 @@ function createWorldBuilderStore() {
     linkEditorDataLoaded.set(true);
   }
 
+  //
+  //
+  // Area type stuff
+  //
+  //
+
+  async function cancelEditArea() {
+    areaUnderConstruction.set({ ...AreaState });
+    mode.set("area");
+    view.set("details");
+  }
+
+  async function editArea(area: AreaInterface) {
+    selectedArea.set(area);
+    areaUnderConstruction.set({ ...area });
+    mode.set("area");
+    view.set("edit");
+  }
+
+  async function saveArea() {
+    await AreasStore.saveArea(get(areaUnderConstruction));
+    selectedArea.set(get(areaUnderConstruction));
+    areaUnderConstruction.set({ ...AreaState });
+    mode.set("area");
+    view.set("details");
+  }
+
   async function selectArea(area: AreaInterface) {
     // selecting area can come from two different places
     // one is the main map
@@ -338,18 +365,24 @@ function createWorldBuilderStore() {
     mode,
     view,
     // Methods
+    // Link stuff
     deleteLink,
     editLink,
     followLink,
     saveLink,
-    buildMap,
-    loadAllMapData,
-    selectArea,
-    selectMap,
     loadDataForLinkEditor,
     linkArea,
     cancelLinkArea,
     selectLink,
+    // Area stuff
+    cancelEditArea,
+    saveArea,
+    selectArea,
+    editArea,
+    // Map stuff
+    buildMap,
+    loadAllMapData,
+    selectMap,
   };
 }
 

@@ -17,10 +17,7 @@
   }
 
   function editArea(area) {
-    if ($view != "edit") {
-      $selectedArea = area;
-      dispatch("editArea", area);
-    }
+    WorldBuilderStore.editArea(area);
   }
 
   function linkArea(area) {

@@ -74,7 +74,7 @@ export async function deleteMap(mapId: string): Promise<AxiosResponse<string>> {
 // Area Stuff
 
 export async function updateArea(
-  params: Record<string, unknown>
+  params: AreaInterface
 ): Promise<AxiosResponse<AreaInterface>> {
   return await (<Promise<AxiosResponse<AreaInterface>>>(
     Api.patch("/areas/" + params.id, { area: params })
@@ -99,7 +99,7 @@ export async function loadAreasForMap(
 }
 
 export async function createArea(
-  params: Record<string, unknown>
+  params: AreaInterface
 ): Promise<AxiosResponse<AreaInterface>> {
   return await (<Promise<AxiosResponse<AreaInterface>>>(
     Api.post("/areas", params)

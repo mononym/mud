@@ -17,7 +17,6 @@
   export let loadingMapData = false;
   export let selectedArea = { ...AreaState };
   export let areas = [];
-  export let buildingArea = false;
   export let areaUnderConstruction = { ...AreaState };
   export let linkPreviewAreaId = "";
   export let linkUnderConstruction = { ...LinkState };
@@ -69,17 +68,12 @@
     viewBoxX + " " + viewBoxY + " " + viewBoxXSize + " " + viewBoxYSize;
 
   $: svgAreaShapes = areas
+    .filter((area) => areaUnderConstruction.id != area.id)
     .map(function (area: AreaInterface) {
       let corners = area.mapCorners;
       let size = area.mapSize;
       let x = area.mapX;
       let y = area.mapY;
-      // let color =
-      //   selectedArea != undefined && selectedArea.id == area.id
-      //     ? "green"
-      //     : linkPreviewAreaId == area.id
-      //     ? "orange"
-      //     : "blue";
       let name = area.name;
       let cls = svgMapAllowIntraMapAreaSelection
         ? selectedArea != undefined && area.id == selectedArea.id
@@ -417,7 +411,7 @@
 
   $: svgAreaUnderConstructionPreviewShapes = [areaUnderConstruction]
     .filter(function (area) {
-      return buildingArea == true;
+      return selectedArea.id != "" && area.id == selectedArea.id;
     })
     .map(function (area) {
       let cls = svgMapAllowIntraMapAreaSelection
@@ -443,11 +437,13 @@
         {
           ...props,
           ...{
-            borderColor: "#696969",
-            borderWidth: 2,
+            borderColor: "#ff6600",
+            borderWidth: Math.max(2, area.borderWidth),
             width: <number>props.width + 2,
             height: <number>props.height + 2,
-            fill: "#696969",
+            x: <number>props.x - 1,
+            y: <number>props.y - 1,
+            fill: "#ff6600",
           },
         },
         props,
