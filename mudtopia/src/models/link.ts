@@ -13,6 +13,8 @@ export interface LinkInterface {
   lineEndVerticalOffsetWidth: number;
   lineStartHorizontalOffsetWidth: number;
   lineStartVerticalOffsetWidth: number;
+  hasMarker: boolean;
+  markerOffset: number;
   lineWidth: number;
   lineDash: number;
   lineColor: string;
@@ -66,6 +68,8 @@ const state: LinkInterface = {
   type: "Direction",
   toId: "",
   fromId: "",
+  hasMarker: false,
+  markerOffset: 4,
   localFromX: 0,
   localFromY: 0,
   localFromCorners: 5,

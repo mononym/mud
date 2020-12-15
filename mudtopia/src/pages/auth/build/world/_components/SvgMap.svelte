@@ -52,10 +52,14 @@
   export let chosenMap;
   $: xCenterPoint = focusOnArea
     ? areasMap[focusAreaId].mapX * chosenMap.gridSize + chosenMap.viewSize / 2
-    : buildingArea ? areaUnderConstruction.mapX * chosenMap.gridSize + chosenMap.viewSize / 2 : chosenMap.viewSize / 2;
+    : buildingArea
+    ? areaUnderConstruction.mapX * chosenMap.gridSize + chosenMap.viewSize / 2
+    : chosenMap.viewSize / 2;
   $: yCenterPoint = focusOnArea
     ? -areasMap[focusAreaId].mapY * chosenMap.gridSize + chosenMap.viewSize / 2
-    : buildingArea ? -areaUnderConstruction.mapY * chosenMap.gridSize + chosenMap.viewSize / 2 : chosenMap.viewSize / 2;
+    : buildingArea
+    ? -areaUnderConstruction.mapY * chosenMap.gridSize + chosenMap.viewSize / 2
+    : chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
   $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
@@ -142,7 +146,7 @@
           {
             ...params,
             ...{
-              borderWidth: 2,
+              borderWidth: 6,
               borderColor: "#ff6600",
               width: <number>params.width + 2,
               height: <number>params.height + 2,
@@ -173,8 +177,8 @@
           selectedArea.mapId == chosenMap.id)
     )
     .map(function (link) {
-      let x1 = selectedArea.mapX;
-      let y1 = selectedArea.mapY;
+      let x1 = 0
+      let y1 = 0
       let x2 = 0;
       let y2 = 0;
       let label;
@@ -187,6 +191,8 @@
       let lineWidth = 2;
       let lineColor = "#000000";
       let lineDash = 0;
+      let hasMarker = link.hasMarker;
+      let markerOffset = link.markerOffset;
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
@@ -194,20 +200,25 @@
 
       if (sameMap && selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area
+        x2 = selectedArea.mapX
+        y2 = selectedArea.mapY
+
         const otherArea = areasMap[link.fromId];
         if (otherArea.mapId != selectedArea.mapId) {
           // Different maps
-          x2 = link.localFromX;
-          y2 = link.localFromY;
+          x1 = link.localFromX;
+          y1 = link.localFromY;
         } else {
           // Same map
-          x2 = otherArea.mapX;
-          y2 = otherArea.mapY;
+          x1 = otherArea.mapX;
+          y1 = otherArea.mapY;
         }
 
         lineWidth = link.lineWidth;
       } else if (sameMap && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
+        x1 = selectedArea.mapX
+        y1 = selectedArea.mapY
         const otherArea = areasMap[link.toId];
 
         if (otherArea.mapId != selectedArea.mapId) {
@@ -269,8 +280,6 @@
         labelColor = link.localToLabelColor;
       }
 
-      console.log(label.split("\n"));
-
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
@@ -300,7 +309,12 @@
         lineWidth: lineWidth,
         lineColor: lineColor,
         lineDash: lineDash,
-        labelColor,
+        labelColor: labelColor,
+        hasMarker: hasMarker,
+        markerOffset: markerOffset,
+        markerColor: lineColor,
+        markerWidth: lineWidth * 3,
+        markerHeight: lineWidth * 3,
       };
 
       if (link.id == selectedLinkId) {
@@ -308,8 +322,10 @@
           ...params,
           ...{
             lineColor: "#FF6600",
-            lineWidth: params.lineWidth + 4,
+            lineWidth: params.lineWidth + 6,
             label: "",
+            hasMarker: false,
+            id: "preview-duplicate",
           },
         };
 
@@ -399,7 +415,7 @@
           ...props,
           ...{
             borderColor: "#ff6600",
-            borderWidth: 2,
+            borderWidth: 6,
             width: <number>props.width + 2,
             height: <number>props.height + 2,
             x: <number>props.x - 1,
@@ -499,6 +515,8 @@
       let lineColor = "#000000";
       let lineDash = 0;
       let labelColor = "#000000";
+      let hasMarker = link.hasMarker;
+      let markerOffset = link.markerOffset;
 
       if (sameMap) {
         label = link.label;
@@ -559,6 +577,11 @@
         lineColor: lineColor,
         lineDash: lineDash,
         labelColor: labelColor,
+        hasMarker,
+        markerOffset,
+        markerColor: lineColor,
+        markerWidth: lineWidth * 3,
+        markerHeight: lineWidth * 3,
       };
 
       if (link.id == selectedLinkId) {
@@ -566,8 +589,10 @@
           ...result,
           ...{
             lineColor: "#FF6600",
-            lineWidth: result.lineWidth + 4,
+            lineWidth: result.lineWidth + 6,
             label: "",
+            hasMarker: false,
+            id: `${link.id}-duplicate`,
           },
         };
 

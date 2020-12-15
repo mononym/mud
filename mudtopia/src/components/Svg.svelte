@@ -19,12 +19,30 @@
   {preserveAspectRatio}>
   {#each shapes as shape}
     {#if shape.type == 'path'}
+      {#if shape.hasMarker}
+        <defs>
+          <marker
+            id="markerArrow-{shape.id}"
+            markerWidth={shape.lineWidth * 2}
+            markerHeight={shape.lineWidth * 2}
+            refX={shape.lineWidth * 2 + shape.markerOffset}
+            refY={shape.lineWidth}
+            orient="auto">
+            <!-- <path d="M2,2 L2,13 L8,7 L2,2" style="fill: {shape.markerColor};" /> -->
+            <!-- <polygon points="10 0, 10 7, 0 3.5" fill={shape.markerColor} /> -->
+            <polygon
+              points="0 0, {shape.lineWidth * 2} {shape.lineWidth}, 0 {shape.lineWidth * 2}"
+              fill={shape.markerColor} />
+          </marker>
+        </defs>
+      {/if}
       <path
         id={shape.id}
         d="M {shape.x1} {shape.y1} L {shape.x2} {shape.y2}"
         stroke={shape.lineColor}
         stroke-dasharray={shape.lineDash}
-        stroke-width={shape.lineWidth} />
+        stroke-width={shape.lineWidth}
+        marker-end={shape.hasMarker ? `url(#markerArrow-${shape.id})` : ''} />
       {#if shape.label != undefined && shape.label != ''}
         <text
           fill={shape.labelColor}

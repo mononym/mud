@@ -469,7 +469,7 @@
               max="100"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
-          <div class="col-span-4">
+          <div class="col-span-2">
             <label
               for="lineColor"
               class="block text-sm font-medium text-gray-300">Line Color</label>
@@ -478,6 +478,30 @@
               type="color"
               name="lineColor"
               id="lineColor"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
+          <div class="col-span-1">
+            <label
+              for="hasMarker"
+              class="block text-sm font-medium text-gray-300">Has Marker?</label>
+            <input
+              bind:checked={$linkUnderConstruction.hasMarker}
+              type="checkbox"
+              name="hasMarker"
+              id="hasMarker"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
+          <div class="col-span-1">
+            <label
+              for="markerOffset"
+              class="block text-sm font-medium text-gray-300">Marker Offset</label>
+            <input
+              bind:value={$linkUnderConstruction.markerOffset}
+              type="number"
+              name="markerOffset"
+              min="0"
+              max="100"
+              id="markerOffset"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
           <div class="col-span-4">

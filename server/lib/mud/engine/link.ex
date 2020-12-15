@@ -36,6 +36,8 @@ defmodule Mud.Engine.Link do
     field(:line_start_vertical_offset, :integer, default: 0)
     field(:line_end_horizontal_offset, :integer, default: 0)
     field(:line_end_vertical_offset, :integer, default: 0)
+    field(:has_marker, :boolean, default: false)
+    field(:marker_offset, :integer, default: 4)
 
     # Local from values
     field(:local_from_color, :string, default: "#008080")
@@ -106,6 +108,8 @@ defmodule Mud.Engine.Link do
       :line_start_horizontal_offset,
       :line_end_vertical_offset,
       :line_start_vertical_offset,
+      :has_marker,
+      :marker_offset,
       :line_width,
       :long_description,
       :short_description,
