@@ -18,6 +18,7 @@
   const { links } = LinksStore;
   import { WorldBuilderStore } from "./_components/state";
   const {
+    buildingArea,
     loadingMapData,
     mapSelected,
     selectedMap,
@@ -98,27 +99,7 @@
   let areaView = "details";
 
   function createArea() {
-    if (!createNewAreaButtonDisabled) {
-      $selectedArea = { ...areaState };
-      $selectedLink = { ...linkState };
-      $areaUnderConstruction = { ...areaState };
-      $linkUnderConstruction = { ...linkState };
-      $view = "edit";
-    }
-  }
-
-  function handleEditArea(event) {
-    $areaUnderConstruction = { ...event.detail };
-    $view = "edit";
-  }
-
-  function handleDeleteArea(event) {
-    deleteCallback = function () {
-      delArea(event.detail);
-    };
-    deleteMatchString = event.detail.name;
-    showDeletePrompt = false;
-    showDeletePrompt = true;
+    WorldBuilderStore.createArea();
   }
 
   function delArea(event) {
@@ -128,56 +109,7 @@
     });
   }
 
-  function cancelEditArea(event) {
-    $areaUnderConstruction = { ...areaState };
-    areaView = "details";
-  }
-
-  function areaSaved(event) {
-    $areaUnderConstruction = { ...areaState };
-    $selectedArea = event.detail;
-    areaView = "details";
-  }
-
-  function handleListSelectArea(event) {
-    if (areaView == "details") {
-      $selectedArea = event.detail;
-    }
-  }
-
   // Link stuff
-
-  function handleLinkArea(event) {
-    $linkUnderConstruction = { ...linkState };
-    areaView = "link";
-  }
-
-  function handleDeleteLink(event) {
-    deleteCallback = function () {
-      delArea(event.detail);
-    };
-    deleteMatchString = event.detail.name;
-    showDeletePrompt = false;
-    showDeletePrompt = true;
-  }
-
-  function delLink(area) {
-    deleteArea(area).then(function () {
-      $selectedArea = { ...areaState };
-      areaView = "details";
-    });
-  }
-
-  function linkSaved(event) {
-    $linkUnderConstruction = { ...linkState };
-    $selectedLink = event.detail;
-    areaView = "details";
-  }
-
-  function cancelEditLink(event) {
-    $areaUnderConstruction = { ...areaState };
-    areaView = "details";
-  }
 
   function handlePrimaryMapSelectArea(event) {
     WorldBuilderStore.selectArea(event.detail);
@@ -235,7 +167,8 @@
           svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
           areasMap={$areasMap}
           links={$links}
-          focusAreaId={$selectedArea.id} />
+          focusAreaId={$selectedArea.id}
+          buildingArea={$buildingArea} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}

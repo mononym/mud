@@ -102,7 +102,7 @@ export async function createArea(
   params: AreaInterface
 ): Promise<AxiosResponse<AreaInterface>> {
   return await (<Promise<AxiosResponse<AreaInterface>>>(
-    Api.post("/areas", params)
+    Api.post("/areas", { area: params })
   ));
 }
 

@@ -205,6 +205,19 @@ function createWorldBuilderStore() {
   //
   //
 
+  const buildingArea = derived(
+    [mode, view],
+    ([$mode, $view]) => $mode == "area" && $view == "edit"
+  );
+
+  async function createArea() {
+    selectedArea.set({ ...AreaState });
+    selectedLink.set({ ...LinkState });
+    areaUnderConstruction.set({ ...AreaState });
+    linkUnderConstruction.set({ ...LinkState });
+    view.set("edit");
+  }
+
   async function cancelEditArea() {
     areaUnderConstruction.set({ ...AreaState });
     mode.set("area");
@@ -212,6 +225,9 @@ function createWorldBuilderStore() {
   }
 
   async function editArea(area: AreaInterface) {
+    if (area.mapId == "") {
+      area.mapId = get(selectedMap).id;
+    }
     selectedArea.set(area);
     areaUnderConstruction.set({ ...area });
     mode.set("area");
@@ -334,6 +350,7 @@ function createWorldBuilderStore() {
 
   return {
     // Area stuff
+    buildingArea,
     areaUnderConstruction,
     areaSelected,
     selectedArea,
@@ -375,6 +392,7 @@ function createWorldBuilderStore() {
     cancelLinkArea,
     selectLink,
     // Area stuff
+    createArea,
     cancelEditArea,
     saveArea,
     selectArea,

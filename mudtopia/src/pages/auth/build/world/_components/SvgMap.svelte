@@ -15,6 +15,7 @@
   export let selectedLink = { ...LinkState };
   export let mapSelected = true;
   export let loadingMapData = false;
+  export let buildingArea = false;
   export let selectedArea = { ...AreaState };
   export let areas = [];
   export let areaUnderConstruction = { ...AreaState };
@@ -51,10 +52,10 @@
   export let chosenMap;
   $: xCenterPoint = focusOnArea
     ? areasMap[focusAreaId].mapX * chosenMap.gridSize + chosenMap.viewSize / 2
-    : chosenMap.viewSize / 2;
+    : buildingArea ? areaUnderConstruction.mapX * chosenMap.gridSize + chosenMap.viewSize / 2 : chosenMap.viewSize / 2;
   $: yCenterPoint = focusOnArea
     ? -areasMap[focusAreaId].mapY * chosenMap.gridSize + chosenMap.viewSize / 2
-    : chosenMap.viewSize / 2;
+    : buildingArea ? -areaUnderConstruction.mapY * chosenMap.gridSize + chosenMap.viewSize / 2 : chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
   $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
@@ -411,7 +412,7 @@
 
   $: svgAreaUnderConstructionPreviewShapes = [areaUnderConstruction]
     .filter(function (area) {
-      return selectedArea.id != "" && area.id == selectedArea.id;
+      return buildingArea == true;
     })
     .map(function (area) {
       let cls = svgMapAllowIntraMapAreaSelection

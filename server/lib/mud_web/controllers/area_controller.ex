@@ -16,7 +16,8 @@ defmodule MudWeb.AreaController do
   end
 
   def create(conn, %{"area" => area_params}) do
-    with {:ok, %Area{} = area} <- Area.create(area_params) do
+    with {:ok, %Area{} = area} <-
+           Area.create(Recase.Enumerable.convert_keys(area_params, &Recase.to_snake/1)) do
       conn
       |> put_status(:created)
       |> put_resp_header("location", Routes.area_path(conn, :show, area))
