@@ -328,6 +328,29 @@
       });
   }
 
+  $: highlightsForExistingIntraMapLinks =
+    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+      ? buildHighlightsForExistingIntraMapLinks()
+      : [];
+
+  function buildHighlightsForExistingIntraMapLinks() {
+    return highlightedLinkIds.map((linkId) => {
+      const link = { ...links.find((link) => link.id == linkId) };
+      link.lineColor = highlightColor;
+      link.lineWidth = link.lineWidth + 1;
+      link.label = "";
+      link.hasMarker = false;
+
+      return buildPathFromLink(
+        link,
+        areasMap[link.fromId].mapX,
+        areasMap[link.fromId].mapY,
+        areasMap[link.toId].mapX,
+        areasMap[link.toId].mapY
+      );
+    });
+  }
+
   function buildPathFromLink(link, fromX, fromY, toX, toY) {
     const gridSize = chosenMap.gridSize;
     const viewSize = chosenMap.viewSize;
@@ -413,10 +436,6 @@
       : [];
 
   function buildHighlightsForExistingIntraMapAreas() {
-    console.log("buildHighlightsForExistingIntraMapAreas");
-    console.log(areasMap);
-    console.log(areas);
-    console.log(highlightedAreaIds);
     return (
       highlightedAreaIds
         // .filter((area) => {
@@ -430,7 +449,7 @@
         .map((areaId) => {
           console.log("hightliughted araasdhasd");
           console.log(areaId);
-          const area = {...areasMap[areaId]};
+          const area = { ...areasMap[areaId] };
           area.mapSize = area.mapSize + 3;
           area.borderColor = highlightColor;
           area.color = highlightColor;
@@ -583,7 +602,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">
