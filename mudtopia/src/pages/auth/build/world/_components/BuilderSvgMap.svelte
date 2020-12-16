@@ -359,6 +359,72 @@
     });
   }
 
+  $: highlightsForExistingInterMapLinks =
+    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+      ? buildHighlightsForExistingInterMapLinks()
+      : [];
+
+  function buildHighlightsForExistingInterMapLinks() {
+    return highlightedLinkIds.map((linkId) => {
+      const link = { ...links.find((link) => link.id == linkId) };
+
+      if (
+        areasMap[link.toId].mapId != areasMap[link.fromId].mapId &&
+        (areasMap[link.toId].mapId == chosenMap.id ||
+          areasMap[link.fromId].mapId == chosenMap.id)
+      ) {
+        link.lineColor = highlightColor;
+        link.label = "";
+        link.hasMarker = false;
+        let x1;
+        let y1;
+        let x2;
+        let y2;
+
+        // incoming
+        if (areasMap[link.toId].mapId == chosenMap.id) {
+          link.label = link.localFromLabel;
+          link.labelColor = link.localFromLabelColor;
+          link.labelFontSize = link.localFromLabelFontSize;
+          link.labelHorizontalOffset = link.localFromLabelHorizontalOffset;
+          link.labelVerticalOffset = link.localFromLabelVerticalOffset;
+          link.labelRotation = link.localFromLabelRotation;
+
+          link.lineWidth = link.localFromLineWidth;
+          link.lineColor = link.localFromLineColor;
+          link.lineDash = link.localFromLineDash;
+
+          x1 = link.localFromX;
+          y1 = link.localFromY;
+          x2 = areasMap[link.toId].mapX;
+          y2 = areasMap[link.toId].mapY;
+        } else {
+          link.label = link.localToLabel;
+          link.labelColor = link.localToLabelColor;
+          link.labelFontSize = link.localToLabelFontSize;
+          link.labelHorizontalOffset = link.localToLabelHorizontalOffset;
+          link.labelVerticalOffset = link.localToLabelVerticalOffset;
+          link.labelRotation = link.localToLabelRotation;
+
+          link.lineWidth = link.localToLineWidth;
+          link.lineColor = link.localToLineColor;
+          link.lineDash = link.localToLineDash;
+
+          x2 = link.localToX;
+          y2 = link.localToY;
+          x1 = areasMap[link.fromId].mapX;
+          y1 = areasMap[link.fromId].mapY;
+        }
+
+        link.lineWidth = link.lineWidth + 1;
+
+        return buildPathFromLink(link, x1, y1, x2, y2);
+      } else {
+        return [];
+      }
+    });
+  }
+
   function buildPathFromLink(link, fromX, fromY, toX, toY) {
     const gridSize = chosenMap.gridSize;
     const viewSize = chosenMap.viewSize;
@@ -610,7 +676,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">
