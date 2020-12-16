@@ -1,5 +1,4 @@
 <script>
-  import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
   const {
     linkUnderConstruction,
@@ -12,6 +11,8 @@
   } = WorldBuilderStore;
   import { MapsStore } from "../../../../../stores/maps";
   const { maps } = MapsStore;
+  import { AreasStore } from "../../../../../stores/areas";
+  const { areasMap } = AreasStore;
   import { onMount } from "svelte";
 
   let direction;
@@ -61,17 +62,13 @@
   }
 
   onMount(async () => {
-    $linkEditorMapForOtherAreaId = $selectedMap.id;
-
     if ($linkUnderConstruction.id == "") {
       setOutgoing();
     } else if ($linkUnderConstruction.toId == $selectedArea.id) {
       direction = "incoming";
     } else {
-      ("outgoing");
+      direction = "outgoing";
     }
-
-    loadDataForLinkEditor($linkEditorMapForOtherAreaId);
   });
 </script>
 

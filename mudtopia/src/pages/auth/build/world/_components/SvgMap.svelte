@@ -7,8 +7,6 @@
   import type { LinkInterface } from "../../../../../models/link";
   import { createEventDispatcher } from "svelte";
   import { WorldBuilderStore } from "./state";
-  import { get } from "svelte/store";
-  import { loadLinksForMap } from "../../../../../api/server";
 
   const dispatch = createEventDispatcher();
 
@@ -157,8 +155,7 @@
           },
           params,
         ];
-      }
-      {
+      } else {
         return [params];
       }
     })
@@ -177,11 +174,11 @@
           selectedArea.mapId == chosenMap.id)
     )
     .map(function (link) {
-      let x1 = 0
-      let y1 = 0
+      let x1 = 0;
+      let y1 = 0;
       let x2 = 0;
       let y2 = 0;
-      let label;
+      let label = "";
       let labelRotation = 0;
       let labelHorizontalOffset;
       let labelVerticalOffset;
@@ -196,12 +193,12 @@
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
-      const sameMap = selectedArea.mapId == chosenMap.id;
+      const primaryMap = selectedArea.mapId == chosenMap.id;
 
-      if (sameMap && selectedArea.id == link.toId) {
+      if (primaryMap && selectedArea.id == link.toId) {
         // incoming: Link is coming "from" other area
-        x2 = selectedArea.mapX
-        y2 = selectedArea.mapY
+        x2 = selectedArea.mapX;
+        y2 = selectedArea.mapY;
 
         const otherArea = areasMap[link.fromId];
         if (otherArea.mapId != selectedArea.mapId) {
@@ -215,10 +212,10 @@
         }
 
         lineWidth = link.lineWidth;
-      } else if (sameMap && selectedArea.id == link.fromId) {
+      } else if (primaryMap && selectedArea.id == link.fromId) {
         // Outgoing Link is going "to" other area so take the local to coordinate
-        x1 = selectedArea.mapX
-        y1 = selectedArea.mapY
+        x1 = selectedArea.mapX;
+        y1 = selectedArea.mapY;
         const otherArea = areasMap[link.toId];
 
         if (otherArea.mapId != selectedArea.mapId) {
@@ -232,23 +229,25 @@
         }
 
         lineWidth = link.localToLineWidth;
-      } else if (!sameMap) {
-        const otherArea = areasMap[linkPreviewAreaId];
+      } else if (!primaryMap && selectedArea.id == link.toId) {
+        const otherArea = areasMap[link.fromId]; // grab from
         x1 = otherArea.mapX;
         y1 = otherArea.mapY;
+        x2 = link.localToX;
+        y2 = link.localToY;
 
-        if (link.toId == linkPreviewAreaId) {
-          x2 = link.localFromX;
-          y2 = link.localFromY;
-        } else {
-          x2 = link.localToX;
-          y2 = link.localToY;
-        }
+        lineWidth = link.localToLineWidth;
+      } else if (!primaryMap && selectedArea.id == link.fromId) {
+        const otherArea = areasMap[link.toId]; // grab from
+        x2 = otherArea.mapX;
+        y2 = otherArea.mapY;
+        x1 = link.localFromX;
+        y1 = link.localFromY;
 
         lineWidth = link.localFromLineWidth;
       }
 
-      if (sameMap) {
+      if (primaryMap) {
         label = link.label;
         labelRotation = link.labelRotation;
         labelHorizontalOffset = link.labelHorizontalOffset;
@@ -258,7 +257,7 @@
         lineWidth = link.lineWidth;
         lineDash = link.lineDash;
         labelColor = link.labelColor;
-      } else if (!sameMap && selectedArea.id == link.fromId) {
+      } else if (!primaryMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
         labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
@@ -268,7 +267,7 @@
         lineWidth = link.localFromLineWidth;
         lineDash = link.localFromLineDash;
         labelColor = link.localFromLabelColor;
-      } else if (!sameMap && selectedArea.id == link.toId) {
+      } else if (!primaryMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
         labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
@@ -331,17 +330,23 @@
 
         return [duplicateResults, params];
       } else {
-        return params;
+        return [params];
       }
     })
     .flat();
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
     .filter(function (link) {
+      console.log("filter svgPreviewLinkAreaShapes");
+      console.log(selectedArea);
+      console.log(linkPreviewAreaId);
+      console.log(areasMap);
+      console.log(areasMap[linkPreviewAreaId]);
       return (
         (link.toId != "" || link.fromId != "") &&
         linkPreviewAreaId != "" &&
         ((selectedArea.mapId == chosenMap.id &&
+          areasMap[linkPreviewAreaId] != undefined &&
           areasMap[linkPreviewAreaId].mapId != chosenMap.id) ||
           selectedArea.mapId != chosenMap.id)
       );
@@ -356,13 +361,15 @@
       let borderWidth;
       let borderColor;
 
+      console.log("svgPreviewLinkAreaShapes");
+
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
-      const sameMap = selectedArea.mapId == chosenMap.id;
+      const primaryMap = selectedArea.mapId == chosenMap.id;
 
       if (
-        (sameMap && link.toId == selectedArea.id) ||
-        (!sameMap && link.toId == linkPreviewAreaId)
+        (primaryMap && link.toId == selectedArea.id) ||
+        (!primaryMap && link.toId == linkPreviewAreaId)
       ) {
         x = link.localFromX;
         y = link.localFromY;
@@ -372,8 +379,8 @@
         borderWidth = link.localFromBorderWidth;
         borderColor = link.localFromBorderColor;
       } else if (
-        (sameMap && link.fromId == selectedArea.id) ||
-        (!sameMap && link.fromId == linkPreviewAreaId)
+        (primaryMap && link.fromId == selectedArea.id) ||
+        (!primaryMap && link.fromId == linkPreviewAreaId)
       ) {
         x = link.localToX;
         y = link.localToY;
@@ -385,7 +392,7 @@
       }
 
       // In this case same map means the "source" map which is being linked from
-      if (sameMap) {
+      if (primaryMap) {
         name =
           mapsMap[areasMap[linkPreviewAreaId].mapId].name +
           ": " +
@@ -410,7 +417,6 @@
       );
 
       return [
-        props,
         {
           ...props,
           ...{
@@ -423,8 +429,10 @@
             fill: "#ff6600",
           },
         },
+        props,
       ];
-    });
+    })
+    .flat();
 
   $: svgAreaUnderConstructionPreviewShapes = [areaUnderConstruction]
     .filter(function (area) {
@@ -503,22 +511,22 @@
       const gridSize = chosenMap.gridSize;
       const viewSize = chosenMap.viewSize;
 
-      const sameMap =
+      const primaryMap =
         selectedArea.id == "" || selectedArea.mapId == chosenMap.id;
-      let label;
+      let label = "";
       let labelRotation;
       let labelHorizontalOffset;
       let labelVerticalOffset;
       let labelTransform = "";
       let labelFontSize = 12;
       let lineWidth = 2;
-      let lineColor = "#000000";
+      let lineColor = "#FFFFFF";
       let lineDash = 0;
-      let labelColor = "#000000";
+      let labelColor = "#FFFFFF";
       let hasMarker = link.hasMarker;
       let markerOffset = link.markerOffset;
 
-      if (sameMap) {
+      if (primaryMap) {
         label = link.label;
         labelRotation = link.labelRotation;
         labelHorizontalOffset = link.labelHorizontalOffset;
@@ -528,7 +536,7 @@
         lineWidth = link.lineWidth;
         lineDash = link.lineDash;
         labelColor = link.labelColor;
-      } else if (!sameMap && selectedArea.id == link.fromId) {
+      } else if (!primaryMap && selectedArea.id == link.fromId) {
         label = link.localFromLabel;
         labelRotation = link.localFromLabelRotation;
         labelHorizontalOffset = link.localFromLabelHorizontalOffset;
@@ -538,7 +546,7 @@
         lineWidth = link.localFromLineWidth;
         lineDash = link.localFromLineDash;
         labelColor = link.localFromLabelColor;
-      } else if (!sameMap && selectedArea.id == link.toId) {
+      } else if (!primaryMap && selectedArea.id == link.toId) {
         label = link.localToLabel;
         labelRotation = link.localToLabelRotation;
         labelHorizontalOffset = link.localToLabelHorizontalOffset;
@@ -559,7 +567,6 @@
       const verticalPosition = ((y1 + y2) / 2).toString();
 
       labelTransform = `translate(${labelHorizontalOffset}, ${-labelVerticalOffset}) rotate(${labelRotation}, ${horizontalPosition}, ${verticalPosition})`;
-
       const result = {
         id: link.id,
         type: "path",
@@ -583,7 +590,6 @@
         markerWidth: lineWidth * 3,
         markerHeight: lineWidth * 3,
       };
-
       if (link.id == selectedLinkId) {
         const duplicateResults = {
           ...result,
@@ -598,7 +604,7 @@
 
         return [duplicateResults, result];
       } else {
-        return result;
+        return [result];
       }
     })
     .flat();

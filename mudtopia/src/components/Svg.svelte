@@ -1,5 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
+  import { beforeUpdate } from "svelte";
 
   const dispatch = createEventDispatcher();
 
@@ -10,6 +11,11 @@
   function selectArea(area) {
     dispatch("selectArea", area);
   }
+
+  beforeUpdate(() => {
+    console.log("beforeUpdate");
+    console.log(shapes);
+  });
 </script>
 
 <svg

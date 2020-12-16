@@ -8,6 +8,7 @@
   import MapList from "./_components/MapList.svelte";
   import AreaList from "./_components/AreaList.svelte";
   import SvgMap from "./_components/SvgMap.svelte";
+  import BuilderSvgMap from "./_components/BuilderSvgMap.svelte";
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
   import { AreasStore } from "../../../../stores/areas.ts";
@@ -47,6 +48,8 @@
   let deleteMatchString = "";
   $: backToMapViewButtonDisabled = !($view == "details" && $mode == "area");
   $: createNewAreaButtonDisabled = !($view == "details" && $mode == "area");
+
+  let primaryMap;
 
   onMount(async () => {
     MapsStore.load();
@@ -151,7 +154,7 @@
   {:else}
     <div class="h-full max-h-full w-1/2">
       <div class="h-1/2 max-h-1/2 w-full">
-        <SvgMap
+        <!-- <SvgMap
           on:selectArea={handlePrimaryMapSelectArea}
           chosenMap={$selectedMap}
           mapSelected={$mapSelected}
@@ -168,7 +171,13 @@
           areasMap={$areasMap}
           links={$links}
           focusAreaId={$selectedArea.id}
-          buildingArea={$buildingArea} />
+          buildingArea={$buildingArea} /> -->
+        <BuilderSvgMap
+          bind:this={primaryMap}
+          chosenMap={$selectedMap}
+          areasMap={$areasMap}
+          links={$links}
+          areas={$areas} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
@@ -225,7 +234,8 @@
                 svgMapAllowIntraMapAreaSelection={true}
                 areasMap={$areasForLinkEditorMap}
                 links={$linksForLinkEditor}
-                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId} />
+                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId}
+                buildingArea={$buildingArea} />
             </div>
           {:else}
             <div class="flex-1">foo</div>
