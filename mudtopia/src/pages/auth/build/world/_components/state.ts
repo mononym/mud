@@ -210,8 +210,12 @@ function createWorldBuilderStore() {
 
   async function createArea() {
     selectedArea.set({ ...AreaState });
+
     selectedLink.set({ ...LinkState });
-    areaUnderConstruction.set({ ...AreaState, ...{} });
+    areaUnderConstruction.set({
+      ...AreaState,
+      ...{ mapId: get(selectedMap).id },
+    });
     linkUnderConstruction.set({ ...LinkState });
     view.set("edit");
   }

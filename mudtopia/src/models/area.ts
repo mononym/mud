@@ -23,7 +23,7 @@ const state: AreaInterface = {
   mapId: "",
   color: "#696969",
   borderColor: "#FFFFFF",
-  borderWidth: 0,
+  borderWidth: 2,
 };
 
 export default state;

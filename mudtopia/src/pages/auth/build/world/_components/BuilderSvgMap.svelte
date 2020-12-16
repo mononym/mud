@@ -60,8 +60,8 @@
   export let highlightedLinkIds = [];
 
   // Areas being built need to be displayed for helping with positioning and map look
-  // export let buildingArea = false;
-  // export let areaUnderConstruction = { ...AreaState };
+  export let buildingArea = false;
+  export let areaUnderConstruction = { ...AreaState };
 
   // Links being built need to be displayed for helping with positioning and map look
   // export let buildingLink = false;
@@ -111,9 +111,6 @@
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildExistingIntraMapLinks() {
-    console.log("buildExistingIntraMapLinks");
-    console.log(areasMap);
-    console.log(links);
     return links
       .filter((link) => {
         return (
@@ -125,8 +122,6 @@
         );
       })
       .map((link) => {
-        console.log("link");
-        console.log(link);
         return buildPathFromLink(
           link,
           areasMap[link.fromId].mapX,
@@ -147,9 +142,6 @@
 
   // These links, though per current design it is only ever one, are under construction and are being displayed as a preview
   function buildNewIntraMapLinks() {
-    console.log("buildNewIntraMapLinks");
-    console.log(areasMap);
-    console.log(links);
     return [linkUnderConstruction]
       .filter((link) => {
         return (
@@ -161,8 +153,6 @@
         );
       })
       .map((link) => {
-        console.log("link");
-        console.log(link);
         return buildPathFromLink(
           link,
           areasMap[link.fromId].mapX,
@@ -180,9 +170,6 @@
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildExistingInterMapLinks() {
-    console.log("buildExistingInterMapLinks");
-    console.log(areasMap);
-    console.log(links);
     return links
       .filter((link) => {
         return (
@@ -209,9 +196,6 @@
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildNewInterMapLinks() {
-    console.log("buildNewInterMapLinks");
-    console.log(areasMap);
-    console.log(links);
     return [linkUnderConstruction]
       .filter((link) => {
         return (
@@ -280,9 +264,6 @@
   // These are the areas being linked to that exist outside the map. A local representation of the area needs to be
   // built from the link
   function buildNewInterMapLinkAreas() {
-    console.log("buildNewInterMapLinkAreas");
-    console.log(areasMap);
-    console.log(links);
     return [linkUnderConstruction]
       .filter((link) => {
         return (
@@ -480,15 +461,30 @@
     }
   }
 
+  // Current implementation is only ever one being constructed at a time
+  $: newIntraMapAreas =
+    areaUnderConstruction != undefined && buildingArea
+      ? buildNewIntraMapAreas()
+      : [];
+
+  function buildNewIntraMapAreas() {
+    return [areaUnderConstruction]
+      .filter((area) => {
+        console.log("buildNewIntraMapAreas");
+        console.log(areaUnderConstruction);
+        return area.mapId == chosenMap.id;
+      })
+      .map((area) => {
+        return buildRectFromArea(area);
+      });
+  }
+
   $: existingIntraMapAreas =
     mapSelected && links != undefined && areasMap != undefined
       ? buildExistingIntraMapAreas()
       : [];
 
   function buildExistingIntraMapAreas() {
-    console.log("buildExistingIntraMapAreas");
-    console.log(areasMap);
-    console.log(areas);
     return areas
       .filter((area) => {
         return (
@@ -498,8 +494,6 @@
         );
       })
       .map((area) => {
-        console.log("area");
-        console.log(area);
         return buildRectFromArea(area);
       });
   }
@@ -521,15 +515,12 @@
         //   );
         // })
         .map((areaId) => {
-          console.log("hightliughted araasdhasd");
-          console.log(areaId);
           const area = { ...areasMap[areaId] };
           area.mapSize = area.mapSize + 3;
           area.borderColor = highlightColor;
           area.color = highlightColor;
           area.borderWidth = Math.max(3, area.borderWidth + 1);
           area.id = `${area.id}-highlight`;
-          console.log(area);
 
           return buildRectFromArea(area);
         })
@@ -570,9 +561,6 @@
       : [];
 
   function buildExistingInterMapAreas() {
-    console.log("buildExistingInterMapAreas");
-    console.log(areasMap);
-    console.log(areas);
     return areas
       .filter((area) => {
         return (
@@ -582,9 +570,6 @@
         );
       })
       .map((area) => {
-        console.log("area");
-        console.log(area);
-
         const modifiedArea = { ...area };
 
         // find a link which points to this other area in this other map
@@ -593,9 +578,6 @@
         const link = links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
-
-        console.log("found link");
-        console.log(link);
 
         // Outgoing to other area.
         // Use local 'to'
@@ -628,9 +610,6 @@
             areasMap[link.fromId].name
           }`;
         }
-
-        console.log("modifiedArea");
-        console.log(modifiedArea);
 
         return buildRectFromArea(modifiedArea);
       });
@@ -676,7 +655,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">
