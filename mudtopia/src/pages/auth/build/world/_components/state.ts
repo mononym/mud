@@ -7,6 +7,7 @@ import { loadMapData, deleteLink as delLink } from "../../../../../api/server";
 import { AreasStore } from "../../../../../stores/areas";
 import { MapsStore } from "../../../../../stores/maps";
 import { LinksStore } from "../../../../../stores/links";
+import { tick } from "svelte";
 
 const { mapsMap } = MapsStore;
 const { areasMap } = AreasStore;
@@ -174,10 +175,6 @@ function createWorldBuilderStore() {
     let newLinks = [];
 
     if (mapId == get(selectedMap).id) {
-      // const filteredAreas = get(AreasStore.areas).filter(
-      //   (area) => area.mapId == mapId && area.id != get(selectedArea).id
-      // );
-
       areasToMap = get(AreasStore.areas);
 
       newLinks = get(links);
@@ -276,11 +273,23 @@ function createWorldBuilderStore() {
 
     console.log("selectArea");
     console.log(area);
-    console.log(get(linkEditorMapForOtherAreaId));
-    console.log(get(mode));
-    console.log(get(view));
-    console.log(get(linkUnderConstruction));
-    console.log(get(selectedArea));
+    console.log(area.id.endsWith("highlight"));
+    // console.log(get(linkEditorMapForOtherAreaId));
+    // console.log(get(mode));
+    // console.log(get(view));
+    // console.log(get(linkUnderConstruction));
+    // console.log(get(selectedArea));
+
+    if (area.id.endsWith("highlight")) {
+      // var input = 'jquery.somePlugin.v1.6.3.js';
+      var dash = area.id.lastIndexOf("-");
+      var id = area.id.substring(0, dash);
+      // var fileExtension = input.substring(period + 1);
+      // const id = area.id.split()
+      // console.log(area.id.split("-"))
+      area = get(areasMap)[id];
+    }
+    console.log(area);
 
     console.log(1);
     // if editing link
@@ -340,6 +349,8 @@ function createWorldBuilderStore() {
         loadAllMapData(area.mapId);
       } else {
         console.log(13);
+        console.log(area);
+
         selectedArea.set(area);
         document.getElementById(`AreaList:${area.id}`).scrollIntoView();
       }

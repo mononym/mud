@@ -54,7 +54,7 @@
   export let loadingMapData = false;
 
   // An array of all of the areas which should be highlighted. For example an area that is focused on may or may not be highlighted.
-  // export let highlightedAreaIds = [];
+  export let highlightedAreaIds = [];
 
   // An array of all of the links which should be highlighted. For example a link that is selected may or may not be highlighted.
   export let highlightedLinkIds = [];
@@ -73,6 +73,8 @@
   // Controls display and code behavior when it comes to selecting different types of areas
   export let svgMapAllowIntraMapAreaSelection = false;
   export let svgMapAllowInterMapAreaSelection = false;
+
+  const highlightColor = "#ff6600";
 
   // Zoom stuff
   let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
@@ -405,6 +407,42 @@
       });
   }
 
+  $: highlightsForExistingIntraMapAreas =
+    mapSelected && areasMap != undefined && highlightedAreaIds.length > 0
+      ? buildHighlightsForExistingIntraMapAreas()
+      : [];
+
+  function buildHighlightsForExistingIntraMapAreas() {
+    console.log("buildHighlightsForExistingIntraMapAreas");
+    console.log(areasMap);
+    console.log(areas);
+    console.log(highlightedAreaIds);
+    return (
+      highlightedAreaIds
+        // .filter((area) => {
+        //   return (
+        //     area.id != "" &&
+        //     highlightedAreaIds.includes(area.id) &&
+        //     areasMap[area.id] != undefined &&
+        //     area.mapId == chosenMap.id
+        //   );
+        // })
+        .map((areaId) => {
+          console.log("hightliughted araasdhasd");
+          console.log(areaId);
+          const area = {...areasMap[areaId]};
+          area.mapSize = area.mapSize + 3;
+          area.borderColor = highlightColor;
+          area.color = highlightColor;
+          area.borderWidth = Math.max(3, area.borderWidth + 1);
+          area.id = `${area.id}-highlight`;
+          console.log(area);
+
+          return buildRectFromArea(area);
+        })
+    );
+  }
+
   function buildRectFromArea(area) {
     let cls = svgMapAllowIntraMapAreaSelection
       ? "cursor-pointer"
@@ -505,37 +543,6 @@
       });
   }
 
-  function buildRect(
-    area: AreaInterface,
-    gridSize: number,
-    viewSize: number,
-    fill: string,
-    x: number,
-    y: number,
-    size: number,
-    corners: number,
-    cls: string,
-    name: string,
-    borderColor: string,
-    borderWidth: number
-  ): Record<string, unknown> {
-    return {
-      id: area.id,
-      type: "rect",
-      x: x * gridSize + viewSize / 2 - size / 2,
-      y: -y * gridSize + viewSize / 2 - size / 2,
-      width: size,
-      height: size,
-      corners: corners,
-      fill: fill,
-      name: name,
-      area: area,
-      cls: cls,
-      borderColor: borderColor,
-      borderWidth: borderWidth,
-    };
-  }
-
   function zoomIn() {
     zoomMultierIndex = --zoomMultierIndex;
     // calculateViewBox();
@@ -576,7 +583,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
+          shapes={[...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">

@@ -24,6 +24,7 @@
     mapSelected,
     selectedMap,
     selectedArea,
+    areaSelected,
     selectedLink,
     areaUnderConstruction,
     linkUnderConstruction,
@@ -181,7 +182,8 @@
           areas={$areas}
           linkUnderConstruction={$linkUnderConstruction}
           svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
-          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
+          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
+          highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
