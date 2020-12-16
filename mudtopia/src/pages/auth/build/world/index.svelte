@@ -175,9 +175,13 @@
         <BuilderSvgMap
           bind:this={primaryMap}
           chosenMap={$selectedMap}
+          mapsMap={$mapsMap}
           areasMap={$areasMap}
           links={$links}
-          areas={$areas} />
+          areas={$areas}
+          linkUnderConstruction={$linkUnderConstruction}
+          svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
+          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
