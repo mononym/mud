@@ -336,18 +336,26 @@
   function buildHighlightsForExistingIntraMapLinks() {
     return highlightedLinkIds.map((linkId) => {
       const link = { ...links.find((link) => link.id == linkId) };
-      link.lineColor = highlightColor;
-      link.lineWidth = link.lineWidth + 1;
-      link.label = "";
-      link.hasMarker = false;
 
-      return buildPathFromLink(
-        link,
-        areasMap[link.fromId].mapX,
-        areasMap[link.fromId].mapY,
-        areasMap[link.toId].mapX,
-        areasMap[link.toId].mapY
-      );
+      if (
+        areasMap[link.toId].mapId == areasMap[link.fromId].mapId &&
+        areasMap[link.toId].mapId == chosenMap.id
+      ) {
+        link.lineColor = highlightColor;
+        link.lineWidth = link.lineWidth + 1;
+        link.label = "";
+        link.hasMarker = false;
+
+        return buildPathFromLink(
+          link,
+          areasMap[link.fromId].mapX,
+          areasMap[link.fromId].mapY,
+          areasMap[link.toId].mapX,
+          areasMap[link.toId].mapY
+        );
+      } else {
+        return [];
+      }
     });
   }
 

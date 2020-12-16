@@ -185,7 +185,8 @@
           svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
           svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
           highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
-          highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []} />
+          highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
+          focusAreaId={$selectedArea.id} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
