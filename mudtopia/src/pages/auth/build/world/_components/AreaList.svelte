@@ -12,7 +12,7 @@
   let areaForDeleting;
   let deleteMatchString = "";
 
-  $: filteredAreas = $areas.filter((area) => area.mapId == $selectedMap.id);
+  $: filteredAreas = $areas.filter((area) => $selectedMap != undefined && area.mapId == $selectedMap.id);
 
   function selectArea(area) {
     if (area.id != $selectedArea.id) {

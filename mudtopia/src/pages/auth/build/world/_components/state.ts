@@ -346,6 +346,7 @@ function createWorldBuilderStore() {
       console.log(11);
       // Not editing link, but just looking at the map/area lists/details
       // Selecting an area here actually changes that something is selected, and if it happens to be a new map then we jump over to that
+      await tick;
       if (area.mapId != get(selectedMap).id) {
         console.log(12);
         selectedMap.set(get(mapsMap)[area.mapId]);
@@ -356,6 +357,7 @@ function createWorldBuilderStore() {
         console.log(area);
 
         selectedArea.set(area);
+        await tick();
         document.getElementById(`AreaList:${area.id}`).scrollIntoView();
       }
     }

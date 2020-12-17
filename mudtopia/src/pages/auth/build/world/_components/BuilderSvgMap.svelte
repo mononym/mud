@@ -481,7 +481,7 @@
     return [linkUnderConstruction]
       .filter((link) => {
         return (
-          link.id == "" &&
+          buildingLink &&
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
@@ -660,7 +660,9 @@
 
   // Current implementation is only ever one being constructed at a time
   $: newIntraMapAreas =
-    areaUnderConstruction != undefined && buildingArea
+    areaUnderConstruction != undefined &&
+    buildingArea == true &&
+    chosenMap != undefined
       ? buildNewIntraMapAreas()
       : [];
 
