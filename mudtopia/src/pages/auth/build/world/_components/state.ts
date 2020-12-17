@@ -245,6 +245,7 @@ function createWorldBuilderStore() {
       ...{ mapId: get(selectedMap).id },
     });
     linkUnderConstruction.set({ ...LinkState });
+    mode.set("area");
     view.set("edit");
   }
 

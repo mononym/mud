@@ -188,7 +188,7 @@
           highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
           focusAreaId={$selectedArea.id}
           areaUnderConstruction={$areaUnderConstruction}
-          buildingArea="{$buildingArea},"
+          buildingArea={$buildingArea}
           buildingLink={$buildingLink} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">

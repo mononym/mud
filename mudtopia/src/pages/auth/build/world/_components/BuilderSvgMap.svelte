@@ -319,7 +319,10 @@
   }
 
   $: existingIntraMapLinks =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    linkUnderConstruction != undefined
       ? buildExistingIntraMapLinks()
       : [];
 
@@ -329,6 +332,7 @@
       .filter((link) => {
         return (
           link.id != "" &&
+          link.id != linkUnderConstruction.id &&
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
@@ -348,7 +352,7 @@
 
   $: newIntraMapLinks =
     mapSelected &&
-    links != undefined &&
+    buildingLink &&
     areasMap != undefined &&
     linkUnderConstruction != undefined
       ? buildNewIntraMapLinks()
@@ -359,7 +363,6 @@
     return [linkUnderConstruction]
       .filter((link) => {
         return (
-          link.id == "" &&
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
@@ -671,7 +674,7 @@
   function buildNewIntraMapAreas() {
     return [areaUnderConstruction]
       .filter((area) => {
-        return area.mapId == chosenMap.id;
+        return buildingArea == true && area.mapId == chosenMap.id;
       })
       .map((area) => {
         return buildRectFromArea(area);
@@ -778,10 +781,6 @@
 
         // find a link which points to this other area in this other map
         // overwrite area settings with 'local' settings from link and then build
-        console.log('buildExistingInterMapAreas')
-        console.log(area)
-        console.log(links)
-
         const link = links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
