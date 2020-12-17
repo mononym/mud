@@ -229,7 +229,7 @@
         <div class="h-full w-full flex flex-col">
           {#if $selectedMap.id != $linkEditorMapForOtherAreaId && $linkEditorMapForOtherAreaId != ''}
             <div class="flex-1 overflow-hidden">
-              <SvgMap
+              <!-- <SvgMap
                 on:selectArea={handleSecondaryMapSelectArea}
                 chosenMap={$mapsMap[$linkEditorMapForOtherAreaId]}
                 mapSelected={true}
@@ -245,7 +245,22 @@
                 areasMap={$areasForLinkEditorMap}
                 links={$linksForLinkEditor}
                 focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId}
-                buildingArea={$buildingArea} />
+                buildingArea={$buildingArea} /> -->
+              <BuilderSvgMap
+                chosenMap={$mapsMap[$linkEditorMapForOtherAreaId]}
+                mapsMap={$mapsMap}
+                areasMap={$areasForLinkEditorMap}
+                links={$linksForLinkEditor}
+                areas={$areasForLinkEditor}
+                linkUnderConstruction={$linkUnderConstruction}
+                svgMapAllowInterMapAreaSelection={true}
+                svgMapAllowIntraMapAreaSelection={true}
+                highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
+                highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
+                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId}
+                areaUnderConstruction={$areaUnderConstruction}
+                buildingArea={false}
+                buildingLink={$buildingLink} />
             </div>
           {:else}
             <div class="flex-1">foo</div>

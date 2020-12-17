@@ -529,11 +529,13 @@
       : [];
 
   function buildHighlightsForExistingIntraMapLinks() {
-    console.log("buildHighlightsForExistingIntraMapLinks");
     return highlightedLinkIds.map((linkId) => {
       const link = { ...links.find((link) => link.id == linkId) };
 
       if (
+        link != undefined &&
+        link.toId != "" &&
+        link.fromId != "" &&
         areasMap[link.toId].mapId == areasMap[link.fromId].mapId &&
         areasMap[link.toId].mapId == chosenMap.id
       ) {
@@ -541,9 +543,12 @@
         link.lineWidth = link.lineWidth + 6;
         link.label = "";
         link.hasMarker = false;
-
         console.log("buildHighlightsForExistingIntraMapLinks");
-        console.log(link);
+
+        console.log(areasMap[link.fromId].mapX);
+        console.log(areasMap[link.fromId].mapY);
+        console.log(areasMap[link.toId].mapX);
+        console.log(areasMap[link.toId].mapY);
 
         return buildPathFromLink(
           link,
@@ -568,10 +573,14 @@
       const link = { ...links.find((link) => link.id == linkId) };
 
       if (
+        link != undefined &&
+        link.toId != "" &&
+        link.fromId != "" &&
         areasMap[link.toId].mapId != areasMap[link.fromId].mapId &&
         (areasMap[link.toId].mapId == chosenMap.id ||
           areasMap[link.fromId].mapId == chosenMap.id)
       ) {
+        console.log("buildHighlightsForExistingInterMapLinks");
         link.lineColor = highlightColor;
         link.hasMarker = false;
         let x1;
@@ -600,6 +609,11 @@
 
         link.lineColor = highlightColor;
         link.lineWidth = link.lineWidth + 6;
+
+        console.log(x1);
+        console.log(y1);
+        console.log(x2);
+        console.log(y2);
 
         return buildPathFromLink(link, x1, y1, x2, y2);
       } else {
@@ -669,8 +683,6 @@
   function buildNewIntraMapAreas() {
     return [areaUnderConstruction]
       .filter((area) => {
-        console.log("buildNewIntraMapAreas");
-        console.log(areaUnderConstruction);
         return area.mapId == chosenMap.id;
       })
       .map((area) => {
@@ -688,6 +700,7 @@
       : [];
 
   function buildExistingIntraMapAreas() {
+    console.log(areas);
     return areas
       .filter((area) => {
         return (
@@ -697,6 +710,8 @@
         );
       })
       .map((area) => {
+        console.log("buildExistingIntraMapAreas");
+        console.log(area);
         return buildRectFromArea(area);
       });
   }
@@ -707,27 +722,23 @@
       : [];
 
   function buildHighlightsForExistingIntraMapAreas() {
-    return (
-      highlightedAreaIds
-        // .filter((area) => {
-        //   return (
-        //     area.id != "" &&
-        //     highlightedAreaIds.includes(area.id) &&
-        //     areasMap[area.id] != undefined &&
-        //     area.mapId == chosenMap.id
-        //   );
-        // })
-        .map((areaId) => {
-          const area = { ...areasMap[areaId] };
-          area.mapSize = area.mapSize + 3;
-          area.borderColor = highlightColor;
-          area.color = highlightColor;
-          area.borderWidth = Math.max(3, area.borderWidth + 1);
-          area.id = `${area.id}-highlight`;
+    return highlightedAreaIds
+      .filter((areaId) => {
+        return (
+          areasMap[areaId] != undefined &&
+          areasMap[areaId].mapId == chosenMap.id
+        );
+      })
+      .map((areaId) => {
+        const area = { ...areasMap[areaId] };
+        area.mapSize = area.mapSize + 3;
+        area.borderColor = highlightColor;
+        area.color = highlightColor;
+        area.borderWidth = Math.max(3, area.borderWidth + 1);
+        area.id = `${area.id}-highlight`;
 
-          return buildRectFromArea(area);
-        })
-    );
+        return buildRectFromArea(area);
+      });
   }
 
   function buildRectFromArea(area) {
@@ -760,6 +771,7 @@
 
   $: existingInterMapAreas =
     mapSelected &&
+    areas != undefined &&
     links != undefined &&
     areasMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
@@ -785,6 +797,12 @@
         const link = links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
+
+        console.log("buildExistingInterMapAreas");
+        console.log("finding links");
+        console.log(link);
+        console.log(links);
+        console.log(area);
 
         // Outgoing to other area.
         // Use local 'to'

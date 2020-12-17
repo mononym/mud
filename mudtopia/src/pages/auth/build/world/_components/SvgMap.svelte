@@ -337,11 +337,6 @@
 
   $: svgPreviewLinkAreaShapes = [linkUnderConstruction]
     .filter(function (link) {
-      console.log("filter svgPreviewLinkAreaShapes");
-      console.log(selectedArea);
-      console.log(linkPreviewAreaId);
-      console.log(areasMap);
-      console.log(areasMap[linkPreviewAreaId]);
       return (
         (link.toId != "" || link.fromId != "") &&
         linkPreviewAreaId != "" &&
@@ -360,8 +355,6 @@
       let name;
       let borderWidth;
       let borderColor;
-
-      console.log("svgPreviewLinkAreaShapes");
 
       // the selected area can only belong to another map if we're looking from the perspective of the secondary map
       // Use that to determine which coordinates to use
