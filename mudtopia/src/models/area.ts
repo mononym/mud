@@ -18,7 +18,7 @@ const state: AreaInterface = {
   name: "",
   mapX: 0,
   mapY: 0,
-  mapSize: 21,
+  mapSize: 20,
   mapCorners: 5,
   mapId: "",
   color: "#696969",

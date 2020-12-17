@@ -19,7 +19,7 @@ export interface MapLabelInterface {
     text: '',
     rotation: 0,
     color: '',
-    size: 21,
+    size: 20,
     inlineSize: 200,
     style: 'normal',
     weight: 'normal',
