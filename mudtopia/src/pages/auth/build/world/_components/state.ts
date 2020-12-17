@@ -109,8 +109,12 @@ function createWorldBuilderStore() {
   }
 
   async function linkArea(area: AreaInterface) {
+    linkEditorMapForOtherAreaId.set(area.mapId);
     linkUnderConstruction.set({ ...LinkState });
     selectedArea.set(area);
+    console.log("linkarea");
+    console.log(area);
+    await loadDataForLinkEditor(area.mapId);
     mode.set("link");
     view.set("edit");
   }
@@ -168,11 +172,35 @@ function createWorldBuilderStore() {
   const loadingLinkEditorData = writable(false);
   const linkEditorDataLoaded = writable(false);
 
+  async function changeMapForLinkEditor(mapId: string) {
+    if (
+      get(linkUnderConstruction).toId != "" &&
+      get(areasMap)[get(linkUnderConstruction).toId].mapId == mapId
+    ) {
+      linkUnderConstruction.update(function (luc) {
+        luc.fromId = "";
+        return luc;
+      });
+    } else {
+      linkUnderConstruction.update(function (luc) {
+        luc.toId = "";
+        return luc;
+      });
+    }
+
+    console.log("changing map for editor");
+
+    loadDataForLinkEditor(mapId);
+  }
+
   async function loadDataForLinkEditor(mapId: string) {
     loadingLinkEditorData.set(true);
     linkEditorDataLoaded.set(false);
     let areasToMap = [];
     let newLinks = [];
+
+    console.log(mapId == get(selectedMap).id);
+    console.log(get(AreasStore.areas));
 
     if (mapId == get(selectedMap).id) {
       areasToMap = get(AreasStore.areas);
@@ -189,12 +217,12 @@ function createWorldBuilderStore() {
     const newAreasMap = {};
     for (var i = 0; i < areasToMap.length; i++) {
       newAreasMap[areasToMap[i].id] = areasToMap[i];
-    }
 
-    areasForLinkEditorMap.set(newAreasMap);
-    linksForLinkEditor.set(newLinks);
-    loadingLinkEditorData.set(false);
-    linkEditorDataLoaded.set(true);
+      areasForLinkEditorMap.set(newAreasMap);
+      linksForLinkEditor.set(newLinks);
+      loadingLinkEditorData.set(false);
+      linkEditorDataLoaded.set(true);
+    }
   }
 
   //
@@ -280,6 +308,13 @@ function createWorldBuilderStore() {
       var id = area.id.substring(0, dash);
       area = get(areasMap)[id];
     }
+
+    // console.log("selectArea");
+    // console.log(area);
+    // console.log(get(mode));
+    // console.log(get(view));
+    // console.log(get(linkEditorMapForOtherAreaId));
+    // console.log(get(selectedMap));
     // if editing link
     // if area selected differs from the map area selected, load areas for the new map
     // if area is part of already loaded data, set the area as
@@ -288,16 +323,17 @@ function createWorldBuilderStore() {
       if (area.mapId != get(linkEditorMapForOtherAreaId)) {
         linkEditorMapForOtherAreaId.set(area.mapId);
         // Selected area is for a different map than is loaded in editor
-
-        // Load the data
-        if (area.mapId == get(selectedMap).id) {
-          // Selected area is for the 'main' map that is being build, don't load from db again but use local copy
-          areasForLinkEditorMap.set(get(areasMap));
-          linksForLinkEditor.set(get(links));
-        } else {
-          await loadDataForLinkEditor(area.mapId);
-        }
       }
+
+      // Load the data
+      if (area.mapId == get(selectedMap).id) {
+        // Selected area is for the 'main' map that is being build, don't load from db again but use local copy
+        areasForLinkEditorMap.set(get(areasMap));
+        linksForLinkEditor.set(get(links));
+      } else {
+        await loadDataForLinkEditor(area.mapId);
+      }
+
       if (get(linkUnderConstruction).toId == area.id) {
         // incoming
         linkUnderConstruction.update(function (luc) {
@@ -434,6 +470,7 @@ function createWorldBuilderStore() {
     view,
     // Methods
     // Link stuff
+    changeMapForLinkEditor,
     deleteLink,
     editLink,
     followLink,

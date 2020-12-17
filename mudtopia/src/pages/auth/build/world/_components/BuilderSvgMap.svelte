@@ -543,12 +543,6 @@
         link.lineWidth = link.lineWidth + 6;
         link.label = "";
         link.hasMarker = false;
-        console.log("buildHighlightsForExistingIntraMapLinks");
-
-        console.log(areasMap[link.fromId].mapX);
-        console.log(areasMap[link.fromId].mapY);
-        console.log(areasMap[link.toId].mapX);
-        console.log(areasMap[link.toId].mapY);
 
         return buildPathFromLink(
           link,
@@ -580,7 +574,6 @@
         (areasMap[link.toId].mapId == chosenMap.id ||
           areasMap[link.fromId].mapId == chosenMap.id)
       ) {
-        console.log("buildHighlightsForExistingInterMapLinks");
         link.lineColor = highlightColor;
         link.hasMarker = false;
         let x1;
@@ -609,11 +602,6 @@
 
         link.lineColor = highlightColor;
         link.lineWidth = link.lineWidth + 6;
-
-        console.log(x1);
-        console.log(y1);
-        console.log(x2);
-        console.log(y2);
 
         return buildPathFromLink(link, x1, y1, x2, y2);
       } else {
@@ -700,7 +688,6 @@
       : [];
 
   function buildExistingIntraMapAreas() {
-    console.log(areas);
     return areas
       .filter((area) => {
         return (
@@ -710,8 +697,6 @@
         );
       })
       .map((area) => {
-        console.log("buildExistingIntraMapAreas");
-        console.log(area);
         return buildRectFromArea(area);
       });
   }
@@ -793,16 +778,19 @@
 
         // find a link which points to this other area in this other map
         // overwrite area settings with 'local' settings from link and then build
+        console.log('buildExistingInterMapAreas')
+        console.log(area)
+        console.log(links)
 
         const link = links.find(
           (link) => link.toId == area.id || link.fromId == area.id
         );
 
-        console.log("buildExistingInterMapAreas");
-        console.log("finding links");
-        console.log(link);
-        console.log(links);
-        console.log(area);
+        // Sometimes there is a race condition when loading things
+        // This makes sure the link has been populated
+        if (link == undefined) {
+          return [];
+        }
 
         // Outgoing to other area.
         // Use local 'to'

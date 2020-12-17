@@ -34,6 +34,8 @@
     svgMapAllowIntraMapAreaSelection,
     linkEditorMapForOtherAreaId,
     areasForLinkEditorMap,
+    areasForLinkEditorFiltered,
+    areasForLinkEditorFilteredMap,
     areasForLinkEditor,
     linksForLinkEditor,
     loadingLinkEditorData,
@@ -251,7 +253,7 @@
                 mapsMap={$mapsMap}
                 areasMap={$areasForLinkEditorMap}
                 links={$linksForLinkEditor}
-                areas={$areasForLinkEditor}
+                areas={$areasForLinkEditorFiltered}
                 linkUnderConstruction={$linkUnderConstruction}
                 svgMapAllowInterMapAreaSelection={true}
                 svgMapAllowIntraMapAreaSelection={true}
