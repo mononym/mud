@@ -2,14 +2,8 @@
   import { Circle2 } from "svelte-loading-spinners";
   import Svg from "../../../../../components/Svg.svelte";
   import AreaState from "../../../../../models/area";
-  import type { AreaInterface } from "../../../../../models/area";
   import LinkState from "../../../../../models/link";
-  import type { LinkInterface } from "../../../../../models/link";
   import { WorldBuilderStore } from "./state";
-  import { beforeUpdate } from "svelte";
-  import App from "../../../../../App.svelte";
-  import AreaDetails from "./AreaDetails.svelte";
-  import AreaEditor from "./AreaEditor.svelte";
 
   // This map can be in one of two modes.
   // Primary mode
@@ -64,7 +58,7 @@
   export let areaUnderConstruction = { ...AreaState };
 
   // Links being built need to be displayed for helping with positioning and map look
-  // export let buildingLink = false;
+  export let buildingLink = false;
   export let linkUnderConstruction = { ...LinkState };
 
   // When constructing a link it's coming/going from/to "somewhere". One "end" of the link is the room being linked, and this is the source.
@@ -78,7 +72,7 @@
 
   // Zoom stuff
   let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
-  let zoomMultierIndex = 3;
+  let zoomMultierIndex = 2;
   $: zoomOutButtonDisabled = zoomMultierIndex == zoomMultipliers.length - 1;
   $: zoomInButtonDisabled = zoomMultierIndex == 0;
 
@@ -116,6 +110,7 @@
         return (
           link.id != "" &&
           link.label != "" &&
+          link.id != linkUnderConstruction.id &&
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
@@ -133,8 +128,106 @@
       });
   }
 
+  $: newIntraMapLinkText =
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    buildingLink &&
+    linkUnderConstruction != undefined
+      ? buildNewIntraMapLinkText()
+      : [];
+
+  // Labels for the link under construction within a map
+  function buildNewIntraMapLinkText() {
+    return [linkUnderConstruction]
+      .filter((link) => {
+        return (
+          buildingLink &&
+          link.label != "" &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId == chosenMap.id &&
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId
+        );
+      })
+      .map((link) => {
+        return buildLabelFromLink(
+          link,
+          areasMap[link.fromId].mapX,
+          areasMap[link.fromId].mapY,
+          areasMap[link.toId].mapX,
+          areasMap[link.toId].mapY
+        );
+      });
+  }
+
+  $: newInterMapLinkText =
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    linkUnderConstruction != undefined &&
+    buildingLink
+      ? buildNewInterMapLinkText()
+      : [];
+
+  // Labels for all of the links within a single map
+  function buildNewInterMapLinkText() {
+    return [linkUnderConstruction]
+      .filter((link) => {
+        return (
+          (link.localToLabel != "" || link.localFromLabel != "") &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
+          ((areasMap[link.fromId].mapId == chosenMap.id &&
+            link.localToLabel != "") ||
+            (areasMap[link.toId].mapId == chosenMap.id &&
+              link.localFromLabel != ""))
+        );
+      })
+      .map((link) => {
+        const modifiedLink = { ...link };
+        let fromX;
+        let fromY;
+        let toX;
+        let toY;
+
+        // incoming
+        if (areasMap[link.toId].mapId == chosenMap.id) {
+          modifiedLink.label = link.localFromLabel;
+          modifiedLink.labelFontSize = link.localFromLabelFontSize;
+          modifiedLink.labelHorizontalOffset =
+            link.localFromLabelHorizontalOffset;
+          modifiedLink.labelVerticalOffset = link.localFromLabelVerticalOffset;
+          modifiedLink.labelRotation = link.localFromLabelRotation;
+          modifiedLink.labelColor = link.localFromLabelColor;
+          fromX = link.localFromX;
+          fromY = link.localFromY;
+          toX = areasMap[link.toId].mapX;
+          toY = areasMap[link.toId].mapY;
+        } else {
+          modifiedLink.label = link.localToLabel;
+          modifiedLink.labelFontSize = link.localToLabelFontSize;
+          modifiedLink.labelHorizontalOffset =
+            link.localToLabelHorizontalOffset;
+          modifiedLink.labelVerticalOffset = link.localToLabelVerticalOffset;
+          modifiedLink.labelRotation = link.localToLabelRotation;
+          modifiedLink.labelColor = link.localToLabelColor;
+          toX = link.localToX;
+          toY = link.localToY;
+          fromX = areasMap[link.fromId].mapX;
+          fromY = areasMap[link.fromId].mapY;
+        }
+
+        return buildLabelFromLink(modifiedLink, fromX, fromY, toX, toY);
+      });
+  }
+
   $: existingInterMapLinkText =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    linkUnderConstruction != undefined
       ? buildExistingInterMapLinkText()
       : [];
 
@@ -144,6 +237,7 @@
       .filter((link) => {
         return (
           link.id != "" &&
+          link.id != linkUnderConstruction.id &&
           (link.localToLabel != "" || link.localFromLabel != "") &&
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
@@ -766,7 +860,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText, ...newIntraMapLinkText, ...newInterMapLinkText].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">

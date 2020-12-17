@@ -20,8 +20,7 @@
   import { WorldBuilderStore } from "./_components/state";
   const {
     buildingArea,
-    loadingMapData,
-    mapSelected,
+    buildingLink,
     selectedMap,
     selectedArea,
     areaSelected,
@@ -31,7 +30,6 @@
     linkUnderConstruction,
     mode,
     view,
-    linkPreviewAreaId,
     svgMapAllowInterMapAreaSelection,
     svgMapAllowIntraMapAreaSelection,
     linkEditorMapForOtherAreaId,
@@ -188,7 +186,8 @@
           highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
           focusAreaId={$selectedArea.id}
           areaUnderConstruction={$areaUnderConstruction}
-          buildingArea={$buildingArea} />
+          buildingArea="{$buildingArea},"
+          buildingLink={$buildingLink} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}

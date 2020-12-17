@@ -183,7 +183,7 @@
       let labelHorizontalOffset;
       let labelVerticalOffset;
       let labelTransform = "";
-      let labelFontSize = 12;
+      let labelFontSize = 8;
       let labelColor = "#000000";
       let lineWidth = 2;
       let lineColor = "#000000";
@@ -518,7 +518,7 @@
       let labelHorizontalOffset;
       let labelVerticalOffset;
       let labelTransform = "";
-      let labelFontSize = 12;
+      let labelFontSize = 8;
       let lineWidth = 2;
       let lineColor = "#FFFFFF";
       let lineDash = 0;

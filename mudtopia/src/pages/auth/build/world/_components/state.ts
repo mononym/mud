@@ -367,6 +367,11 @@ function createWorldBuilderStore() {
   //
   //
 
+  const buildingLink = derived(
+    [mode, view],
+    ([$mode, $view]) => $mode == "link" && $view == "edit"
+  );
+
   let deletingLink = writable(false);
 
   async function deleteLink(link: LinkInterface) {
@@ -441,6 +446,7 @@ function createWorldBuilderStore() {
     areasForLinkEditorFilteredMap,
     areasForLinkEditorFiltered,
     // Links stuff
+    buildingLink,
     linkUnderConstruction,
     linkSelected,
     selectedLink,
