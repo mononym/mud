@@ -104,6 +104,126 @@
   $: viewBoxY = yCenterPoint - viewBoxYSize / 2;
   $: viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxXSize} ${viewBoxYSize}`;
 
+  $: existingIntraMapLinkText =
+    mapSelected && links != undefined && areasMap != undefined
+      ? buildExistingIntraMapLinkText()
+      : [];
+
+  // Labels for all of the links within a single map
+  function buildExistingIntraMapLinkText() {
+    return links
+      .filter((link) => {
+        return (
+          link.id != "" &&
+          link.label != "" &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId == chosenMap.id &&
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId
+        );
+      })
+      .map((link) => {
+        return buildLabelFromLink(
+          link,
+          areasMap[link.fromId].mapX,
+          areasMap[link.fromId].mapY,
+          areasMap[link.toId].mapX,
+          areasMap[link.toId].mapY
+        );
+      });
+  }
+
+  $: existingInterMapLinkText =
+    mapSelected && links != undefined && areasMap != undefined
+      ? buildExistingInterMapLinkText()
+      : [];
+
+  // Labels for all of the links within a single map
+  function buildExistingInterMapLinkText() {
+    return links
+      .filter((link) => {
+        return (
+          link.id != "" &&
+          (link.localToLabel != "" || link.localFromLabel != "") &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
+          ((areasMap[link.fromId].mapId == chosenMap.id &&
+            link.localToLabel != "") ||
+            (areasMap[link.toId].mapId == chosenMap.id &&
+              link.localFromLabel != ""))
+        );
+      })
+      .map((link) => {
+        const modifiedLink = { ...link };
+        let fromX;
+        let fromY;
+        let toX;
+        let toY;
+
+        // incoming
+        if (areasMap[link.toId].mapId == chosenMap.id) {
+          modifiedLink.label = link.localFromLabel;
+          modifiedLink.labelFontSize = link.localFromLabelFontSize;
+          modifiedLink.labelHorizontalOffset =
+            link.localFromLabelHorizontalOffset;
+          modifiedLink.labelVerticalOffset = link.localFromLabelVerticalOffset;
+          modifiedLink.labelRotation = link.localFromLabelRotation;
+          modifiedLink.labelColor = link.localFromLabelColor;
+          fromX = link.localFromX;
+          fromY = link.localFromY;
+          toX = areasMap[link.toId].mapX;
+          toY = areasMap[link.toId].mapY;
+        } else {
+          modifiedLink.label = link.localToLabel;
+          modifiedLink.labelFontSize = link.localToLabelFontSize;
+          modifiedLink.labelHorizontalOffset =
+            link.localToLabelHorizontalOffset;
+          modifiedLink.labelVerticalOffset = link.localToLabelVerticalOffset;
+          modifiedLink.labelRotation = link.localToLabelRotation;
+          modifiedLink.labelColor = link.localToLabelColor;
+          toX = link.localToX;
+          toY = link.localToY;
+          fromX = areasMap[link.fromId].mapX;
+          fromY = areasMap[link.fromId].mapY;
+        }
+
+        return buildLabelFromLink(modifiedLink, fromX, fromY, toX, toY);
+      });
+  }
+
+  function buildLabelFromLink(link, fromX, fromY, toX, toY) {
+    const gridSize = chosenMap.gridSize;
+    const viewSize = chosenMap.viewSize;
+
+    const horizontalPosition = (
+      ((fromX + toX) / 2) * gridSize +
+      viewSize / 2
+    ).toString();
+    const verticalPosition = (
+      -((fromY + toY) / 2) * gridSize +
+      viewSize / 2
+    ).toString();
+
+    let labelTransform = `translate(${
+      link.labelHorizontalOffset
+    }, ${-link.labelVerticalOffset}) rotate(${
+      link.labelRotation
+    }, ${horizontalPosition}, ${verticalPosition})`;
+
+    return {
+      id: `${link.id}-text`,
+      type: "text",
+      link: link,
+      label: link.label.split("\n"),
+      labelTransform: labelTransform,
+      labelFontSize: link.labelFontSize,
+      labelX: horizontalPosition,
+      labelY: verticalPosition,
+      labelColor: link.labelColor,
+    };
+  }
+
   $: existingIntraMapLinks =
     mapSelected && links != undefined && areasMap != undefined
       ? buildExistingIntraMapLinks()
@@ -315,6 +435,7 @@
       : [];
 
   function buildHighlightsForExistingIntraMapLinks() {
+    console.log("buildHighlightsForExistingIntraMapLinks");
     return highlightedLinkIds.map((linkId) => {
       const link = { ...links.find((link) => link.id == linkId) };
 
@@ -323,9 +444,12 @@
         areasMap[link.toId].mapId == chosenMap.id
       ) {
         link.lineColor = highlightColor;
-        link.lineWidth = link.lineWidth + 1;
+        link.lineWidth = link.lineWidth + 6;
         link.label = "";
         link.hasMarker = false;
+
+        console.log("buildHighlightsForExistingIntraMapLinks");
+        console.log(link);
 
         return buildPathFromLink(
           link,
@@ -355,7 +479,6 @@
           areasMap[link.fromId].mapId == chosenMap.id)
       ) {
         link.lineColor = highlightColor;
-        link.label = "";
         link.hasMarker = false;
         let x1;
         let y1;
@@ -364,15 +487,7 @@
 
         // incoming
         if (areasMap[link.toId].mapId == chosenMap.id) {
-          link.label = link.localFromLabel;
-          link.labelColor = link.localFromLabelColor;
-          link.labelFontSize = link.localFromLabelFontSize;
-          link.labelHorizontalOffset = link.localFromLabelHorizontalOffset;
-          link.labelVerticalOffset = link.localFromLabelVerticalOffset;
-          link.labelRotation = link.localFromLabelRotation;
-
           link.lineWidth = link.localFromLineWidth;
-          link.lineColor = link.localFromLineColor;
           link.lineDash = link.localFromLineDash;
 
           x1 = link.localFromX;
@@ -380,15 +495,7 @@
           x2 = areasMap[link.toId].mapX;
           y2 = areasMap[link.toId].mapY;
         } else {
-          link.label = link.localToLabel;
-          link.labelColor = link.localToLabelColor;
-          link.labelFontSize = link.localToLabelFontSize;
-          link.labelHorizontalOffset = link.localToLabelHorizontalOffset;
-          link.labelVerticalOffset = link.localToLabelVerticalOffset;
-          link.labelRotation = link.localToLabelRotation;
-
           link.lineWidth = link.localToLineWidth;
-          link.lineColor = link.localToLineColor;
           link.lineDash = link.localToLineDash;
 
           x2 = link.localToX;
@@ -397,7 +504,8 @@
           y1 = areasMap[link.fromId].mapY;
         }
 
-        link.lineWidth = link.lineWidth + 1;
+        link.lineColor = highlightColor;
+        link.lineWidth = link.lineWidth + 6;
 
         return buildPathFromLink(link, x1, y1, x2, y2);
       } else {
@@ -410,16 +518,11 @@
     const gridSize = chosenMap.gridSize;
     const viewSize = chosenMap.viewSize;
 
-    const horizontalPosition = ((fromX + toX) / 2).toString();
-    const verticalPosition = ((fromY + toY) / 2).toString();
+    // const horizontalPosition = ((fromX + toX) / 2).toString();
+    // const verticalPosition = ((fromY + toY) / 2).toString();
 
-    let labelTransform = `translate(${
-      link.labelHorizontalOffset
-    }, ${-link.labelVerticalOffset}) rotate(${
-      link.labelRotation
-    }, ${horizontalPosition}, ${verticalPosition})`;
-
-    const result = {
+    // const result = {
+    return {
       id: link.id,
       type: "path",
       x1: fromX * gridSize + viewSize / 2,
@@ -427,11 +530,11 @@
       x2: toX * gridSize + viewSize / 2,
       y2: -toY * gridSize + viewSize / 2,
       link: link,
-      label: link.label.split("\n"),
-      labelTransform: labelTransform,
-      labelFontSize: link.labelFontSize,
-      labelX: horizontalPosition,
-      labelY: verticalPosition,
+      // label: link.label.split("\n"),
+      // labelTransform: labelTransform,
+      // labelFontSize: link.labelFontSize,
+      // labelX: horizontalPosition,
+      // labelY: verticalPosition,
       lineWidth: link.lineWidth,
       lineColor: link.lineColor,
       lineDash: link.lineDash,
@@ -443,22 +546,22 @@
       markerHeight: link.lineWidth * 3,
     };
 
-    if (highlightedLinkIds.includes(link.id)) {
-      const duplicateResults = {
-        ...result,
-        ...{
-          lineColor: "#FF6600",
-          lineWidth: result.lineWidth + 6,
-          label: "",
-          hasMarker: false,
-          id: `${link.id}-duplicate`,
-        },
-      };
+    // if (highlightedLinkIds.includes(link.id)) {
+    //   const duplicateResults = {
+    //     ...result,
+    //     ...{
+    //       lineColor: "#FF6600",
+    //       lineWidth: result.lineWidth + 6,
+    //       label: "",
+    //       hasMarker: false,
+    //       id: `${link.id}-duplicate`,
+    //     },
+    //   };
 
-      return [duplicateResults, result];
-    } else {
-      return [result];
-    }
+    //   return [duplicateResults, result];
+    // } else {
+    //   return [result];
+    // }
   }
 
   // Current implementation is only ever one being constructed at a time
@@ -480,7 +583,11 @@
   }
 
   $: existingIntraMapAreas =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    areas != undefined &&
+    areasMap != undefined &&
+    svgMapAllowIntraMapAreaSelection != undefined &&
+    svgMapAllowInterMapAreaSelection != undefined
       ? buildExistingIntraMapAreas()
       : [];
 
@@ -556,7 +663,11 @@
   }
 
   $: existingInterMapAreas =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    svgMapAllowIntraMapAreaSelection != undefined &&
+    svgMapAllowInterMapAreaSelection != undefined
       ? buildExistingInterMapAreas()
       : [];
 
@@ -655,7 +766,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">

@@ -260,63 +260,64 @@
           </div>
           <div class="col-span-4">
             <label
-              for="label"
-              class="block text-sm font-medium text-gray-300">Label</label>
+              for="localToLabel"
+              class="block text-sm font-medium text-gray-300">Local To Label</label>
             <textarea
               bind:value={$linkUnderConstruction.localToLabel}
-              name="label"
-              id="label"
+              name="localToLabel"
+              id="localToLabel"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
           <div class="col-span-2">
             <label
-              for="localColor"
-              class="block text-sm font-medium text-gray-300">Label Color</label>
+              for="localToLabelColor"
+              class="block text-sm font-medium text-gray-300">Local To Label
+              Color</label>
             <input
               bind:value={$linkUnderConstruction.localToLabelColor}
               type="color"
-              name="localColor"
-              id="localColor"
+              name="localToLabelColor"
+              id="localToLabelColor"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
 
           {#if $linkUnderConstruction.localToLabel != ''}
             <div class="col-span-2">
               <label
-                for="verticalOffset"
-                class="block text-sm font-medium text-gray-300">Vertical offset</label>
+                for="localToLabelVerticalOffset"
+                class="block text-sm font-medium text-gray-300">Local To Label Vertical offset</label>
               <input
                 bind:value={$linkUnderConstruction.localToLabelVerticalOffset}
                 type="number"
-                name="verticalOffset"
-                id="verticalOffset"
+                name="localToLabelVerticalOffset"
+                id="localToLabelVerticalOffset"
                 min="-200"
                 max="200"
                 class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
             </div>
             <div class="col-span-2">
               <label
-                for="horizontalOffset"
-                class="block text-sm font-medium text-gray-300">Horizontal
+                for="localToLabelHorizontalOffset"
+                class="block text-sm font-medium text-gray-300">Local To Label Horizontal
                 offset</label>
               <input
                 bind:value={$linkUnderConstruction.localToLabelHorizontalOffset}
                 type="number"
-                name="horizontalOffset"
-                id="horizontalOffset"
+                name="localToLabelHorizontalOffset"
+                id="localToLabelHorizontalOffset"
                 min="-200"
                 max="200"
                 class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
             </div>
             <div class="col-span-2">
               <label
-                for="fontSize"
-                class="block text-sm font-medium text-gray-300">Font size</label>
+                for="localToLabelFontSize"
+                class="block text-sm font-medium text-gray-300">Local To Label Font size</label>
               <input
                 bind:value={$linkUnderConstruction.localToLabelFontSize}
                 type="number"
-                name="fontSize"
-                id="fontSize"
+                name="localToLabelFontSize"
+                id="localToLabelfontSize"
                 min="8"
                 max="100"
                 class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
@@ -324,13 +325,13 @@
 
             <div class="col-span-2">
               <label
-                for="labelRotation"
-                class="block text-sm font-medium text-gray-300">Label Rotation</label>
+                for="localToLabelRotation"
+                class="block text-sm font-medium text-gray-300">Local To Label Rotation</label>
               <input
                 bind:value={$linkUnderConstruction.localToLabelRotation}
                 type="number"
-                name="labelRotation"
-                id="labelRotation"
+                name="localToLabelRotation"
+                id="localToLabelRotation"
                 min="-359"
                 max="359"
                 class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
@@ -439,6 +440,88 @@
               id="localFromLineColor"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
+          <div class="col-span-4">
+            <label
+              for="localFromLabel"
+              class="block text-sm font-medium text-gray-300">Local From Label</label>
+            <textarea
+              bind:value={$linkUnderConstruction.localFromLabel}
+              name="localFromLabel"
+              id="localFromLabel"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="localFromLabelColor"
+              class="block text-sm font-medium text-gray-300">Local From Label
+              Color</label>
+            <input
+              bind:value={$linkUnderConstruction.localFromLabelColor}
+              type="color"
+              name="localFromLabelColor"
+              id="localFromLabelColor"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+          </div>
+
+          {#if $linkUnderConstruction.localFromLabel != ''}
+            <div class="col-span-2">
+              <label
+                for="localFromLabelVerticalOffset"
+                class="block text-sm font-medium text-gray-300">Local From Label
+                Vertical offset</label>
+              <input
+                bind:value={$linkUnderConstruction.localFromLabelVerticalOffset}
+                type="number"
+                name="localFromLabelVerticalOffset"
+                id="localFromLabelVerticalOffset"
+                min="-200"
+                max="200"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
+            <div class="col-span-2">
+              <label
+                for="localFromLabelHorizontalOffset"
+                class="block text-sm font-medium text-gray-300">Local From Label
+                Horizontal offset</label>
+              <input
+                bind:value={$linkUnderConstruction.localFromLabelHorizontalOffset}
+                type="number"
+                name="localFromLabelHorizontalOffset"
+                id="localFromLabelHorizontalOffset"
+                min="-200"
+                max="200"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
+            <div class="col-span-2">
+              <label
+                for="localFromLabelFontSize"
+                class="block text-sm font-medium text-gray-300">Local From Label
+                Font size</label>
+              <input
+                bind:value={$linkUnderConstruction.localFromLabelFontSize}
+                type="number"
+                name="localFromLabelFontSize"
+                id="localFromLabelFontSize"
+                min="8"
+                max="100"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="localFromLabelRotation"
+                class="block text-sm font-medium text-gray-300">Local From Label
+                Rotation</label>
+              <input
+                bind:value={$linkUnderConstruction.localFromLabelRotation}
+                type="number"
+                name="localFromLabelRotation"
+                id="localFromLabelRotation"
+                min="-359"
+                max="359"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
+          {/if}
         {:else}
           <div class="col-span-2">
             <label

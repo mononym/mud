@@ -237,8 +237,8 @@ function createWorldBuilderStore() {
   }
 
   async function saveArea() {
-    await AreasStore.saveArea(get(areaUnderConstruction));
-    selectedArea.set(get(areaUnderConstruction));
+    const newArea = await AreasStore.saveArea(get(areaUnderConstruction));
+    selectedArea.set(newArea);
     areaUnderConstruction.set({ ...AreaState });
     mode.set("area");
     view.set("details");

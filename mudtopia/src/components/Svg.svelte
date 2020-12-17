@@ -84,17 +84,23 @@
         <title>{shape.name}</title>
       </rect>
     {:else if shape.type == 'text'}
-      <text
-        fill={shape.fill}
-        font-size={shape.fontSize}
-        font-weight={shape.fontWeight}
-        font-style={shape.fontStyle}
-        font-family={shape.fontFamily}
-        inline-size={shape.inlineSize}
-        text-anchor={shape.textAnchor}
-        transform={'translate(' + shape.x + ',' + shape.y + ') rotate(' + shape.rotate + ')'}>
-        {shape.text}
-      </text>
+    <text
+    fill={shape.labelColor}
+    text-anchor="middle"
+    x={shape.labelX}
+    y={shape.labelY}
+    dominant-baseline="central"
+    font-size={shape.labelFontSize}
+    transform={shape.labelTransform}>
+    {#each shape.label as label, i}
+      <tspan
+        x={shape.labelX}
+        y={shape.labelY}
+        dy="{i * shape.labelFontSize}px">
+        {label}
+      </tspan>
+    {/each}
+  </text>
     {/if}
   {/each}
 </svg>
