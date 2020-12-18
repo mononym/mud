@@ -126,7 +126,12 @@ function createWorldBuilderStore() {
   }
 
   async function cancelLinkArea() {
+    linkEditorMapForOtherAreaId.set(get(selectedMap).id);
+    selectedLink.set({ ...LinkState });
     linkUnderConstruction.set({ ...LinkState });
+
+    // if (get(linkUnderConstruction).id == '')
+    // if (get(linkUnderConstruction).id != '') {}
     mode.set("area");
     view.set("details");
   }
