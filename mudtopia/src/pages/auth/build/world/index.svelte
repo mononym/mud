@@ -7,7 +7,6 @@
   import AreaDetails from "./_components/AreaDetails.svelte";
   import MapList from "./_components/MapList.svelte";
   import AreaList from "./_components/AreaList.svelte";
-  import SvgMap from "./_components/SvgMap.svelte";
   import BuilderSvgMap from "./_components/BuilderSvgMap.svelte";
   import { onMount } from "svelte";
   import { MapsStore } from "../../../../stores/maps.ts";
@@ -66,11 +65,6 @@
       $selectedArea = { ...areaState };
       $selectedLink = { ...linkState };
     }
-  }
-
-  function editMap(event) {
-    mapUnderConstruction = { ...event.detail };
-    $view = "edit";
   }
 
   function del(map) {

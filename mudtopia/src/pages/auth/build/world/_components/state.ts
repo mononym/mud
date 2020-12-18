@@ -28,6 +28,8 @@ function createWorldBuilderStore() {
     ($selectedArea) => $selectedArea.id != ""
   );
 
+  const mapUnderConstruction = writable(<MapInterface>{ ...MapState });
+
   // Links stuff
   const incomingLinksForSelectedArea = derived(
     [areaSelected, selectedArea, links],
@@ -221,6 +223,32 @@ function createWorldBuilderStore() {
     linksForLinkEditor.set(newLinks);
     loadingLinkEditorData.set(false);
     linkEditorDataLoaded.set(true);
+  }
+
+  async function editMap(map: MapInterface) {
+    selectedMap.set(map);
+    mapUnderConstruction.set({ ...map });
+    mode.set("map");
+    view.set("edit");
+  }
+
+  async function saveMap() {
+    const newMap = await MapsStore.saveMap(get(mapUnderConstruction));
+    selectedMap.set(newMap);
+    mapUnderConstruction.set({ ...MapState });
+    mode.set("map");
+    view.set("details");
+  }
+
+  async function cancelEditMap() {
+    mapUnderConstruction.set({ ...MapState });
+
+    if (get(selectedMap).id == "") {
+      selectedMap.set({ ...MapState });
+    }
+
+    mode.set("map");
+    view.set("details");
   }
 
   //
@@ -458,6 +486,7 @@ function createWorldBuilderStore() {
     mapSelected,
     svgMapAllowIntraMapAreaSelection,
     svgMapAllowInterMapAreaSelection,
+    mapUnderConstruction,
     // UI stuff,
     mode,
     view,
@@ -480,9 +509,12 @@ function createWorldBuilderStore() {
     selectArea,
     editArea,
     // Map stuff
+    editMap,
     buildMap,
     loadAllMapData,
     selectMap,
+    saveMap,
+    cancelEditMap
   };
 }
 
