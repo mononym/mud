@@ -304,7 +304,7 @@
               type="number"
               name="localToLabelFontSize"
               id="localToLabelfontSize"
-              min="8"
+              min="4"
               max="100"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
@@ -486,7 +486,7 @@
               type="number"
               name="localFromLabelFontSize"
               id="localFromLabelfontSize"
-              min="8"
+              min="4"
               max="100"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
           </div>
@@ -626,7 +626,7 @@
                 type="number"
                 name="fontSize"
                 id="fontSize"
-                min="8"
+                min="4"
                 max="100"
                 class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
             </div>

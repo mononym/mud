@@ -34,6 +34,9 @@
   // A superset of the areas above. Must contain all the areas being drawn within the map, and any areas being linked to from other maps.
   export let areasMap = {};
 
+  // An areaMap for all of the areas that belong to another map being linked to, for referencing when drawing and so on.
+  export let areasMapForOtherMap = {};
+
   // All of the loaded maps that could be linked to
   export let mapsMap = {};
 
@@ -67,6 +70,8 @@
   // Controls display and code behavior when it comes to selecting different types of areas
   export let svgMapAllowIntraMapAreaSelection = false;
   export let svgMapAllowInterMapAreaSelection = false;
+
+  $: allAreasMap = Object.assign(areasMap, areasMapForOtherMap);
 
   const highlightColor = "#ff6600";
 
@@ -164,7 +169,7 @@
   $: newInterMapLinkText =
     mapSelected &&
     links != undefined &&
-    areasMap != undefined &&
+    allAreasMap != undefined &&
     linkUnderConstruction != undefined &&
     buildingLink
       ? buildNewInterMapLinkText()
@@ -176,12 +181,12 @@
       .filter((link) => {
         return (
           (link.localToLabel != "" || link.localFromLabel != "") &&
-          areasMap[link.toId] != undefined &&
-          areasMap[link.fromId] != undefined &&
-          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
-          ((areasMap[link.fromId].mapId == chosenMap.id &&
+          allAreasMap[link.toId] != undefined &&
+          allAreasMap[link.fromId] != undefined &&
+          allAreasMap[link.fromId].mapId != allAreasMap[link.toId].mapId &&
+          ((allAreasMap[link.fromId].mapId == chosenMap.id &&
             link.localToLabel != "") ||
-            (areasMap[link.toId].mapId == chosenMap.id &&
+            (allAreasMap[link.toId].mapId == chosenMap.id &&
               link.localFromLabel != ""))
         );
       })
@@ -193,7 +198,7 @@
         let toY;
 
         // incoming
-        if (areasMap[link.toId].mapId == chosenMap.id) {
+        if (allAreasMap[link.toId].mapId == chosenMap.id) {
           modifiedLink.label = link.localFromLabel;
           modifiedLink.labelFontSize = link.localFromLabelFontSize;
           modifiedLink.labelHorizontalOffset =
@@ -203,8 +208,8 @@
           modifiedLink.labelColor = link.localFromLabelColor;
           fromX = link.localFromX;
           fromY = link.localFromY;
-          toX = areasMap[link.toId].mapX;
-          toY = areasMap[link.toId].mapY;
+          toX = allAreasMap[link.toId].mapX;
+          toY = allAreasMap[link.toId].mapY;
         } else {
           modifiedLink.label = link.localToLabel;
           modifiedLink.labelFontSize = link.localToLabelFontSize;
@@ -215,8 +220,8 @@
           modifiedLink.labelColor = link.localToLabelColor;
           toX = link.localToX;
           toY = link.localToY;
-          fromX = areasMap[link.fromId].mapX;
-          fromY = areasMap[link.fromId].mapY;
+          fromX = allAreasMap[link.fromId].mapX;
+          fromY = allAreasMap[link.fromId].mapY;
         }
 
         return buildLabelFromLink(modifiedLink, fromX, fromY, toX, toY);
@@ -226,7 +231,7 @@
   $: existingInterMapLinkText =
     mapSelected &&
     links != undefined &&
-    areasMap != undefined &&
+    allAreasMap != undefined &&
     linkUnderConstruction != undefined
       ? buildExistingInterMapLinkText()
       : [];
@@ -239,12 +244,12 @@
           link.id != "" &&
           link.id != linkUnderConstruction.id &&
           (link.localToLabel != "" || link.localFromLabel != "") &&
-          areasMap[link.toId] != undefined &&
-          areasMap[link.fromId] != undefined &&
-          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
-          ((areasMap[link.fromId].mapId == chosenMap.id &&
+          allAreasMap[link.toId] != undefined &&
+          allAreasMap[link.fromId] != undefined &&
+          allAreasMap[link.fromId].mapId != allAreasMap[link.toId].mapId &&
+          ((allAreasMap[link.fromId].mapId == chosenMap.id &&
             link.localToLabel != "") ||
-            (areasMap[link.toId].mapId == chosenMap.id &&
+            (allAreasMap[link.toId].mapId == chosenMap.id &&
               link.localFromLabel != ""))
         );
       })
@@ -256,7 +261,7 @@
         let toY;
 
         // incoming
-        if (areasMap[link.toId].mapId == chosenMap.id) {
+        if (allAreasMap[link.toId].mapId == chosenMap.id) {
           modifiedLink.label = link.localFromLabel;
           modifiedLink.labelFontSize = link.localFromLabelFontSize;
           modifiedLink.labelHorizontalOffset =
@@ -266,8 +271,8 @@
           modifiedLink.labelColor = link.localFromLabelColor;
           fromX = link.localFromX;
           fromY = link.localFromY;
-          toX = areasMap[link.toId].mapX;
-          toY = areasMap[link.toId].mapY;
+          toX = allAreasMap[link.toId].mapX;
+          toY = allAreasMap[link.toId].mapY;
         } else {
           modifiedLink.label = link.localToLabel;
           modifiedLink.labelFontSize = link.localToLabelFontSize;
@@ -278,8 +283,8 @@
           modifiedLink.labelColor = link.localToLabelColor;
           toX = link.localToX;
           toY = link.localToY;
-          fromX = areasMap[link.fromId].mapX;
-          fromY = areasMap[link.fromId].mapY;
+          fromX = allAreasMap[link.fromId].mapX;
+          fromY = allAreasMap[link.fromId].mapY;
         }
 
         return buildLabelFromLink(modifiedLink, fromX, fromY, toX, toY);
@@ -381,7 +386,7 @@
   }
 
   $: existingInterMapLinks =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected && links != undefined && allAreasMap != undefined
       ? buildExistingInterMapLinks()
       : [];
 
@@ -391,11 +396,11 @@
       .filter((link) => {
         return (
           link.id != "" &&
-          areasMap[link.toId] != undefined &&
-          areasMap[link.fromId] != undefined &&
-          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
-          (areasMap[link.fromId].mapId == chosenMap.id ||
-            areasMap[link.toId].mapId == chosenMap.id)
+          allAreasMap[link.toId] != undefined &&
+          allAreasMap[link.fromId] != undefined &&
+          allAreasMap[link.fromId].mapId != allAreasMap[link.toId].mapId &&
+          (allAreasMap[link.fromId].mapId == chosenMap.id ||
+            allAreasMap[link.toId].mapId == chosenMap.id)
         );
       })
       .map((link) => {
@@ -405,23 +410,23 @@
 
   $: newInterMapLinks =
     mapSelected &&
-    links != undefined &&
-    areasMap != undefined &&
+    chosenMap != undefined &&
+    buildingLink &&
+    allAreasMap != undefined &&
     linkUnderConstruction != undefined
       ? buildNewInterMapLinks()
       : [];
 
-  // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
+  // These are your already existing links between rooms, between maps. One or more of them could be highlighted.
   function buildNewInterMapLinks() {
     return [linkUnderConstruction]
       .filter((link) => {
         return (
-          link.id == "" &&
-          areasMap[link.toId] != undefined &&
-          areasMap[link.fromId] != undefined &&
-          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
-          (areasMap[link.fromId].mapId == chosenMap.id ||
-            areasMap[link.toId].mapId == chosenMap.id)
+          allAreasMap[link.toId] != undefined &&
+          allAreasMap[link.fromId] != undefined &&
+          allAreasMap[link.fromId].mapId != allAreasMap[link.toId].mapId &&
+          (allAreasMap[link.fromId].mapId != chosenMap.id ||
+            allAreasMap[link.toId].mapId != chosenMap.id)
         );
       })
       .map((link) => {
@@ -437,7 +442,7 @@
     let fromY;
 
     // incoming
-    if (areasMap[link.toId].mapId == chosenMap.id) {
+    if (allAreasMap[link.toId].mapId == chosenMap.id) {
       modifiedLink.label = link.localFromLabel;
       modifiedLink.labelFontSize = link.localFromLabelFontSize;
       modifiedLink.labelHorizontalOffset = link.localFromLabelHorizontalOffset;
@@ -449,8 +454,8 @@
       modifiedLink.lineWidth = link.localFromLineWidth;
       fromX = link.localFromX;
       fromY = link.localFromY;
-      toX = areasMap[link.toId].mapX;
-      toY = areasMap[link.toId].mapY;
+      toX = allAreasMap[link.toId].mapX;
+      toY = allAreasMap[link.toId].mapY;
     } else {
       modifiedLink.label = link.localToLabel;
       modifiedLink.labelFontSize = link.localToLabelFontSize;
@@ -463,8 +468,8 @@
       modifiedLink.lineWidth = link.localToLineWidth;
       toX = link.localToX;
       toY = link.localToY;
-      fromX = areasMap[link.fromId].mapX;
-      fromY = areasMap[link.fromId].mapY;
+      fromX = allAreasMap[link.fromId].mapX;
+      fromY = allAreasMap[link.fromId].mapY;
     }
 
     return buildPathFromLink(link, fromX, fromY, toX, toY);
@@ -473,7 +478,7 @@
   $: newInterMapLinkAreas =
     mapSelected &&
     links != undefined &&
-    areasMap != undefined &&
+    allAreasMap != undefined &&
     linkUnderConstruction != undefined
       ? buildNewInterMapLinkAreas()
       : [];
@@ -485,11 +490,11 @@
       .filter((link) => {
         return (
           buildingLink &&
-          areasMap[link.toId] != undefined &&
-          areasMap[link.fromId] != undefined &&
-          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
-          (areasMap[link.fromId].mapId == chosenMap.id ||
-            areasMap[link.toId].mapId == chosenMap.id)
+          allAreasMap[link.toId] != undefined &&
+          allAreasMap[link.fromId] != undefined &&
+          allAreasMap[link.fromId].mapId != allAreasMap[link.toId].mapId &&
+          (allAreasMap[link.fromId].mapId == chosenMap.id ||
+            allAreasMap[link.toId].mapId == chosenMap.id)
         );
       })
       .map((link) => {
@@ -498,7 +503,7 @@
         generatedArea.id = "InterMapLinkAreaPreview";
 
         // incoming link
-        if (areasMap[link.toId].mapId == chosenMap.id) {
+        if (allAreasMap[link.toId].mapId == chosenMap.id) {
           generatedArea.color = link.localFromColor;
           generatedArea.borderColor = link.localFromBorderColor;
           generatedArea.borderWidth = link.localFromBorderWidth;
@@ -506,10 +511,10 @@
           generatedArea.mapSize = link.localFromSize;
           generatedArea.mapX = link.localFromX;
           generatedArea.mapY = link.localFromY;
-          generatedArea.name = `${mapsMap[areasMap[link.fromId].mapId].name}, ${
-            areasMap[link.fromId].name
-          }`;
-        } else if (areasMap[link.fromId].mapId == chosenMap.id) {
+          generatedArea.name = `${
+            mapsMap[allAreasMap[link.fromId].mapId].name
+          }, ${allAreasMap[link.fromId].name}`;
+        } else if (allAreasMap[link.fromId].mapId == chosenMap.id) {
           generatedArea.color = link.localToColor;
           generatedArea.borderColor = link.localToBorderColor;
           generatedArea.borderWidth = link.localToBorderWidth;
@@ -517,9 +522,9 @@
           generatedArea.mapSize = link.localToSize;
           generatedArea.mapX = link.localToX;
           generatedArea.mapY = link.localToY;
-          generatedArea.name = `${mapsMap[areasMap[link.toId].mapId].name}, ${
-            areasMap[link.toId].name
-          }`;
+          generatedArea.name = `${
+            mapsMap[allAreasMap[link.toId].mapId].name
+          }, ${allAreasMap[link.toId].name}`;
         }
 
         return buildRectFromArea(generatedArea);
@@ -561,7 +566,7 @@
   }
 
   $: highlightsForExistingInterMapLinks =
-    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+    mapSelected && allAreasMap != undefined && highlightedLinkIds.length > 0
       ? buildHighlightsForExistingInterMapLinks()
       : [];
 
@@ -573,9 +578,9 @@
         link != undefined &&
         link.toId != "" &&
         link.fromId != "" &&
-        areasMap[link.toId].mapId != areasMap[link.fromId].mapId &&
-        (areasMap[link.toId].mapId == chosenMap.id ||
-          areasMap[link.fromId].mapId == chosenMap.id)
+        allAreasMap[link.toId].mapId != allAreasMap[link.fromId].mapId &&
+        (allAreasMap[link.toId].mapId == chosenMap.id ||
+          allAreasMap[link.fromId].mapId == chosenMap.id)
       ) {
         link.lineColor = highlightColor;
         link.hasMarker = false;
@@ -591,16 +596,16 @@
 
           x1 = link.localFromX;
           y1 = link.localFromY;
-          x2 = areasMap[link.toId].mapX;
-          y2 = areasMap[link.toId].mapY;
+          x2 = allAreasMap[link.toId].mapX;
+          y2 = allAreasMap[link.toId].mapY;
         } else {
           link.lineWidth = link.localToLineWidth;
           link.lineDash = link.localToLineDash;
 
           x2 = link.localToX;
           y2 = link.localToY;
-          x1 = areasMap[link.fromId].mapX;
-          y1 = areasMap[link.fromId].mapY;
+          x1 = allAreasMap[link.fromId].mapX;
+          y1 = allAreasMap[link.fromId].mapY;
         }
 
         link.lineColor = highlightColor;
@@ -761,7 +766,9 @@
     mapSelected &&
     areas != undefined &&
     links != undefined &&
-    areasMap != undefined &&
+    allAreasMap != undefined &&
+    chosenMap != undefined &&
+    mapsMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
     svgMapAllowInterMapAreaSelection != undefined
       ? buildExistingInterMapAreas()
@@ -772,7 +779,7 @@
       .filter((area) => {
         return (
           area.id != "" &&
-          areasMap[area.id] != undefined &&
+          allAreasMap[area.id] != undefined &&
           area.mapId != chosenMap.id
         );
       })
@@ -804,8 +811,8 @@
           modifiedArea.mapX = link.localToX;
           modifiedArea.mapY = link.localToY;
 
-          modifiedArea.name = `${mapsMap[areasMap[link.toId].mapId].name}, ${
-            areasMap[link.toId].name
+          modifiedArea.name = `${mapsMap[allAreasMap[link.toId].mapId].name}, ${
+            allAreasMap[link.toId].name
           }`;
         } else {
           modifiedArea.mapSize = link.localFromSize;
@@ -818,9 +825,9 @@
           modifiedArea.mapX = link.localFromX;
           modifiedArea.mapY = link.localFromY;
 
-          modifiedArea.name = `${mapsMap[areasMap[link.fromId].mapId].name}, ${
-            areasMap[link.fromId].name
-          }`;
+          modifiedArea.name = `${
+            mapsMap[allAreasMap[link.fromId].mapId].name
+          }, ${allAreasMap[link.fromId].name}`;
         }
 
         return buildRectFromArea(modifiedArea);
