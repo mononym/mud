@@ -214,7 +214,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -246,7 +246,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -278,7 +278,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -310,7 +310,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -342,7 +342,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -374,7 +374,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -406,7 +406,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -438,7 +438,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -470,7 +470,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -502,7 +502,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -534,7 +534,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -566,7 +566,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -598,7 +598,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -630,7 +630,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -662,7 +662,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -694,7 +694,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -726,7 +726,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -758,7 +758,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -790,7 +790,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -822,7 +822,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -854,7 +854,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -886,7 +886,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -918,7 +918,7 @@ Mud.Repo.insert!(%Link{
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
 Mud.Repo.insert!(%Link{
@@ -961,7 +961,7 @@ Mud.Repo.insert!(%Link{
 #     map_size: 20,
 # # map_id: map.id,
 #     name: "Maze",
-#     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+#     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
 #   })
 
 # maze_27 =
@@ -971,7 +971,7 @@ Mud.Repo.insert!(%Link{
 #     map_size: 20,
 # # map_id: map.id,
 #     name: "Maze",
-#     description: "Endless hegerows tower above, providing no clue as to entrance or exit.."
+#     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
 #   })
 
 # Link insertions
