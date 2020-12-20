@@ -1,7 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-  import { WorldBuilderStore } from "./state";
-  import CharacterState from "../../../models/character";
+  import CharacterState from "../../../../models/character";
 
   export let characterUnderConstruction = { ...CharacterState };
 
@@ -9,9 +7,9 @@
     // saveArea($areaUnderConstruction);
   }
 
-  // function cancel() {
-  //   WorldBuilderStore.cancelEditArea();
-  // }
+  function cancel() {
+    //   WorldBuilderStore.cancelEditArea();
+  }
 
   // $: saveButtonDisabled =
   //   $areaUnderConstruction.name == "" ||
@@ -143,9 +141,9 @@
     </div>
     <div class="px-4 py-3 text-right sm:px-6">
       <button
-        disabled={saveButtonDisabled}
+        disabled={false}
         type="submit"
-        class="{saveButtonDisabled ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        class="{false ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
         Save
       </button>
       <button

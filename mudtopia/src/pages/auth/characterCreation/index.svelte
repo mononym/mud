@@ -1,18 +1,16 @@
 <script language="typescript">
-  import { Circle2 } from "svelte-loading-spinners";
-  import { player } from "../../../stores/player";
   import { CharactersStore } from "../../../stores/characters";
   const { loading, characters } = CharactersStore;
-  import CharacterEditor from "./_components/CharacterEditor";
+  import CharacterEditor from "./_components/CharacterEditor.svelte";
 
   import { onMount } from "svelte";
   import { goto } from "@roxi/routify";
 
-  // onMount(async () => {
-  //   CharactersStore.load($player.id);
-  // });
+  onMount(async () => {
+    console.log("hello");
+  });
 </script>
 
-<div class="h-full w-full flex flex-col overflow-hidden justify-center">
+<div class="flex-1 flex flex-col overflow-hidden justify-center">
   <CharacterEditor />
 </div>
