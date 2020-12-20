@@ -23,7 +23,7 @@ defmodule MudWeb.RaceView do
       hairStyles: race.hair_styles,
       hairLengths: race.hair_lengths,
       heights: race.heights,
-      skinColors: race.skin_colors,
+      skinColors: race.skin_tones,
       portrait: race.portrait,
       description: race.description,
       pronouns: race.pronouns,

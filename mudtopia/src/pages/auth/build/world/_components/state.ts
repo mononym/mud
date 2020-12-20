@@ -235,6 +235,23 @@ function createWorldBuilderStore() {
     view.set("edit");
   }
 
+  async function createNewMap() {
+    selectedMap.set({ ...MapState });
+    mapUnderConstruction.set({ ...MapState });
+    mode.set("map");
+    view.set("edit");
+  }
+
+  async function deleteMap(map: MapInterface) {
+    MapsStore.deleteMap(map);
+    if (map.id == get(selectedMap).id) {
+      selectedMap.set({ ...MapState });
+    }
+
+    mode.set("map");
+    view.set("details");
+  }
+
   async function saveMap() {
     const newMap = await MapsStore.saveMap(get(mapUnderConstruction));
     selectedMap.set(newMap);
@@ -646,6 +663,8 @@ function createWorldBuilderStore() {
     selectMap,
     saveMap,
     cancelEditMap,
+    createNewMap,
+    deleteMap,
     // Map Label stuff
     selectedMapLabel,
     selectMapLabel,

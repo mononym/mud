@@ -78,7 +78,7 @@ defmodule MudWeb.CharacterCreationWizardLive do
     attributes = %{
       eye_color: form_data["eye_color"],
       hair_color: form_data["hair_color"],
-      skin_color: form_data["skin_color"],
+      skin_tone: form_data["skin_tone"],
       character_created: true
     }
 

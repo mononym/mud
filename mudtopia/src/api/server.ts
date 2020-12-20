@@ -53,7 +53,7 @@ export async function createMap(
   params: Record<string, unknown>
 ): Promise<AxiosResponse<MapInterface>> {
   return await (<Promise<AxiosResponse<MapInterface>>>(
-    Api.post("/maps", params)
+    Api.post("/maps", { map: params })
   ));
 }
 
@@ -141,10 +141,7 @@ export async function createLink(
   ));
 }
 
-
 // Character stuff
-
-
 
 export async function loadCharactersForPlayer(
   mapId: string

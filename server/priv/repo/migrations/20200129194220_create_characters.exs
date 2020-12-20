@@ -27,7 +27,7 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
       add(:hair_color, :string)
       add(:hair_style, :string)
       add(:hair_length, :string)
-      add(:skin_color, :string)
+      add(:skin_tone, :string)
       add(:position, :string)
       add(:height, :string)
 
@@ -62,7 +62,7 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
     create(index(:characters, [:hair_color]))
     create(index(:characters, [:hair_style]))
     create(index(:characters, [:height]))
-    create(index(:characters, [:skin_color]))
+    create(index(:characters, [:skin_tone]))
     create(index(:characters, [:area_id]))
     create(index(:characters, [:position]))
     create(index(:characters, [:handedness]))

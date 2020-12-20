@@ -4,7 +4,7 @@ defmodule Mud.Engine.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.{Area, Character, Instance, Item}
+  alias Mud.Engine.{Area, Character, Item}
   alias Mud.Engine.Util
   alias Mud.Engine.Character.Skill
   alias Mud.DataType.NameSlug
@@ -17,9 +17,9 @@ defmodule Mud.Engine.Character do
   ##
   ##
 
-  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
+    @derive Jason.Encoder
     has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
     has_many(:held_items, Item, foreign_key: :holdable_held_by_id)
 
@@ -51,11 +51,14 @@ defmodule Mud.Engine.Character do
     field(:hair_length, :string, default: "short")
     field(:hair_style, :string, default: "loose")
     field(:race, :string, default: "Human")
-    field(:skin_color, :string, default: "brown")
+    field(:skin_tone, :string, default: "brown")
     field(:height, :string, default: "average")
 
     # Which hand is the primary hand
     field(:handedness, :string, default: "right")
+
+    # Gender pronoun
+    field(:gender_pronoun, :string, default: "neutral")
 
     #
     # Physical Status
@@ -129,7 +132,7 @@ defmodule Mud.Engine.Character do
     #     :reflexes,
     #     :relative_item_id,
     #     :relative_position,
-    #     :skin_color,
+    #     :skin_tone,
     #     :stamina,
     #     :strength,
     #     :wisdom,
@@ -161,7 +164,7 @@ defmodule Mud.Engine.Character do
       :position,
       :race,
       :reflexes,
-      :skin_color,
+      :skin_tone,
       :stamina,
       :strength,
       :wisdom,
@@ -259,7 +262,7 @@ defmodule Mud.Engine.Character do
 
     "#{character.name} is #{a_or_an} #{character.race}. They have #{character.hair_color} hair, #{
       character.eye_color
-    } eyes, and #{character.skin_color} skin."
+    } eyes, and #{character.skin_tone} skin."
   end
 
   @doc """

@@ -66,10 +66,10 @@ defmodule MudWeb.Router do
     post("/player/settings", PlayerController, :save_authenticated_player_settings)
 
     # Character related stuff
-    post("/characters/list-player-characters", CharacterController, :list_player_characters)
-    post("/characters/create", CharacterController, :create)
+    get("/characters/player/:player_id", CharacterController, :list_player_characters)
+    # post("/characters/create", CharacterController, :create)
     # post "/characters/delete", CharacterController, :delete
-    post("/characters/get", CharacterController, :get)
+    # post("/characters/get", CharacterController, :get)
     # post "/characters/update", CharacterController, :update
     get("/characters/get-creation-data", CharacterController, :get_creation_data)
 

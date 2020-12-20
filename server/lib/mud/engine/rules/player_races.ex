@@ -6,7 +6,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
               adjective: nil,
               portrait: "",
               description: "",
-              
               eye_colors: [],
               eye_shapes: [],
               eye_features: [],
@@ -15,7 +14,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
               hair_styles: [],
               hair_lengths: [],
               heights: [],
-              skin_colors: [],
+              skin_tones: [],
               pronouns: [],
               age_min: 0,
               age_max: 0,
@@ -28,7 +27,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       elven_race(),
       dwarfen_race()
     ]
-    |> Enum.into(%{}, & {&1.singular, &1})
+    |> Enum.into(%{}, &{&1.singular, &1})
   end
 
   defp human_race do
@@ -42,7 +41,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       eye_colors: common_eye_colors(),
       eye_shapes: common_eye_shapes(),
       eye_features: common_eye_features(),
-      skin_colors: common_skin_colors(),
+      skin_tones: common_skin_tones(),
       hair_lengths: common_hair_lengths(),
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
@@ -66,7 +65,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       eye_colors: common_eye_colors(),
       eye_shapes: common_eye_shapes(),
       eye_features: common_eye_features(),
-      skin_colors: common_skin_colors(),
+      skin_tones: common_skin_tones(),
       hair_lengths: common_hair_lengths(),
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
@@ -89,7 +88,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       eye_colors: common_eye_colors(),
       eye_shapes: common_eye_shapes(),
       eye_features: common_eye_features(),
-      skin_colors: common_skin_colors(),
+      skin_tones: common_skin_tones(),
       hair_lengths: common_hair_lengths(),
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
@@ -103,9 +102,29 @@ defmodule Mud.Engine.Rules.PlayerRaces do
   end
 
   defp common_body_shapes do
-    ["thin", "skinny", "rail thin", "svelte", "lissome", "blocky", "rotund", "bulging", "athletic", "flabby", "round", "pear shaped",
-  "hourglass", "curvy", "soft", "hard", "muscular", "wirey", "scrawney", "bulky"]
-  |> Enum.sort()
+    [
+      "thin",
+      "skinny",
+      "rail thin",
+      "svelte",
+      "lissome",
+      "blocky",
+      "rotund",
+      "bulging",
+      "athletic",
+      "flabby",
+      "round",
+      "pear shaped",
+      "hourglass",
+      "curvy",
+      "soft",
+      "hard",
+      "muscular",
+      "wirey",
+      "scrawney",
+      "bulky"
+    ]
+    |> Enum.sort()
   end
 
   defp common_pronouns do
@@ -139,7 +158,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     |> Enum.sort()
   end
 
-  defp common_skin_colors do
+  defp common_skin_tones do
     [
       "deeply tanned",
       "almost transparent",
@@ -187,7 +206,18 @@ defmodule Mud.Engine.Rules.PlayerRaces do
   end
 
   defp common_eye_placement do
-    ["average", "wide set", "asymmetrical", "big", "small", "close set", "deep set", "downturned", "upturned", "protruding"]
+    [
+      "average",
+      "wide set",
+      "asymmetrical",
+      "big",
+      "small",
+      "close set",
+      "deep set",
+      "downturned",
+      "upturned",
+      "protruding"
+    ]
     |> Enum.sort()
   end
 
@@ -265,11 +295,23 @@ defmodule Mud.Engine.Rules.PlayerRaces do
   end
 
   [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "very short"]}]
+
   defp common_hair_styles do
   end
 
   defp common_hair_lengths do
-    ["short", "very short", "bald", "closely cut", "pixie cut", "long", "very long", "shoulder length", "hip length", "mid back"]
+    [
+      "short",
+      "very short",
+      "bald",
+      "closely cut",
+      "pixie cut",
+      "long",
+      "very long",
+      "shoulder length",
+      "hip length",
+      "mid back"
+    ]
     |> Enum.sort()
   end
 

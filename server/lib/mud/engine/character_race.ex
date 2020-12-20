@@ -7,7 +7,6 @@ defmodule Mud.Engine.CharacterRace do
   import Ecto.Changeset
   import Ecto.Query, warn: false
   alias Mud.Repo
-  alias Mud.Engine.CharacterRaceFeature
 
   @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -18,14 +17,6 @@ defmodule Mud.Engine.CharacterRace do
     field(:plural, :string)
     field(:portrait, :string)
     field(:singular, :string)
-
-    many_to_many(
-      :features,
-      CharacterRaceFeature,
-      join_through: Mud.Engine.RaceFeature,
-      on_replace: :delete,
-      unique: true
-    )
 
     timestamps()
   end
@@ -112,18 +103,9 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def update(%__MODULE__{} = character_race, attrs) do
-    result =
-      character_race
-      |> __MODULE__.changeset(attrs)
-      |> Repo.update()
-
-    case result do
-      {:ok, race} ->
-        {:ok, Repo.preload(race, :features)}
-
-      error ->
-        error
-    end
+    character_race
+    |> __MODULE__.changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """

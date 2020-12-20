@@ -37,6 +37,7 @@
     areasForLinkEditor,
     linksForLinkEditor,
     mapLabelUnderConstruction,
+    createNewMap,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
@@ -47,6 +48,7 @@
   let deleteMatchString = "";
   $: backToMapViewButtonDisabled = !($view == "details" && $mode == "area");
   $: createNewAreaButtonDisabled = !($view == "details" && $mode == "area");
+  $: newMapButtonDisabled = !($view == "details" && $mode == "map");
 
   let primaryMap;
 
@@ -116,6 +118,15 @@
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
           <MapList />
+
+          <div class="flex-shrink flex">
+            <button
+              on:click={createNewMap}
+              disabled={newMapButtonDisabled}
+              type="button"
+              class="flex-1 rounded-l-md {newMapButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {newMapButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">New
+              Map</button>
+          </div>
         {:else}
           <AreaList />
 

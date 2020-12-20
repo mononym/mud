@@ -11,6 +11,11 @@ defmodule MudWeb.CharacterController do
     render(conn, "index.html", characters: characters)
   end
 
+  def list_player_characters(conn, %{"player_id" => player_id}) do
+    characters = Character.list_by_player_id(player_id)
+    render(conn, "index.html", characters: characters)
+  end
+
   def new(conn, _params) do
     conn
     |> put_layout("liveview_client_page.html")

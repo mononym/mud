@@ -1,12 +1,19 @@
 <script>
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
+  import ConfirmWithInput from "../../../../../components/ConfirmWithInput.svelte";
 
   import { MapsStore } from "../../../../../stores/maps";
   const { maps } = MapsStore;
   import { WorldBuilderStore } from "./state";
-  const { loadAllMapData, selectedMap, editMap, addLabelToMap } = WorldBuilderStore;
+  const {
+    loadAllMapData,
+    selectedMap,
+    editMap,
+    addLabelToMap,
+  } = WorldBuilderStore;
+
+  let showDeletePrompt = false;
+  let mapForDeleting;
+  let deleteMatchString = "";
 
   function selectMap(map) {
     WorldBuilderStore.selectMap(map);
@@ -17,13 +24,18 @@
     WorldBuilderStore.buildMap(map);
   }
 
-  function deleteMap(map) {
-    $selectedMap = map;
-    dispatch("deleteMap", map);
+  function deleteCallback() {
+    WorldBuilderStore.deleteMap(mapForDeleting);
+  }
+
+  function promptForDeleteArea(map) {
+    deleteMatchString = map.name;
+    mapForDeleting = map;
+    showDeletePrompt = true;
   }
 </script>
 
-<div class="flex flex-col p-1">
+<div class="flex-1 flex flex-col p-1">
   <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
     <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
       <div
@@ -85,7 +97,7 @@
                     Edit
                   </button>
                   <button
-                    on:click={deleteMap(map)}
+                    on:click={promptForDeleteArea(map)}
                     class="text-gray-200 bg-transparent border border-solid border-gray-400 hover:bg-gray-400 hover:text-white active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     style="transition: all .15s ease">
@@ -102,4 +114,9 @@
       </div>
     </div>
   </div>
+
+  <ConfirmWithInput
+    bind:show={showDeletePrompt}
+    callback={deleteCallback}
+    matchString={deleteMatchString} />
 </div>

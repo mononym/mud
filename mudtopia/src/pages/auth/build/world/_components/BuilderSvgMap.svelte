@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Circle2 } from "svelte-loading-spinners";
-  import App from "../../../../../App.svelte";
   import Svg from "../../../../../components/Svg.svelte";
   import AreaState from "../../../../../models/area";
   import LinkState from "../../../../../models/link";
@@ -745,7 +744,9 @@
   $: newIntraMapAreas =
     areaUnderConstruction != undefined &&
     buildingArea == true &&
-    chosenMap != undefined
+    chosenMap != undefined &&
+    svgMapAllowIntraMapAreaSelection != undefined &&
+    svgMapAllowInterMapAreaSelection != undefined
       ? buildNewIntraMapAreas()
       : [];
 

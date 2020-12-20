@@ -8,7 +8,7 @@ defmodule MudWeb.Schema.CharacterCreationForm do
     field(:name, :string)
     field(:eye_color, :string)
     field(:hair_color, :string)
-    field(:skin_color, :string)
+    field(:skin_tone, :string)
   end
 
   def new() do
@@ -21,7 +21,7 @@ defmodule MudWeb.Schema.CharacterCreationForm do
 
   def update(name, attrs) do
     name
-    |> cast(attrs, [:name, :eye_color, :hair_color, :skin_color])
+    |> cast(attrs, [:name, :eye_color, :hair_color, :skin_tone])
     |> validate()
   end
 
@@ -31,6 +31,6 @@ defmodule MudWeb.Schema.CharacterCreationForm do
 
   @spec validate(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   def validate(changeset) do
-    validate_required(changeset, [:name, :eye_color, :hair_color, :skin_color])
+    validate_required(changeset, [:name, :eye_color, :hair_color, :skin_tone])
   end
 end

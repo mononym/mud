@@ -52,9 +52,9 @@
             <% end %>
           </select>
           <label>Skin Tone</label>
-          <select name="skin_color" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
-            <%= for skin_color <- @state.selected_race.skin_colors do %>
-              <option><%= skin_color %></option>
+          <select name="skin_tone" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
+            <%= for skin_tone <- @state.selected_race.skin_tones do %>
+              <option><%= skin_tone %></option>
             <% end %>
           </select>
           <%= submit "Start your adventure!", phx_disable_with: "Creating your character...", class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" %>
