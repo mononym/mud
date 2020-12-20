@@ -469,6 +469,18 @@ function createWorldBuilderStore() {
     selectedMapLabel.set(mapLabel);
   }
 
+  async function addLabelToMap(map: MapInterface) {
+    console.log("addLabelToMap");
+    console.log(map);
+    selectedMapLabel.set({ ...MapLabelState });
+    mapUnderConstruction.set({ ...map });
+    mapLabelUnderConstruction.set({ ...MapLabelState });
+
+    await tick();
+    mode.set("map");
+    view.set("label");
+  }
+
   async function editMapLabel(mapLabel: MapLabelInterface) {
     console.log("editMapLabel");
     console.log(mapLabel);
@@ -642,6 +654,7 @@ function createWorldBuilderStore() {
     cancelEditMapLabel,
     saveMapLabel,
     deleteMapLabel,
+    addLabelToMap,
   };
 }
 
