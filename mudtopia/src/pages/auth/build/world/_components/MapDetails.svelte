@@ -71,16 +71,6 @@
           <th
             scope="col"
             class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Style
-          </th>
-          <th
-            scope="col"
-            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-            Family
-          </th>
-          <th
-            scope="col"
-            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
             Actions
           </th>
         </tr>
@@ -111,12 +101,6 @@
             </td>
             <td class="px-4 py-4 whitespace-nowrap">
               <div class="text-sm text-gray-100">{label.weight}</div>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-100">{label.style}</div>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="text-sm text-gray-100">{label.family}</div>
             </td>
             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
               <button

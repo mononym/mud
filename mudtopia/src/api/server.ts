@@ -140,3 +140,16 @@ export async function createLink(
     Api.post("/links", { link: params })
   ));
 }
+
+
+// Character stuff
+
+
+
+export async function loadCharactersForPlayer(
+  mapId: string
+): Promise<AxiosResponse<LinkInterface[]>> {
+  return await (<Promise<AxiosResponse<LinkInterface[]>>>(
+    Api.get("/links/map/" + mapId)
+  ));
+}
