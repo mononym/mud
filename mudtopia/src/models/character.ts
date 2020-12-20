@@ -1,29 +1,67 @@
-export interface AreaInterface {
+export interface CharacterInterface {
   id: string;
-  description: string;
+  slug: string;
   name: string;
-  mapX: number;
-  mapY: number;
-  mapId: string;
-  mapSize: number;
-  mapCorners: number;
-  color: string;
-  borderWidth: number;
-  borderColor: string;
+  active: boolean;
+  handedness: string;
+  gender_pronoun: string;
+
+  strength: number;
+  stamina: number;
+  constitution: number;
+  dexterity: number;
+  agility: number;
+  reflexes: number;
+  intelligence: number;
+  wisdom: number;
+  charisma: number;
+
+  age: number;
+  race: string;
+  eyeColor: string;
+  eyeAccentColor: string;
+  eyeColorType: string;
+  hairColor: string;
+  hairLength: string;
+  hairStyle: string;
+  skinTone: string;
+  position: string;
+  height: string;
+  player_id: string;
+  area_id: string;
 }
 
-const state: AreaInterface = {
+const state: CharacterInterface = {
   id: "",
-  description: "",
+  slug: "",
   name: "",
-  mapX: 0,
-  mapY: 0,
-  mapSize: 20,
-  mapCorners: 5,
-  mapId: "",
-  color: "#696969",
-  borderColor: "#FFFFFF",
-  borderWidth: 2,
+  active: false,
+  handedness: "right",
+  gender_pronoun: "neutral",
+
+  strength: 10,
+  stamina: 10,
+  constitution: 10,
+  dexterity: 10,
+  agility: 10,
+  reflexes: 10,
+  intelligence: 10,
+  wisdom: 10,
+  charisma: 10,
+
+  age: 20,
+  race: "",
+  eyeColor: "",
+  eyeAccentColor: "",
+  eyeColorType: "",
+  hairColor: "",
+  hairLength: "",
+  hairStyle: "",
+  skinTone: "",
+  position: "",
+  height: "",
+  player_id: "",
+  area_id: "",
 };
 
 export default state;

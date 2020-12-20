@@ -6,6 +6,8 @@ defmodule MudWeb.CharacterController do
 
   require Logger
 
+  action_fallback(MudWeb.FallbackController)
+
   def index(conn, _params) do
     characters = Character.list_all()
     render(conn, "index.html", characters: characters)
@@ -13,7 +15,7 @@ defmodule MudWeb.CharacterController do
 
   def list_player_characters(conn, %{"player_id" => player_id}) do
     characters = Character.list_by_player_id(player_id)
-    render(conn, "index.html", characters: characters)
+    render(conn, "index.json", characters: characters)
   end
 
   def new(conn, _params) do
@@ -84,7 +86,6 @@ defmodule MudWeb.CharacterController do
       |> live_render(MudWeb.MudClientLive, character_id: character.id)
     else
       conn
-      |> put_flash(:error, "You do not have permission to access that Character.")
       |> redirect(to: "/home")
     end
   end

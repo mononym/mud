@@ -1,5 +1,6 @@
 import Api from "../services/api";
 import type { AxiosResponse } from "axios";
+import type { CharacterInterface } from "../models/character";
 import type { PlayerInterface } from "../models/player";
 import type { MapInterface } from "../models/map";
 import type { LinkInterface } from "../models/link";
@@ -106,6 +107,40 @@ export async function createArea(
   ));
 }
 
+// Character Stuff
+
+export async function updateCharacter(
+  params: CharacterInterface
+): Promise<AxiosResponse<CharacterInterface>> {
+  return await (<Promise<AxiosResponse<CharacterInterface>>>(
+    Api.patch("/characters/" + params.id, { character: params })
+  ));
+}
+
+export async function deleteCharacter(
+  characterId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.delete("/characters/" + characterId, "")
+  ));
+}
+
+export async function loadCharactersForPlayer(
+  playerId: string
+): Promise<AxiosResponse<CharacterInterface[]>> {
+  return await (<Promise<AxiosResponse<CharacterInterface[]>>>(
+    Api.get("/characters/player/" + playerId)
+  ));
+}
+
+export async function createCharacter(
+  params: CharacterInterface
+): Promise<AxiosResponse<CharacterInterface>> {
+  return await (<Promise<AxiosResponse<CharacterInterface>>>(
+    Api.post("/characters", { character: params })
+  ));
+}
+
 // Link Stuff
 
 export async function updateLink(
@@ -138,15 +173,5 @@ export async function createLink(
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
     Api.post("/links", { link: params })
-  ));
-}
-
-// Character stuff
-
-export async function loadCharactersForPlayer(
-  mapId: string
-): Promise<AxiosResponse<LinkInterface[]>> {
-  return await (<Promise<AxiosResponse<LinkInterface[]>>>(
-    Api.get("/links/map/" + mapId)
   ));
 }

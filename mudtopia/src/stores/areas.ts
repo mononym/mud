@@ -22,26 +22,6 @@ function createAreasStore() {
     areasMap.set(newAreasArea);
   }
 
-  // async function loadForMap(mapId: string) {
-  //   loa.set(true);
-  //   try {
-  //     let res = (await loadMaps()).data;
-
-  //     const newMapsMap = {};
-  //     for (var i = 0; i < res.length; i++) {
-  //       newMapsMap[res[i].id] = res[i];
-  //     }
-
-  //     mapsMap.set(newMapsMap);
-
-  //     loaded.set(true);
-  //   } catch (e) {
-  //     alert(e.message);
-  //   } finally {
-  //     loadingMaps.set(false);
-  //   }
-  // }
-
   async function deleteArea(area: AreaInterface) {
     deleting.set(true);
 
@@ -63,19 +43,6 @@ function createAreasStore() {
     saving.set(true);
     let oldData;
     const isNew = area.id == "";
-
-    // const props = {
-    //   id: area.id,
-    //   name: area.name,
-    //   description: area.description,
-    //   map_x: area.mapX,
-    //   map_y: area.mapY,
-    //   map_size: area.mapSize,
-    //   map_id: area.mapId,
-    //   map_corners: area.mapCorners,
-    //   border_width: area.borderWidth,
-    //   border_color: area.borderColor,
-    // };
 
     try {
       if (!isNew) {

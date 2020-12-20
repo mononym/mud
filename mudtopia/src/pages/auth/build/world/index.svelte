@@ -14,7 +14,7 @@
   import { AreasStore } from "../../../../stores/areas.ts";
   import { LinksStore } from "../../../../stores/links.ts";
   import { Circle2 } from "svelte-loading-spinners";
-  const { deleteMap, loadingMaps, mapsMap } = MapsStore;
+  const { loadingMaps, mapsMap } = MapsStore;
   const { areas, areasMap } = AreasStore;
   const { links } = LinksStore;
   import { WorldBuilderStore } from "./_components/state";
@@ -39,7 +39,6 @@
     mapLabelUnderConstruction,
     createNewMap,
   } = WorldBuilderStore;
-  import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
   import linkState from "../../../../models/link.ts";
 
@@ -67,16 +66,7 @@
     }
   }
 
-  function del(map) {
-    deleteMap(map).then(function () {
-      $selectedMap = { ...mapState };
-      $view = "details";
-    });
-  }
-
   // Area stuff
-
-  let areaView = "details";
 
   function createArea() {
     WorldBuilderStore.createArea();

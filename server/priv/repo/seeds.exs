@@ -1615,110 +1615,110 @@ Mud.Engine.CharacterRace.create(%{
 #####
 #####
 
-{:ok, primary_eye_color_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Primary Eye Color",
-    field: "Primary Eye Color",
-    key: "primary_eye_color",
-    type: "select",
-    options: [
-      %{value: "blue"},
-      %{value: "ice-blue"},
-      %{value: "dark-blue"},
-      %{value: "deep-green"},
-      %{value: "pale-green"},
-      %{value: "hazel"},
-      %{value: "green"},
-      %{value: "amber"}
-    ]
-  })
+# {:ok, primary_eye_color_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Primary Eye Color",
+#     field: "Primary Eye Color",
+#     key: "primary_eye_color",
+#     type: "select",
+#     options: [
+#       %{value: "blue"},
+#       %{value: "ice-blue"},
+#       %{value: "dark-blue"},
+#       %{value: "deep-green"},
+#       %{value: "pale-green"},
+#       %{value: "hazel"},
+#       %{value: "green"},
+#       %{value: "amber"}
+#     ]
+#   })
 
-{:ok, secondary_eye_color_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Secondary Eye Color",
-    field: "Secondary Eye Color",
-    key: "secondary_eye_color",
-    type: "select",
-    options: [
-      %{value: "blue"},
-      %{value: "ice-blue"},
-      %{value: "dark-blue"},
-      %{value: "deep-green"},
-      %{value: "pale-green"},
-      %{value: "hazel"},
-      %{value: "green"},
-      %{value: "amber"}
-    ]
-  })
+# {:ok, secondary_eye_color_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Secondary Eye Color",
+#     field: "Secondary Eye Color",
+#     key: "secondary_eye_color",
+#     type: "select",
+#     options: [
+#       %{value: "blue"},
+#       %{value: "ice-blue"},
+#       %{value: "dark-blue"},
+#       %{value: "deep-green"},
+#       %{value: "pale-green"},
+#       %{value: "hazel"},
+#       %{value: "green"},
+#       %{value: "amber"}
+#     ]
+#   })
 
-{:ok, hair_color_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Hair Color",
-    field: "Hair Color",
-    key: "hair_color",
-    type: "select",
-    options: [%{value: "black"}, %{value: "brown"}, %{value: "red"}, %{value: "blonde"}]
-  })
+# {:ok, hair_color_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Hair Color",
+#     field: "Hair Color",
+#     key: "hair_color",
+#     type: "select",
+#     options: [%{value: "black"}, %{value: "brown"}, %{value: "red"}, %{value: "blonde"}]
+#   })
 
-{:ok, hair_length_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Hair Length",
-    field: "Hair Length",
-    key: "hair_length",
-    type: "select",
-    options: [%{value: "short"}, %{value: "long"}, %{value: "bald"}, %{value: "shoulder-length"}]
-  })
+# {:ok, hair_length_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Hair Length",
+#     field: "Hair Length",
+#     key: "hair_length",
+#     type: "select",
+#     options: [%{value: "short"}, %{value: "long"}, %{value: "bald"}, %{value: "shoulder-length"}]
+#   })
 
-{:ok, hair_style_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Hair Style",
-    field: "Hair Style",
-    key: "hair_style",
-    type: "select",
-    options: [
-      %{
-        value: "a simple loose style",
-        conditions: [
-          %{
-            "key" => "hair_length",
-            "select" => ["long", "short", "shoulder-length"],
-            "comparison" => "in"
-          }
-        ]
-      }
-    ]
-  })
+# {:ok, hair_style_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Hair Style",
+#     field: "Hair Style",
+#     key: "hair_style",
+#     type: "select",
+#     options: [
+#       %{
+#         value: "a simple loose style",
+#         conditions: [
+#           %{
+#             "key" => "hair_length",
+#             "select" => ["long", "short", "shoulder-length"],
+#             "comparison" => "in"
+#           }
+#         ]
+#       }
+#     ]
+#   })
 
-{:ok, age_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Age",
-    field: "Age",
-    key: "age",
-    type: "select",
-    options: [
-      %{value: "very young"},
-      %{value: "young"},
-      %{value: "young adult"},
-      %{value: "adult"},
-      %{value: "middle aged"},
-      %{value: "older"},
-      %{value: "old"},
-      %{value: "ancient"}
-    ]
-  })
+# {:ok, age_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Age",
+#     field: "Age",
+#     key: "age",
+#     type: "select",
+#     options: [
+#       %{value: "very young"},
+#       %{value: "young"},
+#       %{value: "young adult"},
+#       %{value: "adult"},
+#       %{value: "middle aged"},
+#       %{value: "older"},
+#       %{value: "old"},
+#       %{value: "ancient"}
+#     ]
+#   })
 
-{:ok, heterochromia_feature} =
-  Mud.Engine.CharacterRaceFeature.create(%{
-    name: "Heterochromia",
-    field: "Heterochromia",
-    key: "heterochromia",
-    type: "select",
-    options: [%{value: "none"}, %{value: "complete"}, %{value: "segmental"}, %{value: "central"}]
-  })
+# {:ok, heterochromia_feature} =
+#   Mud.Engine.CharacterRaceFeature.create(%{
+#     name: "Heterochromia",
+#     field: "Heterochromia",
+#     key: "heterochromia",
+#     type: "select",
+#     options: [%{value: "none"}, %{value: "complete"}, %{value: "segmental"}, %{value: "central"}]
+#   })
 
-Mud.Engine.RaceFeature.link(human.id, age_feature.id)
-Mud.Engine.RaceFeature.link(human.id, primary_eye_color_feature.id)
-Mud.Engine.RaceFeature.link(human.id, heterochromia_feature.id)
-Mud.Engine.RaceFeature.link(human.id, secondary_eye_color_feature.id)
-Mud.Engine.RaceFeature.link(human.id, hair_color_feature.id)
-Mud.Engine.RaceFeature.link(human.id, hair_length_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, age_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, primary_eye_color_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, heterochromia_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, secondary_eye_color_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, hair_color_feature.id)
+# Mud.Engine.RaceFeature.link(human.id, hair_length_feature.id)

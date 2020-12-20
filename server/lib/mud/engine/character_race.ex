@@ -31,7 +31,7 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def list do
-    from(race in __MODULE__, preload: [:features])
+    from(race in __MODULE__)
     |> Repo.all()
 
     # preload_query =
@@ -61,7 +61,7 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def get!(id),
-    do: Repo.one!(from(race in __MODULE__, where: race.id == ^id, preload: [:features]))
+    do: Repo.one!(from(race in __MODULE__, where: race.id == ^id))
 
   @doc """
   Creates a character_race.
@@ -76,18 +76,9 @@ defmodule Mud.Engine.CharacterRace do
 
   """
   def create(attrs \\ %{}) do
-    result =
-      %__MODULE__{}
-      |> __MODULE__.changeset(attrs)
-      |> Repo.insert()
-
-    case result do
-      {:ok, race} ->
-        {:ok, Repo.preload(race, :features)}
-
-      error ->
-        error
-    end
+    %__MODULE__{}
+    |> __MODULE__.changeset(attrs)
+    |> Repo.insert()
   end
 
   @doc """
