@@ -2,6 +2,7 @@
   import ConfirmWithInput from "../../../../components/ConfirmWithInput.svelte";
   import AreaEditor from "./_components/AreaEditor.svelte";
   import MapEditor from "./_components/MapEditor.svelte";
+  import MapLabelEditor from "./_components/MapLabelEditor.svelte";
   import LinkEditor from "./_components/LinkEditor.svelte";
   import MapDetails from "./_components/MapDetails.svelte";
   import AreaDetails from "./_components/AreaDetails.svelte";
@@ -33,16 +34,13 @@
     svgMapAllowIntraMapAreaSelection,
     linkEditorMapForOtherAreaId,
     areasForLinkEditorMap,
-    areasForLinkEditorFiltered,
-    areasForLinkEditorFilteredMap,
     areasForLinkEditor,
     linksForLinkEditor,
-    loadingLinkEditorData,
+    mapLabelUnderConstruction,
   } = WorldBuilderStore;
   import mapState from "../../../../models/map.ts";
   import areaState from "../../../../models/area.ts";
   import linkState from "../../../../models/link.ts";
-  import { get } from "svelte/store";
 
   let showDeletePrompt = false;
   let deleteCallback;
@@ -74,66 +72,12 @@
     });
   }
 
-  function handleDeleteMap(event) {
-    deleteCallback = function () {
-      del(event.detail);
-    };
-    deleteMatchString = event.detail.name;
-    showDeletePrompt = false;
-    showDeletePrompt = true;
-  }
-
-  function cancelEditMap(map) {
-    mapUnderConstruction = { ...mapState };
-    $view = "details";
-  }
-
-  function mapSaved(event) {
-    $selectedMap = event.detail;
-    $view = "details";
-  }
-
   // Area stuff
 
   let areaView = "details";
 
   function createArea() {
     WorldBuilderStore.createArea();
-  }
-
-  function delArea(event) {
-    deleteArea(event.detail).then(function () {
-      $selectedArea = { ...areaState };
-      areaView = "details";
-    });
-  }
-
-  // Link stuff
-
-  function handlePrimaryMapSelectArea(event) {
-    WorldBuilderStore.selectArea(event.detail);
-  }
-
-  function handleSecondaryMapSelectArea(event) {
-    // if something is selected on the secondary map it is done while something is being linked
-    // if the area being selected on the map is not the area being lined, set that as the other area
-    // if the area belongs to another map, change the map for the link area
-    // $linkUnderConstruction.toId == $selectedArea.id ? $areasForLinkEditorMap[$linkUnderConstruction.fromId] : $areasForLinkEditorMap[$linkUnderConstruction.toId]
-
-    const area = event.detail;
-    if (area.mapId == linkEditorMapForOtherAreaId) {
-      if (get(linkUnderConstruction).toId == get(selectedArea).id) {
-        linkUnderConstruction.update(function (link) {
-          link.fromId = area.id;
-          return link;
-        });
-      } else if (get(linkUnderConstruction).fromId == get(selectedArea).id) {
-        linkUnderConstruction.update(function (link) {
-          link.toId = area.id;
-          return link;
-        });
-      }
-    }
   }
 
   // Map stuff
@@ -150,24 +94,6 @@
   {:else}
     <div class="h-full max-h-full w-1/2">
       <div class="h-1/2 max-h-1/2 w-full">
-        <!-- <SvgMap
-          on:selectArea={handlePrimaryMapSelectArea}
-          chosenMap={$selectedMap}
-          mapSelected={$mapSelected}
-          loadingMapData={$loadingMapData}
-          selectedArea={$selectedArea}
-          selectedLink={$selectedLink}
-          areas={$areas}
-          areaUnderConstruction={$areaUnderConstruction}
-          linkPreviewAreaId={$linkPreviewAreaId}
-          linkUnderConstruction={$linkUnderConstruction}
-          mapsMap={$mapsMap}
-          svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
-          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
-          areasMap={$areasMap}
-          links={$links}
-          focusAreaId={$selectedArea.id}
-          buildingArea={$buildingArea} /> -->
         <BuilderSvgMap
           bind:this={primaryMap}
           chosenMap={$selectedMap}
@@ -184,7 +110,8 @@
           areaUnderConstruction={$areaUnderConstruction}
           buildingArea={$buildingArea}
           buildingLink={$buildingLink}
-          areasMapForOtherMap={$areasForLinkEditorMap} />
+          areasMapForOtherMap={$areasForLinkEditorMap}
+          mapLabelUnderConstruction={$mapLabelUnderConstruction} />
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
         {#if $mode == 'map'}
@@ -213,8 +140,10 @@
       {#if $mode == 'map'}
         {#if $view == 'details'}
           <MapDetails />
-        {:else}
+        {:else if $view == 'edit'}
           <MapEditor />
+        {:else if $view == 'label'}
+          <MapLabelEditor />
         {/if}
       {:else if $mode == 'area'}
         {#if $view == 'details'}

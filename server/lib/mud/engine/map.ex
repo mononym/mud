@@ -20,6 +20,8 @@ defmodule Mud.Engine.Map do
       field(:text, :string, default: "")
       field(:x, :integer, default: 0)
       field(:y, :integer, default: 0)
+      field(:verticalOffset, :integer, default: 0)
+      field(:horizontalOffset, :integer, default: 0)
       field(:rotation, :integer, default: 0)
       field(:color, :string, default: "white")
       field(:size, :integer, default: 20)

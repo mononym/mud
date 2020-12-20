@@ -1,6 +1,9 @@
 import { derived, writable, get } from "svelte/store";
 import type { LinkInterface } from "../../../../../models/link";
 import MapState, { MapInterface } from "../../../../../models/map";
+import MapLabelState, {
+  MapLabelInterface,
+} from "../../../../../models/mapLabel";
 import AreaState, { AreaInterface } from "../../../../../models/area";
 import LinkState from "../../../../../models/link";
 import { loadMapData, deleteLink as delLink } from "../../../../../api/server";
@@ -455,6 +458,122 @@ function createWorldBuilderStore() {
     view.set("edit");
   }
 
+  // Map Label Stuff
+
+  const selectedMapLabel = writable(<MapLabelInterface>{ ...MapLabelState });
+  const mapLabelUnderConstruction = writable(<MapLabelInterface>{
+    ...MapLabelState,
+  });
+
+  async function selectMapLabel(mapLabel: MapLabelInterface) {
+    selectedMapLabel.set(mapLabel);
+  }
+
+  async function editMapLabel(mapLabel: MapLabelInterface) {
+    console.log("editMapLabel");
+    console.log(mapLabel);
+    selectedMapLabel.set(mapLabel);
+    mapUnderConstruction.set({ ...get(selectedMap) });
+    mapLabelUnderConstruction.set({ ...mapLabel });
+
+    await tick();
+    mode.set("map");
+    view.set("label");
+  }
+
+  async function cancelEditMapLabel() {
+    mapUnderConstruction.set({ ...MapState });
+    mapLabelUnderConstruction.set({ ...MapLabelState });
+    selectedMapLabel.set({ ...MapLabelState });
+
+    if (get(selectedMap).id == "") {
+      selectedMap.set({ ...MapState });
+    }
+
+    await tick();
+    mode.set("map");
+    view.set("details");
+  }
+
+  async function saveMapLabel() {
+    let newLabel = false;
+    let oldIds;
+
+    if (get(mapLabelUnderConstruction).id == "") {
+      newLabel = true;
+      oldIds = get(mapUnderConstruction).labels.map((label) => label.id);
+    }
+
+    mapUnderConstruction.update(function (map) {
+      var foundLabel = false;
+      for (var i = 0; i < map.labels.length; i++) {
+        if (map.labels[i].id == get(mapLabelUnderConstruction).id) {
+          foundLabel = true;
+          break;
+        }
+      }
+
+      if (foundLabel) {
+        map.labels = map.labels.map((label) =>
+          label.id == get(mapLabelUnderConstruction).id
+            ? get(mapLabelUnderConstruction)
+            : label
+        );
+      } else {
+        map.labels.push(get(mapLabelUnderConstruction));
+      }
+
+      return map;
+    });
+
+    console.log("map before save");
+    console.log(get(mapUnderConstruction));
+
+    const newMap = await MapsStore.saveMap(get(mapUnderConstruction));
+
+    if (newLabel) {
+      const newMapLabel = newMap.labels.filter(
+        (label) => !oldIds.includes(label.id)
+      )[0];
+
+      selectedMapLabel.set(newMapLabel);
+    } else {
+      const newMapLabel = newMap.labels.filter(
+        (label) => label.id == get(mapLabelUnderConstruction).id
+      )[0];
+
+      selectedMapLabel.set(newMapLabel);
+    }
+    console.log("map after save");
+    console.log(newMap);
+
+    selectedMap.set(newMap);
+    mapUnderConstruction.set({ ...MapState });
+    mapLabelUnderConstruction.set({ ...MapLabelState });
+
+    await tick();
+    mode.set("map");
+    view.set("details");
+  }
+
+  async function deleteMapLabel(mapLabelId: string) {
+    mapUnderConstruction.update(function (map) {
+      map.labels = map.labels.filter((label) => label.id != mapLabelId);
+      return map;
+    });
+
+    selectedMapLabel.set({ ...MapLabelState });
+    mapLabelUnderConstruction.set({ ...MapLabelState });
+
+    const newMap = await MapsStore.saveMap(get(mapUnderConstruction));
+    selectedMap.set(newMap);
+    mapUnderConstruction.set({ ...MapState });
+
+    await tick();
+    mode.set("map");
+    view.set("details");
+  }
+
   return {
     // Area stuff
     buildingArea,
@@ -514,7 +633,15 @@ function createWorldBuilderStore() {
     loadAllMapData,
     selectMap,
     saveMap,
-    cancelEditMap
+    cancelEditMap,
+    // Map Label stuff
+    selectedMapLabel,
+    selectMapLabel,
+    editMapLabel,
+    mapLabelUnderConstruction,
+    cancelEditMapLabel,
+    saveMapLabel,
+    deleteMapLabel,
   };
 }
 

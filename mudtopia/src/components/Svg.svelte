@@ -56,6 +56,9 @@
           x={shape.labelX}
           y={shape.labelY}
           dominant-baseline="central"
+          font-family={shape.labelFontFamily || 'fantasy, sans-sarif'}
+          font-weight={shape.labelFontWeight || 'normal'}
+          font-style={shape.labelFontFamily || 'normal'}
           font-size={shape.labelFontSize}
           transform={shape.labelTransform}>
           {#each shape.label as label, i}
@@ -84,23 +87,26 @@
         <title>{shape.name}</title>
       </rect>
     {:else if shape.type == 'text'}
-    <text
-    fill={shape.labelColor}
-    text-anchor="middle"
-    x={shape.labelX}
-    y={shape.labelY}
-    dominant-baseline="central"
-    font-size={shape.labelFontSize}
-    transform={shape.labelTransform}>
-    {#each shape.label as label, i}
-      <tspan
+      <text
+        fill={shape.labelColor}
+        text-anchor="middle"
         x={shape.labelX}
         y={shape.labelY}
-        dy="{i * shape.labelFontSize}px">
-        {label}
-      </tspan>
-    {/each}
-  </text>
+        dominant-baseline="central"
+        font-size={shape.labelFontSize}
+        font-family={shape.labelFontFamily || 'fantasy, sans-sarif'}
+        font-weight={shape.labelFontWeight || 'normal'}
+        font-style={shape.labelFontFamily || 'normal'}
+        transform={shape.labelTransform}>
+        {#each shape.label as label, i}
+          <tspan
+            x={shape.labelX}
+            y={shape.labelY}
+            dy="{i * shape.labelFontSize}px">
+            {label}
+          </tspan>
+        {/each}
+      </text>
     {/if}
   {/each}
 </svg>

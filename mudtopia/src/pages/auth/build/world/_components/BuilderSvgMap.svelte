@@ -1,8 +1,10 @@
 <script lang="ts">
   import { Circle2 } from "svelte-loading-spinners";
+  import App from "../../../../../App.svelte";
   import Svg from "../../../../../components/Svg.svelte";
   import AreaState from "../../../../../models/area";
   import LinkState from "../../../../../models/link";
+  import MapLabelState from "../../../../../models/mapLabel";
   import { WorldBuilderStore } from "./state";
 
   // This map can be in one of two modes.
@@ -64,6 +66,9 @@
   export let buildingLink = false;
   export let linkUnderConstruction = { ...LinkState };
 
+  // Map Labels being constructed.
+  export let mapLabelUnderConstruction = { ...MapLabelState };
+
   // When constructing a link it's coming/going from/to "somewhere". One "end" of the link is the room being linked, and this is the source.
   // export let linkUnderConstructionSourceAreaId = "";
 
@@ -102,6 +107,74 @@
   $: viewBoxX = xCenterPoint - viewBoxXSize / 2;
   $: viewBoxY = yCenterPoint - viewBoxYSize / 2;
   $: viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxXSize} ${viewBoxYSize}`;
+
+  $: newMapLabels =
+    mapSelected &&
+    chosenMap != undefined &&
+    mapLabelUnderConstruction != undefined
+      ? buildNewMapLabels()
+      : [];
+
+  // Labels for all of the under construction labels within a single map
+  function buildNewMapLabels() {
+    return [mapLabelUnderConstruction]
+      .filter((label) => {
+        return label.text != "";
+      })
+      .map((label) => {
+        return buildLabelFromMapLabel(label);
+      });
+  }
+
+  $: existingMapLabels =
+    mapSelected &&
+    chosenMap != undefined &&
+    mapLabelUnderConstruction != undefined
+      ? buildExistingMapLabels()
+      : [];
+
+  // Labels for all of the labels within a single map
+  function buildExistingMapLabels() {
+    return chosenMap.labels
+      .filter((label) => {
+        console.log("buildExistingMapLabels");
+        console.log(label);
+        console.log(mapLabelUnderConstruction);
+        console.log(label.id != mapLabelUnderConstruction.id);
+        return label.id != mapLabelUnderConstruction.id;
+      })
+      .map((label) => {
+        return buildLabelFromMapLabel(label);
+      });
+  }
+
+  function buildLabelFromMapLabel(label) {
+    const gridSize = chosenMap.gridSize;
+    const viewSize = chosenMap.viewSize;
+
+    const horizontalPosition = (label.x * gridSize + viewSize / 2).toString();
+    const verticalPosition = (-label.y * gridSize + viewSize / 2).toString();
+
+    let labelTransform = `translate(${
+      label.horizontalOffset
+    }, ${-label.verticalOffset}) rotate(${
+      label.rotation
+    }, ${horizontalPosition}, ${verticalPosition})`;
+
+    return {
+      id: label.id,
+      type: "text",
+      label: label.text.split("\n"),
+      labelTransform: labelTransform,
+      labelFontSize: label.size,
+      labelFontWeight: label.weight,
+      labelFontFamily: label.family,
+      labelFontStyle: label.style,
+      labelX: horizontalPosition,
+      labelY: verticalPosition,
+      labelColor: label.color,
+    };
+  }
 
   $: existingIntraMapLinkText =
     mapSelected && links != undefined && areasMap != undefined
@@ -874,7 +947,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText, ...newIntraMapLinkText, ...newInterMapLinkText].flat(2)}
+          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText, ...newIntraMapLinkText, ...newInterMapLinkText, ...existingMapLabels, ...newMapLabels].flat(2)}
           on:selectArea={handleSelectArea} />
       </div>
       <div class="flex">

@@ -1,8 +1,5 @@
 <script>
   import ConfirmWithInput from "../../../../../components/ConfirmWithInput.svelte";
-  import { createEventDispatcher } from "svelte";
-
-  const dispatch = createEventDispatcher();
 
   import { WorldBuilderStore } from "./state";
   const { selectedArea, selectedLink, view } = WorldBuilderStore;
