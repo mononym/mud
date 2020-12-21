@@ -73,6 +73,8 @@ defmodule Mud.Engine.Session do
   Subscribe to the output of a character session.
   """
   def subscribe(character_id) do
+    Logger.debug("Subscribing to character: #{character_id}")
+
     GenServer.call(via(character_id), {:subscribe, self()})
   end
 
@@ -100,8 +102,9 @@ defmodule Mud.Engine.Session do
   @doc """
   Start a session or let an existing one remain for a character.
   """
-  def start(player_id, character_id) do
-    spec = {__MODULE__, %{player_id: player_id, character_id: character_id}}
+  def start(character_id) do
+    Logger.debug("Starting character: #{character_id}", label: "Mud.Engine.Session.start/2")
+    spec = {__MODULE__, %{character_id: character_id}}
 
     case DynamicSupervisor.start_child(Mud.Engine.CharacterSessionSupervisor, spec) do
       {:ok, _pid} ->
@@ -266,6 +269,7 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_call({:subscribe, process}, _from, state) do
+    Logger.debug("Recieved subscription request from: #{inspect(process)}")
     ref = Process.monitor(process)
 
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
@@ -300,6 +304,8 @@ defmodule Mud.Engine.Session do
       else
         state
       end
+
+    Logger.debug("Finished subscription request from: #{inspect(process)}")
 
     {:reply, :ok, %{state | subscribers: updated_subscribers}}
   end

@@ -17,7 +17,6 @@ defmodule MudWeb.CharacterRaceController do
     with {:ok, %CharacterRace{} = character_race} <- CharacterRace.create(character_race_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.character_race_path(conn, :show, character_race))
       |> render("show.json", character_race: character_race)
     end
   end

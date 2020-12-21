@@ -18,6 +18,12 @@ function createMudClientStore() {
     characterInitializing.set(false);
   }
 
+  //
+  // Connection Stuff
+  //
+
+  const wsToken = writable("");
+
   return {
     //
     // Character Stuff
@@ -26,6 +32,10 @@ function createMudClientStore() {
     characterInitializing,
     selectedCharacter,
     initializeCharacter,
+    //
+    // Connection Stuff
+    //
+    wsToken,
   };
 }
 

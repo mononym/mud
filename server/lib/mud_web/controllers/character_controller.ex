@@ -68,7 +68,7 @@ defmodule MudWeb.CharacterController do
     character = Character.get_by_id!(character_id)
 
     if character.player_id === conn.assigns.player.id do
-      Session.start(character.player_id, character_id)
+      Session.start(character_id)
 
       Logger.debug("sending silent look")
 

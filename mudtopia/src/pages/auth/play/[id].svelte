@@ -9,16 +9,37 @@
     characterInitialized,
     characterInitializing,
     selectedCharacter,
+    wsToken,
   } = MudClientStore;
 
   import { onMount } from "svelte";
+  import { Socket } from "phoenix";
+
+  let socket;
+  let channel;
 
   onMount(async () => {
     const character = $characters.filter(
       (character) => character.id == $params.id
     )[0];
+    
+    await MudClientStore.initializeCharacter(character);
 
-    MudClientStore.initializeCharacter(character);
+    socket = new Socket("wss://localhost:4000/socket", {
+      params: { character_id: character.id, token: $wsToken },
+    });
+
+    socket.connect();
+    // console.log(this.connection);
+    // console.log('character:' + this.characterSlug);
+    channel = socket.channel(`character:${character.id}`);
+    // console.log(this.connection);
+    // this.connection.channel.push('ping');
+    channel.on("output:story", function (msg) {
+      console.log("Got message for story", msg);
+    });
+
+    channel.join();
   });
 </script>
 

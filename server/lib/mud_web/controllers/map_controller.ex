@@ -1,8 +1,7 @@
 defmodule MudWeb.MapController do
   use MudWeb, :controller
 
-  alias Mud.Engine
-  alias Mud.Engine.{Area, Link, Map}
+  alias Mud.Engine.{Map}
 
   action_fallback MudWeb.FallbackController
 
