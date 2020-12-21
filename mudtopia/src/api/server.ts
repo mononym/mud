@@ -137,7 +137,7 @@ export async function createCharacter(
   params: CharacterInterface
 ): Promise<AxiosResponse<CharacterInterface>> {
   return await (<Promise<AxiosResponse<CharacterInterface>>>(
-    Api.post("/characters", { character: params })
+    Api.post("/characters/create", params)
   ));
 }
 

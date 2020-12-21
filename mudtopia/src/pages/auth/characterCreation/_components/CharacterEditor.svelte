@@ -3,7 +3,9 @@
   import CharacterState from "../../../../models/character";
   import { races } from "../../../../stores/characterRaces";
   import { player } from "../../../../stores/player";
+  import { CharactersStore } from "../../../../stores/characters";
   import { loadCharacterCreationData } from "../../../../api/server";
+  import { goto } from "@roxi/routify";
 
   import { onMount } from "svelte";
 
@@ -21,9 +23,17 @@
           )
           .map((style) => style.style);
 
-  $: hairStylesDisabled = viableHairStyles.length == 0
+  $: hairStylesDisabled = viableHairStyles.length == 0;
 
-  function save() {
+  $: saveButtonDisabled =
+    characterUnderConstruction.name == "" ||
+    (characterUnderConstruction.style == "" && viableHairStyles.length > 0);
+
+  async function save() {
+    if (!saveButtonDisabled) {
+      await CharactersStore.save(characterUnderConstruction);
+      $goto("../dashboard");
+    }
     // saveArea($areaUnderConstruction);
   }
 
@@ -35,8 +45,6 @@
     // load character creation data
     // prepopulate some of the character data with random values from the loaded creation data
     const res = await loadCharacterCreationData($player.id);
-
-    console.log(res.data);
 
     races.set(res.data);
     loading = false;
@@ -60,7 +68,42 @@
     index = maybeNewIndex >= 0 ? maybeNewIndex : $races.length - 1;
   };
 
+  function randomValue(arr) {
+    return arr[randomNumber(arr.length - 1)];
+  }
+
+  function randomNumber(mult) {
+    return Math.ceil(Math.random() * mult);
+  }
+
   function chooseRace() {
+    characterUnderConstruction.eyeColor = randomValue($races[index].eyeColors);
+    characterUnderConstruction.eyeAccentColor = randomValue(
+      $races[index].eyeColors
+    );
+    characterUnderConstruction.hairColor = randomValue(
+      $races[index].hairColors
+    );
+    characterUnderConstruction.hairLength = randomValue(
+      $races[index].hairLengths
+    );
+
+    if (viableHairStyles.length > 0) {
+      characterUnderConstruction.style = randomValue(viableHairStyles);
+    }
+
+    characterUnderConstruction.skinTone = randomValue($races[index].skinTones);
+    characterUnderConstruction.height = randomValue($races[index].heights);
+
+    console.log(
+      Math.max(randomNumber($races[index].ageMax), $races[index].ageMin)
+    );
+
+    characterUnderConstruction.age = Math.max(
+      randomNumber($races[index].ageMax),
+      $races[index].ageMin
+    );
+
     characterUnderConstruction.race = $races[index].singular;
   }
 </script>
@@ -310,9 +353,9 @@
 
             <div class="px-4 py-3 text-right sm:px-6">
               <button
-                disabled={false}
+                disabled={saveButtonDisabled}
                 type="submit"
-                class="{false ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="{saveButtonDisabled ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                 Save
               </button>
               <button

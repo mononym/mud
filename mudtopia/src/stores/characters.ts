@@ -64,7 +64,7 @@ function createCharactersStore() {
     }
   }
 
-  async function saveCharacter(character: CharacterInterface) {
+  async function save(character: CharacterInterface) {
     saving.set(true);
     let oldData;
     const isNew = character.id == "";
@@ -108,7 +108,7 @@ function createCharactersStore() {
     deleting,
     characters,
     charactersMap,
-    saveCharacter,
+    save,
     deleteCharacter,
   };
 }
