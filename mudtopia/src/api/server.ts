@@ -141,6 +141,14 @@ export async function createCharacter(
   ));
 }
 
+export async function loadCharacterCreationData(
+  playerId: string
+): Promise<AxiosResponse<CharacterInterface[]>> {
+  return await (<Promise<AxiosResponse<CharacterInterface[]>>>(
+    Api.get("/characters/get-creation-data")
+  ));
+}
+
 // Link Stuff
 
 export async function updateLink(

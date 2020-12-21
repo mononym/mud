@@ -4,7 +4,7 @@ export interface CharacterInterface {
   name: string;
   active: boolean;
   handedness: string;
-  gender_pronoun: string;
+  genderPronoun: string;
 
   strength: number;
   stamina: number;
@@ -37,7 +37,7 @@ const state: CharacterInterface = {
   name: "",
   active: false,
   handedness: "right",
-  gender_pronoun: "neutral",
+  genderPronoun: "neutral",
 
   strength: 10,
   stamina: 10,

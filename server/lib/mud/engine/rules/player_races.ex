@@ -35,7 +35,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Human",
       plural: "Humans",
       adjective: "Human",
-      portrait: "human_portrait_1_small.jpg",
+      portrait: "https://d148p4q18vviek.cloudfront.net/Human.jpg",
       description:
         "The most numerous of the young races, Humans can be found almost everywhere there is civilization, and many places where there is none. They are also the most adaptable of all the races, and can be found engaging and excelling in every profession.",
       eye_colors: common_eye_colors(),
@@ -59,7 +59,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Elf",
       plural: "Elfs",
       adjective: "Elven",
-      portrait: "human_portrait_1_small.jpg",
+      portrait: "https://d148p4q18vviek.cloudfront.net/Elf.jpg",
       description:
         "The oldest and longest lived of the old races, Elves are often haughty when dealing with those they consider to be lesser than them. Which is often everyone.",
       eye_colors: common_eye_colors(),
@@ -83,7 +83,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Dwarf",
       plural: "Dwarves",
       adjective: "Dwarven",
-      portrait: "human_portrait_1_small.jpg",
+      portrait: "https://d148p4q18vviek.cloudfront.net/Dwarf.jpg",
       description: "Second only to Elves in lifespan, Dwarfen kind couldn't be more different.",
       eye_colors: common_eye_colors(),
       eye_shapes: common_eye_shapes(),
@@ -200,26 +200,26 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     |> Enum.sort()
   end
 
-  defp common_eye_size do
-    ["big", "average", "small"]
-    |> Enum.sort()
-  end
+  # defp common_eye_size do
+  #   ["big", "average", "small"]
+  #   |> Enum.sort()
+  # end
 
-  defp common_eye_placement do
-    [
-      "average",
-      "wide set",
-      "asymmetrical",
-      "big",
-      "small",
-      "close set",
-      "deep set",
-      "downturned",
-      "upturned",
-      "protruding"
-    ]
-    |> Enum.sort()
-  end
+  # defp common_eye_placement do
+  #   [
+  #     "average",
+  #     "wide set",
+  #     "asymmetrical",
+  #     "big",
+  #     "small",
+  #     "close set",
+  #     "deep set",
+  #     "downturned",
+  #     "upturned",
+  #     "protruding"
+  #   ]
+  #   |> Enum.sort()
+  # end
 
   defp common_eye_shapes do
     ["oval", "almond", "round", "monolid", "hooded"]
@@ -294,9 +294,8 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     |> Enum.sort()
   end
 
-  [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "very short"]}]
-
   defp common_hair_styles do
+    [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "very short"]}]
   end
 
   defp common_hair_lengths do

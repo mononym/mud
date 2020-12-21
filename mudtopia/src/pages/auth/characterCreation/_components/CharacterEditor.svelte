@@ -1,7 +1,27 @@
 <script>
+  import { Circle2 } from "svelte-loading-spinners";
   import CharacterState from "../../../../models/character";
+  import { races } from "../../../../stores/characterRaces";
+  import { player } from "../../../../stores/player";
+  import { loadCharacterCreationData } from "../../../../api/server";
 
-  export let characterUnderConstruction = { ...CharacterState };
+  import { onMount } from "svelte";
+
+  let characterUnderConstruction = { ...CharacterState };
+  let loading = true;
+
+  $: selectedRace = $races[index];
+
+  $: viableHairStyles =
+    selectedRace == undefined
+      ? []
+      : selectedRace.hairStyles
+          .filter((style) =>
+            style.lengths.includes(characterUnderConstruction.hairLength)
+          )
+          .map((style) => style.style);
+
+  $: hairStylesDisabled = viableHairStyles.length == 0
 
   function save() {
     // saveArea($areaUnderConstruction);
@@ -11,146 +31,299 @@
     //   WorldBuilderStore.cancelEditArea();
   }
 
+  onMount(async () => {
+    // load character creation data
+    // prepopulate some of the character data with random values from the loaded creation data
+    const res = await loadCharacterCreationData($player.id);
+
+    console.log(res.data);
+
+    races.set(res.data);
+    loading = false;
+  });
+
   // $: saveButtonDisabled =
   //   $areaUnderConstruction.name == "" ||
   //   $areaUnderConstruction.description == "";
+
+  // Stuff for managing the character race portion of the editor
+
+  let index = 0;
+
+  const next = () => {
+    index = (index + 1) % $races.length;
+  };
+
+  const previous = () => {
+    const maybeNewIndex = index - 1;
+
+    index = maybeNewIndex >= 0 ? maybeNewIndex : $races.length - 1;
+  };
+
+  function chooseRace() {
+    characterUnderConstruction.race = $races[index].singular;
+  }
 </script>
 
-<form
-  class="h-full flex flex-col place-content-center"
-  on:submit|preventDefault={save}>
-  <div class="overflow-hidden sm:rounded-md">
-    <div class="px-4 py-5 sm:p-6">
-      <div class="grid grid-cols-6 gap-6">
-        <div class="col-span-3">
-          <label
-            for="name"
-            class="block text-sm font-medium text-gray-300">Name</label>
-          <input
-            bind:value={characterUnderConstruction.name}
-            type="text"
-            name="name"
-            id="name"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+{#if loading}
+  <div class="flex-1 flex flex-col justify-center items-center">
+    <Circle2 />
+    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
+      Loading Character Creation Data
+    </h2>
+  </div>
+{:else if characterUnderConstruction.race == ''}
+  <div class="flex flex-col place-content-center text-white space-y-4">
+    <p class="text-center">Pick a race</p>
+    <div class="flex flex-col place-content-center content-center space-y-4">
+      {#each [$races[index]] as race (index)}
+        <div class="flex place-content-center space-x-4">
+          <div class="flex-shrink flex flex-col place-content-center">
+            <i on:click={previous} class="fas fa-arrow-from-right text-6xl" />
+          </div>
+          <img
+            src={race.portrait}
+            alt={race.singular}
+            style="height:200px;width:200px;object-fit:cover" />
+          <div class="flex-shrink flex flex-col place-content-center">
+            <i
+              on:click={next}
+              class="fas fa-arrow-from-left text-6xl align-middle" />
+          </div>
         </div>
+        <div
+          class="flex flex-col place-content-center content-center text-center">
+          <p>{race.singular}</p>
+          <p>{race.description}</p>
+        </div>
+      {/each}
+    </div>
 
-        <div class="col-span-3">
-          <label
-            for="description"
-            class="block text-sm font-medium text-gray-300">Description</label>
-          <textarea
-            bind:value={characterUnderConstruction.description}
-            name="description"
-            id="description"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
+    <button
+      on:click={chooseRace}
+      type="button"
+      class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Continue
+    </button>
+  </div>
+{:else}
+  <div class="container self-center justify-self-center">
+    <form
+      class="h-full flex flex-col place-content-center"
+      on:submit|preventDefault={save}>
+      <div class="overflow-hidden sm:rounded-md">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="grid grid-cols-6 gap-6">
+            <div class="col-span-2">
+              <label
+                for="name"
+                class="block text-sm font-medium text-gray-300">Name</label>
+              <input
+                bind:value={characterUnderConstruction.name}
+                type="text"
+                name="name"
+                id="name"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
 
-        <div class="col-span-3">
-          <label for="mapX" class="block text-sm font-medium text-gray-300">Map
-            X Coordinate</label>
-          <input
-            bind:value={characterUnderConstruction.mapX}
-            type="number"
-            min="-5000"
-            max="5000"
-            step="1"
-            name="mapX"
-            id="mapX"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
+            <div class="col-span-2">
+              <label
+                for="handedness"
+                class="block text-sm font-medium text-gray-300">Primary Hand
+                (Note: This has nothing to do with in-game abilities. It is
+                simply configuration for which hand to use as the primary when
+                interacting with the world)</label>
 
-        <div class="col-span-3">
-          <label for="mapY" class="block text-sm font-medium text-gray-300">Map
-            Y Coordinate</label>
-          <input
-            bind:value={characterUnderConstruction.mapY}
-            type="number"
-            min="-5000"
-            max="5000"
-            step="1"
-            name="mapY"
-            id="mapY"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
+              <select
+                id="handedness"
+                bind:value={characterUnderConstruction.handedness}
+                name="handedness"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option>right</option>
+                <option>left</option>
+              </select>
+            </div>
 
-        <div class="col-span-2">
-          <label
-            for="mapSize"
-            class="block text-sm font-medium text-gray-300">Map Size</label>
-          <input
-            bind:value={characterUnderConstruction.mapSize}
-            type="number"
-            min="5"
-            max="100"
-            step="1"
-            name="mapSize"
-            id="mapSize"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
-        <div class="col-span-2">
-          <label
-            for="mapCorners"
-            class="block text-sm font-medium text-gray-300">How rounded the
-            corners are</label>
-          <input
-            bind:value={characterUnderConstruction.mapCorners}
-            type="number"
-            min="0"
-            max={Math.ceil(characterUnderConstruction.mapSize / 2).toString()}
-            step="1"
-            name="mapCorners"
-            id="mapCorners"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
-        <div class="col-span-2">
-          <label
-            for="color"
-            class="block text-sm font-medium text-gray-300">Area Color</label>
-          <input
-            bind:value={characterUnderConstruction.color}
-            type="color"
-            name="color"
-            id="color"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
-        <div class="col-span-3">
-          <label
-            for="borderColor"
-            class="block text-sm font-medium text-gray-300">Border Color</label>
-          <input
-            bind:value={characterUnderConstruction.borderColor}
-            type="color"
-            name="borderColor"
-            id="borderColor"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
-        </div>
-        <div class="col-span-3">
-          <label
-            for="borderWidth"
-            class="block text-sm font-medium text-gray-300">Border Width</label>
-          <input
-            bind:value={characterUnderConstruction.borderWidth}
-            type="number"
-            min="0"
-            max="100"
-            name="borderWidth"
-            id="borderWidth"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            <div class="col-span-2">
+              <label
+                for="genderPronoun"
+                class="block text-sm font-medium text-gray-300">Which set of
+                gender pronouns should be used with your character (i.e.
+                her/him/they or their/his/hers)
+              </label>
+
+              <select
+                id="genderPronoun"
+                bind:value={characterUnderConstruction.genderPronoun}
+                name="handedness"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option>neutral</option>
+                <option>feminine</option>
+                <option>masculine</option>
+              </select>
+            </div>
+
+            <div class="col-span-1">
+              <label
+                for="age"
+                class="block text-sm font-medium text-gray-300">Character Age</label>
+              <input
+                bind:value={characterUnderConstruction.age}
+                type="number"
+                name="age"
+                id="age"
+                min={selectedRace.ageMin}
+                max={selectedRace.ageMax}
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="eyeColorType"
+                class="block text-sm font-medium text-gray-300">Iris type</label>
+
+              <select
+                id="eyeColorType"
+                bind:value={characterUnderConstruction.eyeColorType}
+                name="eyeColorType"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option>solid</option>
+                <option>heterochromia</option>
+              </select>
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="eyeColor"
+                class="block text-sm font-medium text-gray-300">Primary iris
+                color</label>
+
+              <select
+                id="eyeColor"
+                bind:value={characterUnderConstruction.eyeColor}
+                name="eyeColor"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each selectedRace.eyeColors as eyeColor}
+                  <option>{eyeColor}</option>
+                {/each}
+              </select>
+            </div>
+
+            {#if characterUnderConstruction.eyeColorType == 'heterochromia'}
+              <div class="col-span-2">
+                <label
+                  for="eyeColor"
+                  class="block text-sm font-medium text-gray-300">Iris accent
+                  color</label>
+
+                <select
+                  id="eyeColor"
+                  bind:value={characterUnderConstruction.eyeAccentColor}
+                  name="eyeColor"
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  {#each selectedRace.eyeColors as eyeColor}
+                    <option>{eyeColor}</option>
+                  {/each}
+                </select>
+              </div>
+            {/if}
+
+            <div class="col-span-2">
+              <label
+                for="hairColor"
+                class="block text-sm font-medium text-gray-300">Hair Color</label>
+
+              <select
+                id="hairColor"
+                bind:value={characterUnderConstruction.hairColor}
+                name="hairColor"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each selectedRace.hairColors as hairColor}
+                  <option>{hairColor}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="hairLength"
+                class="block text-sm font-medium text-gray-300">Hair Length</label>
+
+              <select
+                id="hairLength"
+                bind:value={characterUnderConstruction.hairLength}
+                name="hairLength"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each selectedRace.hairLengths as hairLength}
+                  <option>{hairLength}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="hairStyle"
+                class="block text-sm font-medium text-gray-300">Hair Style</label>
+
+              <select
+                id="hairStyle"
+                disabled={hairStylesDisabled}
+                bind:value={characterUnderConstruction.hairStyle}
+                name="hairStyle"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each viableHairStyles as hairStyle}
+                  <option>{hairStyle}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="skinTone"
+                class="block text-sm font-medium text-gray-300">Skin Tone</label>
+
+              <select
+                id="skinTone"
+                bind:value={characterUnderConstruction.skinTone}
+                name="skinTone"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each selectedRace.skinTones as skinTone}
+                  <option>{skinTone}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="col-span-2">
+              <label
+                for="height"
+                class="block text-sm font-medium text-gray-300">Height</label>
+
+              <select
+                id="height"
+                bind:value={characterUnderConstruction.height}
+                name="height"
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                {#each selectedRace.heights as height}
+                  <option>{height}</option>
+                {/each}
+              </select>
+            </div>
+
+            <div class="px-4 py-3 text-right sm:px-6">
+              <button
+                disabled={false}
+                type="submit"
+                class="{false ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Save
+              </button>
+              <button
+                on:click|preventDefault={cancel}
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="px-4 py-3 text-right sm:px-6">
-      <button
-        disabled={false}
-        type="submit"
-        class="{false ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Save
-      </button>
-      <button
-        on:click|preventDefault={cancel}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Cancel
-      </button>
-    </div>
+    </form>
   </div>
-</form>
+{/if}
