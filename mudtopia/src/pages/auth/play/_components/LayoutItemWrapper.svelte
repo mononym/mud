@@ -1,30 +1,103 @@
 <script language="ts">
-  import { onMount } from "svelte";
+  import { beforeUpdate, onMount, onDestroy } from "svelte";
   export let locked = false;
-  import interact from 'interactjs'
+  import interact from "interactjs";
+  const storage = require("electron-json-storage");
 
   let isLocked;
   let layoutItemWrapper;
 
-  export let width = 400
-  export let height = 400
+  export let x = 0;
+  export let y = 0;
+  export let width = 400;
+  export let height = 400;
+  export let id;
+
+  let initialized = false;
+
+  beforeUpdate(() => {
+    if (!initialized) {
+      storage.has(id, function (error, hasKey) {
+        if (error) throw error;
+
+        if (hasKey) {
+          console.log("There is data stored as " + id);
+          storage.get(id, function (error, data) {
+            if (error) throw error;
+
+            console.log("beforeUpdate");
+            console.log(data);
+            if (data.width > 10 && data.height > 10) {
+              width = data.width;
+              height = data.height;
+            }
+
+            const interactable = interact(layoutItemWrapper);
+
+            x = data.x;
+            y = data.y;
+
+            const drag = { name: "drag", axis: "x" };
+
+            interactable.reflow(drag);
+          });
+        }
+      });
+      initialized = true;
+    }
+  });
 
   onMount(() => {
     isLocked = locked;
   });
 
+  onDestroy(() => {
+    saveData();
+  });
+
+  function saveData() {
+    if (
+      layoutItemWrapper.clientWidth == 0 ||
+      layoutItemWrapper.clientHeight == 0
+    ) {
+      return;
+    }
+
+    console.log("saving data for key " + id);
+    console.log(layoutItemWrapper.dataset);
+    console.log(layoutItemWrapper.clientWidth);
+    console.log(layoutItemWrapper.clientHeight);
+    storage.set(
+      id,
+      {
+        width: layoutItemWrapper.clientWidth,
+        height: layoutItemWrapper.clientHeight,
+        x: layoutItemWrapper.dataset.x,
+        y: layoutItemWrapper.dataset.y,
+      },
+      function (error) {
+        if (error) throw error;
+      }
+    );
+  }
+
   function toggleLocked() {
     isLocked = !isLocked;
 
-    interact(layoutItemWrapper).draggable(!isLocked).resizable(!isLocked).reflow()
+    interact(layoutItemWrapper).draggable(!isLocked).resizable(!isLocked);
+
+    if (isLocked) {
+      saveData();
+    }
   }
 </script>
 
 <div
-bind:this={layoutItemWrapper}
-  class="layoutItemWrapper flex flex-col absolute bg-gray-700" style="height:{height}px;width:{width}px;"
-  data-x="0"
-  data-y="0">
+  bind:this={layoutItemWrapper}
+  class="layoutItemWrapper flex flex-col absolute bg-gray-700"
+  style="height:{height}px;width:{width}px;"
+  data-x={x}
+  data-y={y}>
   <div class="flex-shrink h-8 bg-gray-900 flex items-center">
     <i
       on:click={toggleLocked}

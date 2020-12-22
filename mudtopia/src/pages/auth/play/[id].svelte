@@ -223,7 +223,7 @@
           <textarea class="flex-grow" style="resize:none" />
         </div>
       </div>
-      <LayoutItemWrapper height={600} width={800}>
+      <LayoutItemWrapper id='storyWindowWrapper' height={600} width={800}>
         <StoryWindow />
       </LayoutItemWrapper>
     </div>
