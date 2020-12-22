@@ -24,6 +24,10 @@ function createMudClientStore() {
 
   const wsToken = writable("");
 
+  //
+  // UI stuff Stuff
+  //
+
   return {
     //
     // Character Stuff
@@ -36,6 +40,9 @@ function createMudClientStore() {
     // Connection Stuff
     //
     wsToken,
+    //
+    // UI stuff
+    //
   };
 }
 

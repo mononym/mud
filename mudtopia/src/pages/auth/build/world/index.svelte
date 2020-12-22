@@ -52,8 +52,13 @@
   let primaryMap;
 
   onMount(async () => {
+    console.log("onMount");
     MapsStore.load();
   });
+
+  function getSlots() {
+    return this;
+  }
 
   // Map stuff
 
@@ -76,6 +81,7 @@
 </script>
 
 <div class="inline-flex flex-grow overflow-hidden">
+  <slot />
   {#if $loadingMaps}
     <div class="flex-1 flex flex-col justify-center items-center">
       <Circle2 />
