@@ -4,6 +4,7 @@ export const interactable = (el) => {
   interact(el)
     .resizable({
       modifiers: [
+        interact.modifiers.restrictSize({ max: 'parent' }),
         interact.modifiers.snap({
           targets: [
             interact.createSnapGrid({
@@ -42,8 +43,10 @@ export const interactable = (el) => {
           Object.assign(event.target.dataset, { x, y })
         }
       },
+      margin: 10
     })
     .draggable({
+      allowFrom: '.drag-handle',
       modifiers: [
         interact.modifiers.snap({
           targets: [

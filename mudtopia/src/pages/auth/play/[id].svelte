@@ -16,6 +16,7 @@
   import { Socket } from "phoenix";
   import { interactable } from "../../../utils/interactable";
   import StoryWindow from "./_components/StoryWindow.svelte";
+  import LayoutItemWrapper from "./_components/LayoutItemWrapper.svelte";
 
   let socket;
   let channel;
@@ -43,7 +44,10 @@
 
     channel.join();
 
-    const elements = [...document.querySelectorAll(".item")];
+    const elements = [
+      ...document.querySelectorAll(".layoutItemWrapper"),
+      ...document.querySelectorAll(".item"),
+    ];
 
     if (elements) {
       for (const el of elements) {
@@ -204,6 +208,7 @@
     <div
       bind:this={canvas}
       id="container"
+      class="w-full"
       on:mouseup={mouseUp}
       on:mousedown={mouseDown}
       on:mousemove={mouseMove}>
@@ -218,11 +223,9 @@
           <textarea class="flex-grow" style="resize:none" />
         </div>
       </div>
-      <div class="item" data-x="0" data-y="0">
+      <LayoutItemWrapper height={600} width={800}>
         <StoryWindow />
-      </div>
-      <div class="item" data-x="0" data-y="0"><span>Item 3</span></div>
-      <div class="item" data-x="0" data-y="0"><span>Item 4</span></div>
+      </LayoutItemWrapper>
     </div>
   {/if}
 </div>

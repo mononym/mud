@@ -56,7 +56,7 @@
       newScrollTop == getActualScrollHeight(historyStoryWindowDiv)
     ) {
       // Set this back to false otherwise when it tries to reopen it will close again.
-      hasScrolledHistoryWindow = false
+      hasScrolledHistoryWindow = false;
       view = "current";
     } else if (
       !hasScrolledHistoryWindow &&
@@ -99,10 +99,22 @@
   function getActualScrollHeight(element) {
     return element.scrollHeight - element.clientHeight;
   }
+
+  function toggleHistoryView() {
+    if (view == "history") {
+      view = "current";
+    } else {
+      view = "history";
+    }
+  }
 </script>
 
-<div class="h-full w-full flex flex-col">
+<div class="h-full w-full flex flex-col relative">
   {#if view == 'history'}
+    <i
+      on:click={toggleHistoryView}
+      class="mt-2 mr-5 absolute fas fa-eye-slash text-red-300 cursor-pointer"
+      style="right:0" />
     <div
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
@@ -141,13 +153,18 @@
       <p>This is more recent history0.</p>
       <p>Bottom.</p>
     </div>
+  {:else}
+    <i
+      on:click={toggleHistoryView}
+      class="mt-2 mr-2 absolute fas fa-eye text-red-300 cursor-pointer"
+      style="right:0" />
   {/if}
   <div class="flex-1 overflow-hidden">
     <div
       on:scroll={handleStoryWindowCurrentViewScrollEvent}
       bind:this={currentStoryWindowDiv}
       id="StoryWindowCurrentView"
-      class="h-full flex flex-col overflow-y-scroll"
+      class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
       style="width:calc(100% + 15px)">
       <p>This is an example game prompt.</p>
       <p>So is this, and should come right below the above.</p>
