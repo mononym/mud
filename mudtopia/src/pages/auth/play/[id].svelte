@@ -15,6 +15,7 @@
   import { onMount } from "svelte";
   import { Socket } from "phoenix";
   import { interactable } from "../../../utils/interactable";
+  import StoryWindow from "./_components/StoryWindow.svelte";
 
   let socket;
   let channel;
@@ -169,6 +170,7 @@
     padding: 10px;
     touch-action: none;
     transition: box-shadow 0.5s;
+    overflow: hidden;
   }
   .item:hover {
     -webkit-box-shadow: 0px 10px 15px 0px rgba(0, 0, 0, 0.1);
@@ -207,17 +209,18 @@
       on:mousemove={mouseMove}>
       <div class="item" data-x="0" data-y="0">
         <div class="commandlineWrapper h-full w-full flex">
-
           <button
-          class="hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
-          type="button"
-          style="transition: all .15s ease">
-          <i class="fas fa-comment-alt" />
-        </button>
-          <textarea class="flex-grow" />
+            class="hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+            type="button"
+            style="transition: all .15s ease">
+            <i class="fas fa-comment-alt" />
+          </button>
+          <textarea class="flex-grow" style="resize:none" />
         </div>
       </div>
-      <div class="item" data-x="0" data-y="0"><span>Item 2</span></div>
+      <div class="item" data-x="0" data-y="0">
+        <StoryWindow />
+      </div>
       <div class="item" data-x="0" data-y="0"><span>Item 3</span></div>
       <div class="item" data-x="0" data-y="0"><span>Item 4</span></div>
     </div>
