@@ -25,7 +25,7 @@
           storage.get(id, function (error, data) {
             if (error) throw error;
 
-            console.log("beforeUpdate");
+            console.log("beforeUpdate: " + id);
             console.log(data);
             if (data.width > 10 && data.height > 10) {
               width = data.width;

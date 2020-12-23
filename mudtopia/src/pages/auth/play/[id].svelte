@@ -1,5 +1,5 @@
 <script language="typescript">
-  import { params } from "@roxi/routify";
+  import { goto, params } from "@roxi/routify";
   import { Circle2 } from "svelte-loading-spinners";
   import { player } from "../../../stores/player";
   import { CharactersStore } from "../../../stores/characters";
@@ -25,6 +25,12 @@
     const character = $characters.filter(
       (character) => character.id == $params.id
     )[0];
+
+    // Happens if loaded up into this page rather than into dashboard first
+    if (character == undefined) {
+      $goto("../dashboard");
+      return
+    }
 
     await MudClientStore.initializeCharacter(character);
 
@@ -219,7 +225,7 @@
           <textarea class="flex-grow" style="resize:none" />
         </div>
       </div>
-      <LayoutItemWrapper id='storyWindowWrapper' height={600} width={800}>
+      <LayoutItemWrapper id="storyWindowWrapper" height={600} width={800}>
         <StoryWindow />
       </LayoutItemWrapper>
     </div>
