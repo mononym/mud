@@ -13,36 +13,11 @@
 
   var hasScrolledHistoryWindow = false;
 
-  // element should be replaced with the actual target element on which you have applied scroll, use window in case of no target element.
-  // element.addEventListener("scroll", function(){ // or window.addEventListener("scroll"....
-  //  var st = window.pageYOffset || document.documentElement.scrollTop; // Credits: "https://github.com/qeremy/so/blob/master/so.dom.js#L426"
-  // if (st > currentStoryWindowLastScrollTop) {
-  //   // downscroll code
-  // } else {
-  //   // upscroll code
-  // }
-  // currentStoryWindowLastScrollTop = st <= 0 ? 0 : st; // For Mobile or negative scrolling
-  // }, false);
-
   onMount(() => {
     scrollToBottom(currentStoryWindowDiv);
     currentStoryWindowLastScrollTop = currentStoryWindowDiv.scrollTop;
     historyStoryWindowLastScrollTop =
       historyStoryWindowDiv != undefined ? historyStoryWindowDiv.scrollTop : 0;
-    // var isMouseScroll = false;
-
-    // currentStoryWindowDiv.addEventListener("wheel", function (e) {
-    //   console.log("mouse wheel");
-    //   isMouseScroll = true;
-    // });
-
-    // currentStoryWindowDiv.addEventListener("scroll", function (e) {
-    //   if (!isMouseScroll) {
-    //     console.log("scroll");
-    //   }
-
-    // isMouseScroll = false;
-    // });
   });
 
   // Scrolling the main window upwards should trigger the display of the history window.

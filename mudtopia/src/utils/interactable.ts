@@ -8,8 +8,8 @@ export const interactable = (el) => {
         interact.modifiers.snap({
           targets: [
             interact.createSnapGrid({
-              x: 20,
-              y: 20,
+              x: 2,
+              y: 2,
             }),
           ],
           range: Infinity,
@@ -51,8 +51,8 @@ export const interactable = (el) => {
         interact.modifiers.snap({
           targets: [
             interact.createSnapGrid({
-              x: 20,
-              y: 20,
+              x: 2,
+              y: 2,
             }),
           ],
           range: Infinity,
