@@ -1,7 +1,6 @@
 <script language="typescript">
   import { goto, params } from "@roxi/routify";
   import { Circle2 } from "svelte-loading-spinners";
-  import { player } from "../../../stores/player";
   import { CharactersStore } from "../../../stores/characters";
   const { characters } = CharactersStore;
   import { MudClientStore } from "../../../stores/mudClient";
@@ -14,7 +13,6 @@
 
   import { onMount } from "svelte";
   import { Socket } from "phoenix";
-  import { interactable } from "../../../utils/interactable";
   import StoryWindow from "./_components/StoryWindow.svelte";
   import LayoutItemWrapper from "./_components/LayoutItemWrapper.svelte";
 
@@ -45,18 +43,6 @@
     });
 
     channel.join();
-
-    const elements = [
-      ...document.querySelectorAll(".layoutItemWrapper"),
-      ...document.querySelectorAll(".item"),
-    ];
-
-    if (elements) {
-      for (const el of elements) {
-        // This is going to need to be run every time a new window is actually opened
-        interactable(el);
-      }
-    }
   });
 
   //
