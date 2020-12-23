@@ -33,11 +33,7 @@
     });
 
     socket.connect();
-    // console.log(this.connection);
-    // console.log('character:' + this.characterSlug);
     channel = socket.channel(`character:${character.id}`);
-    // console.log(this.connection);
-    // this.connection.channel.push('ping');
     channel.on("output:story", function (msg) {
       console.log("Got message for story", msg);
     });
