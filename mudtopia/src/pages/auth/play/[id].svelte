@@ -148,7 +148,7 @@
     <div
       bind:this={canvas}
       id="container"
-      class="w-full h-full bg-gray-200"
+      class="w-full h-full bg-gray-200 relative"
       on:mouseup={mouseUp}
       on:mousedown={mouseDown}
       on:mousemove={mouseMove}>

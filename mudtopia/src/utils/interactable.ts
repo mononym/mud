@@ -4,22 +4,12 @@ export const interactable = (el) => {
   interact(el)
     .resizable({
       modifiers: [
-        interact.modifiers.restrictSize({ max: 'parent' }),
+        interact.modifiers.restrict({ restriction: "parent" }),
         interact.modifiers.snap({
           targets: [
-            interact.createSnapGrid({
-              x: 2,
-              y: 2,
-            }),
+            interact.snappers.grid({ x: 5, y: 5 })
           ],
-          range: Infinity,
-          relativePoints: [
-            {
-              x: 0,
-              y: 0,
-            },
-          ],
-        })
+        }),
       ],
       edges: {
         top: true,
@@ -29,48 +19,38 @@ export const interactable = (el) => {
       },
       listeners: {
         move: function (event) {
-          let { x, y } = event.target.dataset
-  
-          x = (parseFloat(x) || 0) + event.deltaRect.left
-          y = (parseFloat(y) || 0) + event.deltaRect.top
-  
+          let { x, y } = event.target.dataset;
+
+          x = (parseFloat(x) || 0) + event.deltaRect.left;
+          y = (parseFloat(y) || 0) + event.deltaRect.top;
+
           Object.assign(event.target.style, {
             width: `${event.rect.width}px`,
             height: `${event.rect.height}px`,
-            transform: `translate(${x}px, ${y}px)`
-          })
-  
-          Object.assign(event.target.dataset, { x, y })
-        }
+            transform: `translate(${x}px, ${y}px)`,
+          });
+
+          Object.assign(event.target.dataset, { x, y });
+        },
       },
-      margin: 10
+      margin: 10,
     })
     .draggable({
-      allowFrom: '.drag-handle',
+      allowFrom: ".drag-handle",
       modifiers: [
         interact.modifiers.snap({
           targets: [
-            interact.createSnapGrid({
-              x: 2,
-              y: 2,
-            }),
-          ],
-          range: Infinity,
-          relativePoints: [
-            {
-              x: 0,
-              y: 0,
-            },
+            interact.snappers.grid({ x: 5, y: 5 })
           ],
         }),
-        interact.modifiers.restrict({
-          restriction: el.parentNode,
+        interact.modifiers.restrictRect({
+          restriction: "parent",
           elementRect: {
             top: 0,
             left: 0,
             bottom: 1,
             right: 1,
-          }
+          },
         }),
       ],
       inertia: true,
