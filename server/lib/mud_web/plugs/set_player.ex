@@ -5,16 +5,16 @@ defmodule MudWeb.Plug.SetPlayer do
   end
 
   def call(conn, _params) do
-    case Plug.Conn.get_session(conn, "player") do
-      player = %Mud.Account.Player{} ->
-        conn
-        |> assign(:player, player)
-        |> assign(:player_authenticated?, true)
-
+    case Plug.Conn.get_session(conn, "player_id") do
       nil ->
         conn
-        |> assign(:player, nil)
+        |> assign(:player_id, nil)
         |> assign(:player_authenticated?, false)
+
+      player_id ->
+        conn
+        |> assign(:player_id, player_id)
+        |> assign(:player_authenticated?, true)
     end
   end
 end

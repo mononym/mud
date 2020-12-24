@@ -17,6 +17,8 @@
 
   let initialized = false;
 
+  let reflow = false;
+
   beforeUpdate(() => {
     if (!initialized) {
       storage.has(id, function (error, hasKey) {
@@ -34,21 +36,37 @@
               height = data.height;
             }
 
-            const interactable = interact(layoutItemWrapper);
+            // const interactable = interact(layoutItemWrapper);
 
             x = data.x;
             y = data.y;
             isLocked = data.locked || false;
 
-            const drag = { name: "drag", axis: "x" };
+            reflow = true;
 
-            interactable.reflow(drag);
+            // await tick();
+
+            // const drag = { name: "drag", axis: "x" };
+
+            // interactable.reflow(drag);
           });
         }
       });
     }
 
     initialized = true;
+  });
+
+  afterUpdate(() => {
+    if (reflow) {
+      const interactable = interact(layoutItemWrapper);
+
+      const drag = { name: "drag", axis: "x" };
+
+      interactable.reflow(drag);
+
+      reflow = false;
+    }
   });
 
   onMount(() => {
@@ -79,7 +97,7 @@
         height: layoutItemWrapper.clientHeight,
         x: layoutItemWrapper.dataset.x,
         y: layoutItemWrapper.dataset.y,
-        locked: isLocked
+        locked: isLocked,
       },
       function (error) {
         if (error) throw error;

@@ -1,5 +1,7 @@
 <script>
-  import { onMount, tick } from "svelte";
+  import { onMount, setContext, tick } from "svelte";
+  import { MudClientStore } from "../../../../stores/mudClient";
+  const { channel, selectedCharacter } = MudClientStore;
 
   let view = "current";
 
@@ -13,7 +15,43 @@
 
   var hasScrolledHistoryWindow = false;
 
+  var messages = [];
+
+  function getTextColorFromType(type) {
+    if (type == "system warning") {
+      return $selectedCharacter.settings.system_warning_text_color;
+    } else if (type == "system danger") {
+      return $selectedCharacter.settings.system_danger_text_color;
+    }
+  }
+
   onMount(() => {
+    $channel.on("output:story", function (msg) {
+      const textColor = getTextColorFromType(msg.type);
+      messages = [
+        ...messages,
+        {
+          color: textColor,
+          text: msg.text,
+        },
+      ];
+      console.log("Got message for story", {
+        msg: msg,
+        color: textColor,
+        text: msg.text,
+      });
+    });
+
+    $channel.push("ping", {}).receive("ok", (payload) => {
+      messages = [
+        {
+          color: $selectedCharacter.settings.system_warning_text_color,
+          text: payload.response,
+        },
+      ];
+      console.log(messages);
+    });
+
     scrollToBottom(currentStoryWindowDiv);
     currentStoryWindowLastScrollTop = currentStoryWindowDiv.scrollTop;
     historyStoryWindowLastScrollTop =
@@ -94,40 +132,7 @@
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex-1 flex flex-col overflow-y-scroll">
-      <p>This is history0.</p>
-      <p>This is more recent history1.</p>
-      <p>This is more recent history2.</p>
-      <p>This is more recent history3.</p>
-      <p>This is more recent history4.</p>
-      <p>This is more recent history5.</p>
-      <p>This is more recent history6.</p>
-      <p>This is more recent history7.</p>
-      <p>This is more recent history8.</p>
-      <p>This is more recent history9.</p>
-      <p>This is more recent history0.</p>
-      <p>This is more recent history1.</p>
-      <p>This is more recent history2.</p>
-      <p>This is more recent history3.</p>
-      <p>This is more recent history4.</p>
-      <p>This is more recent history5.</p>
-      <p>This is more recent history6.</p>
-      <p>This is more recent history7.</p>
-      <p>This is more recent history8.</p>
-      <p>This is more recent history9.</p>
-      <p>This is more recent history0.</p>
-      <p>This is more recent history1.</p>
-      <p>This is more recent history2.</p>
-      <p>This is more recent history3.</p>
-      <p>This is more recent history4.</p>
-      <p>This is more recent history5.</p>
-      <p>This is more recent history6.</p>
-      <p>This is more recent history7.</p>
-      <p>This is more recent history8.</p>
-      <p>This is more recent history9.</p>
-      <p>This is more recent history0.</p>
-      <p>Bottom.</p>
-    </div>
+      class="flex-1 flex flex-col overflow-y-scroll border-b-2" />
   {:else}
     <i
       on:click={toggleHistoryView}
@@ -141,20 +146,9 @@
       id="StoryWindowCurrentView"
       class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
       style="width:calc(100% + 15px)">
-      <p>This is an example game prompt.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>So is this, and should come right below the above.</p>
-      <p>Bottom.</p>
+      {#each messages as message}
+        <p style="color:{message.color}">{message.text}</p>
+      {/each}
     </div>
   </div>
 </div>

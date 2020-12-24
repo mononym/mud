@@ -43,6 +43,8 @@ defmodule MudWeb.CharacterView do
     #   genderPronoun: character.gender_pronoun
     # }
 
+    IO.inspect(character)
+
     character
     |> Map.from_struct()
     |> Map.delete(:area)

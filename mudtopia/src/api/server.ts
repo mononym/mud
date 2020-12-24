@@ -183,3 +183,18 @@ export async function createLink(
     Api.post("/links", { link: params })
   ));
 }
+
+
+//
+//
+// Mud Client Stuff
+//
+//
+
+export async function startGameSession(
+  characterId: string
+): Promise<AxiosResponse<{token: string}>> {
+  return await (<Promise<AxiosResponse<{token: string}>>>(
+    Api.get(`/start-game-session/${characterId}`)
+  ));
+}

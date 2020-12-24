@@ -176,9 +176,7 @@ defmodule Mud.Engine.Session do
     Logger.debug("#{inspect(output)}", label: "session_handle_cast")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
-    output = %{output | text: Mud.Engine.Message.Output.transform_for_web(output)}
-
-    state = update_buffer(state, output.text)
+    state = update_buffer(state, output)
 
     state =
       if map_size(state.subscribers) != 0 do
@@ -336,8 +334,8 @@ defmodule Mud.Engine.Session do
     GenServer.cast(self(), %Mud.Engine.Message.Output{
       id: UUID.uuid4(),
       to: state.character_id,
-      text:
-        "{{warning}}***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****{{/warning}}"
+      text: "***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****",
+      type: "system danger"
     })
 
     state = update_timeout(state, @character_inactivity_timeout_final)
@@ -349,8 +347,8 @@ defmodule Mud.Engine.Session do
     GenServer.cast(self(), %Mud.Engine.Message.Output{
       id: UUID.uuid4(),
       to: state.character_id,
-      text:
-        "{{error}}***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****{{/error}}"
+      text: "***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****",
+      type: "system danger"
     })
 
     GenServer.cast(self(), %Mud.Engine.Message.Input{
@@ -464,11 +462,7 @@ defmodule Mud.Engine.Session do
     joined_text =
       output_list
       |> Stream.map(fn output ->
-        if String.contains?(output.text, "<p") do
-          output.text
-        else
-          "<p id=\"#{output.id}\" class=\"whitespace-pre-wrap\">#{output.text}</p>"
-        end
+        %{text: output.text, type: output.type}
       end)
       |> Enum.reverse()
       |> Enum.join()

@@ -25,9 +25,9 @@ defmodule MudWeb.Router do
     plug(MudWeb.Plug.EnforceAuthentication)
   end
 
-  # pipeline :reject_authenticated do
-  #   plug(MudWeb.Plug.RejectAuthentication)
-  # end
+  pipeline :reject_authenticated_user do
+    plug(MudWeb.Plug.RejectAuthenticatedUser)
+  end
 
   if Mix.env() == :dev do
     forward("/sent_emails", Bamboo.SentEmailViewerPlug)
@@ -41,17 +41,17 @@ defmodule MudWeb.Router do
   scope "/", MudWeb do
     pipe_through([:api])
 
-    post("/csrf-token", CsrfTokenController, :get_token)
-
-    # Landing / Home page stuff
-    # get("/", PageController, :show_landing_page)
-
     # Auth related stuff
     post("/authenticate/email", PlayerAuthController, :authenticate_via_email)
-    # get("/authenticate/token/:token", PlayerAuthController, :validate_auth_token)
-    # get("/authenticate/token", PlayerAuthController, :show_auth_token_form)
     post("/authenticate/token", PlayerAuthController, :validate_auth_token)
     get("/authenticate/sync", PlayerAuthController, :sync_status)
+  end
+
+  scope "/", MudWeb do
+    pipe_through([:api, :enforce_authentication])
+
+    # Auth related stuff
+    post("/authenticate/logout", PlayerAuthController, :logout)
 
     # Player related stuff
     # post("/players/create", PlayerController, :create)
@@ -63,72 +63,6 @@ defmodule MudWeb.Router do
     # get("/player", PlayerController, :get_authenticated_player)
     # get("/player/settings", PlayerController, :get_authenticated_player_settings)
     # post("/player/settings", PlayerController, :save_authenticated_player_settings)
-
-    # Character related stuff
-    # get("/characters/player/:player_id", CharacterController, :list_player_characters)
-    # post("/characters/create", CharacterController, :create)
-    # post "/characters/delete", CharacterController, :delete
-    # post("/characters/get", CharacterController, :get)
-    # post "/characters/update", CharacterController, :update
-    # get("/characters/get-creation-data", CharacterController, :get_creation_data)
-
-    # Map related stuff
-    # resources("/maps", MapController, except: [:new, :edit])
-    # get("/maps/:map_id/data", MapController, :fetch_data)
-
-    # Area related stuff
-    # resources("/areas", AreaController, except: [:new, :edit])
-    # get("/areas/map/:map_id", AreaController, :list_by_map)
-
-    # Link related stuff
-    # resources("/links", LinkController, except: [:new, :edit, :index])
-    # get("/links/map/:map_id", LinkController, :list_by_map)
-
-    # Lua related stuff
-    # resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
-
-    # Character race stuff
-    # resources("/character_races", CharacterRaceController, except: [:new, :edit])
-    # resources("/character_race_features", CharacterRaceFeatureController, except: [:new, :edit])
-
-    # post("/character_races/link_feature", CharacterRaceController, :link_feature)
-    # post("/character_races/unlink_feature", CharacterRaceController, :unlink_feature)
-
-    # post(
-    #   "/character_races/generate_image_upload_url",
-    #   CharacterRaceController,
-    #   :generate_image_upload_url
-    # )
-
-    # post("/character_races/upload_image", CharacterRaceController, :upload_image)
-
-    # Character template stuff
-    # resources("/character_templates", CharacterTemplateController, except: [:new, :edit])
-    # post("/character_templates/preview", CharacterTemplateController, :preview)
-
-    # Commands stuff
-    # resources("/commands", CommandController, except: [:new, :edit])
-  end
-
-  scope "/", MudWeb do
-    pipe_through([:api, :enforce_authentication])
-
-    # Landing / Home page stuff
-    # get("/", PageController, :show_landing_page)
-
-    # Auth related stuff
-    post("/authenticate/logout", PlayerAuthController, :logout)
-
-    # Player related stuff
-    post("/players/create", PlayerController, :create)
-    post("/players/delete", PlayerController, :delete)
-    post("/players/get", PlayerController, :get)
-    post("/players/update", PlayerController, :update)
-
-    # Authenticated Player stuff
-    get("/player", PlayerController, :get_authenticated_player)
-    get("/player/settings", PlayerController, :get_authenticated_player_settings)
-    post("/player/settings", PlayerController, :save_authenticated_player_settings)
 
     # Character related stuff
     get("/characters/player/:player_id", CharacterController, :list_player_characters)
@@ -174,5 +108,13 @@ defmodule MudWeb.Router do
 
     # Commands stuff
     resources("/commands", CommandController, except: [:new, :edit])
+
+    #
+    #
+    # Game Client API
+    #
+    #
+
+    get("/start-game-session/:character_id", MudClientController, :start_game_session)
   end
 end

@@ -6,7 +6,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item}
   alias Mud.Engine.Util
-  alias Mud.Engine.Character.Skill
+  alias Mud.Engine.Character.{Settings, Skill}
   alias Mud.DataType.NameSlug
 
   require Logger
@@ -20,6 +20,8 @@ defmodule Mud.Engine.Character do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
     @derive Jason.Encoder
+    has_one(:settings, Settings)
+
     has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
     has_many(:held_items, Item, foreign_key: :holdable_held_by_id)
 
@@ -232,6 +234,9 @@ defmodule Mud.Engine.Character do
     case result do
       {:ok, character} ->
         :ok = Skill.initialize(character.id)
+        :ok = Settings.create(%{character_id: character.id})
+
+        character = Repo.preload(character, [:settings])
 
         {:ok, character}
 
@@ -385,7 +390,10 @@ defmodule Mud.Engine.Character do
   @spec list_by_player_id(String.t()) :: [%__MODULE__{}]
   def list_by_player_id(player_id) do
     from(character in __MODULE__,
-      where: character.player_id == ^player_id
+      join: settings in assoc(character, :settings),
+      on: settings.character_id == character.id,
+      where: character.player_id == ^player_id,
+      preload: [settings: settings]
     )
     |> Repo.all()
   end

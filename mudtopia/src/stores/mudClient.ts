@@ -1,7 +1,8 @@
-import { derived, writable } from "svelte/store";
-import {} from "../api/server";
+import { writable } from "svelte/store";
+import { startGameSession as apiStartGameSession } from "../api/server";
 import type { CharacterInterface } from "../models/character";
 import CharacterState from "../models/character";
+import { Socket } from "phoenix";
 
 function createMudClientStore() {
   //
@@ -22,7 +23,38 @@ function createMudClientStore() {
   // Connection Stuff
   //
 
-  const wsToken = writable("");
+  const initializingGameSession = writable(false);
+  const gameSessionInitialized = writable(false);
+  const channel = writable({});
+
+  async function startGameSession(characterId: string) {
+    initializingGameSession.set(true);
+    try {
+      const res = (await apiStartGameSession(characterId)).data;
+
+      const newSocket = new Socket("wss://localhost:4000/socket", {
+        params: { token: res.token },
+      });
+
+      newSocket.connect();
+
+      const newChannel = newSocket.channel(`character:${characterId}`);
+
+      newChannel.join();
+
+      channel.set(newChannel);
+
+      gameSessionInitialized.set(true);
+
+      return true;
+    } catch (e) {
+      alert(e.message);
+
+      return false;
+    } finally {
+      initializingGameSession.set(false);
+    }
+  }
 
   //
   // UI stuff Stuff
@@ -39,7 +71,10 @@ function createMudClientStore() {
     //
     // Connection Stuff
     //
-    wsToken,
+    startGameSession,
+    initializingGameSession,
+    gameSessionInitialized,
+    channel,
     //
     // UI stuff
     //

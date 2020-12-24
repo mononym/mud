@@ -8,17 +8,15 @@
     characterInitialized,
     characterInitializing,
     selectedCharacter,
-    wsToken,
   } = MudClientStore;
 
   import { onMount } from "svelte";
-  import { Socket } from "phoenix";
   import StoryWindow from "./_components/StoryWindow.svelte";
   import CommandLineWindow from "./_components/CommandLineWindow.svelte";
   import LayoutItemWrapper from "./_components/LayoutItemWrapper.svelte";
 
-  let socket;
   let channel;
+
 
   onMount(async () => {
     const character = $characters.filter(
@@ -31,19 +29,9 @@
       return;
     }
 
+    const sessionStarted = await MudClientStore.startGameSession(character.id)
+    
     await MudClientStore.initializeCharacter(character);
-
-    socket = new Socket("wss://localhost:4000/socket", {
-      params: { character_id: character.id, token: $wsToken },
-    });
-
-    socket.connect();
-    channel = socket.channel(`character:${character.id}`);
-    channel.on("output:story", function (msg) {
-      console.log("Got message for story", msg);
-    });
-
-    channel.join();
   });
 
   //

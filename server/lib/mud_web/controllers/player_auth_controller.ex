@@ -30,7 +30,7 @@ defmodule MudWeb.PlayerAuthController do
     case Account.validate_auth_token(token) do
       {:ok, player} ->
         conn
-        |> put_session("player", player)
+        |> put_session("player_id", player.id)
         |> put_view(MudWeb.PlayerView)
         |> render("player.json", player: player)
 
@@ -43,10 +43,17 @@ defmodule MudWeb.PlayerAuthController do
 
   def sync_status(conn, _) do
     with true <- conn.assigns.player_authenticated?,
-         {:ok, _player} <- Mud.Account.get_player(conn.assigns.player.id) do
+         {:ok, player} <- Mud.Account.get_player(conn.assigns.player_id) do
+      player =
+        Map.from_struct(player)
+        |> Map.delete(:profile)
+        |> Map.delete(:__meta__)
+        |> Map.delete(:auth_email)
+        |> Map.delete(:settings)
+
       conn
       |> put_status(200)
-      |> json(%{authenticated: true, player: conn.assigns.player})
+      |> json(%{authenticated: true, player: player})
     else
       {:error, _} ->
         conn

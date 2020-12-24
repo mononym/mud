@@ -34,7 +34,7 @@ defmodule MudWeb.CharacterController do
 
     params =
       character_params
-      |> Map.put("player_id", conn.assigns.player.id)
+      |> Map.put("player_id", conn.assigns.player_id)
       |> Map.put("area_id", starting_area.id)
 
     case Character.create(params) do
