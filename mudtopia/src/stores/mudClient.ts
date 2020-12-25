@@ -1,4 +1,4 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 import { startGameSession as apiStartGameSession } from "../api/server";
 import type { CharacterInterface } from "../models/character";
 import CharacterState from "../models/character";
@@ -57,8 +57,60 @@ function createMudClientStore() {
   }
 
   //
-  // UI stuff Stuff
+  // Story/History Window stuff
   //
+  const storyWindowView = writable("current");
+  const storyWindowMessages = writable([]);
+  const maxStoryWindowMessagesCount = writable(100);
+  const historyWindowMessageBuffer = writable([]);
+  const historyWindowMessages = writable([]);
+  const maxHistoryWindowMessagesCount = writable(10000);
+
+  function flushHistoryMessageBuffer() {
+    historyWindowMessages.update(function (buffer) {
+      return [...buffer, ...get(historyWindowMessageBuffer)].slice(
+        -get(maxHistoryWindowMessagesCount)
+      );
+    });
+
+    historyWindowMessageBuffer.set([]);
+  }
+
+  async function appendNewStoryMessage(newMessage) {
+    storyWindowMessages.set(
+      [...get(storyWindowMessages), newMessage].slice(
+        -maxStoryWindowMessagesCount
+      )
+    );
+
+    // if history window is open, fill buffer without checking
+
+    // if history window is closed, check buffer
+    // if messages in buffer, add them and then add the new message...or just do it blindly with the expand syntax
+
+    if (get(storyWindowView) == "history") {
+      historyWindowMessageBuffer.update(function (buffer) {
+        buffer.push(newMessage);
+        return buffer.slice(-get(maxHistoryWindowMessagesCount));
+      });
+    } else if (get(storyWindowView) == "current") {
+      historyWindowMessageBuffer.update(function (buffer) {
+        buffer.push(newMessage);
+        return buffer.slice(-get(maxHistoryWindowMessagesCount));
+      });
+
+      flushHistoryMessageBuffer();
+    }
+  }
+
+  async function showHistoryWindow() {
+    flushHistoryMessageBuffer();
+    storyWindowView.set("history");
+  }
+
+  async function hideHistoryWindow() {
+    storyWindowView.set("current");
+  }
 
   return {
     //
@@ -76,8 +128,17 @@ function createMudClientStore() {
     gameSessionInitialized,
     channel,
     //
-    // UI stuff
+    // Story/History window stuff
     //
+    appendNewStoryMessage,
+    showHistoryWindow,
+    hideHistoryWindow,
+    storyWindowView,
+    storyWindowMessages,
+    maxStoryWindowMessagesCount,
+    historyWindowMessageBuffer,
+    historyWindowMessages,
+    maxHistoryWindowMessagesCount,
   };
 }
 

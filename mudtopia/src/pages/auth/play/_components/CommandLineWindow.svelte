@@ -1,11 +1,16 @@
 <script>
   import { onMount } from "svelte";
   import { MudClientStore } from "../../../../stores/mudClient";
-  const { channel } = MudClientStore;
+  const { channel, showHistoryWindow } = MudClientStore;
 
   export let input = "";
   let actualInput = "";
   let commandLineDiv;
+  let commandHistory = [];
+  $: commandHistoryReversed = commandHistory.reverse();
+  let workingInput = "";
+  let commandHistoryIndex = 0;
+  let commandHistoryLength = 1000;
 
   onMount(() => {
     actualInput = input;
@@ -16,16 +21,61 @@
         event.preventDefault();
         // Submit command
         submitPlayerInput();
+      } else if (event.key == "PageUp") {
+        event.preventDefault();
+        showHistoryWindow();
+      } else if (event.key == "ArrowUp") {
+        event.preventDefault();
+        console.log(actualInput);
+        console.log(commandHistoryIndex);
+
+        if (commandHistoryIndex == -1) {
+          commandHistoryIndex++;
+        }
+
+        if (commandHistory.length == 0) {
+          return;
+          // if there is existing input we don't want to lose it, so move to a special holder
+        } else if (commandHistoryIndex == 0) {
+          workingInput = actualInput;
+        }
+
+        if (commandHistory.length - 1 >= commandHistoryIndex) {
+          actualInput = commandHistory[commandHistoryIndex];
+
+          if (commandHistory.length - 1 > commandHistoryIndex) {
+            commandHistoryIndex++;
+          }
+          console.log(commandHistoryIndex);
+        }
+      } else if (event.key == "ArrowDown") {
+        event.preventDefault();
+        console.log(commandHistoryIndex);
+
+        if (commandHistory.length == 0 || commandHistoryIndex == -1) {
+          return;
+        } else if (commandHistoryIndex == 0) {
+          actualInput = workingInput;
+          workingInput = "";
+
+          commandHistoryIndex--;
+        } else {
+          commandHistoryIndex--;
+          actualInput = commandHistory[commandHistoryIndex];
+
+          console.log(commandHistoryIndex);
+        }
       } else {
-        // Nothing to do when shift + enter is pressed but let event add the newline
+        commandHistoryIndex = 0;
       }
     });
 
-    commandLineDiv.focus()
+    commandLineDiv.focus();
   });
 
   function submitPlayerInput() {
     $channel.push("cli", { text: actualInput });
+    commandHistory.unshift(actualInput);
 
     actualInput = "";
   }
