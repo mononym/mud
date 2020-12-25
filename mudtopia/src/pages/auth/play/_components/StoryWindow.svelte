@@ -1,5 +1,5 @@
 <script>
-  import { onMount, setContext, tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import { MudClientStore } from "../../../../stores/mudClient";
   const { channel, selectedCharacter } = MudClientStore;
 
@@ -17,6 +17,12 @@
 
   var messages = [];
 
+  let storyWindowMessages = [];
+  let maxStoryWindowMessagesCount = 100;
+  let historyWindowMessageBuffer = [];
+  let historyWindowMessages = [];
+  let maxHistoryWindowMessagesCount = 10000;
+
   function getTextColorFromType(type) {
     if (type == "system warning") {
       return $selectedCharacter.settings.system_warning_text_color;
@@ -28,13 +34,28 @@
   onMount(() => {
     $channel.on("output:story", function (msg) {
       const textColor = getTextColorFromType(msg.type);
-      messages = [
-        ...messages,
-        {
-          color: textColor,
-          text: msg.text,
-        },
-      ];
+      const newMessage = {
+        color: textColor,
+        text: msg.text,
+      };
+
+      storyWindowMessages = [...storyWindowMessages, newMessage].slice(
+        0,
+        maxStoryWindowMessagesCount
+      );
+
+      // if history window is open, fill buffer without checking
+
+      // if history window is closed, check buffer
+      // if messages in buffer, add them and then add the new message...or just do it blindly with the expand syntax
+
+      if (view == "history") {
+        historyWindowMessageBuffer.push(newMessage);
+      } else if (view == "current") {
+        historyWindowMessageBuffer.push(newMessage);
+        flushHistoryMessageBuffer();
+      }
+
       console.log("Got message for story", {
         msg: msg,
         color: textColor,
@@ -57,6 +78,15 @@
     historyStoryWindowLastScrollTop =
       historyStoryWindowDiv != undefined ? historyStoryWindowDiv.scrollTop : 0;
   });
+
+  function flushHistoryMessageBuffer() {
+    historyWindowMessages = [
+      ...historyWindowMessages,
+      ...historyWindowMessageBuffer,
+    ].slice(0, maxHistoryWindowMessagesCount);
+
+    historyWindowMessageBuffer = [];
+  }
 
   // Scrolling the main window upwards should trigger the display of the history window.
   async function handleHistoryWindowCurrentViewScrollEvent(event) {
@@ -95,6 +125,7 @@
         // upscroll code
         scrollToBottom(currentStoryWindowDiv);
         if (view != "history") {
+          flushHistoryMessageBuffer();
           view = "history";
           await tick();
           scrollToBottom(historyStoryWindowDiv);
@@ -113,10 +144,23 @@
     return element.scrollHeight - element.clientHeight;
   }
 
+  function closeHistoryCallback(event) {
+    if (event.key == "Escape" && view == "history") {
+      // prevent default behavior
+      event.preventDefault();
+      // Submit command
+      view = "current";
+      flushHistoryMessageBuffer();
+    }
+  }
+
   function toggleHistoryView() {
     if (view == "history") {
       view = "current";
+      window.removeEventListener("keydown", closeHistoryCallback);
     } else {
+      window.addEventListener("keydown", closeHistoryCallback);
+
       view = "history";
     }
   }
@@ -126,13 +170,17 @@
   {#if view == 'history'}
     <i
       on:click={toggleHistoryView}
-      class="mt-2 mr-5 absolute fas fa-eye-slash text-red-300 cursor-pointer"
+      class="mt-2 mr-6 absolute fas fa-eye-slash text-red-300 cursor-pointer"
       style="right:0" />
     <div
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex-1 flex flex-col overflow-y-scroll border-b-2" />
+      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2 mr-1">
+      {#each historyWindowMessages as message}
+        <pre style="color:{message.color}">{message.text}</pre>
+      {/each}
+    </div>
   {:else}
     <i
       on:click={toggleHistoryView}
@@ -146,8 +194,8 @@
       id="StoryWindowCurrentView"
       class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
       style="width:calc(100% + 15px)">
-      {#each messages as message}
-        <p style="color:{message.color}">{message.text}</p>
+      {#each storyWindowMessages as message}
+        <pre style="color:{message.color}">{message.text}</pre>
       {/each}
     </div>
   </div>

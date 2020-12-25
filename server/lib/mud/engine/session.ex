@@ -459,11 +459,10 @@ defmodule Mud.Engine.Session do
   end
 
   defp zip_output(output_list) do
+    Logger.debug(inspect(output_list))
+
     joined_text =
       output_list
-      |> Stream.map(fn output ->
-        %{text: output.text, type: output.type}
-      end)
       |> Enum.reverse()
       |> Enum.join()
 

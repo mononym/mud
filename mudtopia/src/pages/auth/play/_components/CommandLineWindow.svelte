@@ -1,5 +1,7 @@
 <script>
   import { onMount } from "svelte";
+  import { MudClientStore } from "../../../../stores/mudClient";
+  const { channel } = MudClientStore;
 
   export let input = "";
   let actualInput = "";
@@ -18,11 +20,13 @@
         // Nothing to do when shift + enter is pressed but let event add the newline
       }
     });
+
+    commandLineDiv.focus()
   });
 
   function submitPlayerInput() {
-    console.log("Submitting input");
-    console.log(actualInput);
+    $channel.push("cli", { text: actualInput });
+
     actualInput = "";
   }
 </script>

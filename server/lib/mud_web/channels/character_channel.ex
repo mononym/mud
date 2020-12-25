@@ -39,7 +39,7 @@ defmodule MudWeb.CharacterChannel do
     {:reply, {:ok, %{response: "pong"}}, socket}
   end
 
-  def handle_in("input", input, socket) do
+  def handle_in("cli", %{"text" => input}, socket) do
     # Mud.Engine.Session.cast_message_or_event(%Mud.Engine.Message.Input{
     #   to: socket.assigns.character_id,
     #   text: input,
@@ -47,7 +47,7 @@ defmodule MudWeb.CharacterChannel do
     # })
 
     #  Echo for now
-    Phoenix.Channel.push(socket, "output:story", %{text: input})
+    Phoenix.Channel.push(socket, "output:story", %{text: "> #{input}", type: "echo"})
 
     {:noreply, socket}
   end
