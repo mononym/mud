@@ -37,11 +37,7 @@
           text: output.text,
         };
 
-        console.log("Got message for story", {
-          msg: msg,
-          color: textColor,
-          text: msg.text,
-        });
+        console.log("Got message for story", newMessage);
 
         appendNewStoryMessage(newMessage);
       });

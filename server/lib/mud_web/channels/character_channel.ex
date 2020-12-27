@@ -43,7 +43,9 @@ defmodule MudWeb.CharacterChannel do
     # })
 
     #  Echo for now
-    Phoenix.Channel.push(socket, "output:story", %{text: "> #{input}", type: "echo"})
+    Phoenix.Channel.push(socket, "output:story", %{
+      messages: [%{text: "> #{input}", type: "echo"}]
+    })
 
     {:noreply, socket}
   end

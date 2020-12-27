@@ -23,7 +23,16 @@
 
   let initialized = false;
 
-  let reflow = false;
+  // $: localX, flow;
+  // $: localY, flow;
+
+  // async function flow() {
+  //   await tick();
+  //   const interactable = interact(layoutItemWrapper);
+  //   const drag = { name: "drag", axis: "xy" };
+
+  //   interactable.reflow(drag);
+  // }
 
   beforeUpdate(() => {
     if (!initialized) {
@@ -37,6 +46,7 @@
 
             console.log("beforeUpdate: " + id);
             console.log(data);
+
             // if (data.width > 10 && data.height > 10) {
             //   width = data.width;
             //   height = data.height;
@@ -127,23 +137,21 @@
   }
 </script>
 
-{#if initialized}
-  <div
-    bind:this={layoutItemWrapper}
-    class="layoutItemWrapper flex flex-col absolute bg-gray-700"
-    style="height:{localHeight}px;width:{localWidth}px;touch-action:none">
-    <div class="flex-shrink h-8 bg-gray-900 grid grid-cols-3">
-      <div class="flex items-center">
-        <i
-          on:click={toggleLocked}
-          class="pl-2 fas fa-{localIsLocked ? 'lock text-green-200' : 'unlock text-red-300'} cursor-pointer" />
-        <i
-          class="drag-handle text-{localIsLocked ? 'gray-500 cursor-not-allowed' : 'green-200 cursor-move'} pl-2 fas fa-arrows-alt" />
-      </div>
-      <span class="text-white place-self-center">{label}</span>
+<div
+  bind:this={layoutItemWrapper}
+  class="layoutItemWrapper flex flex-col absolute bg-gray-700"
+  style="height:{localHeight}px;width:{localWidth}px;touch-action:none">
+  <div class="flex-shrink h-8 bg-gray-900 grid grid-cols-3">
+    <div class="flex items-center">
+      <i
+        on:click={toggleLocked}
+        class="pl-2 fas fa-{localIsLocked ? 'lock text-green-200' : 'unlock text-red-300'} cursor-pointer" />
+      <i
+        class="drag-handle text-{localIsLocked ? 'gray-500 cursor-not-allowed' : 'green-200 cursor-move'} pl-2 fas fa-arrows-alt" />
     </div>
-    <div class="flex-1 overflow-hidden">
-      <slot />
-    </div>
+    <span class="text-white place-self-center">{label}</span>
   </div>
-{/if}
+  <div class="flex-1 overflow-hidden">
+    <slot />
+  </div>
+</div>
