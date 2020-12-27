@@ -39,7 +39,15 @@ defmodule Mud.Engine.Command.Context do
     field(:character_id, String.t())
 
     # Messages to be sent upon successful execution of logic.
-    field(:messages, [Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()], default: [])
+    field(
+      :messages,
+      [
+        Mud.Engine.Message.Input.t()
+        | Mud.Engine.Message.Output.t()
+        | Mud.Engine.Message.TextOutput.t()
+      ],
+      default: []
+    )
 
     # Events to be sent upon successful execution of logic.
     field(:events, [struct()], default: [])

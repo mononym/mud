@@ -172,6 +172,27 @@ defmodule Mud.Engine.Session do
     {:noreply, state}
   end
 
+  def handle_cast(%Mud.Engine.Message.TextOutput{} = output, state) do
+    Logger.debug("#{inspect(output)}", label: "session_handle_cast")
+    Logger.debug("Subscribers: #{inspect(state.subscribers)}")
+
+    state = update_buffer(state, output)
+
+    state =
+      if map_size(state.subscribers) != 0 do
+        Map.values(state.subscribers)
+        |> Enum.each(fn subscriber ->
+          GenServer.cast(subscriber.pid, {:character_output, [convert_output(output)]})
+        end)
+
+        state
+      else
+        %{state | undelivered_text: [output | state.undelivered_text]}
+      end
+
+    {:noreply, state}
+  end
+
   def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
     Logger.debug("#{inspect(output)}", label: "session_handle_cast")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
@@ -392,8 +413,12 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  defp convert_output(output) do
+  defp convert_output(output = %Mud.Engine.Message.Output{}) do
     %{type: output.type, text: output.text}
+  end
+
+  defp convert_output(output = %Mud.Engine.Message.TextOutput{}) do
+    %{type: "text", segments: Enum.reverse(output.segments)}
   end
 
   defp persist_state(state) do
@@ -470,19 +495,6 @@ defmodule Mud.Engine.Session do
     text_buffer = maybe_deal_with_overflow([output | state.text_buffer])
 
     %{state | text_buffer: text_buffer}
-  end
-
-  defp zip_output(output_list) do
-    Logger.debug(inspect(output_list))
-
-    joined_text =
-      output_list
-      |> Enum.reverse()
-      |> Enum.map(&%{type: &1.type, text: &1.text})
-
-    output_list
-    |> List.first()
-    |> Map.put(:text, joined_text)
   end
 
   defp maybe_deal_with_overflow(text_buffer) do

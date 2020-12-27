@@ -46,8 +46,10 @@ defmodule Mud.Engine.Command.Look do
       %TAP{thing: nil} ->
         description = Area.long_description(context.character.area_id, context.character)
 
+        IO.inspect(description)
+
         context
-        |> Context.append_message(Message.new_output(context.character_id, description))
+        |> Context.append_message(description)
 
       %TAP{place: nil, thing: %Thing{personal: false}} ->
         look_area_then_worn(context)

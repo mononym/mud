@@ -30,16 +30,23 @@
 
   onMount(() => {
     $channel.on("output:story", async function (msg) {
+      console.log(msg);
       msg.messages.forEach((output) => {
-        const textColor = getTextColorFromType(output.type);
-        const newMessage = {
-          color: textColor,
-          text: output.text,
-        };
+        const segments = output.segments.map((segment) => {
+          return {
+            text: segment.text,
+            color: getTextColorFromType(segment.type),
+          };
+        });
+        // const textColor = getTextColorFromType(output.type);
+        // const newMessage = {
+        //   color: textColor,
+        //   text: output.text,
+        // };
 
-        console.log("Got message for story", newMessage);
+        console.log("Got message for story", segments);
 
-        appendNewStoryMessage(newMessage);
+        appendNewStoryMessage({ segments: segments });
       });
 
       await tick();
@@ -143,7 +150,11 @@
       id="StoryWindowHistoryView"
       class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2 mr-1">
       {#each $historyWindowMessages as message}
-        <pre style="color:{message.color}">{message.text}</pre>
+        <pre>
+        {#each message.segments as segment}
+            <span style="color:{segment.color}">{segment.text}</span>
+          {/each}
+      </pre>
       {/each}
     </div>
   {:else}
@@ -160,7 +171,11 @@
       class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
       style="width:calc(100% + 15px)">
       {#each $storyWindowMessages as message}
-        <pre style="color:{message.color}">{message.text}</pre>
+        <pre>
+          {#each message.segments as segment}
+            <span style="color:{segment.color}">{segment.text}</span>
+          {/each}
+        </pre>
       {/each}
     </div>
   </div>

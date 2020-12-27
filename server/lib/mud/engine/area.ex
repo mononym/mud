@@ -2,7 +2,8 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Item, Map}
+  alias Mud.Engine.{Character, Link, Item, Map, Message}
+  alias Mud.Engine.Message.TextOutput
   import Ecto.Query
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -221,11 +222,13 @@ defmodule Mud.Engine.Area do
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
   @spec long_description(area_id :: String.t(), character :: Character.t()) ::
-          description :: String.t()
+          description :: TextOutput.t()
   def long_description(area_id, character) do
     area = get!(area_id)
+    newOutput = Message.new_text_output(character.id)
 
-    build_area_name(area)
+    newOutput
+    |> build_area_name(area)
     |> build_area_desc(area)
     |> maybe_build_things_of_interest(area)
     |> maybe_build_on_ground(area)
@@ -235,12 +238,12 @@ defmodule Mud.Engine.Area do
     |> maybe_build_obvious_exits(area)
   end
 
-  defp build_area_name(area) do
-    "{{area-name}}[#{area.name}]{{/area-name}}\n"
+  defp build_area_name(text_output, area) do
+    Message.append_text(text_output, "[#{area.name}]\n", "area_name")
   end
 
-  defp build_area_desc(text, area) do
-    text <> "{{area-description}}#{area.description}{{/area-description}}\n"
+  defp build_area_desc(text_output, area) do
+    Message.append_text(text_output, "#{area.description}\n", "area_description")
   end
 
   defp maybe_build_hostiles(text, _area) do
@@ -253,7 +256,7 @@ defmodule Mud.Engine.Area do
     text
   end
 
-  defp maybe_build_things_of_interest(text, area) do
+  defp maybe_build_things_of_interest(text_output, area) do
     things_of_interest =
       area.id
       |> Item.list_visible_scenery_in_area()
@@ -262,14 +265,13 @@ defmodule Mud.Engine.Area do
       |> Enum.join(", ")
 
     if things_of_interest == "" do
-      text
+      text_output
     else
-      text <>
-        "{{things-of-interest}}Things of Interest: #{things_of_interest}{{/things-of-interest}}\n"
+      Message.append_text(text_output, "Things of Interest: #{things_of_interest}\n", "text")
     end
   end
 
-  defp maybe_build_on_ground(text, area) do
+  defp maybe_build_on_ground(text_output, area) do
     on_ground =
       Item.list_in_area(area.id)
       |> Stream.filter(&(!&1.is_scenery))
@@ -278,29 +280,29 @@ defmodule Mud.Engine.Area do
       |> Enum.join(", ")
 
     if on_ground == "" do
-      text
+      text_output
     else
-      text <> "{{on-ground}}On Ground: #{on_ground}{{/on-ground}}\n"
+      Message.append_text(text_output, "On Ground: #{on_ground}\n", "text")
     end
   end
 
-  defp maybe_build_also_present(text, area, character_id) do
+  defp maybe_build_also_present(text_output, area, character_id) do
     also_present = build_player_characters_string(area.id, character_id)
 
     if also_present == "" do
-      text
+      text_output
     else
-      text <> "{{also-present}}Also Present: #{also_present}{{/also-present}}\n"
+      Message.append_text(text_output, "Also Present: #{also_present}\n", "text")
     end
   end
 
-  defp maybe_build_obvious_exits(text, area) do
+  defp maybe_build_obvious_exits(text_output, area) do
     obvious_exits = build_obvious_exits_string(area.id)
 
     if obvious_exits == "" do
-      text
+      text_output
     else
-      text <> "{{obvious-exits}}Obvious Exits: #{obvious_exits}{{/obvious-exits}}\n"
+      Message.append_text(text_output, "Obvious Exits: #{obvious_exits}\n", "text")
     end
   end
 
