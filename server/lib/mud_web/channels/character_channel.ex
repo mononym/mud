@@ -12,16 +12,12 @@ defmodule MudWeb.CharacterChannel do
     Engine.Session.subscribe(character_id)
 
     # Send a silent look command
-    # Engine.Session.cast_message_or_event(%Engine.Message.Input{
-    #   id: UUID.uuid4(),
-    #   to: character_id,
-    #   text: "look",
-    #   type: :silent
-    # })
-
-    # conn
-    # |> put_session(:character_id, character_id)
-    # end
+    Engine.Session.cast_message_or_event(%Engine.Message.Input{
+      id: UUID.uuid4(),
+      to: character_id,
+      text: "look",
+      type: :silent
+    })
 
     {:ok, assign(socket, :character_id, character_id)}
   end
@@ -52,10 +48,10 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
-  def handle_cast(%Mud.Engine.Message.Output{} = output, socket) do
+  def handle_cast({:character_output, output}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:output")
     IO.inspect(output)
-    Phoenix.Channel.push(socket, "output:story", %{text: output.text, type: output.type})
+    Phoenix.Channel.push(socket, "output:story", %{messages: output})
 
     {:noreply, socket}
   end

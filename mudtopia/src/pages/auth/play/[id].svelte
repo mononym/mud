@@ -15,8 +15,6 @@
   import CommandLineWindow from "./_components/CommandLineWindow.svelte";
   import LayoutItemWrapper from "./_components/LayoutItemWrapper.svelte";
 
-  let channel;
-
 
   onMount(async () => {
     const character = $characters.filter(
@@ -29,8 +27,8 @@
       return;
     }
 
-    const sessionStarted = await MudClientStore.startGameSession(character.id)
     
+    const sessionStarted = await MudClientStore.startGameSession(character.id)
     await MudClientStore.initializeCharacter(character);
   });
 

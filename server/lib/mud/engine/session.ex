@@ -182,7 +182,7 @@ defmodule Mud.Engine.Session do
       if map_size(state.subscribers) != 0 do
         Map.values(state.subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, output)
+          GenServer.cast(subscriber.pid, {:character_output, [convert_output(output)]})
         end)
 
         state
@@ -275,15 +275,24 @@ defmodule Mud.Engine.Session do
     Map.values(updated_subscribers)
     |> Enum.each(fn subscriber ->
       if length(state.text_buffer) > 0 do
-        GenServer.cast(subscriber.pid, zip_output(state.text_buffer))
+        GenServer.cast(
+          subscriber.pid,
+          {:character_output, Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)}
+        )
       end
     end)
+
+    state = %{state | text_buffer: []}
 
     state =
       if length(state.undelivered_text) != 0 do
         Map.values(updated_subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, zip_output(state.undelivered_text))
+          GenServer.cast(
+            subscriber.pid,
+            {:character_output,
+             Enum.reverse(state.undelivered_text) |> Enum.map(&convert_output/1)}
+          )
         end)
 
         %{state | undelivered_text: []}
@@ -295,7 +304,11 @@ defmodule Mud.Engine.Session do
       if length(state.undelivered_events) != 0 do
         Map.values(updated_subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, zip_output(state.undelivered_events))
+          GenServer.cast(
+            subscriber.pid,
+            {:character_output,
+             Enum.reverse(state.undelivered_events) |> Enum.map(&convert_output/1)}
+          )
         end)
 
         %{state | undelivered_events: []}
@@ -379,6 +392,10 @@ defmodule Mud.Engine.Session do
   #
   #
 
+  defp convert_output(output) do
+    %{type: output.type, text: output.text}
+  end
+
   defp persist_state(state) do
     state =
       state
@@ -409,14 +426,11 @@ defmodule Mud.Engine.Session do
   end
 
   defp execute_next_input_from_buffer(state) do
-    {input_buffer, queued_input} = Enum.split(state.input_buffer, -1)
+    {input_buffer, [queued_input]} = Enum.split(state.input_buffer, -1)
 
     state = %{state | input_buffer: input_buffer}
 
-    input_processing_task =
-      queued_input
-      |> List.first()
-      |> send_input_for_processing(state)
+    input_processing_task = send_input_for_processing(queued_input, state)
 
     %{state | input_processing_task: input_processing_task}
   end
@@ -436,7 +450,7 @@ defmodule Mud.Engine.Session do
         end
 
         execution_context =
-          Mud.Engine.Command.execute(%Mud.Engine.Command.Context{
+          Mud.Engine.Command.Executor.execute(%Mud.Engine.Command.Context{
             id: input.id,
             character_id: input.to,
             input: input.text,
@@ -464,7 +478,7 @@ defmodule Mud.Engine.Session do
     joined_text =
       output_list
       |> Enum.reverse()
-      |> Enum.join()
+      |> Enum.map(&%{type: &1.type, text: &1.text})
 
     output_list
     |> List.first()

@@ -15,6 +15,7 @@ function createMudClientStore() {
 
   async function initializeCharacter(character: CharacterInterface) {
     selectedCharacter.set(character);
+    // load all data needed to set up the context for the character
     characterInitialized.set(true);
     characterInitializing.set(false);
   }

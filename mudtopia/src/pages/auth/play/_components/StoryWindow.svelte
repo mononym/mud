@@ -30,23 +30,25 @@
 
   onMount(() => {
     $channel.on("output:story", async function (msg) {
-      const textColor = getTextColorFromType(msg.type);
-      const newMessage = {
-        color: textColor,
-        text: msg.text,
-      };
+      msg.messages.forEach((output) => {
+        const textColor = getTextColorFromType(output.type);
+        const newMessage = {
+          color: textColor,
+          text: output.text,
+        };
 
-      await appendNewStoryMessage(newMessage);
+        console.log("Got message for story", {
+          msg: msg,
+          color: textColor,
+          text: msg.text,
+        });
+
+        appendNewStoryMessage(newMessage);
+      });
 
       await tick();
 
       scrollToBottom(currentStoryWindowDiv);
-
-      console.log("Got message for story", {
-        msg: msg,
-        color: textColor,
-        text: msg.text,
-      });
     });
 
     scrollToBottom(currentStoryWindowDiv);
