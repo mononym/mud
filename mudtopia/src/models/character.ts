@@ -1,3 +1,7 @@
+import CharacterSettingsState, {
+  CharacterSettingsInterface,
+} from "./characterSettings";
+
 export interface CharacterInterface {
   id: string;
   slug: string;
@@ -29,6 +33,8 @@ export interface CharacterInterface {
   height: string;
   player_id: string;
   area_id: string;
+
+  settings: CharacterSettingsInterface;
 }
 
 const state: CharacterInterface = {
@@ -62,6 +68,8 @@ const state: CharacterInterface = {
   height: "",
   player_id: "",
   area_id: "",
+
+  settings: { ...CharacterSettingsState },
 };
 
 export default state;

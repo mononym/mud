@@ -346,7 +346,7 @@ defmodule Mud.Engine.Character do
   end
 
   @doc """
-  Returns a list of characters all characters.
+  Returns a list of all characters.
 
   ## Examples
 

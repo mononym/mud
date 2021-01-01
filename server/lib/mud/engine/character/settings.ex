@@ -7,13 +7,32 @@ defmodule Mud.Engine.Character.Settings do
 
   @type id :: String.t()
 
-  @derive {Jason.Encoder, only: [:system_warning_text_color, :system_danger_text_color]}
+  @derive {Jason.Encoder,
+           only: [
+             :system_warning_text_color,
+             :system_alert_text_color,
+             :area_name_text_color,
+             :area_description_text_color,
+             :character_text_color,
+             :furniture_text_color,
+             :exit_text_color,
+             :denizen_text_color
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "character_settings" do
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
     field(:system_warning_text_color, :string, default: "#f0ad4e")
-    field(:system_danger_text_color, :string, default: "#d9534f")
+    field(:system_alert_text_color, :string, default: "#d9534f")
+
+    field(:area_name_text_color, :string, default: "#ffffff")
+    field(:area_description_text_color, :string, default: "#ffffff")
+
+    field(:character_text_color, :string, default: "#ffffff")
+    field(:furniture_text_color, :string, default: "#ffffff")
+
+    field(:exit_text_color, :string, default: "#ffffff")
+    field(:denizen_text_color, :string, default: "#ffffff")
   end
 
   @doc false
@@ -22,8 +41,15 @@ defmodule Mud.Engine.Character.Settings do
     |> change()
     |> cast(attrs, [
       :system_warning_text_color,
-      :system_danger_text_color,
-      :character_id
+      :system_alert_text_color,
+      :character_id,
+      # Area description stuff
+      :area_name_text_color,
+      :area_description_text_color,
+      :character_text_color,
+      :furniture_text_color,
+      :exit_text_color,
+      :denizen_text_color
     ])
     |> foreign_key_constraint(:character_id)
   end

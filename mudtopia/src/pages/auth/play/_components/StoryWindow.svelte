@@ -21,11 +21,8 @@
   var hasScrolledHistoryWindow = false;
 
   function getTextColorFromType(type) {
-    if (type == "system warning") {
-      return $selectedCharacter.settings.system_warning_text_color;
-    } else if (type == "system danger") {
-      return $selectedCharacter.settings.system_danger_text_color;
-    }
+    const key = `${type}_text_color`;
+    return $selectedCharacter.settings[key] || "#ffffff";
   }
 
   onMount(() => {

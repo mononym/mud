@@ -369,7 +369,7 @@ defmodule Mud.Engine.Session do
       id: UUID.uuid4(),
       to: state.character_id,
       text: "***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****",
-      type: "system danger"
+      type: "system alert"
     })
 
     state = update_timeout(state, @character_inactivity_timeout_final)
@@ -382,7 +382,7 @@ defmodule Mud.Engine.Session do
       id: UUID.uuid4(),
       to: state.character_id,
       text: "***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****",
-      type: "system danger"
+      type: "system alert"
     })
 
     GenServer.cast(self(), %Mud.Engine.Message.Input{
