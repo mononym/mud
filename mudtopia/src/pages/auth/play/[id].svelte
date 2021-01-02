@@ -3,20 +3,21 @@
   import { Circle2 } from "svelte-loading-spinners";
   import { CharactersStore } from "../../../stores/characters";
   const { characters } = CharactersStore;
-  import { MudClientStore } from "../../../stores/mudClient";
+  import { State } from "./_components/state";
   const {
     characterInitialized,
     characterInitializing,
     selectedCharacter,
-  } = MudClientStore;
+  } = State;
 
   import { onMount } from "svelte";
   import StoryWindow from "./_components/StoryWindow.svelte";
   import CommandLineWindow from "./_components/CommandLineWindow.svelte";
   import LayoutItemWrapper from "./_components/LayoutItemWrapper.svelte";
-
+  import ClientNavBar from "./_components/ClientNavBar.svelte";
 
   onMount(async () => {
+    console.log(window.location);
     const character = $characters.filter(
       (character) => character.id == $params.id
     )[0];
@@ -27,9 +28,8 @@
       return;
     }
 
-    
-    const sessionStarted = await MudClientStore.startGameSession(character.id)
-    await MudClientStore.initializeCharacter(character);
+    const sessionStarted = await State.startGameSession(character.id);
+    await State.initializeCharacter(character);
   });
 
   //
@@ -143,17 +143,18 @@
       </h2>
     </div>
   {:else if $characterInitialized}
+    <ClientNavBar />
     <div
       bind:this={canvas}
       id="container"
-      class="w-full h-full bg-gray-200 relative"
+      class="flex-1 bg-gray-200 relative"
       on:mouseup={mouseUp}
       on:mousedown={mouseDown}
       on:mousemove={mouseMove}>
-      <LayoutItemWrapper id="commandLineWindow" label="Command Input" height={80} width={800}>
+      <LayoutItemWrapper id="commandLineWindow" label="Command Input">
         <CommandLineWindow />
       </LayoutItemWrapper>
-      <LayoutItemWrapper id="storyWindowWrapper" label="Main Story" height={600} width={800}>
+      <LayoutItemWrapper id="storyWindowWrapper" label="Main Story">
         <StoryWindow />
       </LayoutItemWrapper>
     </div>

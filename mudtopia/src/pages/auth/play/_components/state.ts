@@ -1,10 +1,10 @@
 import { get, writable } from "svelte/store";
-import { startGameSession as apiStartGameSession } from "../api/server";
-import type { CharacterInterface } from "../models/character";
-import CharacterState from "../models/character";
+import { startGameSession as apiStartGameSession } from "../../../../api/server";
+import type { CharacterInterface } from "../../../../models/character";
+import CharacterState from "../../../../models/character";
 import { Socket } from "phoenix";
 
-function createMudClientStore() {
+function createState() {
   //
   // Character Stuff
   //
@@ -26,7 +26,7 @@ function createMudClientStore() {
 
   const initializingGameSession = writable(false);
   const gameSessionInitialized = writable(false);
-  const channel = writable({});
+  const channel = writable(<any>{});
 
   async function startGameSession(characterId: string) {
     initializingGameSession.set(true);
@@ -54,6 +54,22 @@ function createMudClientStore() {
       return false;
     } finally {
       initializingGameSession.set(false);
+    }
+  }
+
+  const endingGameSession = writable(false);
+  async function endGameSession() {
+    endingGameSession.set(true);
+    try {
+      get(channel).leave();
+
+      return true;
+    } catch (e) {
+      alert(e.message);
+
+      return false;
+    } finally {
+      endingGameSession.set(false);
     }
   }
 
@@ -128,6 +144,8 @@ function createMudClientStore() {
     initializingGameSession,
     gameSessionInitialized,
     channel,
+    endGameSession,
+    endingGameSession,
     //
     // Story/History window stuff
     //
@@ -143,4 +161,4 @@ function createMudClientStore() {
   };
 }
 
-export const MudClientStore = createMudClientStore();
+export const State = createState();

@@ -1,6 +1,6 @@
 <script>
   import { onMount, tick } from "svelte";
-  import { MudClientStore } from "../../../../stores/mudClient";
+  import { State } from "./state";
   const {
     channel,
     selectedCharacter,
@@ -10,7 +10,7 @@
     hideHistoryWindow,
     storyWindowView,
     appendNewStoryMessage,
-  } = MudClientStore;
+  } = State;
 
   let currentStoryWindowDiv;
 

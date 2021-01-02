@@ -8,7 +8,7 @@
   import { goto } from "@roxi/routify";
 
   function playCharacter(character) {
-    $goto(`../play/${character.id}`);
+    $goto(`/auth/play/${character.id}`);
   }
 
   onMount(async () => {

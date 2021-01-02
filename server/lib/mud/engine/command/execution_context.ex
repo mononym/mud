@@ -18,7 +18,10 @@ defmodule Mud.Engine.Command.Context do
   @type error_message() :: String.t()
   @type input() :: String.t() | map()
   @type is_continuation() :: boolean()
-  @type message() :: Mud.Engine.Message.Input.t() | Mud.Engine.Message.Output.t()
+  @type message() ::
+          Mud.Engine.Message.Input.t()
+          | Mud.Engine.Message.Output.t()
+          | Mud.Engine.Message.TextOutput.t()
   @type messages() :: [message()]
   @type terminate_session() :: boolean()
   @type context() :: __MODULE__.t()

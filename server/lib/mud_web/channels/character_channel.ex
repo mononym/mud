@@ -43,9 +43,9 @@ defmodule MudWeb.CharacterChannel do
     # })
 
     #  Echo for now
-    Phoenix.Channel.push(socket, "output:story", %{
-      messages: [%{text: "> #{input}", type: "echo"}]
-    })
+    # Phoenix.Channel.push(socket, "output:story", %{
+    #   messages: [%{text: "> #{input}", type: "echo"}]
+    # })
 
     {:noreply, socket}
   end
@@ -56,5 +56,23 @@ defmodule MudWeb.CharacterChannel do
     Phoenix.Channel.push(socket, "output:story", %{messages: output})
 
     {:noreply, socket}
+  end
+
+  @doc """
+  If the reason is `{:shutdown, :left}` the client UI was used to end the game session nicely.
+  """
+  def terminate({:shutdown, :left}, socket) do
+    # Send a quit command before letting the process continue to shut down
+    Engine.Session.cast_message_or_event(%Engine.Message.Input{
+      id: UUID.uuid4(),
+      to: socket.assigns.character_id,
+      text: "quit"
+    })
+
+    :ok
+  end
+
+  def terminate(_, _) do
+    :ok
   end
 end

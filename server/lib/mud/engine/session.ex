@@ -5,6 +5,7 @@ defmodule Mud.Engine.Session do
   require Logger
   alias Mud.Engine.CharacterSessionData
   alias Mud.Engine.Event
+  alias Mud.Engine.Message
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -365,12 +366,14 @@ defmodule Mud.Engine.Session do
 
   @impl true
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :warning}) do
-    GenServer.cast(self(), %Mud.Engine.Message.Output{
-      id: UUID.uuid4(),
-      to: state.character_id,
-      text: "***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****",
-      type: "system alert"
-    })
+    new_message =
+      Message.new_text_output(state.character_id)
+      |> Message.append_text(
+        "***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****",
+        "system_alert"
+      )
+
+    GenServer.cast(self(), new_message)
 
     state = update_timeout(state, @character_inactivity_timeout_final)
 
@@ -378,12 +381,14 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :final}) do
-    GenServer.cast(self(), %Mud.Engine.Message.Output{
-      id: UUID.uuid4(),
-      to: state.character_id,
-      text: "***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****",
-      type: "system alert"
-    })
+    new_message =
+      Message.new_text_output(state.character_id)
+      |> Message.append_text(
+        "***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****",
+        "system_alert"
+      )
+
+    GenServer.cast(self(), new_message)
 
     GenServer.cast(self(), %Mud.Engine.Message.Input{
       id: UUID.uuid4(),
@@ -466,13 +471,13 @@ defmodule Mud.Engine.Session do
     # send stuff off to task
     task =
       Task.async(fn ->
-        if input.type == :normal do
-          GenServer.cast(session_pid, %Mud.Engine.Message.Output{
-            id: input.id,
-            to: input.to,
-            text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
-          })
-        end
+        # if input.type == :normal do
+        #   GenServer.cast(session_pid, %Mud.Engine.Message.Output{
+        #     id: input.id,
+        #     to: input.to,
+        #     text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
+        #   })
+        # end
 
         execution_context =
           Mud.Engine.Command.Executor.execute(%Mud.Engine.Command.Context{

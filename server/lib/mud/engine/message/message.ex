@@ -31,6 +31,8 @@ defmodule Mud.Engine.Message do
     |> text_output()
   end
 
+  @spec append_text(Mud.Engine.Message.TextOutput.t(), String.t(), String.t()) ::
+          Mud.Engine.Message.TextOutput.t()
   def append_text(output = %TextOutput{}, text, type) do
     %{output | segments: [%Segment{text: text, type: type} | output.segments]}
   end

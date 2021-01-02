@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
-  import { MudClientStore } from "../../../../stores/mudClient";
-  const { channel, showHistoryWindow } = MudClientStore;
+  import { State } from "./state";
+  const { channel, showHistoryWindow } = State;
 
   export let input = "";
   let actualInput = "";

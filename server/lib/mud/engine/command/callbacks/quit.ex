@@ -14,6 +14,7 @@ defmodule Mud.Engine.Command.Quit do
     |> Context.terminate_session()
   end
 
+  @spec do_ingame_stuff(Mud.Engine.Command.Context.t()) :: none
   def do_ingame_stuff(context) do
     {:ok, character} =
       context.character_id
@@ -24,15 +25,15 @@ defmodule Mud.Engine.Command.Quit do
 
     context
     |> Context.append_message(
-      Message.new_output(
-        character.id,
+      Message.new_text_output(context.character_id)
+      |> Message.append_text(
         "Thank you for playing! Come back soon!",
-        "warning"
+        "system_alert"
       )
     )
     |> Context.append_message(
-      Message.new_output(
-        characters,
+      Message.new_text_output(characters)
+      |> Message.append_text(
         "#{character.name} just left.",
         "info"
       )
