@@ -3,9 +3,8 @@
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
   import { push } from "svelte-spa-router";
-  import active from "svelte-spa-router/active";
   import { State } from "./state";
-  const { endGameSession } = State;
+  const { endGameSession, view, selectSettingsView, selectPlayView } = State;
 
   let menuOpen = false;
 
@@ -51,15 +50,13 @@
     <div class="flex items-center justify-between h-16">
       <div class="flex">
         <div class="flex items-baseline space-x-4">
-          <a
-            href="#/play"
-            use:active={{ path: '/play/*', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
-            class="px-3 py-2 rounded-md text-sm font-medium">Play</a>
+          <button
+            on:click={selectPlayView}
+            class="px-3 py-2 rounded-md text-sm font-medium {$view == 'play' ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'} ">Play</button>
 
-          <a
-            href="#/world"
-            use:active={{ path: '/play/*', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
-            class="px-3 py-2 rounded-md text-sm font-medium">Settings</a>
+          <button
+            on:click={selectSettingsView}
+            class="px-3 py-2 rounded-md text-sm font-medium {$view == 'settings' ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Settings</button>
         </div>
       </div>
       <div class="hidden md:block">

@@ -20,6 +20,8 @@
 
   var hasScrolledHistoryWindow = false;
 
+  const colorIndex = {};
+
   function getTextColorFromType(type) {
     const key = `${type}_text_color`;
     return $selectedCharacter.settings[key] || "#ffffff";
@@ -32,7 +34,7 @@
         const segments = output.segments.map((segment) => {
           return {
             text: segment.text,
-            color: getTextColorFromType(segment.type),
+            type: segment.type,
           };
         });
         // const textColor = getTextColorFromType(output.type);
@@ -149,7 +151,8 @@
       {#each $historyWindowMessages as message}
         <pre>
         {#each message.segments as segment}
-            <span style="color:{segment.color}">{segment.text}</span>
+            <span
+              style="color:{$selectedCharacter.settings[`${segment.type}_text_color`]}">{segment.text}</span>
           {/each}
       </pre>
       {/each}
@@ -170,7 +173,8 @@
       {#each $storyWindowMessages as message}
         <pre>
           {#each message.segments as segment}
-            <span style="color:{segment.color}">{segment.text}</span>
+            <span
+              style="color:{$selectedCharacter.settings[`${segment.type}_text_color`]}">{segment.text}</span>
           {/each}
         </pre>
       {/each}

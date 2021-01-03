@@ -8,6 +8,7 @@
     characterInitialized,
     characterInitializing,
     selectedCharacter,
+    view,
   } = State;
 
   import { onMount } from "svelte";
@@ -15,11 +16,11 @@
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
+  import Settings from "../components/play/Settings.svelte";
 
   export let params = {};
 
   onMount(async () => {
-    console.log(window.location);
     const character = $characters.filter(
       (character) => character.id == params.characterId
     )[0];
@@ -136,7 +137,7 @@
   }
 </script>
 
-<div class="h-full w-full flex flex-col overflow-hidden justify-center">
+<div class="h-full w-full flex flex-col overflow-hidden">
   {#if !$characterInitialized || $characterInitializing}
     <div class="flex-1 flex flex-col justify-center items-center">
       <Circle2 />
@@ -149,6 +150,7 @@
     <MainTabBar />
     <div
       bind:this={canvas}
+      hidden={$view != 'play'}
       id="container"
       class="flex-1 bg-gray-200 relative"
       on:mouseup={mouseUp}
@@ -161,5 +163,6 @@
         <StoryWindow />
       </LayoutItemWrapper>
     </div>
+    <Settings />
   {/if}
 </div>

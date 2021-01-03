@@ -6,6 +6,28 @@ import { Socket } from "phoenix";
 
 function createState() {
   //
+  // Overall UI stuff, such as whether to show the play view or the other views
+  //
+  const view = writable("play");
+
+  async function selectSettingsView() {
+    if (get(view) != "settings") {
+      view.set("settings");
+    }
+  }
+
+  async function selectPlayView() {
+    if (get(view) != "play") {
+      view.set("play");
+    }
+  }
+
+  //
+  // Settings stuff
+  //
+  const settingsView = writable("text");
+
+  //
   // Character Stuff
   //
 
@@ -130,6 +152,16 @@ function createState() {
   }
 
   return {
+    //
+    // Overall UI stuff, such as whether to show the play view or the other views
+    //
+    view,
+    selectSettingsView,
+    selectPlayView,
+    //
+    // Settings stuff
+    //
+    settingsView,
     //
     // Character Stuff
     //
