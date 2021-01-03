@@ -2,13 +2,16 @@
   import { onMount } from "svelte";
   import { AuthStore } from "./stores/auth";
   import { Circle2 } from "svelte-loading-spinners";
-  import Router from "@roxi/routify/runtime/Router.svelte";
-  import { routes } from "../.routify/routes";
+  import Router from "svelte-spa-router";
+  import routes from "./routes";
   import Tailwindcss from "./Tailwind.svelte";
-  const { isSyncing } = AuthStore;
+  const { authenticated, isSyncing } = AuthStore;
+  import { push } from "svelte-spa-router";
 
   onMount(async () => {
-    AuthStore.sync();
+    AuthStore.sync().then(() => {
+      $authenticated ? push("#/dashboard") : push("#/login");
+    });
   });
 </script>
 
@@ -23,6 +26,6 @@
       </h2>
     </div>
   {:else}
-    <Router {routes} config={{ useHash: true }} />
+    <Router {routes} />
   {/if}
 </main>

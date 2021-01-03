@@ -1,5 +1,5 @@
 <script>
-  import MainNavBar from "./_components/MainNavBar.svelte";
+  import MainNavBar from "../../components/MainNavBar.svelte";
 </script>
 
 <div class="h-full w-full flex flex-col">

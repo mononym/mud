@@ -1,6 +1,6 @@
 // api.js
 import axios, { AxiosResponse, Method } from "axios";
-import { goto } from "@roxi/routify";
+import { push } from "svelte-spa-router";
 
 // Create a instance of axios to use the same base url.
 const axiosAPI = axios.create({
@@ -15,7 +15,7 @@ axiosAPI.interceptors.response.use(
     console.log(error.response.data);
     console.log(error.response.status);
     if (error.response.status === 401) {
-      $goto("/");
+      push("#/");
     }
     return Promise.reject(error);
   }

@@ -1,8 +1,5 @@
 <script>
-  import { url } from "@roxi/routify";
   import { onMount } from "svelte";
-
-  
 
   onMount(() => {
     console.log(window.location);
@@ -28,6 +25,6 @@
     Page not found at:
     {window.location}
     <!-- link to the parent folder of _fallback.svelte -->
-    <a href={$url('../')}>Go back</a>
+    <a href="/">Go Home</a>
   </div>
 </div>

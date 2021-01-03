@@ -1,14 +1,20 @@
 <script>
-  import { AuthStore } from "../../../stores/auth";
+  import { AuthStore } from "../../stores/auth";
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
-  import { isActive, goto, url } from "@roxi/routify";
+  import { push } from "svelte-spa-router";
+  import active from "svelte-spa-router/active";
+  import { State } from "./state";
+  const { endGameSession } = State;
 
-  let email = "";
   let menuOpen = false;
 
   function logout() {
-    AuthStore.logout().then(() => $goto("/unauth/login"));
+    endGameSession().then(() => AuthStore.logout().then(() => push("#/login")));
+  }
+
+  function endSession() {
+    endGameSession().then(() => push("#/dashboard"));
   }
 
   function toggleMenu() {
@@ -46,12 +52,14 @@
       <div class="flex">
         <div class="flex items-baseline space-x-4">
           <a
-            href={$url('/auth/dashboard')}
-            class="px-3 py-2 rounded-md text-sm font-medium {$isActive('/auth/dashboard') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Dashboard</a>
+            href="#/play"
+            use:active={{ path: '/play/*', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
+            class="px-3 py-2 rounded-md text-sm font-medium">Play</a>
 
           <a
-            href={$url('/auth/build/world')}
-            class="px-3 py-2 rounded-md text-sm font-medium {$isActive('/auth/build') ? 'text-white bg-gray-900' : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Build</a>
+            href="#/world"
+            use:active={{ path: '/play/*', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
+            class="px-3 py-2 rounded-md text-sm font-medium">Settings</a>
         </div>
       </div>
       <div class="hidden md:block">
@@ -84,7 +92,7 @@
                 class="max-w-xs bg-gray-800 rounded-full flex items-center text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
                 id="user-menu"
                 aria-haspopup="true">
-                <span class="sr-only">Open user menu</span>
+                <span class="sr-only">Open character menu</span>
                 <img
                   class="h-8 w-8 rounded-full"
                   src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
@@ -104,17 +112,14 @@
             <div
               in:scale={{ duration: 100, start: 0.95, easing: cubicOut }}
               out:scale={{ duration: 75, start: 0.95, easing: cubicIn }}
-              class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 {menuOpen ? 'visible' : 'invisible'}"
+              class="origin-top-right absolute z-50 right-0 mt-2 w-36 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 {menuOpen ? 'visible' : 'invisible'}"
               role="menu"
               aria-orientation="vertical"
               aria-labelledby="user-menu">
               <button
+                on:click={endSession}
                 class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                role="menuitem">Your Profile</button>
-
-              <button
-                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                role="menuitem">Settings</button>
+                role="menuitem">End session</button>
 
               <button
                 on:click={logout}
