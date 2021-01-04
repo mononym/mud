@@ -47,6 +47,7 @@ defmodule MudWeb.CharacterView do
 
     character
     |> Map.from_struct()
+    |> IO.inspect()
     |> Map.delete(:area)
     |> Map.delete(:player)
     |> Map.delete(:skills)
@@ -55,5 +56,6 @@ defmodule MudWeb.CharacterView do
     |> Map.delete(:raw_skills)
     |> Map.delete(:__meta__)
     |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
+    |> IO.inspect()
   end
 end

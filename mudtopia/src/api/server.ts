@@ -1,6 +1,7 @@
 import Api from "../services/api";
 import type { AxiosResponse } from "axios";
 import type { CharacterInterface } from "../models/character";
+import type { CharacterSettings } from "../models/characterSettings";
 import type { PlayerInterface } from "../models/player";
 import type { MapInterface } from "../models/map";
 import type { LinkInterface } from "../models/link";
@@ -184,7 +185,6 @@ export async function createLink(
   ));
 }
 
-
 //
 //
 // Mud Client Stuff
@@ -193,8 +193,22 @@ export async function createLink(
 
 export async function startGameSession(
   characterId: string
-): Promise<AxiosResponse<{token: string}>> {
-  return await (<Promise<AxiosResponse<{token: string}>>>(
+): Promise<AxiosResponse<{ token: string }>> {
+  return await (<Promise<AxiosResponse<{ token: string }>>>(
     Api.get(`/start-game-session/${characterId}`)
+  ));
+}
+
+//
+//
+// Character Settings stuff
+//
+//
+
+export async function saveCharacterSettings(
+  settings: CharacterSettings
+): Promise<AxiosResponse<CharacterSettings>> {
+  return await (<Promise<AxiosResponse<CharacterSettings>>>(
+    Api.patch(`/characters/settings/${settings.id}`, { settings: settings })
   ));
 }

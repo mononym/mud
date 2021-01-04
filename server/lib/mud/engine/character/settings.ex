@@ -9,6 +9,7 @@ defmodule Mud.Engine.Character.Settings do
 
   @derive {Jason.Encoder,
            only: [
+             :id,
              :system_warning_text_color,
              :system_alert_text_color,
              :area_name_text_color,
@@ -36,8 +37,8 @@ defmodule Mud.Engine.Character.Settings do
   end
 
   @doc false
-  def changeset(skill, attrs) do
-    skill
+  def changeset(settings, attrs) do
+    settings
     |> change()
     |> cast(attrs, [
       :system_warning_text_color,
@@ -62,29 +63,14 @@ defmodule Mud.Engine.Character.Settings do
     :ok
   end
 
-  def update!(skill_id, attrs) when is_binary(skill_id) do
-    keywords =
-      attrs
-      |> Keyword.new()
-      |> Keyword.put_new(:updated_at, Timex.now())
-
-    skill =
-      from(skill in __MODULE__, where: skill.id == ^skill_id, select: skill)
-      |> Repo.update_all(set: keywords)
-      |> elem(1)
-      |> List.first()
-
-    skill
-  end
-
-  def update!(skill, attrs) do
-    skill
+  def update!(settings, attrs) do
+    settings
     |> changeset(attrs)
     |> Repo.update!()
   end
 
-  def update(skill, attrs) do
-    skill
+  def update(settings, attrs) do
+    settings
     |> changeset(attrs)
     |> Repo.update()
   end
@@ -92,8 +78,8 @@ defmodule Mud.Engine.Character.Settings do
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
-      skill in __MODULE__,
-      where: skill.id == ^id
+      settings in __MODULE__,
+      where: settings.id == ^id
     )
     |> Repo.one!()
   end
@@ -101,8 +87,8 @@ defmodule Mud.Engine.Character.Settings do
   @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
     from(
-      skill in __MODULE__,
-      where: skill.id == ^id
+      settings in __MODULE__,
+      where: settings.id == ^id
     )
     |> Repo.one()
   end

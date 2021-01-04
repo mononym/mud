@@ -1,7 +1,13 @@
 import { get, writable } from "svelte/store";
-import { startGameSession as apiStartGameSession } from "../../api/server";
+import {
+  startGameSession as apiStartGameSession,
+  saveCharacterSettings as saveCharSettings,
+} from "../../api/server";
 import type { CharacterInterface } from "../../models/character";
 import CharacterState from "../../models/character";
+import CharacterSettingsState, {
+  CharacterSettingsInterface,
+} from "../../models/characterSettings";
 import { Socket } from "phoenix";
 
 function createState() {
@@ -12,6 +18,8 @@ function createState() {
 
   async function selectSettingsView() {
     if (get(view) != "settings") {
+      characterSettings.set({ ...get(selectedCharacter).settings });
+
       view.set("settings");
     }
   }
@@ -26,6 +34,36 @@ function createState() {
   // Settings stuff
   //
   const settingsView = writable("text");
+  const characterSettings = writable(<CharacterSettingsInterface>{
+    ...CharacterSettingsState,
+  });
+
+  async function resetCharacterSettings() {
+    characterSettings.set({ ...get(selectedCharacter).settings });
+  }
+
+  async function saveCharacterSettings() {
+    console.log("saveCharacterSettings");
+    console.log(get(characterSettings));
+    try {
+      const res = (await saveCharSettings(get(characterSettings))).data;
+
+      selectedCharacter.update(function (character) {
+        character.settings = get(characterSettings);
+        return character;
+      });
+
+      characterSettings.set(res);
+
+      selectPlayView();
+
+      return true;
+    } catch (e) {
+      alert(e.message);
+
+      return false;
+    }
+  }
 
   //
   // Character Stuff
@@ -162,6 +200,9 @@ function createState() {
     // Settings stuff
     //
     settingsView,
+    characterSettings,
+    resetCharacterSettings,
+    saveCharacterSettings,
     //
     // Character Stuff
     //

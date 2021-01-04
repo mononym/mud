@@ -3,6 +3,7 @@ defmodule MudWeb.CharacterController do
 
   alias Mud.Engine.{Area, Character}
   alias Mud.Engine.Session
+  alias Mud.Engine.Character.Settings
 
   require Logger
 
@@ -64,29 +65,45 @@ defmodule MudWeb.CharacterController do
     render(conn, "edit.html", character: character)
   end
 
-  def play(conn, %{"character" => character_id}) do
-    character = Character.get_by_id!(character_id)
+  # def play(conn, %{"character" => character_id}) do
+  #   character = Character.get_by_id!(character_id)
 
-    if character.player_id === conn.assigns.player.id do
-      Session.start(character_id)
+  #   if character.player_id === conn.assigns.player.id do
+  #     Session.start(character_id)
 
-      Logger.debug("sending silent look")
+  #     Logger.debug("sending silent look")
 
-      # Send a silent look command
-      Session.cast_message_or_event(%Mud.Engine.Message.Input{
-        id: UUID.uuid4(),
-        to: character_id,
-        text: "look",
-        type: :silent
-      })
+  #     # Send a silent look command
+  #     Session.cast_message_or_event(%Mud.Engine.Message.Input{
+  #       id: UUID.uuid4(),
+  #       to: character_id,
+  #       text: "look",
+  #       type: :silent
+  #     })
 
-      conn
-      |> put_session(:character_id, character_id)
-      |> put_layout("liveview_client_page.html")
-      |> live_render(MudWeb.MudClientLive, character_id: character.id)
-    else
-      conn
-      |> redirect(to: "/home")
+  #     conn
+  #     |> put_session(:character_id, character_id)
+  #     |> put_layout("liveview_client_page.html")
+  #     |> live_render(MudWeb.MudClientLive, character_id: character.id)
+  #   else
+  #     conn
+  #     |> redirect(to: "/home")
+  #   end
+  # end
+
+  def update_settings(conn, %{"settings_id" => id, "settings" => character_settings}) do
+    settings = Settings.get!(id)
+
+    case Settings.update(settings, character_settings) do
+      {:ok, settings} ->
+        IO.inspect("updated settings")
+
+        conn
+        |> put_view(MudWeb.CharacterSettingsView)
+        |> render("character_settings.json", character_settings: settings)
+
+      {:error, _changeset} ->
+        resp(conn, 400, "error")
     end
   end
 
