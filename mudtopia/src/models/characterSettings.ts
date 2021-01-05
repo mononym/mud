@@ -1,25 +1,43 @@
+import type { HotkeyInterface } from "./hotkey";
+
 export interface CharacterSettingsInterface {
   id: string;
-  system_warning_text_color: string;
-  system_alert_text_color: string;
-  area_name_text_color: string;
-  area_description_text_color: string;
-  character_text_color: string;
-  furniture_text_color: string;
-  exit_text_color: string;
-  denizen_text_color: string;
+  textColors: {
+    id: string;
+    system_warning: string;
+    system_alert: string;
+    area_name: string;
+    area_description: string;
+    character: string;
+    furniture: string;
+    exit: string;
+    denizen: string;
+  };
+  presetHotkeys: {
+    id: string;
+    open_settings: string;
+  };
+  customHotkeys: HotkeyInterface[];
 }
 
 const state: CharacterSettingsInterface = {
   id: "",
-  system_warning_text_color: "#FFFFFF",
-  system_alert_text_color: "#FFFFFF",
-  area_name_text_color: "#FFFFFF",
-  area_description_text_color: "#FFFFFF",
-  character_text_color: "#FFFFFF",
-  furniture_text_color: "#FFFFFF",
-  exit_text_color: "#FFFFFF",
-  denizen_text_color: "#FFFFFF",
+  textColors: {
+    id: "",
+    system_warning: "#f0ad4e",
+    system_alert: "#d9534f",
+    area_name: "#ffffff",
+    area_description: "#ffffff",
+    character: "#ffffff",
+    furniture: "#ffffff",
+    exit: "#ffffff",
+    denizen: "#ffffff",
+  },
+  presetHotkeys: {
+    id: "",
+    open_settings: "CTRL+SHIFT+s",
+  },
+  customHotkeys: [],
 };
 
 export default state;

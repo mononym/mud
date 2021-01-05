@@ -11,6 +11,7 @@ defmodule MudWeb.CharacterSettingsView do
     |> Map.from_struct()
     |> Map.delete(:__meta__)
     |> Map.delete(:character)
-    # |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
+    |> IO.inspect(label: "rendering settings")
+    |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
   end
 end

@@ -233,7 +233,10 @@ defmodule Mud.Engine.Character do
 
     case result do
       {:ok, character} ->
+        Logger.debug(inspect(character))
         :ok = Skill.initialize(character.id)
+
+        IO.inspect("done with skill")
         :ok = Settings.create(%{character_id: character.id})
 
         character = Repo.preload(character, [:settings])

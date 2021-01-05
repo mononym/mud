@@ -10,55 +10,170 @@ defmodule Mud.Engine.Character.Settings do
   @derive {Jason.Encoder,
            only: [
              :id,
-             :system_warning_text_color,
-             :system_alert_text_color,
-             :area_name_text_color,
+             :text_colors,
+             :preset_hotkeys,
+             :custom_hotkeys,
              :area_description_text_color,
              :character_text_color,
              :furniture_text_color,
              :exit_text_color,
-             :denizen_text_color
+             :denizen_text_color,
+             :hotkeys
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "character_settings" do
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
-    field(:system_warning_text_color, :string, default: "#f0ad4e")
-    field(:system_alert_text_color, :string, default: "#d9534f")
+    embeds_one :text_colors, TextColors, on_replace: :delete do
+      @derive {Jason.Encoder,
+               only: [
+                 :id,
+                 :system_warning,
+                 :system_alert,
+                 :area_name,
+                 :area_description,
+                 :character,
+                 :furniture,
+                 :exit,
+                 :denizen
+               ]}
+      field(:system_warning, :string, default: "#f0ad4e")
+      field(:system_alert, :string, default: "#d9534f")
 
-    field(:area_name_text_color, :string, default: "#ffffff")
-    field(:area_description_text_color, :string, default: "#ffffff")
+      field(:area_name, :string, default: "#ffffff")
+      field(:area_description, :string, default: "#ffffff")
 
-    field(:character_text_color, :string, default: "#ffffff")
-    field(:furniture_text_color, :string, default: "#ffffff")
+      field(:character, :string, default: "#ffffff")
+      field(:furniture, :string, default: "#ffffff")
 
-    field(:exit_text_color, :string, default: "#ffffff")
-    field(:denizen_text_color, :string, default: "#ffffff")
+      field(:exit, :string, default: "#ffffff")
+      field(:denizen, :string, default: "#ffffff")
+    end
+
+    embeds_one :preset_hotkeys, PresetHotkeys, on_replace: :delete do
+      @derive {Jason.Encoder,
+               only: [
+                 :id,
+                 :open_settings
+               ]}
+      field(:open_settings, :string, default: "CTRL+SHIFT+s")
+    end
+
+    embeds_many :custom_hotkeys, Hotkey, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:ctrl_key, :boolean, default: false)
+      field(:alt_key, :boolean, default: false)
+      field(:shift_key, :boolean, default: false)
+      field(:meta_key, :boolean, default: false)
+      field(:key, :string, default: "")
+      field(:command, :string, default: "")
+    end
   end
 
   @doc false
   def changeset(settings, attrs) do
+    Logger.debug(inspect(settings))
+    Logger.debug(inspect(attrs))
+
     settings
     |> change()
     |> cast(attrs, [
-      :system_warning_text_color,
-      :system_alert_text_color,
-      :character_id,
-      # Area description stuff
-      :area_name_text_color,
-      :area_description_text_color,
-      :character_text_color,
-      :furniture_text_color,
-      :exit_text_color,
-      :denizen_text_color
+      :character_id
     ])
     |> foreign_key_constraint(:character_id)
+    |> IO.inspect(label: "fkc")
+    |> cast_embed(:custom_hotkeys, with: &custom_hotkeys_changeset/2)
+    |> IO.inspect(label: "custom_hotkeys")
+    |> cast_embed(:preset_hotkeys, with: &preset_hotkeys_changeset/2)
+    |> IO.inspect(label: "preset_hotkeys")
+    |> cast_embed(:text_colors, with: &text_colors_changeset/2)
+    |> IO.inspect(label: "text_colors")
+  end
+
+  defp text_colors_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :system_warning,
+      :system_alert,
+      :area_name,
+      :area_description,
+      :character,
+      :furniture,
+      :exit,
+      :denizen
+    ])
+    |> validate_required([])
+  end
+
+  defp preset_hotkeys_changeset(schema, params) do
+    IO.inspect(schema, label: "preset_hotkeys_changeset")
+    IO.inspect(params, label: "preset_hotkeys_changeset")
+
+    schema
+    |> cast(params, [
+      :id,
+      :open_settings
+    ])
+    |> validate_required([])
+  end
+
+  defp custom_hotkeys_changeset(schema, params) do
+    IO.inspect(schema, label: "custom_hotkeys_changeset")
+    IO.inspect(params, label: "custom_hotkeys_changeset")
+
+    schema
+    |> cast(params, [
+      :id,
+      :ctrl_key,
+      :alt_key,
+      :shift_key,
+      :meta_key,
+      :key,
+      :command
+    ])
+    |> validate_required([:key, :command])
   end
 
   def create(attrs \\ %{}) do
+    Logger.debug(inspect(attrs))
+
+    default_text_colors = %{
+      system_warning: "#f0ad4e",
+      system_alert: "#d9534f",
+      area_name: "#ffffff",
+      area_description: "#ffffff",
+      character: "#ffffff",
+      furniture: "#ffffff",
+      exit: "#ffffff",
+      denizen: "#ffffff"
+    }
+
+    attrs =
+      if Map.has_key?(attrs, :text_colors) do
+        Map.put(attrs, :text_colors, Map.merge(default_text_colors, attrs.text_colors))
+      else
+        Map.put(attrs, :text_colors, default_text_colors)
+      end
+
+    default_preset_hotkeys = %{
+      open_settings: "CTRL+SHIFT+s"
+    }
+
+    attrs =
+      if Map.has_key?(attrs, :preset_hotkeys) do
+        Map.put(attrs, :preset_hotkeys, Map.merge(default_preset_hotkeys, attrs.preset_hotkeys))
+      else
+        Map.put(attrs, :preset_hotkeys, default_preset_hotkeys)
+      end
+
+    Logger.debug(inspect(attrs))
+
     %__MODULE__{}
     |> changeset(attrs)
-    |> Repo.insert!()
+    |> IO.inspect(label: "create changeset")
+    |> Repo.insert()
+    |> IO.inspect(label: "create result")
 
     :ok
   end

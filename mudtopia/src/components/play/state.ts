@@ -1,3 +1,4 @@
+import * as _ from "lodash";
 import { get, writable } from "svelte/store";
 import {
   startGameSession as apiStartGameSession,
@@ -18,7 +19,9 @@ function createState() {
 
   async function selectSettingsView() {
     if (get(view) != "settings") {
-      characterSettings.set({ ...get(selectedCharacter).settings });
+      const settings = get(selectedCharacter).settings;
+      const newSettings = _.cloneDeep(settings);
+      characterSettings.set(newSettings);
 
       view.set("settings");
     }
@@ -49,11 +52,11 @@ function createState() {
       const res = (await saveCharSettings(get(characterSettings))).data;
 
       selectedCharacter.update(function (character) {
-        character.settings = get(characterSettings);
+        character.settings = _.cloneDeep(res);
         return character;
       });
 
-      characterSettings.set(res);
+      characterSettings.set(_.cloneDeep(res));
 
       selectPlayView();
 

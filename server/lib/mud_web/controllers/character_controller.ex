@@ -16,6 +16,7 @@ defmodule MudWeb.CharacterController do
 
   def list_player_characters(conn, %{"player_id" => player_id}) do
     characters = Character.list_by_player_id(player_id)
+    IO.inspect(characters, label: :list_player_characters)
     render(conn, "index.json", characters: characters)
   end
 
@@ -94,7 +95,10 @@ defmodule MudWeb.CharacterController do
   def update_settings(conn, %{"settings_id" => id, "settings" => character_settings}) do
     settings = Settings.get!(id)
 
-    case Settings.update(settings, character_settings) do
+    case Settings.update(
+           settings,
+           Recase.Enumerable.convert_keys(character_settings, &Recase.to_snake/1)
+         ) do
       {:ok, settings} ->
         IO.inspect("updated settings")
 

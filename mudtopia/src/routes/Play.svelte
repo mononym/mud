@@ -32,6 +32,9 @@
       return;
     }
 
+    console.log("playing character");
+    console.log(character);
+
     await State.startGameSession(character.id);
     await State.initializeCharacter(character);
   });

@@ -1,6 +1,7 @@
 defmodule MudWeb.CharacterView do
   use MudWeb, :view
   alias MudWeb.CharacterView
+  alias MudWeb.CharacterSettingsView
   alias MudWeb.RaceView
 
   def render("character-creation-data.json", %{races: races}) do
@@ -55,7 +56,15 @@ defmodule MudWeb.CharacterView do
     |> Map.delete(:worn_items)
     |> Map.delete(:raw_skills)
     |> Map.delete(:__meta__)
+    |> Map.put(
+      :settings,
+      render_one(
+        character.settings,
+        CharacterSettingsView,
+        "character_settings.json"
+      )
+    )
     |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
-    |> IO.inspect()
+    |> IO.inspect(label: "settings being returned")
   end
 end

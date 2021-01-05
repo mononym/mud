@@ -20,13 +20,6 @@
 
   var hasScrolledHistoryWindow = false;
 
-  const colorIndex = {};
-
-  function getTextColorFromType(type) {
-    const key = `${type}_text_color`;
-    return $selectedCharacter.settings[key] || "#ffffff";
-  }
-
   onMount(() => {
     $channel.on("output:story", async function (msg) {
       console.log(msg);
@@ -37,11 +30,6 @@
             type: segment.type,
           };
         });
-        // const textColor = getTextColorFromType(output.type);
-        // const newMessage = {
-        //   color: textColor,
-        //   text: output.text,
-        // };
 
         console.log("Got message for story", segments);
 
@@ -85,6 +73,10 @@
       scrollToBottom(currentStoryWindowDiv);
     } else {
       var newScrollTop = currentStoryWindowDiv.scrollTop;
+
+      console.log("scroll event");
+      console.log(currentStoryWindowLastScrollTop);
+      console.log(newScrollTop);
 
       if (newScrollTop > currentStoryWindowLastScrollTop) {
         // downscroll code
@@ -174,7 +166,7 @@
         <pre>
           {#each message.segments as segment}
             <span
-              style="color:{$selectedCharacter.settings[`${segment.type}_text_color`]}">{segment.text}</span>
+              style="color:{$selectedCharacter.settings.textColors[segment.type]}">{segment.text}</span>
           {/each}
         </pre>
       {/each}

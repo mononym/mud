@@ -10,4 +10,7 @@
   {#if $settingsView == 'text'}
     <SettingsTextView />
   {/if}
+  {#if $settingsView == 'hotkeys'}
+    <SettingsTextView />
+  {/if}
 </div>
