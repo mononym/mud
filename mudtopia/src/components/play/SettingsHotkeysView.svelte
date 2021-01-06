@@ -1,4 +1,5 @@
 <script>
+  import { buildPresetHotkeyStringFromEvent } from "../../utils/utils";
   import { State } from "./state";
   const {
     selectedCharacter,
@@ -7,30 +8,10 @@
     saveCharacterSettings,
   } = State;
 
-  function buildPresetHotkeyStringFromEvent(event, target) {
-    const keys = [];
-
-    if (event.ctrlKey) {
-      keys.push("CTRL");
-    }
-
-    if (event.altKey) {
-      keys.push("ALT");
-    }
-
-    if (event.shiftKey) {
-      keys.push("SHIFT");
-    }
-
-    if (event.metaKey) {
-      keys.push("META");
-    }
-
-    if (event.code) {
-      keys.push(event.code);
-    }
-
-    $characterSettings.presetHotkeys[target] = keys.join(" + ");
+  function buildPresetHotkeyString(event, target) {
+    $characterSettings.presetHotkeys[target] = buildPresetHotkeyStringFromEvent(
+      event
+    );
   }
 
   $: $characterSettings.presetHotkeys,
@@ -62,7 +43,7 @@
       <label for="openSettings" class="block text-sm font-medium">Open Settings
         Tab</label>
       <input
-        on:keydown|preventDefault={(e) => buildPresetHotkeyStringFromEvent(e, 'open_settings')}
+        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_settings')}
         bind:value={$characterSettings.presetHotkeys.open_settings}
         name="openSettings"
         id="openSettings"
@@ -71,7 +52,7 @@
     <div class="col-span-2">
       <label for="openPlay" class="block text-sm font-medium">Open Play Tab</label>
       <input
-        on:keydown|preventDefault={(e) => buildPresetHotkeyStringFromEvent(e, 'open_play')}
+        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_play')}
         bind:value={$characterSettings.presetHotkeys.open_play}
         name="openPlay"
         id="openPlay"

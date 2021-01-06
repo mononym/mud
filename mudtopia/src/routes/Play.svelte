@@ -9,16 +9,22 @@
     characterInitializing,
     selectedCharacter,
     view,
+    selectSettingsView,
+    selectPlayView,
   } = State;
 
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import StoryWindow from "../components/play/StoryWindow.svelte";
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
+  import { buildPresetHotkeyStringFromEvent } from "../utils/utils";
+  import { prevent_default } from "svelte/internal";
 
   export let params = {};
+
+  let presetHotkeyCallbacks = {};
 
   onMount(async () => {
     const character = $characters.filter(
@@ -37,7 +43,51 @@
 
     await State.startGameSession(character.id);
     await State.initializeCharacter(character);
+    generatePresetHotkeyCallbacks();
+    setupHotkeyWatcher();
   });
+
+  onDestroy(() => {
+    teardownHotkeyWatcher();
+  });
+
+  //
+  // Hotkey stuff
+  //
+
+  $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
+
+  const presetHotkeyCallbackIndex = {
+    open_play: () => State.selectPlayView(),
+    open_settings: () => State.selectSettingsView(),
+  };
+
+  function generatePresetHotkeyCallbacks() {
+    const hotkeys = $selectedCharacter.settings.presetHotkeys;
+    presetHotkeyCallbacks = {};
+
+    for (const [hotkeyName, hotkeyString] of Object.entries(hotkeys)) {
+      presetHotkeyCallbacks[hotkeyString] =
+        presetHotkeyCallbackIndex[hotkeyName];
+    }
+  }
+
+  function setupHotkeyWatcher() {
+    window.addEventListener("keydown", maybeHandleApplicationHotkey);
+  }
+
+  function teardownHotkeyWatcher() {
+    window.removeEventListener("keydown", maybeHandleApplicationHotkey);
+  }
+
+  function maybeHandleApplicationHotkey(event) {
+    const potentialHotkeyString = buildPresetHotkeyStringFromEvent(event);
+    if (potentialHotkeyString in presetHotkeyCallbacks) {
+      prevent_default(event);
+
+      presetHotkeyCallbacks[potentialHotkeyString]();
+    }
+  }
 
   //
   // UI stuff
