@@ -27,13 +27,13 @@ function createState() {
     }
   }
 
-  async function selectSettingsTextView() {
-    if (get(settingsView) != "text") {
+  async function selectSettingsColorsView() {
+    if (get(settingsView) != "colors") {
       const settings = get(selectedCharacter).settings;
       const newSettings = _.cloneDeep(settings);
       characterSettings.set(newSettings);
 
-      settingsView.set("text");
+      settingsView.set("colors");
     }
   }
 
@@ -56,7 +56,7 @@ function createState() {
   //
   // Settings stuff
   //
-  const settingsView = writable("text");
+  const settingsView = writable("colors");
   const characterSettings = writable(<CharacterSettingsInterface>{
     ...CharacterSettingsState,
   });
@@ -225,7 +225,7 @@ function createState() {
     resetCharacterSettings,
     saveCharacterSettings,
     selectSettingsHotkeysView,
-    selectSettingsTextView,
+    selectSettingsColorsView,
     //
     // Character Stuff
     //
