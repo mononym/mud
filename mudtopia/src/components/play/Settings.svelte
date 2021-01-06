@@ -1,6 +1,7 @@
 <script>
   import SettingsTabBar from "./SettingsTabBar.svelte";
   import SettingsTextView from "./SettingsTextView.svelte";
+  import SettingsHotkeysView from "./SettingsHotkeysView.svelte";
   import { State } from "./state";
   const { settingsView, view } = State;
 </script>
@@ -11,6 +12,6 @@
     <SettingsTextView />
   {/if}
   {#if $settingsView == 'hotkeys'}
-    <SettingsTextView />
+    <SettingsHotkeysView />
   {/if}
 </div>

@@ -27,6 +27,26 @@ function createState() {
     }
   }
 
+  async function selectSettingsTextView() {
+    if (get(settingsView) != "text") {
+      const settings = get(selectedCharacter).settings;
+      const newSettings = _.cloneDeep(settings);
+      characterSettings.set(newSettings);
+
+      settingsView.set("text");
+    }
+  }
+
+  async function selectSettingsHotkeysView() {
+    if (get(settingsView) != "hotkeys") {
+      const settings = get(selectedCharacter).settings;
+      const newSettings = _.cloneDeep(settings);
+      characterSettings.set(newSettings);
+
+      settingsView.set("hotkeys");
+    }
+  }
+
   async function selectPlayView() {
     if (get(view) != "play") {
       view.set("play");
@@ -42,12 +62,10 @@ function createState() {
   });
 
   async function resetCharacterSettings() {
-    characterSettings.set({ ...get(selectedCharacter).settings });
+    characterSettings.set(_.cloneDeep(get(selectedCharacter).settings));
   }
 
   async function saveCharacterSettings() {
-    console.log("saveCharacterSettings");
-    console.log(get(characterSettings));
     try {
       const res = (await saveCharSettings(get(characterSettings))).data;
 
@@ -206,6 +224,8 @@ function createState() {
     characterSettings,
     resetCharacterSettings,
     saveCharacterSettings,
+    selectSettingsHotkeysView,
+    selectSettingsTextView,
     //
     // Character Stuff
     //

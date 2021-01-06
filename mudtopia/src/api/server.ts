@@ -1,7 +1,7 @@
 import Api from "../services/api";
 import type { AxiosResponse } from "axios";
 import type { CharacterInterface } from "../models/character";
-import type { CharacterSettings } from "../models/characterSettings";
+import type { CharacterSettingsInterface } from "../models/characterSettings";
 import type { PlayerInterface } from "../models/player";
 import type { MapInterface } from "../models/map";
 import type { LinkInterface } from "../models/link";
@@ -206,9 +206,9 @@ export async function startGameSession(
 //
 
 export async function saveCharacterSettings(
-  settings: CharacterSettings
-): Promise<AxiosResponse<CharacterSettings>> {
-  return await (<Promise<AxiosResponse<CharacterSettings>>>(
+  settings: CharacterSettingsInterface
+): Promise<AxiosResponse<CharacterSettingsInterface>> {
+  return await (<Promise<AxiosResponse<CharacterSettingsInterface>>>(
     Api.patch(`/characters/settings/${settings.id}`, { settings: settings })
   ));
 }

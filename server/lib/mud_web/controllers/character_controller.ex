@@ -125,14 +125,14 @@ defmodule MudWeb.CharacterController do
   #   end
   # end
 
-  # def delete(conn, %{"id" => id}) do
-  #   character = Character.get_by_id!(id)
-  #   {:ok, _character} = Character.delete(character)
+  def delete(conn, %{"character_id" => id}) do
+    character = Character.get_by_id!(id)
+    {:ok, _character} = Character.delete(character)
 
-  #   conn
-  #   |> put_flash(:info, "Character deleted successfully.")
-  #   |> redirect(to: Routes.character_path(conn, :index))
-  # end
+    conn
+    |> resp(200, "ok")
+    |> send_resp()
+  end
 
   def get_creation_data(conn, _) do
     races = Mud.Engine.Rules.PlayerRaces.races()

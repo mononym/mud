@@ -12,9 +12,6 @@
   let settingsChanged = false;
 
   function checkIfChanged() {
-    console.log("checking");
-    console.log($characterSettings);
-    console.log($selectedCharacter.settings);
     settingsChanged =
       $selectedCharacter.id != "" &&
       $characterSettings.id != "" &&

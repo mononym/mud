@@ -1,10 +1,14 @@
 <script language="typescript">
+  import ConfirmWithInput from "../components/ConfirmWithInput.svelte";
   import { Circle2 } from "svelte-loading-spinners";
   import { player } from "../stores/player";
   import { CharactersStore } from "../stores/characters";
   import { push } from "svelte-spa-router";
   import MainNavBar from "../components/MainNavBar.svelte";
   const { loading, characters } = CharactersStore;
+  let showDeletePrompt = false;
+  let characterForDeleting;
+  let deleteMatchString = "";
 
   import { onMount } from "svelte";
 
@@ -14,6 +18,16 @@
 
   function createCharacter() {
     push("#/character/create");
+  }
+
+  function deleteCallback() {
+    CharactersStore.deleteCharacter(characterForDeleting);
+  }
+
+  function promptForDeleteCharacter(character) {
+    deleteMatchString = character.name;
+    characterForDeleting = character;
+    showDeletePrompt = true;
   }
 
   onMount(async () => {
@@ -54,9 +68,20 @@
             type="button"
             class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Play
           </button>
+          <button
+            on:click|stopPropagation={promptForDeleteCharacter(character)}
+            class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+            type="button">
+            <i class="fas fa-trash" />
+          </button>
         </div>
         <!-- </div> -->
       {/each}
     </div>
   {/if}
+
+  <ConfirmWithInput
+    bind:show={showDeletePrompt}
+    callback={deleteCallback}
+    matchString={deleteMatchString} />
 </div>

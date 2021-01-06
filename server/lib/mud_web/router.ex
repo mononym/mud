@@ -66,6 +66,7 @@ defmodule MudWeb.Router do
 
     # Character related stuff
     get("/characters/player/:player_id", CharacterController, :list_player_characters)
+    delete("/characters/:character_id", CharacterController, :delete)
     post("/characters/create", CharacterController, :create)
     patch("/characters/settings/:settings_id", CharacterController, :update_settings)
     # post "/characters/delete", CharacterController, :delete

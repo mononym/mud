@@ -54,9 +54,11 @@ defmodule Mud.Engine.Character.Settings do
       @derive {Jason.Encoder,
                only: [
                  :id,
+                 :open_play,
                  :open_settings
                ]}
-      field(:open_settings, :string, default: "CTRL+SHIFT+s")
+      field(:open_play, :string, default: "CTRL + SHIFT + KeyP")
+      field(:open_settings, :string, default: "CTRL + SHIFT + KeyS")
     end
 
     embeds_many :custom_hotkeys, Hotkey, on_replace: :delete do
@@ -113,6 +115,7 @@ defmodule Mud.Engine.Character.Settings do
     schema
     |> cast(params, [
       :id,
+      :open_play,
       :open_settings
     ])
     |> validate_required([])
@@ -157,7 +160,8 @@ defmodule Mud.Engine.Character.Settings do
       end
 
     default_preset_hotkeys = %{
-      open_settings: "CTRL+SHIFT+s"
+      open_settings: "CTRL + SHIFT + KeyS",
+      open_play: "CTRL + SHIFT + KeyP"
     }
 
     attrs =
@@ -165,6 +169,77 @@ defmodule Mud.Engine.Character.Settings do
         Map.put(attrs, :preset_hotkeys, Map.merge(default_preset_hotkeys, attrs.preset_hotkeys))
       else
         Map.put(attrs, :preset_hotkeys, default_preset_hotkeys)
+      end
+
+    default_custom_hotkeys = [
+      %{
+        command: "move north",
+        key: "Numpad8"
+      },
+      %{
+        command: "move south",
+        key: "Numpad2"
+      },
+      %{command: "move east", key: "Numpad6"},
+      %{
+        command: "move west",
+        key: "Numpad4"
+      },
+      %{
+        command: "move northwest",
+        key: "Numpad7"
+      },
+      %{
+        command: "move northeast",
+        key: "Numpad9"
+      },
+      %{
+        command: "move southwest",
+        key: "Numpad1"
+      },
+      %{
+        command: "move southeast",
+        key: "Numpad3"
+      },
+      %{
+        command: "move in",
+        key: "Numpad0"
+      },
+      %{
+        command: "move out",
+        key: "NumpadDecimal"
+      },
+      %{
+        command: "move up",
+        key: "NumpadAdd"
+      },
+      %{
+        command: "move down",
+        key: "NumpadEnter"
+      },
+      %{
+        command: "move gate",
+        key: "NumpadEnter"
+      },
+      %{
+        command: "move bridge",
+        key: "NumpadDivide"
+      },
+      %{
+        command: "move path",
+        key: "NumpadMultiply"
+      },
+      %{
+        command: "move gate",
+        key: "NumpadSubtract"
+      }
+    ]
+
+    attrs =
+      if Map.has_key?(attrs, :custom_hotkeys) do
+        Map.put(attrs, :custom_hotkeys, Enum.concat(default_custom_hotkeys, attrs.custom_hotkeys))
+      else
+        Map.put(attrs, :custom_hotkeys, default_custom_hotkeys)
       end
 
     Logger.debug(inspect(attrs))
