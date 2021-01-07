@@ -2,6 +2,8 @@
   import { onMount, onDestroy } from "svelte";
   import interact from "interactjs";
   import { interactable } from "../../utils/interactable";
+  import { State } from "./state";
+  const { selectedCharacter } = State;
   const storage = require("electron-json-storage");
 
   let layoutItemWrapper;
@@ -103,13 +105,17 @@
   bind:this={layoutItemWrapper}
   class="layoutItemWrapper flex flex-col absolute bg-gray-700"
   style="height:{localHeight}px;width:{localWidth}px;touch-action:none">
-  <div class="flex-shrink h-8 bg-gray-900 grid grid-cols-3">
+  <div
+    style="background-color:{$selectedCharacter.settings.colors.window_toolbar_background}"
+    class="flex-shrink h-8 grid grid-cols-3">
     <div class="flex items-center">
       <i
         on:click={toggleLocked}
-        class="pl-2 fas fa-{localIsLocked ? 'lock text-green-200' : 'unlock text-red-300'} cursor-pointer" />
+        style="color:{localIsLocked ? `${$selectedCharacter.settings.colors.window_lock_locked}` : `${$selectedCharacter.settings.colors.window_lock_unlocked}`}"
+        class="pl-2 fas fa-{localIsLocked ? `lock` : `unlock`} cursor-pointer" />
       <i
-        class="drag-handle text-{localIsLocked ? 'gray-500 cursor-not-allowed' : 'green-200 cursor-move'} pl-2 fas fa-arrows-alt" />
+        style="color:{localIsLocked ? `${$selectedCharacter.settings.colors.window_move_locked}` : `${$selectedCharacter.settings.colors.window_move_unlocked}`}"
+        class="drag-handle {localIsLocked ? `cursor-not-allowed` : `cursor-move`} pl-2 fas fa-arrows-alt" />
     </div>
     <span class="text-white place-self-center">{label}</span>
   </div>

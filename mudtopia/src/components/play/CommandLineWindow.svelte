@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { State } from "./state";
-  const { channel, showHistoryWindow } = State;
+  const { channel, showHistoryWindow, selectedCharacter } = State;
 
   export let input = "";
   let actualInput = "";
@@ -94,6 +94,6 @@
       on:submit|preventDefault={submitPlayerInput}
       bind:value={actualInput}
       class="flex-grow"
-      style="resize:none" />
+      style="resize:none;color:{$selectedCharacter.settings.colors.input};background-color:{$selectedCharacter.settings.colors.input_background}" />
   </form>
 </div>

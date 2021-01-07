@@ -7,56 +7,62 @@ defmodule Mud.Engine.Character.Settings do
 
   @type id :: String.t()
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :text_colors,
-             :preset_hotkeys,
-             :custom_hotkeys,
-             :area_description_text_color,
-             :character_text_color,
-             :furniture_text_color,
-             :exit_text_color,
-             :denizen_text_color,
-             :hotkeys
-           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "character_settings" do
+    @derive Jason.Encoder
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
-    embeds_one :text_colors, TextColors, on_replace: :delete do
-      @derive {Jason.Encoder,
-               only: [
-                 :id,
-                 :system_warning,
-                 :system_alert,
-                 :area_name,
-                 :area_description,
-                 :character,
-                 :furniture,
-                 :exit,
-                 :denizen
-               ]}
+    embeds_one :colors, TextColors, on_replace: :delete do
+      @derive Jason.Encoder
+      # Text colors
+      field(:system_info, :string, default: "#5bc0de")
       field(:system_warning, :string, default: "#f0ad4e")
       field(:system_alert, :string, default: "#d9534f")
-
       field(:area_name, :string, default: "#ffffff")
       field(:area_description, :string, default: "#ffffff")
-
       field(:character, :string, default: "#ffffff")
-      field(:furniture, :string, default: "#ffffff")
-
       field(:exit, :string, default: "#ffffff")
       field(:denizen, :string, default: "#ffffff")
+      field(:denizen_label, :string, default: "#ffffff")
+      field(:toi_label, :string, default: "#ffffff")
+      field(:exit_label, :string, default: "#ffffff")
+      field(:character_label, :string, default: "#ffffff")
+      field(:base, :string, default: "#ffffff")
+
+      # Item Types
+      field(:furniture, :string, default: "#ffffff")
+      field(:container, :string, default: "#ffffff")
+      field(:worn_container, :string, default: "#ffffff")
+      field(:weapon, :string, default: "#ffffff")
+      field(:armor, :string, default: "#ffffff")
+      field(:gem, :string, default: "#ffffff")
+      field(:coin, :string, default: "#ffffff")
+      field(:ammunition, :string, default: "#ffffff")
+      field(:shield, :string, default: "#ffffff")
+      field(:clothing, :string, default: "#ffffff")
+
+      # Command Input window colors
+      field(:input, :string, default: "#ffffff")
+      field(:input_background, :string, default: "#374151")
+      field(:input_button_background, :string, default: "#e5e7eb")
+      field(:input_button_icon, :string, default: "#ffffff")
+
+      # Story window colors
+      field(:story_background, :string, default: "#374151")
+      field(:story_history_icon, :string, default: "#fca5a5")
+      field(:story_history_border, :string, default: "#ffffff")
+
+      # UI colors
+      field(:window_toolbar_background, :string, default: "#111827")
+      field(:window_toolbar_label, :string, default: "#ffffff")
+      field(:window_lock_unlocked, :string, default: "#fca5a5")
+      field(:window_lock_locked, :string, default: "#a7f3d0")
+      field(:window_move_unlocked, :string, default: "#a7f3d0")
+      field(:window_move_locked, :string, default: "#6b7280")
     end
 
     embeds_one :preset_hotkeys, PresetHotkeys, on_replace: :delete do
-      @derive {Jason.Encoder,
-               only: [
-                 :id,
-                 :open_play,
-                 :open_settings
-               ]}
+      @derive Jason.Encoder
       field(:open_play, :string, default: "CTRL + SHIFT + KeyP")
       field(:open_settings, :string, default: "CTRL + SHIFT + KeyS")
     end
@@ -83,35 +89,62 @@ defmodule Mud.Engine.Character.Settings do
       :character_id
     ])
     |> foreign_key_constraint(:character_id)
-    |> IO.inspect(label: "fkc")
     |> cast_embed(:custom_hotkeys, with: &custom_hotkeys_changeset/2)
-    |> IO.inspect(label: "custom_hotkeys")
     |> cast_embed(:preset_hotkeys, with: &preset_hotkeys_changeset/2)
-    |> IO.inspect(label: "preset_hotkeys")
-    |> cast_embed(:text_colors, with: &text_colors_changeset/2)
-    |> IO.inspect(label: "text_colors")
+    |> cast_embed(:colors, with: &colors_changeset/2)
   end
 
-  defp text_colors_changeset(schema, params) do
+  defp colors_changeset(schema, params) do
     schema
     |> cast(params, [
       :id,
+      # Text colors
       :system_warning,
+      :system_info,
       :system_alert,
       :area_name,
       :area_description,
       :character,
+      :character_label,
       :furniture,
       :exit,
-      :denizen
+      :exit_label,
+      :denizen,
+      :denizen_label,
+      :toi_label,
+      :base,
+      # Item types
+      :furniture,
+      :container,
+      :worn_container,
+      :weapon,
+      :armor,
+      :gem,
+      :coin,
+      :ammunition,
+      :shield,
+      :clothing,
+      # Command Input window colors
+      :input,
+      :input_background,
+      :input_button_background,
+      :input_button_icon,
+      # Story window colors
+      :story_background,
+      :story_history_icon,
+      :story_history_border,
+      # UI colors
+      :window_toolbar_background,
+      :window_toolbar_label,
+      :window_lock_unlocked,
+      :window_lock_locked,
+      :window_move_unlocked,
+      :window_move_locked
     ])
     |> validate_required([])
   end
 
   defp preset_hotkeys_changeset(schema, params) do
-    IO.inspect(schema, label: "preset_hotkeys_changeset")
-    IO.inspect(params, label: "preset_hotkeys_changeset")
-
     schema
     |> cast(params, [
       :id,
@@ -122,9 +155,6 @@ defmodule Mud.Engine.Character.Settings do
   end
 
   defp custom_hotkeys_changeset(schema, params) do
-    IO.inspect(schema, label: "custom_hotkeys_changeset")
-    IO.inspect(params, label: "custom_hotkeys_changeset")
-
     schema
     |> cast(params, [
       :id,
@@ -141,22 +171,59 @@ defmodule Mud.Engine.Character.Settings do
   def create(attrs \\ %{}) do
     Logger.debug(inspect(attrs))
 
-    default_text_colors = %{
-      system_warning: "#f0ad4e",
+    default_colors = %{
+      # Text colors
       system_alert: "#d9534f",
+      system_info: "#5bc0de",
+      system_warning: "#f0ad4e",
       area_name: "#ffffff",
       area_description: "#ffffff",
       character: "#ffffff",
-      furniture: "#ffffff",
+      character_label: "#ffffff",
+      denizen: "#ffffff",
+      denizen_label: "#ffffff",
       exit: "#ffffff",
-      denizen: "#ffffff"
+      exit_label: "#ffffff",
+      toi_label: "#ffffff",
+      base: "#ffffff",
+
+      # Item Types
+      furniture: "#ffffff",
+      container: "#ffffff",
+      worn_container: "#ffffff",
+      weapon: "#ffffff",
+      armor: "#ffffff",
+      gem: "#ffffff",
+      coin: "#ffffff",
+      ammunition: "#ffffff",
+      shield: "#ffffff",
+      clothing: "#ffffff",
+
+      # Command Input window colors
+      input: "#ffffff",
+      input_background: "#374151",
+      input_button_background: "#e5e7eb",
+      input_button_icon: "#ffffff",
+
+      # Story window colors
+      story_background: "#374151",
+      story_history_icon: "#fca5a5",
+      story_history_border: "#ffffff",
+
+      # UI colors
+      window_toolbar_background: "#111827",
+      window_toolbar_label: "#ffffff",
+      window_lock_unlocked: "#fca5a5",
+      window_lock_locked: "#a7f3d0",
+      window_move_unlocked: "#a7f3d0",
+      window_move_locked: "#6b7280"
     }
 
     attrs =
-      if Map.has_key?(attrs, :text_colors) do
-        Map.put(attrs, :text_colors, Map.merge(default_text_colors, attrs.text_colors))
+      if Map.has_key?(attrs, :colors) do
+        Map.put(attrs, :colors, Map.merge(default_colors, attrs.colors))
       else
-        Map.put(attrs, :text_colors, default_text_colors)
+        Map.put(attrs, :colors, default_colors)
       end
 
     default_preset_hotkeys = %{
@@ -246,9 +313,7 @@ defmodule Mud.Engine.Character.Settings do
 
     %__MODULE__{}
     |> changeset(attrs)
-    |> IO.inspect(label: "create changeset")
     |> Repo.insert()
-    |> IO.inspect(label: "create result")
 
     :ok
   end

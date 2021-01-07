@@ -3,7 +3,7 @@ defmodule Mud.Repo.Migrations.AddColorOptionsToSettings do
 
   def change do
     alter table(:character_settings) do
-      add(:text_colors, :map)
+      add(:colors, :map)
     end
   end
 end

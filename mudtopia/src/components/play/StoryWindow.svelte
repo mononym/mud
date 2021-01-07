@@ -133,18 +133,19 @@
   {#if $storyWindowView == 'history'}
     <i
       on:click={toggleHistoryView}
-      class="mt-2 mr-6 absolute fas fa-eye-slash text-red-300 cursor-pointer"
-      style="right:0" />
+      class="mt-2 mr-7 absolute fas fa-eye-slash cursor-pointer"
+      style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
     <div
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2 mr-1">
+      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2 mr-1"
+      style="background-color:{$selectedCharacter.settings.colors.story_background};border-color:{$selectedCharacter.settings.colors.story_history_border}">
       {#each $historyWindowMessages as message}
         <pre>
         {#each message.segments as segment}
             <span
-              style="color:{$selectedCharacter.settings[`${segment.type}_text_color`]}">{segment.text}</span>
+              style="color:{$selectedCharacter.settings.color[segment.type]}">{segment.text}</span>
           {/each}
       </pre>
       {/each}
@@ -152,8 +153,8 @@
   {:else}
     <i
       on:click={toggleHistoryView}
-      class="mt-2 mr-2 absolute fas fa-eye text-red-300 cursor-pointer"
-      style="right:0" />
+      class="mt-2 mr-2 absolute fas fa-eye cursor-pointer"
+      style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
   {/if}
   <div class="flex-1 overflow-hidden">
     <div
@@ -161,12 +162,12 @@
       bind:this={currentStoryWindowDiv}
       id="StoryWindowCurrentView"
       class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
-      style="width:calc(100% + 15px)">
+      style="width:calc(100% + 15px);background-color:{$selectedCharacter.settings.colors.story_background}">
       {#each $storyWindowMessages as message}
         <pre>
           {#each message.segments as segment}
             <span
-              style="color:{$selectedCharacter.settings.textColors[segment.type]}">{segment.text}</span>
+              style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
           {/each}
         </pre>
       {/each}
