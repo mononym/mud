@@ -1,6 +1,8 @@
 <script>
+  import { v4 as uuidv4 } from "uuid";
   import * as _ from "lodash";
   import { onMount } from "svelte";
+  import HotkeyState from "../../models/hotkey";
   import {
     buildHotkeyStringFromEvent,
     buildHotkeyStringFromRecord,
@@ -58,53 +60,45 @@
     });
   }
 
-  // $: $characterSettings.presetHotkeys,
-  //   $characterSettings.customHotkeys,
-  //   checkIfChanged();
-
   // Just always allow saving for now, not worth effort initially
   let settingsChanged = true;
-
-  // function checkIfChanged() {
-  //   console.log("checking if changed");
-  //   console.log($characterSettings.presetHotkeys);
-  //   console.log($selectedCharacter.settings.presetHotkeys);
-  //   console.log(
-  //     _.isEqual(
-  //       $characterSettings.presetHotkeys,
-  //       $selectedCharacter.settings.presetHotkeys
-  //     )
-  //   );
-  //   console.log($characterSettings.customHotkeys);
-  //   console.log($selectedCharacter.settings.customHotkeys);
-  //   console.log(
-  //     _.isEqual(
-  //       $characterSettings.customHotkeys,
-  //       $selectedCharacter.settings.customHotkeys
-  //     )
-  //   );
-  //   settingsChanged =
-  //     $selectedCharacter.id != "" &&
-  //     $characterSettings.id != "" &&
-  //     (!_.isEqual(
-  //       $characterSettings.presetHotkeys,
-  //       $selectedCharacter.settings.presetHotkeys
-  //     ) ||
-  //       !_.isEqual(
-  //         $characterSettings.customHotkeys,
-  //         $selectedCharacter.settings.customHotkeys
-  //       ));
-  // }
 
   onMount(() => {
     normalizeCustomHotkeys();
   });
+
+  function deleteCustomHotkey(customHotkeyId) {
+    let newHotkeys = [];
+    $characterSettings.customHotkeys.forEach((hotkey) => {
+      if (hotkey.id == customHotkeyId) {
+        return;
+      }
+
+      const hotkeyString = buildHotkeyStringFromRecord(hotkey);
+      hotkey.string = hotkeyString;
+      newHotkeys.push(hotkey);
+    });
+
+    normalizedCustomHotkeys = newHotkeys;
+  }
+
+  function addNewHotkey() {
+    console.log("addNewHotkey");
+    const newHotkey = { ...HotkeyState };
+    newHotkey.id = uuidv4();
+    newHotkey.string = "";
+    console.log(newHotkey);
+    normalizedCustomHotkeys.push(newHotkey);
+    console.log(normalizedCustomHotkeys);
+    applyCustomHotkeyChanges();
+    normalizeCustomHotkeys();
+  }
 </script>
 
 <form
   class="flex-1 grid grid-cols-8 gap-4"
   on:submit|preventDefault={saveCharacterSettings}>
-  <div class="col-span-4 grid grid-cols-8">
+  <div class="col-span-2 grid grid-cols-8">
     <h2 class="text-center border-b-2 border-black col-span-8">
       Application Hotkeys
     </h2>
@@ -128,14 +122,17 @@
         class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
     </div>
   </div>
-  <div class="col-span-4 grid grid-cols-8 gap-16">
+  <div class="col-span-6 grid grid-cols-8 gap-16">
     <h2 class="text-center border-b-2 border-black col-span-8">
       Custom Hotkeys
     </h2>
     {#each normalizedCustomHotkeys as customHotkey, i}
-      <div class="col-span-2 grid grid-cols-8 gap-4">
+      <div class="col-span-2 grid grid-cols-9 gap-4">
         <h3 class="text-center border-b-2 border-black col-span-4">Hotkey</h3>
         <h3 class="text-center border-b-2 border-black col-span-4">Command</h3>
+        <h3 class="text-center border-b-2 border-black col-span-1">
+          <i class="fas fa-trash" />
+        </h3>
         <input
           on:keydown|preventDefault={(e) => buildCustomHotkeyString(e, i)}
           bind:value={customHotkey.string}
@@ -147,8 +144,18 @@
           name={`${customHotkey.id}-${i}-cmd`}
           id={`${customHotkey.id}-${i}-cmd`}
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4" />
+        <button
+          on:click|preventDefault={deleteCustomHotkey(customHotkey.id)}
+          class="col-span-1 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <i class="fas fa-trash" />
+        </button>
       </div>
     {/each}
+    <button
+      on:click|preventDefault={addNewHotkey}
+      class="col-span-8 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      New Hotkey
+    </button>
   </div>
   <div class="px-4 py-3 text-right sm:px-6">
     <button

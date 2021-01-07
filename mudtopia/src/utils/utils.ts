@@ -51,7 +51,6 @@ export function buildHotkeyStringFromRecord(record) {
 }
 
 export function buildRecordFromHotkeyString(hotkeyString) {
-  const keys = hotkeyString.split(" + ");
   const newRecord = {
     id: "",
     altKey: false,
@@ -61,6 +60,14 @@ export function buildRecordFromHotkeyString(hotkeyString) {
     key: "",
     command: "",
   };
+
+  console.log(hotkeyString);
+
+  if (hotkeyString == "") {
+    return newRecord;
+  }
+
+  const keys = hotkeyString.split(" + ");
 
   if ("CTRL" in keys) {
     newRecord.ctrlKey = true;
