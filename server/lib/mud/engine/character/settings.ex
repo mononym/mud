@@ -285,10 +285,6 @@ defmodule Mud.Engine.Character.Settings do
         key: "NumpadEnter"
       },
       %{
-        command: "move gate",
-        key: "NumpadEnter"
-      },
-      %{
         command: "move bridge",
         key: "NumpadDivide"
       },

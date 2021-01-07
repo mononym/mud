@@ -19,7 +19,7 @@
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
-  import { buildPresetHotkeyStringFromEvent } from "../utils/utils";
+  import { buildHotkeyStringFromEvent } from "../utils/utils";
   import { prevent_default } from "svelte/internal";
 
   export let params = {};
@@ -46,6 +46,8 @@
     generatePresetHotkeyCallbacks();
     setupHotkeyWatcher();
   });
+
+  $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
 
   onDestroy(() => {
     teardownHotkeyWatcher();
@@ -81,7 +83,7 @@
   }
 
   function maybeHandleApplicationHotkey(event) {
-    const potentialHotkeyString = buildPresetHotkeyStringFromEvent(event);
+    const potentialHotkeyString = buildHotkeyStringFromEvent(event);
     if (potentialHotkeyString in presetHotkeyCallbacks) {
       prevent_default(event);
 

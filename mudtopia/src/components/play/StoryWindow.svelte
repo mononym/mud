@@ -133,7 +133,7 @@
   {#if $storyWindowView == 'history'}
     <i
       on:click={toggleHistoryView}
-      class="mt-2 mr-7 absolute fas fa-eye-slash cursor-pointer"
+      class="mt-2 mr-8 absolute fas fa-eye-slash cursor-pointer"
       style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
     <div
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
@@ -145,7 +145,7 @@
         <pre>
         {#each message.segments as segment}
             <span
-              style="color:{$selectedCharacter.settings.color[segment.type]}">{segment.text}</span>
+              style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
           {/each}
       </pre>
       {/each}

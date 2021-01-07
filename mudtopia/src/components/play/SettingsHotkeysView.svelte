@@ -1,5 +1,11 @@
 <script>
-  import { buildPresetHotkeyStringFromEvent } from "../../utils/utils";
+  import * as _ from "lodash";
+  import { onMount } from "svelte";
+  import {
+    buildHotkeyStringFromEvent,
+    buildHotkeyStringFromRecord,
+    buildRecordFromHotkeyString,
+  } from "../../utils/utils";
   import { State } from "./state";
   const {
     selectedCharacter,
@@ -9,36 +15,99 @@
   } = State;
 
   function buildPresetHotkeyString(event, target) {
-    $characterSettings.presetHotkeys[target] = buildPresetHotkeyStringFromEvent(
+    $characterSettings.presetHotkeys[target] = buildHotkeyStringFromEvent(
       event
     );
   }
 
-  $: $characterSettings.presetHotkeys,
-    $characterSettings.customHotkeys,
-    checkIfChanged();
+  let customHotkeyIndex = {};
+  let normalizedCustomHotkeys = [];
 
-  let settingsChanged = false;
+  function normalizeCustomHotkeys() {
+    let newHotkeys = [];
+    $characterSettings.customHotkeys.forEach((hotkey) => {
+      const hotkeyString = buildHotkeyStringFromRecord(hotkey);
+      hotkey.string = hotkeyString;
+      newHotkeys.push(hotkey);
+    });
 
-  function checkIfChanged() {
-    settingsChanged =
-      $selectedCharacter.id != "" &&
-      $characterSettings.id != "" &&
-      ($characterSettings.presetHotkeys.open_settings !=
-        $selectedCharacter.settings.presetHotkeys.open_settings ||
-        $characterSettings.presetHotkeys.open_play !=
-          $selectedCharacter.settings.presetHotkeys.open_play);
+    normalizedCustomHotkeys = newHotkeys;
   }
+
+  function buildCustomHotkeyString(event, index) {
+    normalizedCustomHotkeys[index].string = buildHotkeyStringFromEvent(event);
+  }
+
+  $: normalizedCustomHotkeys, applyCustomHotkeyChanges();
+
+  function applyCustomHotkeyChanges() {
+    if (normalizedCustomHotkeys.length == 0) {
+      return;
+    }
+
+    const newHotkeys = normalizedCustomHotkeys.map((customHotkey) => {
+      const newHotkey = buildRecordFromHotkeyString(customHotkey.string);
+      newHotkey.id = customHotkey.id;
+      newHotkey.command = customHotkey.command;
+      return newHotkey;
+    });
+
+    characterSettings.update(function (settings) {
+      settings.customHotkeys = newHotkeys;
+      return settings;
+    });
+  }
+
+  // $: $characterSettings.presetHotkeys,
+  //   $characterSettings.customHotkeys,
+  //   checkIfChanged();
+
+  // Just always allow saving for now, not worth effort initially
+  let settingsChanged = true;
+
+  // function checkIfChanged() {
+  //   console.log("checking if changed");
+  //   console.log($characterSettings.presetHotkeys);
+  //   console.log($selectedCharacter.settings.presetHotkeys);
+  //   console.log(
+  //     _.isEqual(
+  //       $characterSettings.presetHotkeys,
+  //       $selectedCharacter.settings.presetHotkeys
+  //     )
+  //   );
+  //   console.log($characterSettings.customHotkeys);
+  //   console.log($selectedCharacter.settings.customHotkeys);
+  //   console.log(
+  //     _.isEqual(
+  //       $characterSettings.customHotkeys,
+  //       $selectedCharacter.settings.customHotkeys
+  //     )
+  //   );
+  //   settingsChanged =
+  //     $selectedCharacter.id != "" &&
+  //     $characterSettings.id != "" &&
+  //     (!_.isEqual(
+  //       $characterSettings.presetHotkeys,
+  //       $selectedCharacter.settings.presetHotkeys
+  //     ) ||
+  //       !_.isEqual(
+  //         $characterSettings.customHotkeys,
+  //         $selectedCharacter.settings.customHotkeys
+  //       ));
+  // }
+
+  onMount(() => {
+    normalizeCustomHotkeys();
+  });
 </script>
 
-<div
-  class="bg-gray-800 text-white border-l-2 rounded-r border-black flex flex-col">
-  <h2 class="text-center border-b-2 border-black flex-shrink">
-    Application Hotkeys
-  </h2>
-  <form
-    class="flex-1 container grid grid-cols-8 gap-4"
-    on:submit|preventDefault={saveCharacterSettings}>
+<form
+  class="flex-1 grid grid-cols-8 gap-4"
+  on:submit|preventDefault={saveCharacterSettings}>
+  <div class="col-span-4 grid grid-cols-8">
+    <h2 class="text-center border-b-2 border-black col-span-8">
+      Application Hotkeys
+    </h2>
     <div class="col-span-2">
       <label for="openSettings" class="block text-sm font-medium">Open Settings
         Tab</label>
@@ -58,18 +127,40 @@
         id="openPlay"
         class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
     </div>
-    <div class="px-4 py-3 text-right sm:px-6">
-      <button
-        disabled={!settingsChanged}
-        type="submit"
-        class="{!settingsChanged ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Save
-      </button>
-      <button
-        on:click|preventDefault={resetCharacterSettings}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        Reset
-      </button>
-    </div>
-  </form>
-</div>
+  </div>
+  <div class="col-span-4 grid grid-cols-8 gap-16">
+    <h2 class="text-center border-b-2 border-black col-span-8">
+      Custom Hotkeys
+    </h2>
+    {#each normalizedCustomHotkeys as customHotkey, i}
+      <div class="col-span-2 grid grid-cols-8 gap-4">
+        <h3 class="text-center border-b-2 border-black col-span-4">Hotkey</h3>
+        <h3 class="text-center border-b-2 border-black col-span-4">Command</h3>
+        <input
+          on:keydown|preventDefault={(e) => buildCustomHotkeyString(e, i)}
+          bind:value={customHotkey.string}
+          name={`${customHotkey.id}-${i}-key`}
+          id={`${customHotkey.id}-${i}-key`}
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4" />
+        <input
+          bind:value={customHotkey.command}
+          name={`${customHotkey.id}-${i}-cmd`}
+          id={`${customHotkey.id}-${i}-cmd`}
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4" />
+      </div>
+    {/each}
+  </div>
+  <div class="px-4 py-3 text-right sm:px-6">
+    <button
+      disabled={!settingsChanged}
+      type="submit"
+      class="{!settingsChanged ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      Save
+    </button>
+    <button
+      on:click|preventDefault={resetCharacterSettings}
+      class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      Reset
+    </button>
+  </div>
+</form>

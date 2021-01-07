@@ -1,5 +1,10 @@
 <script>
-  import { onMount } from "svelte";
+  import { prevent_default } from "svelte/internal";
+  import {
+    buildHotkeyStringFromEvent,
+    buildHotkeyStringFromRecord,
+  } from "../../utils/utils";
+  import { onDestroy, onMount } from "svelte";
   import { State } from "./state";
   const { channel, showHistoryWindow, selectedCharacter } = State;
 
@@ -49,7 +54,7 @@
           console.log(commandHistoryIndex);
         }
       } else if (event.key == "ArrowDown") {
-        event.preventDefault();
+        prevent_default(event);
         console.log(commandHistoryIndex);
 
         if (commandHistory.length == 0 || commandHistoryIndex == -1) {
@@ -70,14 +75,52 @@
       }
     });
 
+    normalizeCustomHotkeys();
+    setupHotkeyWatcher();
     commandLineDiv.focus();
   });
+
+  $: $selectedCharacter.settings.customHotkeys, normalizeCustomHotkeys();
 
   function submitPlayerInput() {
     $channel.push("cli", { text: actualInput });
     commandHistory.unshift(actualInput);
 
     actualInput = "";
+  }
+
+  onDestroy(() => {
+    teardownHotkeyWatcher();
+  });
+
+  function setupHotkeyWatcher() {
+    commandLineDiv.addEventListener("keydown", maybeHandleApplicationHotkey);
+  }
+
+  function teardownHotkeyWatcher() {
+    commandLineDiv.removeEventListener("keydown", maybeHandleApplicationHotkey);
+  }
+
+  let normalizedCustomHotkeys = {};
+
+  function normalizeCustomHotkeys() {
+    normalizedCustomHotkeys = {};
+    $selectedCharacter.settings.customHotkeys.forEach((hotkey) => {
+      const hotkeyString = buildHotkeyStringFromRecord(hotkey);
+      hotkey.string = hotkeyString;
+      normalizedCustomHotkeys[hotkey.string] = hotkey.command;
+    });
+  }
+
+  function maybeHandleApplicationHotkey(event) {
+    const potentialHotkeyString = buildHotkeyStringFromEvent(event);
+    if (potentialHotkeyString in normalizedCustomHotkeys) {
+      event.preventDefault();
+
+      const commandString = normalizedCustomHotkeys[potentialHotkeyString];
+
+      console.log("Submitting command line string: " + commandString);
+    }
   }
 </script>
 

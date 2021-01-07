@@ -1,4 +1,4 @@
-export function buildPresetHotkeyStringFromEvent(event) {
+export function buildHotkeyStringFromEvent(event) {
   const keys = [];
 
   if (event.ctrlKey) {
@@ -22,4 +22,63 @@ export function buildPresetHotkeyStringFromEvent(event) {
   }
 
   return keys.join(" + ");
+}
+
+export function buildHotkeyStringFromRecord(record) {
+  const keys = [];
+
+  if (record.ctrlKey) {
+    keys.push("CTRL");
+  }
+
+  if (record.altKey) {
+    keys.push("ALT");
+  }
+
+  if (record.shiftKey) {
+    keys.push("SHIFT");
+  }
+
+  if (record.metaKey) {
+    keys.push("META");
+  }
+
+  if (record.key) {
+    keys.push(record.key);
+  }
+
+  return keys.join(" + ");
+}
+
+export function buildRecordFromHotkeyString(hotkeyString) {
+  const keys = hotkeyString.split(" + ");
+  const newRecord = {
+    id: "",
+    altKey: false,
+    ctrlKey: false,
+    shiftKey: false,
+    metaKey: false,
+    key: "",
+    command: "",
+  };
+
+  if ("CTRL" in keys) {
+    newRecord.ctrlKey = true;
+  }
+
+  if ("ALT" in keys) {
+    newRecord.altKey = true;
+  }
+
+  if ("SHIFT" in keys) {
+    newRecord.shiftKey = true;
+  }
+
+  if ("META" in keys) {
+    newRecord.metaKey = true;
+  }
+
+  newRecord.key = keys[keys.length - 1];
+
+  return newRecord;
 }
