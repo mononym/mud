@@ -136,10 +136,6 @@
   function buildExistingMapLabels() {
     return chosenMap.labels
       .filter((label) => {
-        console.log("buildExistingMapLabels");
-        console.log(label);
-        console.log(mapLabelUnderConstruction);
-        console.log(label.id != mapLabelUnderConstruction.id);
         return label.id != mapLabelUnderConstruction.id;
       })
       .map((label) => {

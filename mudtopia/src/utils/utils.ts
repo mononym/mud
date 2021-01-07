@@ -61,8 +61,6 @@ export function buildRecordFromHotkeyString(hotkeyString) {
     command: "",
   };
 
-  console.log(hotkeyString);
-
   if (hotkeyString == "") {
     return newRecord;
   }

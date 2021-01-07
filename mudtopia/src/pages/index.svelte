@@ -7,9 +7,6 @@
   const { authenticated } = AuthStore;
 
   onMount(() => {
-    console.log($url("/auth/dashboard"));
-    console.log($url("/unauth/login"));
-
     $authenticated ? $goto("/auth/dashboard") : $goto("/unauth/login");
   });
 </script>

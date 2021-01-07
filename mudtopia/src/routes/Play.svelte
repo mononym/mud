@@ -33,13 +33,9 @@
 
     // Happens if loaded up into this page rather than into dashboard first
     if (character == undefined) {
-      console.log("pushing dashboard");
       push("#/dashboard");
       return;
     }
-
-    console.log("playing character");
-    console.log(character);
 
     await State.startGameSession(character.id);
     await State.initializeCharacter(character);

@@ -27,7 +27,6 @@
 
   onMount(() => {
     $channel.on("output:story", async function (msg) {
-      console.log(msg);
       msg.messages.forEach((output) => {
         const segments = output.segments.map((segment) => {
           return {
@@ -35,13 +34,6 @@
             color: getTextColorFromType(segment.type),
           };
         });
-        // const textColor = getTextColorFromType(output.type);
-        // const newMessage = {
-        //   color: textColor,
-        //   text: output.text,
-        // };
-
-        console.log("Got message for story", segments);
 
         appendNewStoryMessage({ segments: segments });
       });

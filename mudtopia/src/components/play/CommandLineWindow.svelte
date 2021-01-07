@@ -31,8 +31,6 @@
         showHistoryWindow();
       } else if (event.key == "ArrowUp") {
         event.preventDefault();
-        console.log(actualInput);
-        console.log(commandHistoryIndex);
 
         if (commandHistoryIndex == -1) {
           commandHistoryIndex++;
@@ -51,11 +49,9 @@
           if (commandHistory.length - 1 > commandHistoryIndex) {
             commandHistoryIndex++;
           }
-          console.log(commandHistoryIndex);
         }
       } else if (event.key == "ArrowDown") {
         prevent_default(event);
-        console.log(commandHistoryIndex);
 
         if (commandHistory.length == 0 || commandHistoryIndex == -1) {
           return;
@@ -67,8 +63,6 @@
         } else {
           commandHistoryIndex--;
           actualInput = commandHistory[commandHistoryIndex];
-
-          console.log(commandHistoryIndex);
         }
       } else {
         commandHistoryIndex = 0;
@@ -118,8 +112,6 @@
       event.preventDefault();
 
       const commandString = normalizedCustomHotkeys[potentialHotkeyString];
-
-      console.log("Submitting command line string: " + commandString);
     }
   }
 </script>

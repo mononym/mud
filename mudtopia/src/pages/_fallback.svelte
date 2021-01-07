@@ -1,12 +1,6 @@
 <script>
   import { url } from "@roxi/routify";
   import { onMount } from "svelte";
-
-  
-
-  onMount(() => {
-    console.log(window.location);
-  });
 </script>
 
 <style>

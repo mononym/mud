@@ -52,7 +52,6 @@
   let primaryMap;
 
   onMount(async () => {
-    console.log("onMount");
     MapsStore.load();
   });
 

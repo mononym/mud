@@ -83,13 +83,10 @@
   }
 
   function addNewHotkey() {
-    console.log("addNewHotkey");
     const newHotkey = { ...HotkeyState };
     newHotkey.id = uuidv4();
     newHotkey.string = "";
-    console.log(newHotkey);
     normalizedCustomHotkeys.push(newHotkey);
-    console.log(normalizedCustomHotkeys);
     applyCustomHotkeyChanges();
     normalizeCustomHotkeys();
   }

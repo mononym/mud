@@ -95,10 +95,6 @@
     characterUnderConstruction.skinTone = randomValue($races[index].skinTones);
     characterUnderConstruction.height = randomValue($races[index].heights);
 
-    console.log(
-      Math.max(randomNumber($races[index].ageMax), $races[index].ageMin)
-    );
-
     characterUnderConstruction.age = Math.max(
       randomNumber($races[index].ageMax),
       $races[index].ageMin

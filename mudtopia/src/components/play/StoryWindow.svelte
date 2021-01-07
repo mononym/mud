@@ -22,7 +22,6 @@
 
   onMount(() => {
     $channel.on("output:story", async function (msg) {
-      console.log(msg);
       msg.messages.forEach((output) => {
         const segments = output.segments.map((segment) => {
           return {
@@ -30,8 +29,6 @@
             type: segment.type,
           };
         });
-
-        console.log("Got message for story", segments);
 
         appendNewStoryMessage({ segments: segments });
       });
@@ -73,10 +70,6 @@
       scrollToBottom(currentStoryWindowDiv);
     } else {
       var newScrollTop = currentStoryWindowDiv.scrollTop;
-
-      console.log("scroll event");
-      console.log(currentStoryWindowLastScrollTop);
-      console.log(newScrollTop);
 
       if (newScrollTop > currentStoryWindowLastScrollTop) {
         // downscroll code

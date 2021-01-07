@@ -12,8 +12,6 @@ axiosAPI.interceptors.response.use(
     return response;
   },
   function (error) {
-    console.log(error.response.data);
-    console.log(error.response.status);
     if (error.response.status === 401) {
       push("#/");
     }

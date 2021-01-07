@@ -40,12 +40,8 @@
         if (error) throw error;
 
         if (hasKey) {
-          console.log("There is data stored as " + id);
           storage.get(id, function (error, data) {
             if (error) throw error;
-
-            console.log("beforeUpdate: " + id);
-            console.log(data);
 
             // if (data.width > 10 && data.height > 10) {
             //   width = data.width;

@@ -17,7 +17,6 @@
   import ClientNavBar from "./_components/ClientNavBar.svelte";
 
   onMount(async () => {
-    console.log(window.location);
     const character = $characters.filter(
       (character) => character.id == $params.id
     )[0];

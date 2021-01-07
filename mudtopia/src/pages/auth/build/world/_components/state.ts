@@ -487,8 +487,6 @@ function createWorldBuilderStore() {
   }
 
   async function addLabelToMap(map: MapInterface) {
-    console.log("addLabelToMap");
-    console.log(map);
     selectedMapLabel.set({ ...MapLabelState });
     mapUnderConstruction.set({ ...map });
     mapLabelUnderConstruction.set({ ...MapLabelState });
@@ -499,8 +497,6 @@ function createWorldBuilderStore() {
   }
 
   async function editMapLabel(mapLabel: MapLabelInterface) {
-    console.log("editMapLabel");
-    console.log(mapLabel);
     selectedMapLabel.set(mapLabel);
     mapUnderConstruction.set({ ...get(selectedMap) });
     mapLabelUnderConstruction.set({ ...mapLabel });
@@ -555,9 +551,6 @@ function createWorldBuilderStore() {
       return map;
     });
 
-    console.log("map before save");
-    console.log(get(mapUnderConstruction));
-
     const newMap = await MapsStore.saveMap(get(mapUnderConstruction));
 
     if (newLabel) {
@@ -573,8 +566,6 @@ function createWorldBuilderStore() {
 
       selectedMapLabel.set(newMapLabel);
     }
-    console.log("map after save");
-    console.log(newMap);
 
     selectedMap.set(newMap);
     mapUnderConstruction.set({ ...MapState });

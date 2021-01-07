@@ -27,7 +27,6 @@
     deleteMatchString = "delete";
     linkForDeleting = link;
     showDeletePrompt = true;
-    console.log("prompting");
   }
 
   function deleteCallback() {

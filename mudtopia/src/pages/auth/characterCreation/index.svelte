@@ -5,10 +5,6 @@
 
   import { onMount } from "svelte";
   import { goto } from "@roxi/routify";
-
-  onMount(async () => {
-    console.log("hello");
-  });
 </script>
 
 <div class="flex-1 flex flex-col overflow-hidden justify-center">

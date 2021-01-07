@@ -1,11 +1,3 @@
-<script>
-  import { onMount } from "svelte";
-
-  onMount(() => {
-    console.log(window.location);
-  });
-</script>
-
 <style>
   .huge {
     font-size: 12rem;

@@ -11,11 +11,6 @@
   function selectArea(area) {
     dispatch("selectArea", area);
   }
-
-  beforeUpdate(() => {
-    console.log("beforeUpdate");
-    console.log(shapes);
-  });
 </script>
 
 <svg
