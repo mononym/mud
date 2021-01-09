@@ -7,6 +7,8 @@ import {
 } from "../../api/server";
 import type { CharacterInterface } from "../../models/character";
 import CharacterState from "../../models/character";
+import type { ItemInterface } from "../../models/item";
+import ItemState from "../../models/item";
 import CharacterSettingsState, {
   CharacterSettingsInterface,
 } from "../../models/characterSettings";
@@ -97,6 +99,25 @@ function createState() {
   const characterInitializing = writable(false);
   const selectedCharacter = writable({ ...CharacterState });
 
+  // Inventory comes over as a single list of all held and worn items, and all their children assuming there are any
+  // Break up the single list into a couple of different lists and indexes
+  // held items list
+  //    for displaying held items
+  //    maybe explicitly keep track of left hand and right hand for display elsewhere
+  const itemInLeftHand = writable({ ...ItemState });
+  const leftHandHasItem = writable(false);
+  const itemInRightHand = writable({ ...ItemState });
+  const rightHandHasItem = writable(false);
+  // worn items list
+  //    for displaying worn items, the slots they occupy, and so on
+  const wornItems = writable(<ItemInterface[]>[]);
+  // all items index
+  //    For referencing during all other actions, maybe even other lists are just ids which all reference this
+  const allInventoryItemsIndex = writable(<Record<string, ItemInterface>>{});
+  // parent child index
+  //    keep track of what items belong to what containers for easy display
+  const inventoryItemsParentChildIndex = writable(<Record<string, string>>{});
+
   // This is where all of the setup should occur for a character logging in.
   // This means getting data for the map where the character is, getting inventory data, getting room data
   async function initializeCharacter(character: CharacterInterface) {
@@ -130,6 +151,36 @@ function createState() {
       {}
     );
     knownLinksForCharacterIndex.set(newLinksIndex);
+
+    const newWornItems = [];
+    const newAllItemsIndex = {};
+    const newParentChildIndex = {};
+
+    res.inventory.forEach((item) => {
+      if (item.holdableIsHeld) {
+        if (item.holdableHand == "left") {
+          itemInLeftHand.set(item);
+          leftHandHasItem.set(true);
+        } else if (item.holdableHand == "right") {
+          itemInRightHand.set(item);
+          rightHandHasItem.set(true);
+        }
+      } else if (item.wearableIsWorn) {
+        newWornItems.push(item);
+      }
+
+      newAllItemsIndex[item.id] = item;
+
+      if (item.containerId != "") {
+        const existingChildren = newParentChildIndex[item.containerId] || [];
+        existingChildren.push(item);
+        newParentChildIndex[item.containerId] = existingChildren;
+      }
+    });
+
+    wornItems.set(newWornItems);
+    allInventoryItemsIndex.set(newAllItemsIndex);
+    inventoryItemsParentChildIndex.set(newParentChildIndex);
 
     characterInitializing.set(false);
     characterInitialized.set(true);
@@ -292,6 +343,13 @@ function createState() {
     characterInitializing,
     selectedCharacter,
     initializeCharacter,
+    itemInLeftHand,
+    leftHandHasItem,
+    itemInRightHand,
+    rightHandHasItem,
+    wornItems,
+    allInventoryItemsIndex,
+    inventoryItemsParentChildIndex,
     //
     // Connection Stuff
     //

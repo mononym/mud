@@ -256,11 +256,63 @@ defmodule Mud.Engine.Character do
         maps = Mud.Engine.Map.list_all()
         mark_maps_as_known!(character, maps)
 
+        setup_default_items(character)
+
         {:ok, character}
 
       error ->
         error
     end
+  end
+
+  defp setup_default_items(character) do
+    Mud.Engine.Item.create(%{
+      key: "rock",
+      is_scenery: false,
+      short_description: "a flat rounded rock",
+      long_description:
+        "This rock has been worn down over time by water into a smooth, flat round shape.",
+      is_holdable: true,
+      holdable_is_held: true,
+      holdable_held_by_id: character.id,
+      holdable_hand: "right",
+      icon: "fas fa-leaf",
+      is_physical: true
+    })
+
+    backpack =
+      Mud.Engine.Item.create(%{
+        key: "backpack",
+        short_description: "a ragged leather backpack",
+        long_description: "The backpack has clearly seen better days.",
+        is_container: true,
+        container_closeable: true,
+        container_length: 100,
+        container_width: 75,
+        container_height: 75,
+        container_capacity: 1000,
+        is_wearable: true,
+        wearable_location: "back",
+        wearable_is_worn: true,
+        wearable_worn_by_id: character.id,
+        is_holdable: true,
+        icon: "fas fa-box",
+        is_physical: true,
+        physical_length: 105,
+        physical_width: 90,
+        physical_height: 80,
+        physical_weight: 50
+      })
+
+    Mud.Engine.Item.create(%{
+      key: "rock",
+      short_description: "a flat rounded rock",
+      long_description:
+        "This rock has been worn down over time by water into a smooth, flat round shape.",
+      container_id: backpack.id,
+      icon: "fas fa-leaf",
+      is_physical: true
+    })
   end
 
   def new, do: %__MODULE__{}

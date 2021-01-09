@@ -18,6 +18,7 @@
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
   import MapWindow from "../components/play/MapWindow.svelte";
+  import InventoryWindow from "../components/play/InventoryWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -228,6 +229,13 @@
         initialHeight={'800'}
         initialWidth={'400'}>
         <MapWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="inventoryWindow"
+        label="Inventory"
+        initialHeight={'400'}
+        initialWidth={'400'}>
+        <InventoryWindow />
       </LayoutItemWrapper>
     </div>
     {#if $view == 'settings'}

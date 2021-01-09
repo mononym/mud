@@ -7,34 +7,7 @@
     saveCharacterSettings,
   } = State;
 
-  // $: $characterSettings.colors, checkIfChanged();
-
   let settingsChanged = true;
-
-  // function checkIfChanged() {
-  //   settingsChanged =
-  //     $selectedCharacter.id != "" &&
-  //     $characterSettings.id != "" &&
-  //     $characterSettings.colors != $selectedCharacter.settings.colors;
-  // ($characterSettings.colors.input !=
-  //   $selectedCharacter.settings.colors.input ||
-  //   $characterSettings.colors.system_warning !=
-  //     $selectedCharacter.settings.colors.system_warning ||
-  //   $characterSettings.colors.system_alert !=
-  //     $selectedCharacter.settings.colors.system_alert ||
-  //   $characterSettings.colors.area_name !=
-  //     $selectedCharacter.settings.colors.area_name ||
-  //   $characterSettings.colors.area_description !=
-  //     $selectedCharacter.settings.colors.area_description ||
-  //   $characterSettings.colors.character !=
-  //     $selectedCharacter.settings.colors.character ||
-  //   $characterSettings.colors.furniture !=
-  //     $selectedCharacter.settings.colors.furniture ||
-  //   $characterSettings.colors.exit !=
-  //     $selectedCharacter.settings.colors.exit ||
-  //   $characterSettings.colors.denizen !=
-  //     $selectedCharacter.settings.colors.denizen);
-  // }
 </script>
 
 {#if $characterSettings != undefined}
