@@ -1,9 +1,15 @@
 <script>
+    import tippy from "tippy.js";
+    import "tippy.js/dist/tippy.css";
     import { onMount, getContext } from "svelte";
     import { key } from "../utils/menu";
 
     export let isDisabled = false;
     export let text = "";
+    export let disabledTooltip = "";
+    export let enabledTooltip = "";
+
+    $: currentTooltip = isDisabled ? disabledTooltip : enabledTooltip;
 
     import { createEventDispatcher } from "svelte";
     const dispatch = createEventDispatcher();
@@ -16,6 +22,14 @@
         dispatch("click");
         dispatchClick();
     };
+
+    onMount(() => {
+        if (text != "") {
+            tippy(`.MenuOption${text}`, {
+                content: currentTooltip,
+            });
+        }
+    });
 </script>
 
 <style>
@@ -38,7 +52,11 @@
     }
 </style>
 
-<div class:disabled={isDisabled} on:click={handleClick}>
+<div
+    class={`MenuOption${text}`}
+    class:disabled={isDisabled}
+    on:click={handleClick}
+    data-tooltip={isDisabled ? disabledTooltip : enabledTooltip}>
     {#if text}
         {text}
     {:else}

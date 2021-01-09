@@ -3,8 +3,14 @@
   import { State } from "./state";
   const { selectedCharacter, inventoryItemsParentChildIndex } = State;
 
+  import { createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
+
   export let item;
+  let wrapperDiv;
   let itemDiv;
+  let showMenu = false;
+  let showChildMenu = false;
 
   function getItemColor(item) {
     if (item.isWearable && item.isContainer) {
@@ -29,34 +35,41 @@
     console.log("toggleItemExpanded");
     itemExpanded = !itemExpanded;
   }
+
+  function dispatchContextMenuEvent(event) {
+    dispatch("showContextMenu", { event: event, item: item });
+  }
 </script>
 
-<div class="flex-shrink flex flex-col" bind:this={itemDiv}>
+<div class="flex-shrink flex flex-col" bind:this={wrapperDiv}>
   <div
     class="cursor-pointer"
     style="color:{getItemColor(item)}"
-    on:click|preventDefault={toggleItemExpanded}>
+    bind:this={itemDiv}
+    on:contextmenu={dispatchContextMenuEvent}>
     {#if item.isContainer}
       <i
         class="text-white fas fa-plus"
-        on:click|preventDefault|stopPropagation={toggleContainerExpanded} />&nbsp;
+        on:click|preventDefault={toggleContainerExpanded} />&nbsp;
     {/if}
-    <i class={item.icon} />
-    <pre class="inline">{` ${item.shortDescription}`}</pre>
+    <i class={item.icon} on:click|preventDefault={toggleItemExpanded} />
+    <pre
+      on:click|preventDefault={toggleItemExpanded}
+      class="inline">{` ${item.shortDescription}`}</pre>
+    {#if itemExpanded}
+      <div class="pl-{item.isContainer ? '12' : '8'}">
+        <pre
+          class="whitespace-pre-wrap"
+          style="color:{$selectedCharacter.settings.colors.base}">{item.longDescription}</pre>
+      </div>
+    {/if}
   </div>
-  {#if itemExpanded}
-    <div class="pl-{item.isContainer ? '12' : '8'}">
-      <pre
-        class="whitespace-pre-wrap"
-        style="color:{$selectedCharacter.settings.colors.base}">{item.longDescription}</pre>
-    </div>
-  {/if}
   {#if containerExpanded && $inventoryItemsParentChildIndex[item.id] != undefined}
     <div class="pl-12">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
-        <svelte:self item={childItem} />
+        <svelte:self item={childItem} on:showContextMenu />
       {/each}
     </div>
   {/if}
-  <InventoryItemRightClickMenu target={itemDiv} />
+  <!-- <InventoryItemRightClickMenu listenerTarget={itemDiv} {item} bind:showMenu /> -->
 </div>

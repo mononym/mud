@@ -121,7 +121,7 @@
 <div
   bind:this={layoutItemWrapper}
   class="layoutItemWrapper flex flex-col absolute bg-gray-700"
-  style="height:{localHeight}px;width:{localWidth}px;touch-action:none">
+  style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px">
   <div
     style="background-color:{$selectedCharacter.settings.colors.window_toolbar_background}"
     class="flex-shrink h-8 grid grid-cols-3">

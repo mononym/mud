@@ -132,7 +132,7 @@
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2 mr-1"
+      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2"
       style="background-color:{$selectedCharacter.settings.colors.story_background};border-color:{$selectedCharacter.settings.colors.story_history_border}">
       {#each $historyWindowMessages as message}
         <pre>

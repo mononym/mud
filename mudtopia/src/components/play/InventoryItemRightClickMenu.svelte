@@ -1,67 +1,44 @@
 <script>
-    import { onDestroy, onMount } from "svelte";
     import Menu from "../Menu.svelte";
     import MenuOption from "../MenuOption.svelte";
     import MenuDivider from "../MenuDivider.svelte";
+    import { State } from "./state";
+    const { leftHandHasItem, rightHandHasItem } = State;
 
-    let pos = { x: 0, y: 0 };
-    let showMenu = false;
-    export let target;
-
-    $: target, setupHotkeyWatcher();
+    export let showMenu = false;
+    export let item;
+    export let pos = { x: 0, y: 0 };
 
     function closeMenu() {
         showMenu = false;
-    }
-
-    onMount(() => {
-        setupHotkeyWatcher();
-    });
-
-    onDestroy(() => {
-        teardownHotkeyWatcher();
-    });
-
-    function setupHotkeyWatcher() {
-        if (target == undefined) return;
-        target.addEventListener("contextmenu", showInventoryRightClickMenu);
-    }
-
-    function teardownHotkeyWatcher() {
-        if (target == undefined) return;
-        target.el.removeEventListener(
-            "contextmenu",
-            showInventoryRightClickMenu
-        );
-    }
-
-    async function showInventoryRightClickMenu(event) {
-        event.stopPropagation();
-
-        if (showMenu) {
-            showMenu = false;
-            await new Promise((res) => setTimeout(res, 100));
-        }
-
-        console.log(event);
-
-        pos = { x: event.offsetX, y: event.offsetY };
-        showMenu = true;
     }
 </script>
 
 {#if showMenu}
     <Menu {...pos} on:click={closeMenu} on:clickoutside={closeMenu}>
-        <MenuOption on:click={console.log} text="remove" />
-        <MenuOption on:click={console.log} text="discard" />
-        <MenuOption on:click={console.log} text="wear" />
+        {#if item.wearableIsWorn}
+            <MenuOption
+                isDisabled={$leftHandHasItem && $rightHandHasItem}
+                on:click={console.log}
+                enabledTooltip="Take off the worn item"
+                disabledTooltip="Cannot remove with full hands"
+                text="remove" />
+        {/if}
+        {#if item.holdableIsHeld && item.isWearable}
+            <MenuOption on:click={console.log} text="wear" />
+        {/if}
         <MenuDivider />
-        <MenuOption
-            isDisabled={true}
-            on:click={console.log}
-            text="Whoops, disabled!" />
-        <MenuOption on:click={console.log}>
-            <span>Look! An icon!</span>
-        </MenuOption>
+        {#if item.containerId != null && item.containerId != undefined && item.containerId != '' && (!$leftHandHasItem || !$rightHandHasItem)}
+            <MenuOption
+                on:click={console.log}
+                enabledTooltip="Remove item from container and hold it"
+                disabledTooltip="Cannot get with full hands"
+                text="get" />
+            <MenuOption
+                on:click={console.log}
+                enabledTooltip="Remove item from container and drop it on the ground"
+                disabledTooltip="Cannot discard with full hands"
+                text="discard" />
+        {/if}
     </Menu>
 {/if}
