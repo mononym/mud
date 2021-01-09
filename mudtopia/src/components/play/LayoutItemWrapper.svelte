@@ -11,8 +11,8 @@
   export let locked = true;
   export let x = "0";
   export let y = "0";
-  export let width = 400;
-  export let height = 400;
+  export let initialWidth = "400";
+  export let initialHeight = "400";
   export let id;
   export let label = "";
 
@@ -25,12 +25,16 @@
   onMount(() => {
     interactable(layoutItemWrapper);
     // if (!initialized) {
-    storage.has(id, function (error, hasKey) {
+    storage.has(`${$selectedCharacter.name}-${id}`, function (error, hasKey) {
       if (error) throw error;
 
       if (hasKey) {
-        storage.get(id, function (error, data) {
+        storage.get(`${$selectedCharacter.name}-${id}`, function (error, data) {
           if (error) throw error;
+
+          console.log("load");
+          console.log(id);
+          console.log(data);
 
           localX = data.x;
           layoutItemWrapper.style.left = `${data.x}px`;
@@ -41,12 +45,13 @@
           localIsLocked = data.locked || false;
         });
       } else {
+        console.log("no keys to load");
         localX = x;
         layoutItemWrapper.style.left = `${x}px`;
         localY = y;
         layoutItemWrapper.style.top = `${y}px`;
-        localHeight = height;
-        localWidth = width;
+        localHeight = initialHeight;
+        localWidth = initialWidth;
         localIsLocked = locked || false;
       }
     });
@@ -64,6 +69,10 @@
       return;
     }
 
+    console.log("save");
+    console.log(localX);
+    console.log(layoutItemWrapper.dataset);
+
     const x = Math.max(
       parseInt(localX) + parseInt(layoutItemWrapper.dataset.x),
       0
@@ -72,9 +81,17 @@
       parseInt(localY) + parseInt(layoutItemWrapper.dataset.y),
       0
     );
+    console.log(id);
+    console.log({
+      width: layoutItemWrapper.clientWidth,
+      height: layoutItemWrapper.clientHeight,
+      x: x.toString(),
+      y: y.toString(),
+      locked: localIsLocked,
+    });
 
     storage.set(
-      id,
+      `${$selectedCharacter.name}-${id}`,
       {
         width: layoutItemWrapper.clientWidth,
         height: layoutItemWrapper.clientHeight,

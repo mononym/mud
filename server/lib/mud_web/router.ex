@@ -118,5 +118,6 @@ defmodule MudWeb.Router do
     #
 
     get("/start-game-session/:character_id", MudClientController, :start_game_session)
+    get("/init-client-data/:character_id", MudClientController, :init_client_data)
   end
 end

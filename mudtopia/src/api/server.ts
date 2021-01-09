@@ -199,6 +199,14 @@ export async function startGameSession(
   ));
 }
 
+export async function initializeCharacterClientData(
+  characterId: string
+): Promise<AxiosResponse<Record<string, any>>> {
+  return await (<Promise<AxiosResponse<Record<string, any>>>>(
+    Api.get(`/init-client-data/${characterId}`)
+  ));
+}
+
 //
 //
 // Character Settings stuff

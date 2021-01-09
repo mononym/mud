@@ -3,6 +3,7 @@ import { get, writable } from "svelte/store";
 import {
   startGameSession as apiStartGameSession,
   saveCharacterSettings as saveCharSettings,
+  initializeCharacterClientData,
 } from "../../api/server";
 import type { CharacterInterface } from "../../models/character";
 import CharacterState from "../../models/character";
@@ -10,6 +11,8 @@ import CharacterSettingsState, {
   CharacterSettingsInterface,
 } from "../../models/characterSettings";
 import { Socket } from "phoenix";
+import type { AreaInterface } from "../../models/area";
+import type { LinkInterface } from "../../models/link";
 
 function createState() {
   //
@@ -94,12 +97,59 @@ function createState() {
   const characterInitializing = writable(false);
   const selectedCharacter = writable({ ...CharacterState });
 
+  // This is where all of the setup should occur for a character logging in.
+  // This means getting data for the map where the character is, getting inventory data, getting room data
   async function initializeCharacter(character: CharacterInterface) {
+    characterInitialized.set(false);
+    characterInitializing.set(true);
     selectedCharacter.set(character);
     // load all data needed to set up the context for the character
-    characterInitialized.set(true);
+
+    // load map data for character
+    const res = (await initializeCharacterClientData(character.id)).data;
+    console.log("initializeCharacter");
+    console.log(res);
+
+    knownMapsList.set(res.maps);
+    const newMapsIndex = res.maps.reduce(
+      (obj, map) => ((obj[map.id] = map), obj),
+      {}
+    );
+    knownMapsIndex.set(newMapsIndex);
+
+    knownAreasForCharacterMap.set(res.mapData.areas);
+    const newAreasIndex = res.mapData.areas.reduce(
+      (obj, area) => ((obj[area.id] = area), obj),
+      {}
+    );
+    knownAreasForCharacterMapIndex.set(newAreasIndex);
+
+    knownLinksForCharacterMap.set(res.mapData.links);
+    const newLinksIndex = res.mapData.links.reduce(
+      (obj, area) => ((obj[area.id] = area), obj),
+      {}
+    );
+    knownLinksForCharacterIndex.set(newLinksIndex);
+
     characterInitializing.set(false);
+    characterInitialized.set(true);
   }
+
+  //
+  // Map Stuff
+  //
+
+  // Characters have a set of 'known' maps that they have visited before.
+  // This is the client side canonical list of those maps
+  const knownMapsList = writable([]);
+  const knownMapsIndex = writable({});
+
+  // Characters only know about areas they have visited, or those marked as automatically known, and this is that list
+  // of areas for the map the player is currently present in
+  const knownAreasForCharacterMap = writable(<AreaInterface[]>[]);
+  const knownAreasForCharacterMapIndex = writable(<AreaInterface[]>[]);
+  const knownLinksForCharacterMap = writable(<LinkInterface[]>[]);
+  const knownLinksForCharacterIndex = writable(<LinkInterface[]>[]);
 
   //
   // Connection Stuff
@@ -226,6 +276,15 @@ function createState() {
     saveCharacterSettings,
     selectSettingsHotkeysView,
     selectSettingsColorsView,
+    //
+    // Map stuff
+    //
+    knownMapsList,
+    knownMapsIndex,
+    knownAreasForCharacterMap,
+    knownAreasForCharacterMapIndex,
+    knownLinksForCharacterMap,
+    knownLinksForCharacterIndex,
     //
     // Character Stuff
     //

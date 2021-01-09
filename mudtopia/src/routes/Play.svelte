@@ -17,6 +17,7 @@
   import StoryWindow from "../components/play/StoryWindow.svelte";
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
+  import MapWindow from "../components/play/MapWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -207,13 +208,30 @@
       on:mouseup={mouseUp}
       on:mousedown={mouseDown}
       on:mousemove={mouseMove}>
-      <LayoutItemWrapper id="commandLineWindow" label="Command Input">
+      <LayoutItemWrapper
+        id="commandLineWindow"
+        label="Command Input"
+        initialHeight={'100'}
+        initialWidth={'800'}>
         <CommandLineWindow />
       </LayoutItemWrapper>
-      <LayoutItemWrapper id="storyWindowWrapper" label="Main Story">
+      <LayoutItemWrapper
+        id="storyWindowWrapper"
+        label="Main Story"
+        initialHeight={'700'}
+        initialWidth={'800'}>
         <StoryWindow />
       </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="clientMapWindow"
+        label="Map"
+        initialHeight={'800'}
+        initialWidth={'400'}>
+        <MapWindow />
+      </LayoutItemWrapper>
     </div>
-    <Settings />
+    {#if $view == 'settings'}
+      <Settings />
+    {/if}
   {/if}
 </div>

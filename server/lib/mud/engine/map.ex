@@ -34,6 +34,15 @@ defmodule Mud.Engine.Map do
     has_many(:areas, Area)
 
     timestamps()
+
+    #
+    # Things linked to the map
+    #
+
+    many_to_many(:characters, Mud.Engine.Character,
+      join_through: Mud.Engine.CharactersMaps,
+      on_replace: :raise
+    )
   end
 
   @doc """
@@ -106,7 +115,7 @@ defmodule Mud.Engine.Map do
   ## Examples
 
       iex> list_map_areas(42)
-      %{internal: [%Map{}], external: [%Map{}], links: [%Link{}]}
+      %{areas: [%Area{}], links: [%Link{}]}
 
   """
   def fetch_data(map_id) do

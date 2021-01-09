@@ -55,6 +55,7 @@ defmodule MudWeb.CharacterView do
     |> Map.delete(:held_items)
     |> Map.delete(:worn_items)
     |> Map.delete(:raw_skills)
+    |> Map.delete(:maps)
     |> Map.delete(:__meta__)
     |> Map.put(
       :settings,

@@ -66,8 +66,8 @@ const state: CharacterInterface = {
   skinTone: "",
   position: "",
   height: "",
-  player_id: "",
-  area_id: "",
+  playerId: "",
+  areaId: "",
 
   settings: { ...CharacterSettingsState },
 };

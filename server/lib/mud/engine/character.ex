@@ -98,6 +98,15 @@ defmodule Mud.Engine.Character do
     #
 
     has_many(:raw_skills, Skill)
+
+    #
+    # Things linked to the character
+    #
+
+    many_to_many(:maps, Mud.Engine.Map,
+      join_through: Mud.Engine.CharactersMaps,
+      on_replace: :delete
+    )
   end
 
   ##
@@ -234,12 +243,18 @@ defmodule Mud.Engine.Character do
     case result do
       {:ok, character} ->
         Logger.debug(inspect(character))
+
+        # Set up skills
         :ok = Skill.initialize(character.id)
 
-        IO.inspect("done with skill")
+        # Set up settings and make sure they are loaded
         :ok = Settings.create(%{character_id: character.id})
 
         character = Repo.preload(character, [:settings])
+
+        # Establish the known maps for a character
+        maps = Mud.Engine.Map.list_all()
+        mark_maps_as_known!(character, maps)
 
         {:ok, character}
 
@@ -249,6 +264,46 @@ defmodule Mud.Engine.Character do
   end
 
   def new, do: %__MODULE__{}
+
+  @doc """
+  In general, characters only 'know about' maps that they have visited at least one room in before.
+
+  This function loads up all the maps which meet that criteria.
+
+  ## Examples
+
+      iex> load_known_maps(character_id)
+      [%Mud.Engine.Map{}]
+
+  """
+  @spec load_known_maps(String.t()) :: String.t()
+  def load_known_maps(character_id) do
+    character = Repo.get!(Character, character_id) |> Repo.preload(:maps)
+    character.maps
+  end
+
+  @doc """
+  In general, characters only 'know about' maps that they have visited at least one room in before.
+
+  This function loads up all the maps which meet that criteria.
+
+  ## Examples
+
+      iex> mark_map_as_known!(character, map)
+      :ok
+
+  """
+  @spec mark_maps_as_known!(%Character{}, %Mud.Engine.Map{} | [%Mud.Engine.Map{}]) :: :ok
+  def mark_maps_as_known!(character = %Character{}, maps) do
+    maps = List.wrap(maps) |> Enum.map(&Ecto.Changeset.change(&1))
+    character = Repo.preload(character, [:maps])
+    char_chageset = Ecto.Changeset.change(character)
+    char_with_map = Ecto.Changeset.put_assoc(char_chageset, :maps, maps)
+
+    Repo.update!(char_with_map)
+
+    :ok
+  end
 
   @doc """
   Describes a character in brief.
