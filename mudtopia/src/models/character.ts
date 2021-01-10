@@ -31,8 +31,8 @@ export interface CharacterInterface {
   skinTone: string;
   position: string;
   height: string;
-  player_id: string;
-  area_id: string;
+  playerId: string;
+  areaId: string;
 
   settings: CharacterSettingsInterface;
 }

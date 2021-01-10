@@ -223,6 +223,21 @@ function createState() {
 
       const newChannel = newSocket.channel(`character:${characterId}`);
 
+      newChannel.on("output:story", async function (msg) {
+        console.log("received messages");
+        console.log(msg);
+        msg.messages.forEach((output) => {
+          const segments = output.segments.map((segment) => {
+            return {
+              text: segment.text,
+              type: segment.type,
+            };
+          });
+
+          appendNewStoryMessage({ segments: segments });
+        });
+      });
+
       newChannel.join();
 
       channel.set(newChannel);

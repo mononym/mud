@@ -198,7 +198,7 @@ defmodule Mud.Engine.Link do
   def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
-        where: link.from_id == ^area_id and link.type == ^"obvious"
+        where: link.from_id == ^area_id and link.type in ^["Direction", "Object"]
       )
     )
   end
@@ -210,7 +210,7 @@ defmodule Mud.Engine.Link do
       area_ids = List.wrap(area_ids)
 
       from(link in __MODULE__,
-        where: link.from_id in ^area_ids and link.type == ^"obvious"
+        where: link.from_id in ^area_ids and link.type in ^["Direction", "Object"]
       )
       |> repo.all()
       |> (&{:ok, &1}).()

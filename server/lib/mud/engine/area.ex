@@ -5,6 +5,7 @@ defmodule Mud.Engine.Area do
   alias Mud.Engine.{Character, Link, Item, Map, Message}
   alias Mud.Engine.Message.TextOutput
   import Ecto.Query
+  require Logger
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
@@ -224,6 +225,10 @@ defmodule Mud.Engine.Area do
   @spec long_description(area_id :: String.t(), character :: Character.t()) ::
           description :: TextOutput.t()
   def long_description(area_id, character) do
+    Logger.debug(
+      "Generating long description for area `#{area_id}` and character `#{character.id}`"
+    )
+
     area = get!(area_id)
     newOutput = Message.new_text_output(character.id)
 
@@ -235,7 +240,7 @@ defmodule Mud.Engine.Area do
     |> maybe_build_hostiles(area)
     |> maybe_build_denizens(area)
     |> maybe_build_also_present(area, character)
-    |> maybe_build_obvious_exits(area)
+    |> maybe_build_exits(area)
   end
 
   defp build_area_name(text_output, area) do
@@ -307,12 +312,38 @@ defmodule Mud.Engine.Area do
   end
 
   defp build_obvious_exits_string(area_id) do
-    Mud.Engine.Link.list_obvious_exits_in_area(area_id)
+    links = Mud.Engine.Link.list_obvious_exits_in_area(area_id)
+    Logger.debug(links)
+
+    links
     |> Stream.map(fn link ->
       link.short_description
     end)
     |> Enum.sort()
     |> Enum.join(", ")
+  end
+
+  defp maybe_build_exits(text_output, area) do
+    links = Mud.Engine.Link.list_obvious_exits_in_area(area.id)
+    Logger.debug(links)
+
+    if links == [] do
+      text_output
+    else
+      text_output = Message.append_text(text_output, "Obvious Exits: ", "exit_label")
+
+      links
+      |> Enum.reduce(
+        text_output,
+        fn link, message ->
+          message
+          |> Message.append_text(link.short_description, "exit")
+          |> Message.append_text(", ", "base")
+        end
+      )
+      |> Message.drop_last_text()
+      |> Message.append_text("\n", "base")
+    end
   end
 
   # Character list should not contain the character the look is being performed for

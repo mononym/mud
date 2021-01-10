@@ -37,6 +37,14 @@ defmodule Mud.Engine.Message do
     %{output | segments: [%Segment{text: text, type: type} | output.segments]}
   end
 
+  @spec drop_last_text(Mud.Engine.Message.TextOutput.t()) ::
+          Mud.Engine.Message.TextOutput.t()
+  def drop_last_text(output = %TextOutput{}) do
+    IO.inspect(output)
+    IO.inspect(%{output | segments: output.segments |> Enum.reverse() |> tl() |> Enum.reverse()})
+    %{output | segments: tl(output.segments)}
+  end
+
   def new_input(to, message, type) do
     to
     |> List.wrap()

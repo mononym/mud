@@ -21,26 +21,38 @@
   var hasScrolledHistoryWindow = false;
 
   onMount(() => {
-    $channel.on("output:story", async function (msg) {
-      msg.messages.forEach((output) => {
-        const segments = output.segments.map((segment) => {
-          return {
-            text: segment.text,
-            type: segment.type,
-          };
-        });
+    // console.log("mounting storywindow");
+    // $channel.on("output:story", async function (msg) {
+    //   console.log("received messages");
+    //   console.log(msg);
+    //   msg.messages.forEach((output) => {
+    //     const segments = output.segments.map((segment) => {
+    //       return {
+    //         text: segment.text,
+    //         type: segment.type,
+    //       };
+    //     });
 
-        appendNewStoryMessage({ segments: segments });
-      });
+    //     appendNewStoryMessage({ segments: segments });
+    //   });
 
-      await tick();
+    //   await tick();
 
-      scrollToBottom(currentStoryWindowDiv);
-    });
+    //   scrollToBottom(currentStoryWindowDiv);
+    // });
 
     scrollToBottom(currentStoryWindowDiv);
     currentStoryWindowLastScrollTop = currentStoryWindowDiv.scrollTop;
+    hideHistoryWindow();
   });
+
+  $: $storyWindowMessages, scrollMainStoryWindow();
+
+  async function scrollMainStoryWindow() {
+    if (currentStoryWindowDiv != undefined) {
+      scrollToBottom(currentStoryWindowDiv);
+    }
+  }
 
   // Scrolling the main window upwards should trigger the display of the history window.
   async function handleHistoryWindowCurrentViewScrollEvent(event) {
