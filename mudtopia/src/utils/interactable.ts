@@ -5,11 +5,9 @@ export const interactable = (el) => {
     .resizable({
       modifiers: [
         interact.modifiers.restrict({ restriction: "parent" }),
-        interact.modifiers.snap({
-          targets: [
-            interact.snappers.grid({ x: 5, y: 5 })
-          ],
-        }),
+        // interact.modifiers.snap({
+        //   targets: [interact.snappers.grid({ x: 2, y: 2 })],
+        // }),
       ],
       edges: {
         top: true,
@@ -38,11 +36,9 @@ export const interactable = (el) => {
     .draggable({
       allowFrom: ".drag-handle",
       modifiers: [
-        interact.modifiers.snap({
-          targets: [
-            interact.snappers.grid({ x: 5, y: 5 })
-          ],
-        }),
+        // interact.modifiers.snap({
+        //   targets: [interact.snappers.grid({ x: 2, y: 2 })],
+        // }),
         interact.modifiers.restrictRect({
           restriction: "parent",
           elementRect: {

@@ -209,38 +209,17 @@ function createState() {
   const initializingGameSession = writable(false);
   const gameSessionInitialized = writable(false);
   const channel = writable(<any>{});
+  const socketInitialized = writable(false);
+  const socket = writable(<any>{});
 
   async function startGameSession(characterId: string) {
     initializingGameSession.set(true);
     try {
       const res = (await apiStartGameSession(characterId)).data;
 
-      const newSocket = new Socket("wss://localhost:4000/socket", {
-        params: { token: res.token },
-      });
+      initSocket(res.token);
 
-      newSocket.connect();
-
-      const newChannel = newSocket.channel(`character:${characterId}`);
-
-      newChannel.on("output:story", async function (msg) {
-        console.log("received messages");
-        console.log(msg);
-        msg.messages.forEach((output) => {
-          const segments = output.segments.map((segment) => {
-            return {
-              text: segment.text,
-              type: segment.type,
-            };
-          });
-
-          appendNewStoryMessage({ segments: segments });
-        });
-      });
-
-      newChannel.join();
-
-      channel.set(newChannel);
+      connectChannel(characterId);
 
       gameSessionInitialized.set(true);
 
@@ -252,6 +231,42 @@ function createState() {
     } finally {
       initializingGameSession.set(false);
     }
+  }
+
+  function initSocket(token) {
+    if (!get(socketInitialized)) {
+      const newSocket = new Socket("wss://localhost:4000/socket", {
+        params: { token: token },
+      });
+
+      newSocket.connect();
+
+      socket.set(newSocket);
+      socketInitialized.set(true);
+    }
+  }
+
+  function connectChannel(characterId) {
+    let sock = get(socket);
+    const newChannel = sock.channel(`character:${characterId}`);
+    newChannel.on("output:story", async function (msg) {
+      console.log("received messages");
+      console.log(msg);
+      msg.messages.forEach((output) => {
+        const segments = output.segments.map((segment) => {
+          return {
+            text: segment.text,
+            type: segment.type,
+          };
+        });
+
+        appendNewStoryMessage({ segments: segments });
+      });
+    });
+
+    newChannel.join();
+
+    channel.set(newChannel);
   }
 
   const endingGameSession = writable(false);
@@ -326,7 +341,39 @@ function createState() {
     storyWindowView.set("current");
   }
 
+  async function resetAllDataToDefault() {
+    await selectPlayView();
+    await settingsView.set("colors");
+    await resetCharacterSettings();
+    await characterInitialized.set(false);
+    await characterInitializing.set(false);
+    await selectedCharacter.set({ ...CharacterState });
+    await itemInLeftHand.set({ ...ItemState });
+    await leftHandHasItem.set(false);
+    await itemInRightHand.set({ ...ItemState });
+    await rightHandHasItem.set(false);
+    await wornItems.set([]);
+    await allInventoryItemsIndex.set({});
+    await inventoryItemsParentChildIndex.set({});
+    await wornItems.set([]);
+    await knownMapsList.set([]);
+    await knownMapsIndex.set({});
+    await knownAreasForCharacterMap.set([]);
+    await knownAreasForCharacterMapIndex.set([]);
+    await knownLinksForCharacterMap.set([]);
+    await knownLinksForCharacterIndex.set([]);
+    await initializingGameSession.set(false);
+    await gameSessionInitialized.set(false);
+    await channel.set({});
+    await endingGameSession.set(false);
+    await storyWindowView.set("current");
+    await storyWindowMessages.set([]);
+    await historyWindowMessageBuffer.set([]);
+    await historyWindowMessages.set([]);
+  }
+
   return {
+    resetAllDataToDefault,
     //
     // Overall UI stuff, such as whether to show the play view or the other views
     //

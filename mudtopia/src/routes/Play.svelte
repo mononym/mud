@@ -11,6 +11,7 @@
     view,
     selectSettingsView,
     selectPlayView,
+    resetAllDataToDefault,
   } = State;
 
   import { onMount, onDestroy } from "svelte";

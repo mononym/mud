@@ -32,28 +32,27 @@
         storage.get(`${$selectedCharacter.name}-${id}`, function (error, data) {
           if (error) throw error;
 
-          console.log("load");
-          console.log(id);
-          console.log(data);
-
           localX = data.x;
           layoutItemWrapper.style.left = `${data.x}px`;
           localY = data.y;
           layoutItemWrapper.style.top = `${data.y}px`;
           localHeight = data.height;
           localWidth = data.width;
-          localIsLocked = data.locked || false;
+          localIsLocked = data.locked || true;
         });
       } else {
-        console.log("no keys to load");
         localX = x;
         layoutItemWrapper.style.left = `${x}px`;
         localY = y;
         layoutItemWrapper.style.top = `${y}px`;
         localHeight = initialHeight;
         localWidth = initialWidth;
-        localIsLocked = locked || false;
+        localIsLocked = locked || true;
       }
+
+      interact(layoutItemWrapper)
+        .draggable(!localIsLocked)
+        .resizable(!localIsLocked);
     });
   });
 

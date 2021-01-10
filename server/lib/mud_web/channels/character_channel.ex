@@ -36,11 +36,13 @@ defmodule MudWeb.CharacterChannel do
   end
 
   def handle_in("cli", %{"text" => input}, socket) do
-    # Mud.Engine.Session.cast_message_or_event(%Mud.Engine.Message.Input{
-    #   to: socket.assigns.character_id,
-    #   text: input,
-    #   id: UUID.uuid4()
-    # })
+    Logger.debug("Received cli input: #{input}")
+
+    Mud.Engine.Session.cast_message_or_event(%Mud.Engine.Message.Input{
+      to: socket.assigns.character_id,
+      text: input,
+      id: UUID.uuid4()
+    })
 
     #  Echo for now
     # Phoenix.Channel.push(socket, "output:story", %{

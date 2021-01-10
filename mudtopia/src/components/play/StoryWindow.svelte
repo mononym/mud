@@ -77,6 +77,7 @@
 
   // Scrolling the main window upwards should trigger the display of the history window.
   async function handleStoryWindowCurrentViewScrollEvent(event) {
+    event.preventDefault();
     // If the history window is already open, make scrolling effectively a no-op
     if ($storyWindowView == "history") {
       scrollToBottom(currentStoryWindowDiv);
@@ -92,6 +93,7 @@
           showHistoryWindow();
           await tick();
           scrollToBottom(historyStoryWindowDiv);
+          scrollToBottom(currentStoryWindowDiv);
         }
       }
 
@@ -126,6 +128,8 @@
   }
 
   function toggleHistoryView() {
+    console.log("toggleHistoryView");
+    console.log($storyWindowView);
     if ($storyWindowView == "history") {
       hideHistoryWindow();
     } else {

@@ -5,14 +5,17 @@
   import { CharactersStore } from "../stores/characters";
   import { push } from "svelte-spa-router";
   import MainNavBar from "../components/MainNavBar.svelte";
+  import { State } from "../components/play/state";
   const { loading, characters } = CharactersStore;
   let showDeletePrompt = false;
   let characterForDeleting;
   let deleteMatchString = "";
+  const { resetAllDataToDefault } = State;
 
   import { onMount } from "svelte";
 
   function playCharacter(character) {
+    resetAllDataToDefault();
     push(`#/play/${character.id}`);
   }
 
