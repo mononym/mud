@@ -1,5 +1,5 @@
 <script>
-  import { prevent_default } from "svelte/internal";
+  import { prevent_default, tick } from "svelte/internal";
   import {
     buildHotkeyStringFromEvent,
     buildHotkeyStringFromRecord,
@@ -7,15 +7,28 @@
   import { onDestroy, onMount } from "svelte";
   import { State } from "./state";
   const { channel, showHistoryWindow, selectedCharacter } = State;
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
 
   export let input = "";
   let actualInput = "";
   let commandLineDiv;
   let commandHistory = [];
-  $: commandHistoryReversed = commandHistory.reverse();
   let workingInput = "";
   let commandHistoryIndex = 0;
   let commandHistoryLength = 1000;
+  let inputMode = "command";
+  let tippyInstance;
+
+  function toggleInputMode() {
+    if (inputMode == "command") {
+      inputMode = "speak";
+      tippyInstance.setContent("Speaking Mode");
+    } else {
+      inputMode = "command";
+      tippyInstance.setContent("Command Mode");
+    }
+  }
 
   onMount(() => {
     actualInput = input;
@@ -72,6 +85,13 @@
     normalizeCustomHotkeys();
     setupHotkeyWatcher();
     commandLineDiv.focus();
+
+    tippyInstance = tippy(
+      document.querySelector(".CommandLineWindowInputTypeButton"),
+      {
+        content: inputMode == "command" ? "Command Mode" : "Speaking Mode",
+      }
+    );
   });
 
   $: $selectedCharacter.settings.customHotkeys, normalizeCustomHotkeys();
@@ -116,12 +136,13 @@
   }
 </script>
 
-<div class="commandlineWrapper h-full w-full flex pl-1 pb-1 pr-1">
+<div class="commandlineWrapper h-full w-full flex">
   <button
-    class="hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+    on:click={toggleInputMode}
+    class="CommandLineWindowInputTypeButton hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 outline-none focus:outline-none border-r"
     type="button"
-    style="transition: all .15s ease">
-    <i class="fas fa-comment-alt" />
+    style="width:50px">
+    <i class="fas fa-{inputMode == 'command' ? 'terminal' : 'comment-alt'}" />
   </button>
   <form class="flex-1 flex">
     <textarea
