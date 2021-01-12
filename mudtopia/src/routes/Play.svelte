@@ -29,7 +29,7 @@
 
   setContext(key, state);
 
-  console.log(getContext(key))
+  console.log(getContext(key));
 
   const {
     characterInitialized,
@@ -74,8 +74,9 @@
   $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
 
   const presetHotkeyCallbackIndex = {
-    open_play: () => State.selectPlayView(),
-    open_settings: () => State.selectSettingsView(),
+    open_play: () => state.selectPlayView(),
+    open_settings: () => state.selectSettingsView(),
+    toggle_history_view: () => state.toggleHistoryWindow(),
   };
 
   function generatePresetHotkeyCallbacks() {

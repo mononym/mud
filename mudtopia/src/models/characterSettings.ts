@@ -50,6 +50,7 @@ export interface CharacterSettingsInterface {
     id: string;
     open_settings: string;
     open_play: string;
+    toggle_history_view: string;
   };
   customHotkeys: HotkeyInterface[];
 }
@@ -104,6 +105,7 @@ const state: CharacterSettingsInterface = {
     id: "",
     open_settings: "CTRL + SHIFT + KeyS",
     open_play: "CTRL + SHIFT + KeyP",
+    toggle_history_view: "CTRL + SHIFT + KeyH",
   },
   customHotkeys: [],
 };

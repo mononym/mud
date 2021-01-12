@@ -297,14 +297,14 @@ export function createState() {
   const historyWindowMessages = writable([]);
   const maxHistoryWindowMessagesCount = writable(10000);
 
-  function flushHistoryMessageBuffer() {
-    historyWindowMessages.update(function (buffer) {
+  async function flushHistoryMessageBuffer() {
+    await historyWindowMessages.update(function (buffer) {
       return [...buffer, ...get(historyWindowMessageBuffer)].slice(
         -get(maxHistoryWindowMessagesCount)
       );
     });
 
-    historyWindowMessageBuffer.set([]);
+    await historyWindowMessageBuffer.set([]);
   }
 
   async function appendNewStoryMessage(newMessage) {
@@ -334,9 +334,13 @@ export function createState() {
     }
   }
 
-  async function showHistoryWindow() {
-    flushHistoryMessageBuffer();
-    storyWindowView.set("history");
+  async function toggleHistoryWindow() {
+    if (get(storyWindowView) == "history") {
+      await storyWindowView.set("current");
+    } else {
+      await flushHistoryMessageBuffer();
+      await storyWindowView.set("history");
+    }
   }
 
   async function hideHistoryWindow() {
@@ -427,8 +431,8 @@ export function createState() {
     // Story/History window stuff
     //
     appendNewStoryMessage,
-    showHistoryWindow,
     hideHistoryWindow,
+    toggleHistoryWindow,
     storyWindowView,
     storyWindowMessages,
     maxStoryWindowMessagesCount,

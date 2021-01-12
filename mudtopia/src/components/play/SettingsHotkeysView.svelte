@@ -18,7 +18,7 @@
     resetCharacterSettings,
     saveCharacterSettings,
   } = state;
-  
+
   function buildPresetHotkeyString(event, target) {
     $characterSettings.presetHotkeys[target] = buildHotkeyStringFromEvent(
       event
@@ -103,8 +103,9 @@
       Application Hotkeys
     </h2>
     <div class="col-span-2">
-      <label for="openSettings" class="block text-sm font-medium text-white">Open Settings
-        Tab</label>
+      <label
+        for="openSettings"
+        class="block text-sm font-medium text-white">Open Settings Tab</label>
       <input
         on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_settings')}
         bind:value={$characterSettings.presetHotkeys.open_settings}
@@ -113,12 +114,25 @@
         class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
     </div>
     <div class="col-span-2">
-      <label for="openPlay" class="block text-sm font-medium text-white">Open Play Tab</label>
+      <label for="openPlay" class="block text-sm font-medium text-white">Open
+        Play Tab</label>
       <input
         on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_play')}
         bind:value={$characterSettings.presetHotkeys.open_play}
         name="openPlay"
         id="openPlay"
+        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+    </div>
+    <div class="col-span-2">
+      <label
+        for="toggleHistory"
+        class="block text-sm font-medium text-white">Toggle History View in
+        Story Window</label>
+      <input
+        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'toggle_history')}
+        bind:value={$characterSettings.presetHotkeys.toggle_history}
+        name="toggleHistory"
+        id="toggleHistory"
         class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
     </div>
   </div>
@@ -128,8 +142,12 @@
     </h2>
     {#each normalizedCustomHotkeys as customHotkey, i}
       <div class="col-span-2 grid grid-cols-9 gap-4">
-        <h3 class="text-center border-b-2 border-black col-span-4 text-white">Hotkey</h3>
-        <h3 class="text-center border-b-2 border-black col-span-4 text-white">Command</h3>
+        <h3 class="text-center border-b-2 border-black col-span-4 text-white">
+          Hotkey
+        </h3>
+        <h3 class="text-center border-b-2 border-black col-span-4 text-white">
+          Command
+        </h3>
         <h3 class="text-center border-b-2 border-black col-span-1 text-white">
           <i class="fas fa-trash" />
         </h3>

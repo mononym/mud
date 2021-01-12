@@ -2,48 +2,25 @@
   import { onMount, tick } from "svelte";
   import { getContext } from "svelte";
   import { key } from "./state";
-  
+
   const state = getContext(key);
   const {
     selectedCharacter,
     storyWindowMessages,
     historyWindowMessages,
-    showHistoryWindow,
-    hideHistoryWindow,
     storyWindowView,
+    hideHistoryWindow,
+    toggleHistoryWindow,
   } = state;
 
   let currentStoryWindowDiv;
 
   let historyStoryWindowDiv;
 
-  var currentStoryWindowLastScrollTop = 0;
-
   var hasScrolledHistoryWindow = false;
 
   onMount(() => {
-    // console.log("mounting storywindow");
-    // $channel.on("output:story", async function (msg) {
-    //   console.log("received messages");
-    //   console.log(msg);
-    //   msg.messages.forEach((output) => {
-    //     const segments = output.segments.map((segment) => {
-    //       return {
-    //         text: segment.text,
-    //         type: segment.type,
-    //       };
-    //     });
-
-    //     appendNewStoryMessage({ segments: segments });
-    //   });
-
-    //   await tick();
-
-    //   scrollToBottom(currentStoryWindowDiv);
-    // });
-
     scrollToBottom(currentStoryWindowDiv);
-    currentStoryWindowLastScrollTop = currentStoryWindowDiv.scrollTop;
     hideHistoryWindow();
   });
 
@@ -76,31 +53,6 @@
     }
   }
 
-  // Scrolling the main window upwards should trigger the display of the history window.
-  async function handleStoryWindowCurrentViewScrollEvent(event) {
-    // If the history window is already open, make scrolling effectively a no-op
-    if ($storyWindowView == "history") {
-      scrollToBottom(currentStoryWindowDiv);
-    } else {
-      var newScrollTop = currentStoryWindowDiv.scrollTop;
-
-      if (newScrollTop > currentStoryWindowLastScrollTop) {
-        // downscroll code
-      } else {
-        // upscroll code
-        scrollToBottom(currentStoryWindowDiv);
-        if ($storyWindowView != "history") {
-          showHistoryWindow();
-          await tick();
-          scrollToBottom(historyStoryWindowDiv);
-          scrollToBottom(currentStoryWindowDiv);
-        }
-      }
-
-      currentStoryWindowLastScrollTop = newScrollTop >= 0 ? newScrollTop : 0;
-    }
-  }
-
   function scrollToBottom(element) {
     element.scrollTop = getActualScrollHeight(element);
   }
@@ -127,13 +79,11 @@
     }
   }
 
-  function toggleHistoryView() {
-    console.log("toggleHistoryView");
-    console.log($storyWindowView);
+  async function toggleHistoryView() {
+    await toggleHistoryWindow();
     if ($storyWindowView == "history") {
-      hideHistoryWindow();
-    } else {
-      showHistoryWindow();
+      await tick();
+      scrollToBottom(historyStoryWindowDiv);
     }
   }
 </script>
@@ -167,10 +117,9 @@
   {/if}
   <div class="flex-1 overflow-hidden">
     <div
-      on:scroll|preventDefault={handleStoryWindowCurrentViewScrollEvent}
       bind:this={currentStoryWindowDiv}
       id="StoryWindowCurrentView"
-      class="h-full flex flex-col overflow-y-scroll ml-2 mb-2 mr-2"
+      class="h-full flex flex-col overflow-hidden ml-2 mb-2 mr-2"
       style="width:calc(100% + 15px);background-color:{$selectedCharacter.settings.colors.story_background}">
       {#each $storyWindowMessages as message}
         <pre>
