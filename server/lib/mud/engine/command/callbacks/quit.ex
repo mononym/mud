@@ -25,14 +25,14 @@ defmodule Mud.Engine.Command.Quit do
 
     context
     |> Context.append_message(
-      Message.new_text_output(context.character_id)
+      Message.new_story_output(context.character_id)
       |> Message.append_text(
         "Thank you for playing! Come back soon!",
         "system_alert"
       )
     )
     |> Context.append_message(
-      Message.new_text_output(characters)
+      Message.new_story_output(characters)
       |> Message.append_text(
         "#{character.name} just left.",
         "info"

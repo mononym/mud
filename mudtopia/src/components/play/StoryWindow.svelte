@@ -76,6 +76,14 @@
   }
 
   // Scrolling the main window upwards should trigger the display of the history window.
+  async function maybeBlockScroll(event) {
+    // If the history window is already open, make scrolling effectively a no-op
+    if ($storyWindowView == "history") {
+      event.preventDefault();
+    }
+  }
+
+  // Scrolling the main window upwards should trigger the display of the history window.
   async function handleStoryWindowCurrentViewScrollEvent(event) {
     event.preventDefault();
     // If the history window is already open, make scrolling effectively a no-op
@@ -167,6 +175,7 @@
   {/if}
   <div class="flex-1 overflow-hidden">
     <div
+      on:mousewheel={maybeBlockScroll}
       on:scroll={handleStoryWindowCurrentViewScrollEvent}
       bind:this={currentStoryWindowDiv}
       id="StoryWindowCurrentView"

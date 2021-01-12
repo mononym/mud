@@ -5,8 +5,8 @@ defmodule Mud.Engine.Message do
 
   alias Mud.Engine.Mode.Character
   alias Mud.Engine.Message.Output
-  alias Mud.Engine.Message.TextOutput
-  alias Mud.Engine.Message.TextOutput.Segment
+  alias Mud.Engine.Message.StoryOutput
+  alias Mud.Engine.Message.StoryOutput.Segment
   alias Mud.Engine.Message.Input
 
   @type message() :: String.t()
@@ -25,21 +25,21 @@ defmodule Mud.Engine.Message do
   Text outputs are built up incrementally, allowing for the tagging of arbitrary lengths of text as belonging to a
   'type' which is then used on the client side to perform real-time color for the text.
   """
-  def new_text_output(to) do
+  def new_story_output(to) do
     to
     |> maybe_transform_to()
-    |> text_output()
+    |> story_output()
   end
 
-  @spec append_text(Mud.Engine.Message.TextOutput.t(), String.t(), String.t()) ::
-          Mud.Engine.Message.TextOutput.t()
-  def append_text(output = %TextOutput{}, text, type) do
+  @spec append_text(Mud.Engine.Message.StoryOutput.t(), String.t(), String.t()) ::
+          Mud.Engine.Message.StoryOutput.t()
+  def append_text(output = %StoryOutput{}, text, type) do
     %{output | segments: [%Segment{text: text, type: type} | output.segments]}
   end
 
-  @spec drop_last_text(Mud.Engine.Message.TextOutput.t()) ::
-          Mud.Engine.Message.TextOutput.t()
-  def drop_last_text(output = %TextOutput{}) do
+  @spec drop_last_text(Mud.Engine.Message.StoryOutput.t()) ::
+          Mud.Engine.Message.StoryOutput.t()
+  def drop_last_text(output = %StoryOutput{}) do
     IO.inspect(output)
     IO.inspect(%{output | segments: output.segments |> Enum.reverse() |> tl() |> Enum.reverse()})
     %{output | segments: tl(output.segments)}
@@ -120,8 +120,8 @@ defmodule Mud.Engine.Message do
     }
   end
 
-  defp text_output(to) do
-    %TextOutput{
+  defp story_output(to) do
+    %StoryOutput{
       id: UUID.uuid4(),
       to: to
     }

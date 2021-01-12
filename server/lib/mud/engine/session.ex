@@ -173,7 +173,7 @@ defmodule Mud.Engine.Session do
     {:noreply, state}
   end
 
-  def handle_cast(%Mud.Engine.Message.TextOutput{} = output, state) do
+  def handle_cast(%Mud.Engine.Message.StoryOutput{} = output, state) do
     Logger.debug("#{inspect(output)}", label: "session_handle_cast")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
@@ -367,7 +367,7 @@ defmodule Mud.Engine.Session do
   @impl true
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :warning}) do
     new_message =
-      Message.new_text_output(state.character_id)
+      Message.new_story_output(state.character_id)
       |> Message.append_text(
         "***** YOU HAVE BEEN IDLE FOR 10 MINUTES AND WILL BE DISCONNECTED SOON *****",
         "system_alert"
@@ -382,7 +382,7 @@ defmodule Mud.Engine.Session do
 
   def handle_info(:inactivity_timeout, state = %{inactivity_timer_type: :final}) do
     new_message =
-      Message.new_text_output(state.character_id)
+      Message.new_story_output(state.character_id)
       |> Message.append_text(
         "***** YOU HAVE BEEN IDLE TOO LONG AND ARE BEING DISCONNECTED *****",
         "system_alert"
@@ -422,7 +422,7 @@ defmodule Mud.Engine.Session do
     %{type: output.type, text: output.text}
   end
 
-  defp convert_output(output = %Mud.Engine.Message.TextOutput{}) do
+  defp convert_output(output = %Mud.Engine.Message.StoryOutput{}) do
     %{type: "text", segments: Enum.reverse(output.segments)}
   end
 

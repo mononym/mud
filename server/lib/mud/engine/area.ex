@@ -3,7 +3,7 @@ defmodule Mud.Engine.Area do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.{Character, Link, Item, Map, Message}
-  alias Mud.Engine.Message.TextOutput
+  alias Mud.Engine.Message.StoryOutput
   import Ecto.Query
   require Logger
 
@@ -223,14 +223,14 @@ defmodule Mud.Engine.Area do
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
   @spec long_description(area_id :: String.t(), character :: Character.t()) ::
-          description :: TextOutput.t()
+          description :: StoryOutput.t()
   def long_description(area_id, character) do
     Logger.debug(
       "Generating long description for area `#{area_id}` and character `#{character.id}`"
     )
 
     area = get!(area_id)
-    newOutput = Message.new_text_output(character.id)
+    newOutput = Message.new_story_output(character.id)
 
     newOutput
     |> build_area_name(area)
@@ -243,12 +243,12 @@ defmodule Mud.Engine.Area do
     |> maybe_build_exits(area)
   end
 
-  defp build_area_name(text_output, area) do
-    Message.append_text(text_output, "[#{area.name}]\n", "area_name")
+  defp build_area_name(story_output, area) do
+    Message.append_text(story_output, "[#{area.name}]\n", "area_name")
   end
 
-  defp build_area_desc(text_output, area) do
-    Message.append_text(text_output, "#{area.description}\n", "area_description")
+  defp build_area_desc(story_output, area) do
+    Message.append_text(story_output, "#{area.description}\n", "area_description")
   end
 
   defp maybe_build_hostiles(text, _area) do
@@ -261,7 +261,7 @@ defmodule Mud.Engine.Area do
     text
   end
 
-  defp maybe_build_things_of_interest(text_output, area) do
+  defp maybe_build_things_of_interest(story_output, area) do
     things_of_interest =
       area.id
       |> Item.list_visible_scenery_in_area()
@@ -270,13 +270,13 @@ defmodule Mud.Engine.Area do
       |> Enum.join(", ")
 
     if things_of_interest == "" do
-      text_output
+      story_output
     else
-      Message.append_text(text_output, "Things of Interest: #{things_of_interest}\n", "text")
+      Message.append_text(story_output, "Things of Interest: #{things_of_interest}\n", "text")
     end
   end
 
-  defp maybe_build_on_ground(text_output, area) do
+  defp maybe_build_on_ground(story_output, area) do
     on_ground =
       Item.list_in_area(area.id)
       |> Stream.filter(&(!&1.is_scenery))
@@ -285,29 +285,29 @@ defmodule Mud.Engine.Area do
       |> Enum.join(", ")
 
     if on_ground == "" do
-      text_output
+      story_output
     else
-      Message.append_text(text_output, "On Ground: #{on_ground}\n", "text")
+      Message.append_text(story_output, "On Ground: #{on_ground}\n", "text")
     end
   end
 
-  defp maybe_build_also_present(text_output, area, character_id) do
+  defp maybe_build_also_present(story_output, area, character_id) do
     also_present = build_player_characters_string(area.id, character_id)
 
     if also_present == "" do
-      text_output
+      story_output
     else
-      Message.append_text(text_output, "Also Present: #{also_present}\n", "text")
+      Message.append_text(story_output, "Also Present: #{also_present}\n", "text")
     end
   end
 
-  defp maybe_build_obvious_exits(text_output, area) do
+  defp maybe_build_obvious_exits(story_output, area) do
     obvious_exits = build_obvious_exits_string(area.id)
 
     if obvious_exits == "" do
-      text_output
+      story_output
     else
-      Message.append_text(text_output, "Obvious Exits: #{obvious_exits}\n", "text")
+      Message.append_text(story_output, "Obvious Exits: #{obvious_exits}\n", "text")
     end
   end
 
@@ -323,18 +323,18 @@ defmodule Mud.Engine.Area do
     |> Enum.join(", ")
   end
 
-  defp maybe_build_exits(text_output, area) do
+  defp maybe_build_exits(story_output, area) do
     links = Mud.Engine.Link.list_obvious_exits_in_area(area.id)
     Logger.debug(links)
 
     if links == [] do
-      text_output
+      story_output
     else
-      text_output = Message.append_text(text_output, "Obvious Exits: ", "exit_label")
+      story_output = Message.append_text(story_output, "Obvious Exits: ", "exit_label")
 
       links
       |> Enum.reduce(
-        text_output,
+        story_output,
         fn link, message ->
           message
           |> Message.append_text(link.short_description, "exit")

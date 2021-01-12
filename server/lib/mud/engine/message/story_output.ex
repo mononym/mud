@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Message.TextOutput do
+defmodule Mud.Engine.Message.StoryOutput do
   use TypedStruct
 
   @derive Jason.Encoder
