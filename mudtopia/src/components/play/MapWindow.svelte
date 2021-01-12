@@ -1,6 +1,9 @@
 <script>
   import ClientSvgMap from "./ClientSvgMap.svelte";
-  import { State } from "./state";
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
 
   const {
     selectedCharacter,
@@ -8,7 +11,7 @@
     knownAreasForCharacterMap,
     knownAreasForCharacterMapIndex,
     knownLinksForCharacterMap,
-  } = State;
+  } = state;
 
   let svgMap;
 </script>

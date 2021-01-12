@@ -16,7 +16,9 @@ import { Socket } from "phoenix";
 import type { AreaInterface } from "../../models/area";
 import type { LinkInterface } from "../../models/link";
 
-function createState() {
+export const key = {};
+
+export function createState() {
   //
   // Overall UI stuff, such as whether to show the play view or the other views
   //

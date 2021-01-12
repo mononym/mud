@@ -1,10 +1,11 @@
 <script language="ts">
-  import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
-  import { State } from "./state";
-  const { selectedCharacter, inventoryItemsParentChildIndex } = State;
-
   import { createEventDispatcher } from "svelte";
   const dispatch = createEventDispatcher();
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
+  const { selectedCharacter, inventoryItemsParentChildIndex } = state;
 
   export let item;
   let wrapperDiv;

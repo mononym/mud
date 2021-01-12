@@ -2,8 +2,11 @@
     import Menu from "../Menu.svelte";
     import MenuOption from "../MenuOption.svelte";
     import MenuDivider from "../MenuDivider.svelte";
-    import { State } from "./state";
-    const { leftHandHasItem, rightHandHasItem } = State;
+    import { getContext } from "svelte";
+    import { key } from "./state";
+
+    const state = getContext(key);
+    const { leftHandHasItem, rightHandHasItem } = state;
 
     export let showMenu = false;
     export let item;

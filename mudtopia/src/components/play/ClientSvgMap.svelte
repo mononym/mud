@@ -119,7 +119,7 @@
 
   // Labels for all of the links within a single map
   function buildExistingIntraMapLinkText() {
-    console.log('buildExistingIntraMapLinkText')
+    console.log("buildExistingIntraMapLinkText");
     return links
       .filter((link) => {
         return (
@@ -149,7 +149,7 @@
 
   // Labels for all of the links within a single map
   function buildExistingInterMapLinkText() {
-    console.log('buildExistingInterMapLinkText')
+    console.log("buildExistingInterMapLinkText");
     return links
       .filter((link) => {
         return (
@@ -241,7 +241,7 @@
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildExistingIntraMapLinks() {
-    console.log('buildExistingIntraMapLinks')
+    console.log("buildExistingIntraMapLinks");
     return links
       .filter((link) => {
         return (
@@ -287,7 +287,7 @@
   }
 
   function buildInterMapLink(link) {
-    console.log('buildInterMapLink')
+    console.log("buildInterMapLink");
     const modifiedLink = { ...link };
     let toX;
     let toY;
@@ -334,7 +334,7 @@
       : [];
 
   function buildHighlightsForExistingIntraMapLinks() {
-    console.log('buildHighlightsForExistingIntraMapLinks')
+    console.log("buildHighlightsForExistingIntraMapLinks");
     return highlightedLinkIds.map((linkId) => {
       const link = { ...links.find((link) => link.id == linkId) };
 
@@ -371,7 +371,7 @@
       : [];
 
   function buildHighlightsForExistingInterMapLinks() {
-    console.log('buildHighlightsForExistingInterMapLinks')
+    console.log("buildHighlightsForExistingInterMapLinks");
     return highlightedLinkIds.map((linkId) => {
       const link = { ...links.find((link) => link.id == linkId) };
 
@@ -492,7 +492,7 @@
   }
 
   function buildRectFromArea(area) {
-    console.log('buildRectFromArea')
+    console.log("buildRectFromArea");
     let cls = svgMapAllowIntraMapAreaSelection
       ? "cursor-pointer"
       : "cursor-auto";
@@ -533,7 +533,7 @@
       : [];
 
   function buildExistingInterMapAreas() {
-    console.log('buildExistingInterMapAreas')
+    console.log("buildExistingInterMapAreas");
     return areas
       .filter((area) => {
         return (

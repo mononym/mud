@@ -1,8 +1,11 @@
 <script>
   import InventoryItem from "./InventoryItem.svelte";
   import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
-  import { State } from "./state";
-  const { wornItems } = State;
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
+  const { wornItems } = state;
 
   let menuItem;
   let showMenu = false;

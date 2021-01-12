@@ -2,8 +2,12 @@
   import SettingsTabBar from "./SettingsTabBar.svelte";
   import SettingsColorsView from "./SettingsColorsView.svelte";
   import SettingsHotkeysView from "./SettingsHotkeysView.svelte";
-  import { State } from "./state";
-  const { settingsView, view } = State;
+
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
+  const { settingsView, view } = state;
 </script>
 
 <div class="flex flex-col" hidden={$view != 'settings'}>

@@ -2,9 +2,12 @@
   import { onMount, onDestroy } from "svelte";
   import interact from "interactjs";
   import { interactable } from "../../utils/interactable";
-  import { State } from "./state";
-  const { selectedCharacter } = State;
   const storage = require("electron-json-storage");
+  import { getContext } from "svelte";
+  import { key } from "./state";
+  
+  const state = getContext(key);
+  const { selectedCharacter } = state;
 
   let layoutItemWrapper;
 

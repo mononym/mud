@@ -1,10 +1,13 @@
 <script>
-  import { State } from "./state";
+  import { getContext } from "svelte";
+  import { key } from "./state";
+  
+  const state = getContext(key);
   const {
     settingsView,
     selectSettingsHotkeysView,
     selectSettingsColorsView,
-  } = State;
+  } = state;
 </script>
 
 <nav class="bg-gray-800 flex-shrink">

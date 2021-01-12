@@ -5,10 +5,13 @@
     buildHotkeyStringFromRecord,
   } from "../../utils/utils";
   import { onDestroy, onMount } from "svelte";
-  import { State } from "./state";
-  const { channel, showHistoryWindow, selectedCharacter } = State;
   import tippy from "tippy.js";
   import "tippy.js/dist/tippy.css";
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
+  const { channel, showHistoryWindow, selectedCharacter } = state;
 
   export let input = "";
   let actualInput = "";

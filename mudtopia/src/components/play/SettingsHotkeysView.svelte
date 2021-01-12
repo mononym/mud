@@ -8,14 +8,17 @@
     buildHotkeyStringFromRecord,
     buildRecordFromHotkeyString,
   } from "../../utils/utils";
-  import { State } from "./state";
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
   const {
     selectedCharacter,
     characterSettings,
     resetCharacterSettings,
     saveCharacterSettings,
-  } = State;
-
+  } = state;
+  
   function buildPresetHotkeyString(event, target) {
     $characterSettings.presetHotkeys[target] = buildHotkeyStringFromEvent(
       event

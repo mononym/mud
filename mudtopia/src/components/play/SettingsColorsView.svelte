@@ -1,11 +1,13 @@
 <script>
-  import { State } from "./state";
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
   const {
     characterSettings,
-    selectedCharacter,
     resetCharacterSettings,
     saveCharacterSettings,
-  } = State;
+  } = state;
 
   let settingsChanged = true;
 </script>

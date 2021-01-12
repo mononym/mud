@@ -3,8 +3,11 @@
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
   import { push } from "svelte-spa-router";
-  import { State } from "./state";
-  const { endGameSession, view, selectSettingsView, selectPlayView } = State;
+  import { getContext } from "svelte";
+  import { key } from "./state";
+
+  const state = getContext(key);
+  const { endGameSession, view, selectSettingsView, selectPlayView } = state;
 
   let menuOpen = false;
 

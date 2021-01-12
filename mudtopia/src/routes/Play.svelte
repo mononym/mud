@@ -3,18 +3,9 @@
   import { Circle2 } from "svelte-loading-spinners";
   import { CharactersStore } from "../stores/characters";
   const { characters } = CharactersStore;
-  import { State } from "../components/play/state";
-  const {
-    characterInitialized,
-    characterInitializing,
-    selectedCharacter,
-    view,
-    selectSettingsView,
-    selectPlayView,
-    resetAllDataToDefault,
-  } = State;
+  import { createState, State, key } from "../components/play/state";
 
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, getContext, setContext } from "svelte";
   import StoryWindow from "../components/play/StoryWindow.svelte";
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
@@ -25,11 +16,35 @@
   import { buildHotkeyStringFromEvent } from "../utils/utils";
   import { prevent_default } from "svelte/internal";
 
-  export let params = {};
+  import { writable } from "svelte/store";
+  let originalState = writable({});
 
+  export let params = {};
   let presetHotkeyCallbacks = {};
 
+  const state = createState();
+
+  console.log("setting state");
+  console.log(state);
+
+  setContext(key, state);
+
+  console.log(getContext(key))
+
+  const {
+    characterInitialized,
+    characterInitializing,
+    selectedCharacter,
+    view,
+  } = state;
+
   onMount(async () => {
+    // Set up the store to be used by everyone
+    // characterInitialized = stateContext.characterInitialized;
+    // characterInitializing = stateContext.characterInitializing;
+    // selectedCharacter = stateContext.selectedCharacter;
+    // view = stateContext.view;
+
     const character = $characters.filter(
       (character) => character.id == params.characterId
     )[0];
@@ -40,8 +55,8 @@
       return;
     }
 
-    await State.startGameSession(character.id);
-    await State.initializeCharacter(character);
+    await state.startGameSession(character.id);
+    await state.initializeCharacter(character);
     generatePresetHotkeyCallbacks();
     setupHotkeyWatcher();
   });
