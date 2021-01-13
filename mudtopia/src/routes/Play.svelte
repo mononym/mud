@@ -257,12 +257,11 @@
     </div>
   {:else if $characterInitialized}
     <MainTabBar />
-    <div class="flex-1 overflow-hidden">
       <div
         bind:this={canvas}
         hidden={$view != 'play'}
         id="container"
-        class="h-full w-full bg-gray-200 relative"
+        class="flex-1 bg-gray-200 relative"
         on:mouseup={mouseUp}
         on:mousedown={mouseDown}
         on:mousemove={mouseMove}>
@@ -303,7 +302,6 @@
           <InventoryWindow />
         </LayoutItemWrapper>
       </div>
-    </div>
     {#if $view == 'settings'}
       <Settings />
     {/if}
