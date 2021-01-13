@@ -60,6 +60,8 @@
   }
 
   function getActualScrollHeight(element) {
+    console.log(element);
+    console.log(element.scrollHeight - element.clientHeight);
     return element.scrollHeight - element.clientHeight;
   }
 
@@ -83,9 +85,16 @@
 
   async function toggleHistoryView() {
     await toggleHistoryWindow();
-    if ($storyWindowView == "history") {
-      await tick();
+  }
+
+  $: historyStoryWindowDiv, scrollWindows();
+  async function scrollWindows() {
+    if ($storyWindowView == "history" && historyStoryWindowDiv != undefined) {
       scrollToBottom(historyStoryWindowDiv);
+    }
+
+    if (currentStoryWindowDiv != undefined) {
+      scrollToBottom(currentStoryWindowDiv);
     }
   }
 </script>
@@ -100,8 +109,8 @@
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex-1 flex flex-col overflow-y-scroll border-b-2 pl-2"
-      style="background-color:{$selectedCharacter.settings.colors.story_background};border-color:{$selectedCharacter.settings.colors.story_history_border}">
+      class="flex flex-col overflow-y-scroll border-b-2 pl-2"
+      style="height:{$storyWindowView == 'history' ? '50%' : '100%'};background-color:{$selectedCharacter.settings.colors.story_background};border-color:{$selectedCharacter.settings.colors.story_history_border}">
       {#each $historyWindowMessages as message}
         <pre>
         {#each message.segments as segment}
@@ -117,20 +126,21 @@
       class="mt-2 mr-2 absolute fas fa-eye cursor-pointer"
       style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
   {/if}
-  <div class="flex-1 overflow-hidden">
-    <div
-      bind:this={currentStoryWindowDiv}
-      id="StoryWindowCurrentView"
-      class="h-full flex flex-col overflow-hidden ml-2 mb-2 mr-2"
-      style="width:calc(100% + 15px);background-color:{$selectedCharacter.settings.colors.story_background}">
-      {#each $storyWindowMessages as message}
-        <pre>
+  <!-- <div class="flex-1 overflow-hidden"> -->
+  <div
+    bind:this={currentStoryWindowDiv}
+    id="StoryWindowCurrentView"
+    class="flex flex-col overflow-hidden ml-2 mb-2 mr-2"
+    style="height:{$storyWindowView == 'history' ? '50%' : '100%'};width:calc(100% + 15px);background-color:{$selectedCharacter.settings.colors.story_background}">
+    {#each $storyWindowMessages as message}
+      <pre
+        class="whitespace-pre-wrap">
           {#each message.segments as segment}
-            <span
-              style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
-          {/each}
+          <span
+            style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
+        {/each}
         </pre>
-      {/each}
-    </div>
+    {/each}
   </div>
+  <!-- </div> -->
 </div>
