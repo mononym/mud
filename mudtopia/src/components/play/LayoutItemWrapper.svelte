@@ -5,7 +5,7 @@
   const storage = require("electron-json-storage");
   import { getContext } from "svelte";
   import { key } from "./state";
-  
+
   const state = getContext(key);
   const { selectedCharacter } = state;
 
@@ -16,6 +16,8 @@
   export let y = "0";
   export let initialWidth = "400";
   export let initialHeight = "400";
+  export let initialX = "0";
+  export let initialY = "0";
   export let id;
   export let label = "";
 
@@ -26,7 +28,6 @@
   let localIsLocked = true;
 
   onMount(() => {
-    interactable(layoutItemWrapper);
     // if (!initialized) {
     storage.has(`${$selectedCharacter.name}-${id}`, function (error, hasKey) {
       if (error) throw error;
@@ -44,14 +45,16 @@
           localIsLocked = data.locked || true;
         });
       } else {
-        localX = x;
-        layoutItemWrapper.style.left = `${x}px`;
-        localY = y;
-        layoutItemWrapper.style.top = `${y}px`;
+        localX = initialX;
+        layoutItemWrapper.style.left = `${initialX}px`;
+        localY = initialY;
+        layoutItemWrapper.style.top = `${initialY}px`;
         localHeight = initialHeight;
         localWidth = initialWidth;
         localIsLocked = locked || true;
       }
+
+      interactable(layoutItemWrapper);
 
       interact(layoutItemWrapper)
         .draggable(!localIsLocked)
@@ -71,10 +74,6 @@
       return;
     }
 
-    console.log("save");
-    console.log(localX);
-    console.log(layoutItemWrapper.dataset);
-
     const x = Math.max(
       parseInt(localX) + parseInt(layoutItemWrapper.dataset.x),
       0
@@ -83,20 +82,12 @@
       parseInt(localY) + parseInt(layoutItemWrapper.dataset.y),
       0
     );
-    console.log(id);
-    console.log({
-      width: layoutItemWrapper.clientWidth,
-      height: layoutItemWrapper.clientHeight,
-      x: x.toString(),
-      y: y.toString(),
-      locked: localIsLocked,
-    });
 
     storage.set(
       `${$selectedCharacter.name}-${id}`,
       {
-        width: layoutItemWrapper.clientWidth,
-        height: layoutItemWrapper.clientHeight,
+        width: layoutItemWrapper.offsetWidth,
+        height: layoutItemWrapper.offsetHeight,
         x: x.toString(),
         y: y.toString(),
         locked: localIsLocked,

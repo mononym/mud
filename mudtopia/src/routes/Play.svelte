@@ -16,20 +16,12 @@
   import { buildHotkeyStringFromEvent } from "../utils/utils";
   import { prevent_default } from "svelte/internal";
 
-  import { writable } from "svelte/store";
-  let originalState = writable({});
-
   export let params = {};
   let presetHotkeyCallbacks = {};
 
+  // Set up the store to be used by everyone
   const state = createState();
-
-  console.log("setting state");
-  console.log(state);
-
   setContext(key, state);
-
-  console.log(getContext(key));
 
   const {
     characterInitialized,
@@ -37,29 +29,6 @@
     selectedCharacter,
     view,
   } = state;
-
-  onMount(async () => {
-    // Set up the store to be used by everyone
-    // characterInitialized = stateContext.characterInitialized;
-    // characterInitializing = stateContext.characterInitializing;
-    // selectedCharacter = stateContext.selectedCharacter;
-    // view = stateContext.view;
-
-    const character = $characters.filter(
-      (character) => character.id == params.characterId
-    )[0];
-
-    // Happens if loaded up into this page rather than into dashboard first
-    if (character == undefined) {
-      push("#/dashboard");
-      return;
-    }
-
-    await state.startGameSession(character.id);
-    await state.initializeCharacter(character);
-    generatePresetHotkeyCallbacks();
-    setupHotkeyWatcher();
-  });
 
   $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
 
@@ -205,9 +174,79 @@
       a.y + a.height > b.y
     );
   }
+
+  let wrapper;
+
+  let startingMapWidth;
+  let startingMapHeight;
+  let startingMapX;
+  let startingMapY;
+
+  let startingInventoryWidth;
+  let startingInventoryHeight;
+  let startingInventoryX;
+  let startingInventoryY;
+
+  let startingStoryWidth;
+  let startingStoryHeight;
+  let startingStoryX;
+  let startingStoryY;
+
+  let startingCliWidth;
+  let startingCliHeight;
+  let startingCliX;
+  let startingCliY;
+
+  onMount(async () => {
+    console.log(wrapper.offsetHeight);
+    console.log(wrapper.offsetWidth);
+    console.log(wrapper.clientHeight);
+    console.log(wrapper.clientWidth);
+
+    startingMapWidth = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingMapHeight = Math.floor(
+      (wrapper.offsetHeight - 64) * 0.5
+    ).toString();
+    startingMapX = "0";
+    startingMapY = "0";
+
+    startingInventoryWidth = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingInventoryHeight = Math.floor(
+      (wrapper.offsetHeight - 64) * 0.5
+    ).toString();
+    startingInventoryX = "0";
+    startingInventoryY = Math.floor(
+      (wrapper.offsetHeight - 64) * 0.5
+    ).toString();
+
+    startingStoryWidth = Math.floor(wrapper.offsetWidth * 0.67).toString();
+    startingStoryHeight = Math.floor(wrapper.offsetHeight - 144).toString();
+    startingStoryX = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingStoryY = "0";
+
+    startingCliWidth = Math.floor(wrapper.offsetWidth * 0.67).toString();
+    startingCliHeight = Math.floor(80).toString();
+    startingCliX = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingCliY = Math.floor(wrapper.offsetHeight - 144).toString();
+
+    const character = $characters.filter(
+      (character) => character.id == params.characterId
+    )[0];
+
+    // Happens if loaded up into this page rather than into dashboard first
+    if (character == undefined) {
+      push("#/dashboard");
+      return;
+    }
+
+    await state.startGameSession(character.id);
+    await state.initializeCharacter(character);
+    generatePresetHotkeyCallbacks();
+    setupHotkeyWatcher();
+  });
 </script>
 
-<div class="h-full w-full flex flex-col overflow-hidden">
+<div bind:this={wrapper} class="h-full w-full flex flex-col overflow-hidden">
   {#if !$characterInitialized || $characterInitializing}
     <div class="flex-1 flex flex-col justify-center items-center">
       <Circle2 />
@@ -218,42 +257,52 @@
     </div>
   {:else if $characterInitialized}
     <MainTabBar />
-    <div
-      bind:this={canvas}
-      hidden={$view != 'play'}
-      id="container"
-      class="flex-1 bg-gray-200 relative"
-      on:mouseup={mouseUp}
-      on:mousedown={mouseDown}
-      on:mousemove={mouseMove}>
-      <LayoutItemWrapper
-        id="commandLineWindow"
-        label="Command Input"
-        initialHeight={'100'}
-        initialWidth={'800'}>
-        <CommandLineWindow />
-      </LayoutItemWrapper>
-      <LayoutItemWrapper
-        id="storyWindowWrapper"
-        label="Main Story"
-        initialHeight={'700'}
-        initialWidth={'800'}>
-        <StoryWindow />
-      </LayoutItemWrapper>
-      <LayoutItemWrapper
-        id="clientMapWindow"
-        label="Map"
-        initialHeight={'800'}
-        initialWidth={'400'}>
-        <MapWindow />
-      </LayoutItemWrapper>
-      <LayoutItemWrapper
-        id="inventoryWindow"
-        label="Inventory"
-        initialHeight={'400'}
-        initialWidth={'400'}>
-        <InventoryWindow />
-      </LayoutItemWrapper>
+    <div class="flex-1 overflow-hidden">
+      <div
+        bind:this={canvas}
+        hidden={$view != 'play'}
+        id="container"
+        class="h-full w-full bg-gray-200 relative"
+        on:mouseup={mouseUp}
+        on:mousedown={mouseDown}
+        on:mousemove={mouseMove}>
+        <LayoutItemWrapper
+          id="commandLineWindow"
+          label="Command Input"
+          bind:initialHeight={startingCliHeight}
+          bind:initialWidth={startingCliWidth}
+          bind:initialX={startingCliX}
+          bind:initialY={startingCliY}>
+          <CommandLineWindow />
+        </LayoutItemWrapper>
+        <LayoutItemWrapper
+          id="storyWindowWrapper"
+          label="Main Story"
+          bind:initialHeight={startingStoryHeight}
+          bind:initialWidth={startingStoryWidth}
+          bind:initialX={startingStoryX}
+          bind:initialY={startingStoryY}>
+          <StoryWindow />
+        </LayoutItemWrapper>
+        <LayoutItemWrapper
+          id="clientMapWindow"
+          label="Map"
+          bind:initialHeight={startingMapHeight}
+          bind:initialWidth={startingMapWidth}
+          bind:initialX={startingMapX}
+          bind:initialY={startingMapY}>
+          <MapWindow />
+        </LayoutItemWrapper>
+        <LayoutItemWrapper
+          id="inventoryWindow"
+          label="Inventory"
+          bind:initialHeight={startingInventoryHeight}
+          bind:initialWidth={startingInventoryWidth}
+          bind:initialX={startingInventoryX}
+          bind:initialY={startingInventoryY}>
+          <InventoryWindow />
+        </LayoutItemWrapper>
+      </div>
     </div>
     {#if $view == 'settings'}
       <Settings />
