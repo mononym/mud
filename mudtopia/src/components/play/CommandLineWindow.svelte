@@ -42,9 +42,6 @@
         event.preventDefault();
         // Submit command
         submitPlayerInput();
-      } else if (event.key == "PageUp") {
-        event.preventDefault();
-        showHistoryWindow();
       } else if (event.key == "ArrowUp") {
         event.preventDefault();
 
@@ -131,10 +128,14 @@
 
   function maybeHandleApplicationHotkey(event) {
     const potentialHotkeyString = buildHotkeyStringFromEvent(event);
+
     if (potentialHotkeyString in normalizedCustomHotkeys) {
       event.preventDefault();
 
       const commandString = normalizedCustomHotkeys[potentialHotkeyString];
+
+      $channel.push("cli", { text: commandString });
+      commandHistory.unshift(commandString);
     }
   }
 </script>

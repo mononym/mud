@@ -3,7 +3,7 @@ defmodule Mud.Engine.Event.Client.UpdateCharacter do
 
   typedstruct do
     # add, remove, update
-    field(:action, String.t(), required: true, default: :update)
+    field(:action, String.t(), default: :update)
     # the item being updated
     field(:character, Mud.Engine.Character.t(), required: true)
   end

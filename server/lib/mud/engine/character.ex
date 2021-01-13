@@ -672,9 +672,18 @@ defmodule Mud.Engine.Character do
   @spec update(character :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(character, attrs \\ %{}) do
-    character
-    |> changeset(attrs)
-    |> Repo.update()
+    resp =
+      character
+      |> changeset(attrs)
+      |> Repo.update()
+
+    case resp do
+      {:ok, character} ->
+        {:ok, Repo.preload(character, :settings)}
+
+      error ->
+        error
+    end
   end
 
   def update!(character_id, attrs) when is_binary(character_id) do

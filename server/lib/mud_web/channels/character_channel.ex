@@ -52,10 +52,31 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
-  def handle_cast({:character_output, output}, socket) do
+  def handle_cast({:story_output, output}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:output")
+    Logger.debug("story_output: #{inspect(output)}")
     IO.inspect(output)
     Phoenix.Channel.push(socket, "output:story", %{messages: output})
+
+    {:noreply, socket}
+  end
+
+  def handle_cast({:update_character, character}, socket) do
+    Logger.info("character_channel:#{socket.assigns.character_id}:update")
+    Logger.debug("update_character: #{inspect(character)}")
+    IO.inspect(character)
+
+    Phoenix.Channel.push(socket, "update:character", %{
+      character: Phoenix.View.render_one(character, MudWeb.CharacterView, "character.json")
+    })
+
+    {:noreply, socket}
+  end
+
+  def handle_cast({:update_area, areas}, socket) do
+    Logger.info("character_channel:#{socket.assigns.character_id}:update_area")
+    Logger.debug("update_area: #{inspect(areas)}")
+    Phoenix.Channel.push(socket, "update:area", %{areas: areas})
 
     {:noreply, socket}
   end

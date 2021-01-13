@@ -7,6 +7,22 @@ defmodule Mud.Engine.Area do
   import Ecto.Query
   require Logger
 
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :description,
+             :name,
+             :map_x,
+             :map_y,
+             :map_size,
+             :map_corners,
+             :map_id,
+             :border_width,
+             :border_color,
+             :color,
+             :inserted_at,
+             :updated_at
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
     field(:description, :string)
@@ -222,14 +238,16 @@ defmodule Mud.Engine.Area do
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
-  @spec long_description(area_id :: String.t(), character :: Character.t()) ::
+  @spec long_description_to_story_output(
+          area_id :: String.t() | %__MODULE__{},
+          character :: Character.t()
+        ) ::
           description :: StoryOutput.t()
-  def long_description(area_id, character) do
+  def long_description_to_story_output(area = %__MODULE__{}, character) do
     Logger.debug(
-      "Generating long description for area `#{area_id}` and character `#{character.id}`"
+      "Generating long description for area `#{area.id}` and character `#{character.id}`"
     )
 
-    area = get!(area_id)
     newOutput = Message.new_story_output(character.id)
 
     newOutput
@@ -241,6 +259,15 @@ defmodule Mud.Engine.Area do
     |> maybe_build_denizens(area)
     |> maybe_build_also_present(area, character)
     |> maybe_build_exits(area)
+  end
+
+  def long_description_to_story_output(area_id, character) do
+    Logger.debug(
+      "Generating long description for area `#{area_id}` and character `#{character.id}`"
+    )
+
+    area = get!(area_id)
+    long_description_to_story_output(area, character)
   end
 
   defp build_area_name(story_output, area) do

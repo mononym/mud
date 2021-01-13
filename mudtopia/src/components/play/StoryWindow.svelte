@@ -27,7 +27,9 @@
   $: $storyWindowMessages, scrollMainStoryWindow();
 
   async function scrollMainStoryWindow() {
+    console.log("scrollMainStoryWindow");
     if (currentStoryWindowDiv != undefined) {
+      await tick();
       scrollToBottom(currentStoryWindowDiv);
     }
   }

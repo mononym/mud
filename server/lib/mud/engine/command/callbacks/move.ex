@@ -1,6 +1,6 @@
 defmodule Mud.Engine.Command.Move do
   @moduledoc """
-  The MOVE command moves a Character in a direction. This is usually an exit but can be other things.
+  The MOVE command moves a Character from one area to another. This is usually via a directional exit but can be other things such as doors, gates, bridges, etc...
 
   Syntax:
     - move < exit | direction >
@@ -13,10 +13,11 @@ defmodule Mud.Engine.Command.Move do
   Examples:
     - move south
     - out
-    - move bridge
+    - go bridge
     - move red door
     - move right
-    - south
+    - west
+    - ne
   """
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Area, Link}
@@ -46,16 +47,18 @@ defmodule Mud.Engine.Command.Move do
 
     cond do
       ast.command in ["go", "move"] and is_nil(ast.thing) ->
-        Context.append_output(
+        Context.append_message(
           context,
-          context.character.id,
-          "{{help_docs}}#{Util.get_module_docs(__MODULE__)}{{/help_docs}}",
-          "error"
+          Message.new_story_output(
+            context.character.id,
+            Util.get_module_docs(__MODULE__),
+            "help_docs"
+          )
         )
 
       ast.command not in ["go", "move"] ->
         direction =
-          ast.move
+          ast.command
           |> normalize_direction()
 
         attempt_move_direction(direction, context, 0)
@@ -90,21 +93,6 @@ defmodule Mud.Engine.Command.Move do
     end
   end
 
-  # defp attempt_move(link, context) do
-  #   if link.from_id == context.character.area_id do
-  #     maybe_move(context, link)
-  #   else
-  #     context
-  #     |> Context.append_message(
-  #       Message.new_output(
-  #         context.character_id,
-  #         "{{error}}Unfortunately, your desired direction of travel is no longer possible.{{/error}}"
-  #       )
-  #     )
-  #
-  #   end
-  # end
-
   defp attempt_move_direction(direction, context, which) do
     Logger.debug(inspect({direction, context, which}))
 
@@ -126,29 +114,31 @@ defmodule Mud.Engine.Command.Move do
       _error ->
         Context.append_message(
           context,
-          Message.new_output(
+          Message.new_story_output(
             context.character.id,
             "You cannot travel in that direction.",
-            "error"
+            "system_warning"
           )
         )
     end
   end
 
-  defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-    descriptions = Enum.map(matches, & &1.short_description)
+  # defp handle_multiple_matches(context, matches) when length(matches) < 10 do
+  #   descriptions = Enum.map(matches, & &1.short_description)
 
-    error_msg = "{{warning}}Which exit?{{/warning}}"
+  #   error_msg = "{{warning}}Which exit?{{/warning}}"
 
-    Util.multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
-  end
+  #   Util.multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
+  # end
 
   defp handle_multiple_matches(context, _matches) do
-    error_msg = "Found too many exits. Please be more specific."
-
     Context.append_message(
       context,
-      Message.new_output(context.character.id, error_msg, "error")
+      Message.new_story_output(
+        context.character.id,
+        "Found too many exits. Please be more specific.",
+        "system_warning"
+      )
     )
   end
 
@@ -163,11 +153,13 @@ defmodule Mud.Engine.Command.Move do
     if char.position == Character.standing() do
       move(context, link)
     else
-      error_msg = "You must be standing before you can move."
-
       Context.append_message(
         context,
-        Message.new_output(context.character.id, error_msg, "error")
+        Message.new_story_output(
+          context.character.id,
+          "You must be standing before you can move.",
+          "system_warning"
+        )
       )
     end
   end
@@ -175,6 +167,7 @@ defmodule Mud.Engine.Command.Move do
   defp move(context, link) do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
+    area = Area.get!(link.to_id)
 
     # List all the characters that need to be informed of a move
     characters_by_area =
@@ -186,15 +179,10 @@ defmodule Mud.Engine.Command.Move do
 
     # Perform look logic for character
     context
-    |> Context.append_message(
-      Message.new_output(
-        context.character.id,
-        Area.long_description(link.to_id, context.character)
-      )
-    )
+    |> Context.append_message(Area.long_description_to_story_output(area, context.character))
     # Send messages to everyone in room that the character just left
     |> Context.append_message(
-      Message.new_output(
+      Message.new_story_output(
         characters_by_area[link.from_id] || [],
         "#{character.name} left the area heading #{link.departure_text}.",
         "info"
@@ -202,23 +190,27 @@ defmodule Mud.Engine.Command.Move do
     )
     # Send messages to everyone in room that the character is arriving in
     |> Context.append_message(
-      Message.new_output(
-        characters_by_area[link.to_id] || [],
+      Message.new_story_output(
+        characters_by_area[link.from_id] || [],
         "#{character.name} has entered the area from #{link.arrival_text}.",
         "info"
       )
     )
     |> Context.append_event(
       characters_by_area[link.from_id],
-      UpdateArea.new(:remove, character)
+      UpdateArea.new(:remove_character, character)
     )
     |> Context.append_event(
       characters_by_area[link.to_id],
-      UpdateArea.new(:add, character)
+      UpdateArea.new(:add_character, character)
     )
     |> Context.append_event(
       character.id,
       UpdateCharacter.new(character)
+    )
+    |> Context.append_event(
+      character.id,
+      UpdateArea.new(:update_area, area)
     )
   end
 

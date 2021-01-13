@@ -31,6 +31,19 @@ defmodule Mud.Engine.Message do
     |> story_output()
   end
 
+  @doc """
+  Create a new Text Output message for one or more characters given their id's with a given message and type.
+
+  Text outputs are built up incrementally, allowing for the tagging of arbitrary lengths of text as belonging to a
+  'type' which is then used on the client side to perform real-time color for the text.
+  """
+  def new_story_output(to, text, type) do
+    to
+    |> maybe_transform_to()
+    |> story_output()
+    |> append_text(text, type)
+  end
+
   @spec append_text(Mud.Engine.Message.StoryOutput.t(), String.t(), String.t()) ::
           Mud.Engine.Message.StoryOutput.t()
   def append_text(output = %StoryOutput{}, text, type) do
@@ -40,8 +53,6 @@ defmodule Mud.Engine.Message do
   @spec drop_last_text(Mud.Engine.Message.StoryOutput.t()) ::
           Mud.Engine.Message.StoryOutput.t()
   def drop_last_text(output = %StoryOutput{}) do
-    IO.inspect(output)
-    IO.inspect(%{output | segments: output.segments |> Enum.reverse() |> tl() |> Enum.reverse()})
     %{output | segments: tl(output.segments)}
   end
 

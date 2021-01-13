@@ -12,8 +12,6 @@
   let layoutItemWrapper;
 
   export let locked = true;
-  export let x = "0";
-  export let y = "0";
   export let initialWidth = "400";
   export let initialHeight = "400";
   export let initialX = "0";

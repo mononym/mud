@@ -266,6 +266,19 @@ export function createState() {
       });
     });
 
+    newChannel.on("update:character", async function (msg) {
+      console.log("received an update for character");
+      console.log(msg);
+
+      // double check that this update is for the selected character, as it should be
+      if (get(selectedCharacter).id == msg.character.id) {
+        console.log("character matches as expected");
+        selectedCharacter.set(msg.character);
+      } else {
+        console.log("characters do not match");
+      }
+    });
+
     newChannel.join();
 
     channel.set(newChannel);

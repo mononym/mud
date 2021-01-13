@@ -162,7 +162,7 @@ defmodule Mud.Engine.Session do
       if map_size(state.subscribers) != 0 do
         Map.values(state.subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, event)
+          GenServer.cast(subscriber.pid, convert_event(event))
         end)
 
         state
@@ -183,7 +183,7 @@ defmodule Mud.Engine.Session do
       if map_size(state.subscribers) != 0 do
         Map.values(state.subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, {:character_output, [convert_output(output)]})
+          GenServer.cast(subscriber.pid, {:story_output, [convert_output(output)]})
         end)
 
         state
@@ -194,26 +194,26 @@ defmodule Mud.Engine.Session do
     {:noreply, state}
   end
 
-  def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
-    Logger.debug("#{inspect(output)}", label: "session_handle_cast")
-    Logger.debug("Subscribers: #{inspect(state.subscribers)}")
+  # def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
+  #   Logger.debug("#{inspect(output)}", label: "session_handle_cast")
+  #   Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
-    state = update_buffer(state, output)
+  #   state = update_buffer(state, output)
 
-    state =
-      if map_size(state.subscribers) != 0 do
-        Map.values(state.subscribers)
-        |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, {:character_output, [convert_output(output)]})
-        end)
+  #   state =
+  #     if map_size(state.subscribers) != 0 do
+  #       Map.values(state.subscribers)
+  #       |> Enum.each(fn subscriber ->
+  #         GenServer.cast(subscriber.pid, {:story_output, [convert_output(output)]})
+  #       end)
 
-        state
-      else
-        %{state | undelivered_text: [output | state.undelivered_text]}
-      end
+  #       state
+  #     else
+  #       %{state | undelivered_text: [output | state.undelivered_text]}
+  #     end
 
-    {:noreply, state}
-  end
+  #   {:noreply, state}
+  # end
 
   @impl true
   def handle_cast(%Mud.Engine.Message.Input{} = input, state) do
@@ -299,7 +299,7 @@ defmodule Mud.Engine.Session do
       if length(state.text_buffer) > 0 do
         GenServer.cast(
           subscriber.pid,
-          {:character_output, Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)}
+          {:story_output, Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)}
         )
       end
     end)
@@ -312,8 +312,7 @@ defmodule Mud.Engine.Session do
         |> Enum.each(fn subscriber ->
           GenServer.cast(
             subscriber.pid,
-            {:character_output,
-             Enum.reverse(state.undelivered_text) |> Enum.map(&convert_output/1)}
+            {:story_output, Enum.reverse(state.undelivered_text) |> Enum.map(&convert_output/1)}
           )
         end)
 
@@ -328,8 +327,7 @@ defmodule Mud.Engine.Session do
         |> Enum.each(fn subscriber ->
           GenServer.cast(
             subscriber.pid,
-            {:character_output,
-             Enum.reverse(state.undelivered_events) |> Enum.map(&convert_output/1)}
+            {:story_output, Enum.reverse(state.undelivered_events) |> Enum.map(&convert_event/1)}
           )
         end)
 
@@ -417,6 +415,14 @@ defmodule Mud.Engine.Session do
   # Private functions
   #
   #
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
+    {:update_area, event.things}
+  end
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
+    {:update_character, event.character}
+  end
 
   defp convert_output(output = %Mud.Engine.Message.Output{}) do
     %{type: output.type, text: output.text}
