@@ -51,6 +51,8 @@ export interface CharacterSettingsInterface {
     open_settings: string;
     open_play: string;
     toggle_history_view: string;
+    zoom_map_out: string;
+    zoom_map_in: string;
   };
   customHotkeys: HotkeyInterface[];
 }
@@ -106,6 +108,8 @@ const state: CharacterSettingsInterface = {
     open_settings: "CTRL + SHIFT + KeyS",
     open_play: "CTRL + SHIFT + KeyP",
     toggle_history_view: "CTRL + SHIFT + KeyH",
+    zoom_map_out: "CTRL + SHIFT + Minus",
+    zoom_map_in: "CTRL + SHIFT + Equals",
   },
   customHotkeys: [],
 };

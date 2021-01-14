@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { Circle2 } from "svelte-loading-spinners";
   import Svg from "../Svg.svelte";
 
   // It needs a list of all areas and maps because it needs to extract names
@@ -44,13 +43,9 @@
   export let svgMapAllowIntraMapAreaSelection = false;
   export let svgMapAllowInterMapAreaSelection = false;
 
-  const highlightColor = "#ff6600";
+  export let zoomMultiplier = 1;
 
-  // Zoom stuff
-  let zoomMultipliers = [0.00775, 0.015, 0.03, 0.06, 0.125, 0.25, 0.5];
-  let zoomMultierIndex = 2;
-  $: zoomOutButtonDisabled = zoomMultierIndex == zoomMultipliers.length - 1;
-  $: zoomInButtonDisabled = zoomMultierIndex == 0;
+  const highlightColor = "#ff6600";
 
   // Aspect ratio
   let svgWrapperWidth = 16;
@@ -63,11 +58,11 @@
   $: yCenterPoint = focusOnArea
     ? -areasMap[focusAreaId].mapY * chosenMap.gridSize + chosenMap.viewSize / 2
     : chosenMap.viewSize / 2;
-  $: viewBoxXSize = chosenMap.viewSize * zoomMultipliers[zoomMultierIndex];
+  $: viewBoxXSize = chosenMap.viewSize * zoomMultiplier;
   $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
       (svgWrapperWidth / (svgWrapperHeight - 64)) *
-      zoomMultipliers[zoomMultierIndex],
+      zoomMultiplier,
     0
   );
   $: viewBoxX = xCenterPoint - viewBoxXSize / 2;
@@ -600,16 +595,6 @@
       });
   }
 
-  function zoomIn() {
-    zoomMultierIndex = --zoomMultierIndex;
-    // calculateViewBox();
-  }
-
-  function zoomOut() {
-    zoomMultierIndex = ++zoomMultierIndex;
-    // calculateViewBox();
-  }
-
   function handleSelectArea(event) {
     if (
       (svgMapAllowIntraMapAreaSelection &&
@@ -623,28 +608,27 @@
 </script>
 
 <div
-  bind:clientWidth={svgWrapperWidth}
-  bind:clientHeight={svgWrapperHeight}
-  class="p-1 h-full w-full flex flex-col">
-  <p class="flex-shrink text-gray-300 w-full text-center">{chosenMap.name}</p>
-  <div class="flex-1 overflow-hidden">
-    <Svg
-      {viewBox}
-      shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText, ...existingMapLabels].flat(2)}
-      on:selectArea={handleSelectArea} />
-  </div>
-  <div class="flex">
-    <button
-      on:click={zoomIn}
-      disabled={zoomInButtonDisabled}
-      type="button"
-      class="flex-1 rounded-l-md {zoomInButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {zoomInButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"><i
-        class="fas fa-plus" /></button>
-    <button
-      on:click={zoomOut}
-      disabled={zoomOutButtonDisabled}
-      type="button"
-      class="flex-1 rounded-r-md {zoomOutButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {zoomOutButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}"><i
-        class="fas fa-minus" /></button>
-  </div>
+  bind:offsetWidth={svgWrapperWidth}
+  bind:offsetHeight={svgWrapperHeight}
+  class="h-full w-full flex flex-col"
+>
+  <p class="flex-shrink text-gray-300 w-full text-center overflow-hidden">
+    {chosenMap.name}
+  </p>
+  <Svg
+    {viewBox}
+    shapes={[
+      ...highlightsForExistingIntraMapLinks,
+      ...highlightsForExistingInterMapLinks,
+      ...highlightsForExistingIntraMapAreas,
+      ...existingIntraMapLinks,
+      ...existingInterMapLinks,
+      ...existingIntraMapAreas,
+      ...existingInterMapAreas,
+      ...existingIntraMapLinkText,
+      ...existingInterMapLinkText,
+      ...existingMapLabels,
+    ].flat(2)}
+    on:selectArea={handleSelectArea}
+  />
 </div>

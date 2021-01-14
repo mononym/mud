@@ -10,12 +10,10 @@
   let showDeletePrompt = false;
   let characterForDeleting;
   let deleteMatchString = "";
-  const { resetAllDataToDefault } = State;
 
   import { onMount } from "svelte";
 
   function playCharacter(character) {
-    resetAllDataToDefault();
     push(`#/play/${character.id}`);
   }
 
@@ -51,8 +49,8 @@
     <button
       on:click={createCharacter}
       type="button"
-      class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Create
-      your first character!
+      class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+      >Create your first character!
     </button>
   {:else}
     <div class="w-full h-full grid grid-flow-row grid-cols-3 grid-rows-3 gap-4">
@@ -63,13 +61,15 @@
           <img
             src="https://d148p4q18vviek.cloudfront.net/{character.race}.jpg"
             alt={character.name}
-            style="height:200px;width:200px;object-fit:cover" />
+            style="height:200px;width:200px;object-fit:cover"
+          />
           <p class="text-center text-white">{character.name}</p>
 
           <button
             on:click={playCharacter(character)}
             type="button"
-            class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Play
+            class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+            >Play
           </button>
           <button
             on:click|stopPropagation={promptForDeleteCharacter(character)}
@@ -86,5 +86,6 @@
   <ConfirmWithInput
     bind:show={showDeletePrompt}
     callback={deleteCallback}
-    matchString={deleteMatchString} />
+    matchString={deleteMatchString}
+  />
 </div>

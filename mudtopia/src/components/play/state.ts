@@ -197,12 +197,74 @@ export function createState() {
   const knownMapsList = writable([]);
   const knownMapsIndex = writable({});
 
+  const mapZoomMultipliers = writable([
+    0.00775,
+    0.015,
+    0.03,
+    0.06,
+    0.125,
+    0.25, // 4x size
+    0.5, // double size
+    1,
+    2, // half size
+    4, // quarter
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+  ]);
+  const mapZoomMultiplierIndex = writable(7);
+
+  const mapAtMaxZoom = writable(false);
+  const mapAtMinZoom = writable(false);
+
+  async function zoomMapOut() {
+    if (get(mapZoomMultiplierIndex) < get(mapZoomMultipliers).length - 1) {
+      mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) + 1);
+      console.log(get(mapZoomMultiplierIndex));
+
+      let areaId = get(selectedCharacter).areaId;
+      let area = get(knownAreasForCharacterMapIndex)[areaId];
+      let map = get(knownMapsIndex)[area.mapId];
+      console.log(map);
+      if (map.maximumZoomIndex == get(mapZoomMultiplierIndex)) {
+        mapAtMaxZoom.set(true);
+      } else {
+        mapAtMinZoom.set(false);
+      }
+    }
+  }
+
+  async function zoomMapIn() {
+    if (get(mapZoomMultiplierIndex) > 0) {
+      mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) - 1);
+      console.log(get(mapZoomMultiplierIndex));
+
+      let areaId = get(selectedCharacter).areaId;
+      let area = get(knownAreasForCharacterMapIndex)[areaId];
+      let map = get(knownMapsIndex)[area.mapId];
+      console.log(map);
+      if (map.minimumZoomIndex == get(mapZoomMultiplierIndex)) {
+        mapAtMinZoom.set(true);
+      } else {
+        mapAtMaxZoom.set(false);
+      }
+    }
+  }
+
   // Characters only know about areas they have visited, or those marked as automatically known, and this is that list
   // of areas for the map the player is currently present in
   const knownAreasForCharacterMap = writable(<AreaInterface[]>[]);
-  const knownAreasForCharacterMapIndex = writable(<AreaInterface[]>[]);
+  const knownAreasForCharacterMapIndex = writable(
+    <Record<string, AreaInterface>>{}
+  );
   const knownLinksForCharacterMap = writable(<LinkInterface[]>[]);
-  const knownLinksForCharacterIndex = writable(<LinkInterface[]>[]);
+  const knownLinksForCharacterIndex = writable(
+    <Record<string, LinkInterface>>{}
+  );
 
   //
   // Connection Stuff
@@ -382,39 +444,7 @@ export function createState() {
     storyWindowView.set("current");
   }
 
-  async function resetAllDataToDefault() {
-    await selectPlayView();
-    await settingsView.set("colors");
-    await resetCharacterSettings();
-    await characterInitialized.set(false);
-    await characterInitializing.set(false);
-    await selectedCharacter.set({ ...CharacterState });
-    await itemInLeftHand.set({ ...ItemState });
-    await leftHandHasItem.set(false);
-    await itemInRightHand.set({ ...ItemState });
-    await rightHandHasItem.set(false);
-    await wornItems.set([]);
-    await allInventoryItemsIndex.set({});
-    await inventoryItemsParentChildIndex.set({});
-    await wornItems.set([]);
-    await knownMapsList.set([]);
-    await knownMapsIndex.set({});
-    await knownAreasForCharacterMap.set([]);
-    await knownAreasForCharacterMapIndex.set([]);
-    await knownLinksForCharacterMap.set([]);
-    await knownLinksForCharacterIndex.set([]);
-    await initializingGameSession.set(false);
-    await gameSessionInitialized.set(false);
-    await channel.set({});
-    await endingGameSession.set(false);
-    await storyWindowView.set("current");
-    await storyWindowMessages.set([]);
-    await historyWindowMessageBuffer.set([]);
-    await historyWindowMessages.set([]);
-  }
-
   return {
-    resetAllDataToDefault,
     //
     // Overall UI stuff, such as whether to show the play view or the other views
     //
@@ -439,6 +469,12 @@ export function createState() {
     knownAreasForCharacterMapIndex,
     knownLinksForCharacterMap,
     knownLinksForCharacterIndex,
+    mapZoomMultipliers,
+    mapZoomMultiplierIndex,
+    mapAtMinZoom,
+    mapAtMaxZoom,
+    zoomMapIn,
+    zoomMapOut,
     //
     // Character Stuff
     //

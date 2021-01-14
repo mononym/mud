@@ -1,4 +1,4 @@
-import type {MapLabelInterface} from './mapLabel'
+import type { MapLabelInterface } from "./mapLabel";
 
 export interface MapInterface {
   id: string;
@@ -7,15 +7,19 @@ export interface MapInterface {
   viewSize: number;
   gridSize: number;
   labels: MapLabelInterface[];
+  minimumZoomIndex: number;
+  maximumZoomIndex: number;
 }
 
 const state: MapInterface = {
-  id: '',
-  description: '',
-  name: '',
+  id: "",
+  description: "",
+  name: "",
   viewSize: 5000,
   gridSize: 10,
-  labels: []
+  labels: [],
+  minimumZoomIndex: 5,
+  maximumZoomIndex: 11,
 };
 
 export default state;

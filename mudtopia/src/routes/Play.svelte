@@ -46,6 +46,8 @@
     open_play: () => state.selectPlayView(),
     open_settings: () => state.selectSettingsView(),
     toggle_history_view: () => state.toggleHistoryWindow(),
+    zoom_map_out: () => state.zoom_map_out(),
+    zoom_map_in: () => state.zoom_map_in(),
   };
 
   function generatePresetHotkeyCallbacks() {
@@ -252,57 +254,62 @@
       <Circle2 />
       <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
         Initializing
-        {$selectedCharacter.name == '' ? 'Character' : $selectedCharacter.name}
+        {$selectedCharacter.name == "" ? "Character" : $selectedCharacter.name}
       </h2>
     </div>
   {:else if $characterInitialized}
     <MainTabBar />
-      <div
-        bind:this={canvas}
-        hidden={$view != 'play'}
-        id="container"
-        class="flex-1 bg-gray-200 relative"
-        on:mouseup={mouseUp}
-        on:mousedown={mouseDown}
-        on:mousemove={mouseMove}>
-        <LayoutItemWrapper
-          id="commandLineWindow"
-          label="Command Input"
-          bind:initialHeight={startingCliHeight}
-          bind:initialWidth={startingCliWidth}
-          bind:initialX={startingCliX}
-          bind:initialY={startingCliY}>
-          <CommandLineWindow />
-        </LayoutItemWrapper>
-        <LayoutItemWrapper
-          id="storyWindowWrapper"
-          label="Main Story"
-          bind:initialHeight={startingStoryHeight}
-          bind:initialWidth={startingStoryWidth}
-          bind:initialX={startingStoryX}
-          bind:initialY={startingStoryY}>
-          <StoryWindow />
-        </LayoutItemWrapper>
-        <LayoutItemWrapper
-          id="clientMapWindow"
-          label="Map"
-          bind:initialHeight={startingMapHeight}
-          bind:initialWidth={startingMapWidth}
-          bind:initialX={startingMapX}
-          bind:initialY={startingMapY}>
-          <MapWindow />
-        </LayoutItemWrapper>
-        <LayoutItemWrapper
-          id="inventoryWindow"
-          label="Inventory"
-          bind:initialHeight={startingInventoryHeight}
-          bind:initialWidth={startingInventoryWidth}
-          bind:initialX={startingInventoryX}
-          bind:initialY={startingInventoryY}>
-          <InventoryWindow />
-        </LayoutItemWrapper>
-      </div>
-    {#if $view == 'settings'}
+    <div
+      bind:this={canvas}
+      hidden={$view != "play"}
+      id="container"
+      class="flex-1 bg-gray-200 relative"
+      on:mouseup={mouseUp}
+      on:mousedown={mouseDown}
+      on:mousemove={mouseMove}
+    >
+      <LayoutItemWrapper
+        id="commandLineWindow"
+        label="Command Input"
+        bind:initialHeight={startingCliHeight}
+        bind:initialWidth={startingCliWidth}
+        bind:initialX={startingCliX}
+        bind:initialY={startingCliY}
+      >
+        <CommandLineWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="storyWindowWrapper"
+        label="Main Story"
+        bind:initialHeight={startingStoryHeight}
+        bind:initialWidth={startingStoryWidth}
+        bind:initialX={startingStoryX}
+        bind:initialY={startingStoryY}
+      >
+        <StoryWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="clientMapWindow"
+        label="Map"
+        bind:initialHeight={startingMapHeight}
+        bind:initialWidth={startingMapWidth}
+        bind:initialX={startingMapX}
+        bind:initialY={startingMapY}
+      >
+        <MapWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="inventoryWindow"
+        label="Inventory"
+        bind:initialHeight={startingInventoryHeight}
+        bind:initialWidth={startingInventoryWidth}
+        bind:initialX={startingInventoryX}
+        bind:initialY={startingInventoryY}
+      >
+        <InventoryWindow />
+      </LayoutItemWrapper>
+    </div>
+    {#if $view == "settings"}
       <Settings />
     {/if}
   {/if}

@@ -13,13 +13,9 @@
   }
 </script>
 
-<svg
-  class="h-full w-full"
-  transition="1s ease-in-out"
-  {viewBox}
-  {preserveAspectRatio}>
+<svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
   {#each shapes as shape}
-    {#if shape.type == 'path'}
+    {#if shape.type == "path"}
       {#if shape.hasMarker}
         <defs>
           <marker
@@ -32,8 +28,10 @@
             <!-- <path d="M2,2 L2,13 L8,7 L2,2" style="fill: {shape.markerColor};" /> -->
             <!-- <polygon points="10 0, 10 7, 0 3.5" fill={shape.markerColor} /> -->
             <polygon
-              points="0 0, {shape.lineWidth * 2} {shape.lineWidth}, 0 {shape.lineWidth * 2}"
-              fill={shape.markerColor} />
+              points="0 0, {shape.lineWidth *
+                2} {shape.lineWidth}, 0 {shape.lineWidth * 2}"
+              fill={shape.markerColor}
+            />
           </marker>
         </defs>
       {/if}
@@ -43,17 +41,18 @@
         stroke={shape.lineColor}
         stroke-dasharray={shape.lineDash}
         stroke-width={shape.lineWidth}
-        marker-end={shape.hasMarker ? `url(#markerArrow-${shape.id})` : ''} />
-      {#if shape.label != undefined && shape.label != ''}
+        marker-end={shape.hasMarker ? `url(#markerArrow-${shape.id})` : ""}
+      />
+      {#if shape.label != undefined && shape.label != ""}
         <text
           fill={shape.labelColor}
           text-anchor="middle"
           x={shape.labelX}
           y={shape.labelY}
           dominant-baseline="central"
-          font-family={shape.labelFontFamily || 'fantasy, sans-sarif'}
-          font-weight={shape.labelFontWeight || 'normal'}
-          font-style={shape.labelFontFamily || 'normal'}
+          font-family={shape.labelFontFamily || "fantasy, sans-sarif"}
+          font-weight={shape.labelFontWeight || "normal"}
+          font-style={shape.labelFontFamily || "normal"}
           font-size={shape.labelFontSize}
           transform={shape.labelTransform}>
           {#each shape.label as label, i}
@@ -66,7 +65,7 @@
           {/each}
         </text>
       {/if}
-    {:else if shape.type == 'rect'}
+    {:else if shape.type == "rect"}
       <rect
         on:click={selectArea(shape.area)}
         x={shape.x}
@@ -81,7 +80,7 @@
         id={shape.area.id}>
         <title>{shape.name}</title>
       </rect>
-    {:else if shape.type == 'text'}
+    {:else if shape.type == "text"}
       <text
         fill={shape.labelColor}
         text-anchor="middle"
@@ -89,9 +88,9 @@
         y={shape.labelY}
         dominant-baseline="central"
         font-size={shape.labelFontSize}
-        font-family={shape.labelFontFamily || 'fantasy, sans-sarif'}
-        font-weight={shape.labelFontWeight || 'normal'}
-        font-style={shape.labelFontFamily || 'normal'}
+        font-family={shape.labelFontFamily || "fantasy, sans-sarif"}
+        font-weight={shape.labelFontWeight || "normal"}
+        font-style={shape.labelFontFamily || "normal"}
         transform={shape.labelTransform}>
         {#each shape.label as label, i}
           <tspan
