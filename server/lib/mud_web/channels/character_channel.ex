@@ -6,7 +6,7 @@ defmodule MudWeb.CharacterChannel do
   require Logger
 
   def join("character:" <> character_id, _message, socket) do
-    # TODO: security check her
+    # TODO: security check here
     # if character.player_id === conn.assigns.player.id do
     Engine.start_character_session(character_id)
     Engine.Session.subscribe(character_id)
@@ -55,7 +55,7 @@ defmodule MudWeb.CharacterChannel do
   def handle_cast({:story_output, output}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:output")
     Logger.debug("story_output: #{inspect(output)}")
-    IO.inspect(output)
+
     Phoenix.Channel.push(socket, "output:story", %{messages: output})
 
     {:noreply, socket}
@@ -64,7 +64,6 @@ defmodule MudWeb.CharacterChannel do
   def handle_cast({:update_character, character}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:update")
     Logger.debug("update_character: #{inspect(character)}")
-    IO.inspect(character)
 
     Phoenix.Channel.push(socket, "update:character", %{
       character: Phoenix.View.render_one(character, MudWeb.CharacterView, "character.json")
@@ -73,10 +72,11 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
-  def handle_cast({:update_area, areas}, socket) do
+  def handle_cast({:update_area, updated_data}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:update_area")
-    Logger.debug("update_area: #{inspect(areas)}")
-    Phoenix.Channel.push(socket, "update:area", %{areas: areas})
+    Logger.debug("update_area: #{inspect(updated_data)}")
+
+    Phoenix.Channel.push(socket, "update:area", updated_data)
 
     {:noreply, socket}
   end

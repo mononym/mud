@@ -133,23 +133,24 @@ defmodule Mud.Engine.Session do
   @doc false
   @impl true
   def init(args) do
-    IO.inspect(args, label: "Mud.Engine.Session.init/1")
+    # IO.inspect(args, label: "Mud.Engine.Session.init/1")
     # Load or initialize character session state
     state = load_character_session_data(args.character_id)
-    IO.inspect(state, label: "Mud.Engine.Session.init/1")
+    # IO.inspect(state, label: "Mud.Engine.Session.init/1")
 
     # Set character to active
     state.character_id
     |> Mud.Engine.Character.get_by_id!()
-    |> IO.inspect()
+    # |> IO.inspect()
     |> Mud.Engine.Character.update(%{active: true})
-    |> IO.inspect(label: "update")
 
-    IO.inspect("update", label: "Mud.Engine.Session.init/1")
+    # |> IO.inspect(label: "update")
+
+    # IO.inspect("update", label: "Mud.Engine.Session.init/1")
 
     # Start inactivity timer
     state = update_timeout(state, @character_inactivity_timeout_warning)
-    IO.inspect("ok", label: "Mud.Engine.Session.init/1")
+    # IO.inspect("ok", label: "Mud.Engine.Session.init/1")
 
     {:ok, state}
   end
@@ -417,7 +418,8 @@ defmodule Mud.Engine.Session do
   #
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
-    {:update_area, event.things}
+    {:update_area,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_area.json", as: :event)}
   end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do

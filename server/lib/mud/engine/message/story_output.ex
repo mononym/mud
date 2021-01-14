@@ -14,7 +14,7 @@ defmodule Mud.Engine.Message.StoryOutput do
     @derive Jason.Encoder
     typedstruct do
       field(:text, String.t(), required: true)
-      field(:type, String.t(), required: false, default: "text")
+      field(:type, String.t(), required: false, default: "base")
     end
   end
 end

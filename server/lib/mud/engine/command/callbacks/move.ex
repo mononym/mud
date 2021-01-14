@@ -20,7 +20,7 @@ defmodule Mud.Engine.Command.Move do
     - ne
   """
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Area, Link}
+  alias Mud.Engine.{Character, Area, Link, Item}
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
   alias Mud.Engine.Search
   alias Mud.Engine.Util
@@ -169,6 +169,8 @@ defmodule Mud.Engine.Command.Move do
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
 
+    items_in_area = Item.list_in_area(area.id)
+
     # List all the characters that need to be informed of a move
     characters_by_area =
       Character.list_others_active_in_areas(character.id, [link.to_id, link.from_id])
@@ -176,6 +178,9 @@ defmodule Mud.Engine.Command.Move do
       |> Enum.group_by(fn char ->
         char.area_id
       end)
+
+    # Grab minimum info necessary to display other characters in area. Do not expose 'private' character info like stats and settings
+    others_in_new_area = characters_by_area[link.to_id] || []
 
     # Perform look logic for character
     context
@@ -198,11 +203,17 @@ defmodule Mud.Engine.Command.Move do
     )
     |> Context.append_event(
       characters_by_area[link.from_id],
-      UpdateArea.new(:remove_character, character)
+      UpdateArea.new(%{
+        action: :remove,
+        other_characters: [character]
+      })
     )
     |> Context.append_event(
       characters_by_area[link.to_id],
-      UpdateArea.new(:add_character, character)
+      UpdateArea.new(%{
+        action: :add,
+        other_characters: [character]
+      })
     )
     |> Context.append_event(
       character.id,
@@ -210,8 +221,19 @@ defmodule Mud.Engine.Command.Move do
     )
     |> Context.append_event(
       character.id,
-      UpdateArea.new(:update_area, area)
+      UpdateArea.new(%{
+        action: :replace,
+        area: area,
+        other_characters: others_in_new_area,
+        on_ground: items_in_area
+      })
     )
+
+    # area
+    # other characters
+    # items on ground
+    # denizens
+    # scenery/TOI
   end
 
   defp normalize_direction(direction) do

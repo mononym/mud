@@ -279,6 +279,19 @@ export function createState() {
       }
     });
 
+    newChannel.on("update:area", async function (msg) {
+      console.log("received an update for area");
+      console.log(msg);
+
+      // double check that this update is for the selected character, as it should be
+      // if (get(selectedCharacter).id == msg.character.id) {
+      //   console.log("character matches as expected");
+      //   selectedCharacter.set(msg.character);
+      // } else {
+      //   console.log("characters do not match");
+      // }
+    });
+
     newChannel.join();
 
     channel.set(newChannel);
@@ -299,6 +312,15 @@ export function createState() {
       endingGameSession.set(false);
     }
   }
+
+  //
+  // Area Window stuff
+  //
+  const otherCharactersInArea = writable([]);
+  const onGroundInArea = writable([]);
+  const exitsInArea = writable([]);
+  const denizensInArea = writable([]);
+  const toiInArea = writable([]);
 
   //
   // Story/History Window stuff
