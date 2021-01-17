@@ -66,6 +66,8 @@ defmodule Mud.Engine.Character.Settings do
       field(:open_play, :string, default: "CTRL + SHIFT + KeyP")
       field(:open_settings, :string, default: "CTRL + SHIFT + KeyS")
       field(:toggle_history_view, :string, default: "CTRL + SHIFT + KeyH")
+      field(:zoom_map_out, :string, default: "CTRL + SHIFT + Minus")
+      field(:zoom_map_in, :string, default: "CTRL + SHIFT + Equals")
     end
 
     embeds_many :custom_hotkeys, Hotkey, on_replace: :delete do
@@ -151,7 +153,9 @@ defmodule Mud.Engine.Character.Settings do
       :id,
       :open_play,
       :open_settings,
-      :toggle_history_view
+      :toggle_history_view,
+      :zoom_map_out,
+      :zoom_map_in
     ])
     |> validate_required([])
   end
@@ -231,7 +235,9 @@ defmodule Mud.Engine.Character.Settings do
     default_preset_hotkeys = %{
       open_settings: "CTRL + SHIFT + KeyS",
       open_play: "CTRL + SHIFT + KeyP",
-      toggle_history_view: "CTRL + SHIFT + KeyH"
+      toggle_history_view: "CTRL + SHIFT + KeyH",
+      zoom_map_out: "CTRL + SHIFT + Minus",
+      zoom_map_in: "CTRL + SHIFT + Equal"
     }
 
     attrs =

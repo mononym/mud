@@ -12,8 +12,10 @@ defmodule Mud.Engine.Map do
     @derive Jason.Encoder
     field(:description, :string)
     field(:name, :string)
-    field(:view_size, :integer, default: 5000)
+    field(:view_size, :integer, default: 250)
     field(:grid_size, :integer, default: 50)
+    field(:minimum_zoom_index, :integer, default: 5)
+    field(:maximum_zoom_index, :integer, default: 11)
 
     embeds_many :labels, Label, on_replace: :delete do
       @derive Jason.Encoder
@@ -206,13 +208,17 @@ defmodule Mud.Engine.Map do
       :name,
       :description,
       :view_size,
-      :grid_size
+      :grid_size,
+      :maximum_zoom_index,
+      :minimum_zoom_index
     ])
     |> validate_required([
       :name,
       :description,
       :view_size,
-      :grid_size
+      :grid_size,
+      :maximum_zoom_index,
+      :minimum_zoom_index
     ])
     |> cast_embed(:labels, with: &labels_changeset/2)
   end

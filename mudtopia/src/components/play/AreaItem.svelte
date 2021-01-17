@@ -40,36 +40,26 @@
   }
 </script>
 
-<div class="flex flex-col select-none" bind:this={wrapperDiv}>
+<div class="flex-shrink flex flex-col" bind:this={wrapperDiv}>
   <div
     class="cursor-pointer"
     style="color:{getItemColor(item)}"
     bind:this={itemDiv}
-    on:contextmenu={dispatchContextMenuEvent}
-  >
-    {#if item.isContainer && item.containerOpen}
+    on:contextmenu={dispatchContextMenuEvent}>
+    {#if item.isContainer}
       <i
         class="text-white fas fa-plus"
-        on:click|preventDefault={toggleContainerExpanded}
-      />
-    {:else if item.isContainer && !item.containerOpen}
-      <i
-        class="text-white fas fa-minus"
-        on:click|preventDefault={toggleContainerExpanded}
-      />
+        on:click|preventDefault={toggleContainerExpanded} />&nbsp;
     {/if}
-    &nbsp;&nbsp;
     <i class={item.icon} on:click|preventDefault={toggleItemExpanded} />
-    &nbsp;&nbsp;
     <pre
       on:click|preventDefault={toggleItemExpanded}
-      class="inline">{item.shortDescription}</pre>
+      class="inline">{` ${item.shortDescription}`}</pre>
     {#if itemExpanded}
-      <div class="pl-{item.isContainer ? '14' : '10'}">
+      <div class="pl-{item.isContainer ? '12' : '8'}">
         <pre
           class="whitespace-pre-wrap"
-          style="color:{$selectedCharacter.settings.colors
-            .base}">{item.longDescription}</pre>
+          style="color:{$selectedCharacter.settings.colors.base}">{item.longDescription}</pre>
       </div>
     {/if}
   </div>

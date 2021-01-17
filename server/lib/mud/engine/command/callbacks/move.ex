@@ -169,7 +169,16 @@ defmodule Mud.Engine.Command.Move do
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
 
-    items_in_area = Item.list_in_area(area.id)
+    items_are_scenery =
+      Item.list_in_area(area.id)
+      |> Enum.group_by(fn area ->
+        area.is_scenery
+      end)
+
+    IO.inspect(items_are_scenery, label: "items_are_scenery")
+
+    scenery = items_are_scenery[true]
+    items_in_area = items_are_scenery[false]
 
     # List all the characters that need to be informed of a move
     characters_by_area =
@@ -225,7 +234,8 @@ defmodule Mud.Engine.Command.Move do
         action: :replace,
         area: area,
         other_characters: others_in_new_area,
-        on_ground: items_in_area
+        on_ground: items_in_area || [],
+        toi: scenery || []
       })
     )
 

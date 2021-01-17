@@ -17,38 +17,8 @@ defmodule MudWeb.CharacterView do
   end
 
   def render("character.json", %{character: character}) do
-    # %{
-    #   id: character.id,
-    #   agility: character.agility,
-    #   charisma: character.charisma,
-    #   constitution: character.constitution,
-    #   dexterity: character.dexterity,
-    #   intelligence: character.intelligence,
-    #   reflexes: character.reflexes,
-    #   slug: character.slug,
-    #   stamina: character.stamina,
-    #   strength: character.strength,
-    #   wisdom: character.wisdom,
-    #   age: character.age,
-    #   eyeColor: character.eye_color,
-    #   eyeColorType: character.eye_color_type,
-    #   eyeAccentColor: character.eye_accent_color,
-    #   hairColor: character.hair_color,
-    #   hairLength: character.hair_length,
-    #   hairStyle: character.hair_style,
-    #   race: character.race,
-    #   skinTone: character.skin_tone,
-    #   height: character.height,
-    #   handedness: character.handedness,
-    #   position: character.position,
-    #   genderPronoun: character.gender_pronoun
-    # }
-
-    # IO.inspect(character)
-
     character
     |> Map.from_struct()
-    |> IO.inspect()
     |> Map.delete(:area)
     |> Map.delete(:player)
     |> Map.delete(:skills)
@@ -66,6 +36,5 @@ defmodule MudWeb.CharacterView do
       )
     )
     |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
-    |> IO.inspect(label: "settings being returned")
   end
 end

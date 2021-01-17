@@ -84,7 +84,8 @@
   }
 
   async function toggleHistoryView() {
-    await toggleHistoryWindow();
+    console.log("toggleHistoryView");
+    toggleHistoryWindow();
   }
 
   $: historyStoryWindowDiv, scrollWindows();
@@ -100,17 +101,24 @@
 </script>
 
 <div class="h-full w-full flex flex-col relative">
-  {#if $storyWindowView == 'history'}
+  {#if $storyWindowView == "history"}
     <i
       on:click={toggleHistoryView}
       class="mt-2 mr-8 absolute fas fa-eye-slash cursor-pointer"
-      style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
+      style="right:0;color:{$selectedCharacter.settings.colors
+        .story_history_icon}"
+    />
     <div
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
       class="flex flex-col overflow-y-scroll border-b-2 pl-2"
-      style="height:{$storyWindowView == 'history' ? '50%' : '100%'};background-color:{$selectedCharacter.settings.colors.story_background};border-color:{$selectedCharacter.settings.colors.story_history_border}">
+      style="height:{$storyWindowView == 'history'
+        ? '50%'
+        : '100%'};background-color:{$selectedCharacter.settings.colors
+        .story_background};border-color:{$selectedCharacter.settings.colors
+        .story_history_border}"
+    >
       {#each $historyWindowMessages as message}
         <pre>
         {#each message.segments as segment}
@@ -124,14 +132,20 @@
     <i
       on:click={toggleHistoryView}
       class="mt-2 mr-2 absolute fas fa-eye cursor-pointer"
-      style="right:0;color:{$selectedCharacter.settings.colors.story_history_icon}" />
+      style="right:0;color:{$selectedCharacter.settings.colors
+        .story_history_icon}"
+    />
   {/if}
   <!-- <div class="flex-1 overflow-hidden"> -->
   <div
     bind:this={currentStoryWindowDiv}
     id="StoryWindowCurrentView"
-    class="flex flex-col overflow-hidden ml-2 mb-2 mr-2"
-    style="height:{$storyWindowView == 'history' ? '50%' : '100%'};width:calc(100% + 15px);background-color:{$selectedCharacter.settings.colors.story_background}">
+    class="flex flex-col overflow-hidden w-full p-4"
+    style="height:{$storyWindowView == 'history'
+      ? '50%'
+      : '100%'};background-color:{$selectedCharacter.settings.colors
+      .story_background}"
+  >
     {#each $storyWindowMessages as message}
       <pre
         class="whitespace-pre-wrap">

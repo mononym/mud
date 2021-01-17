@@ -11,6 +11,7 @@
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";
   import MapWindow from "../components/play/MapWindow.svelte";
   import InventoryWindow from "../components/play/InventoryWindow.svelte";
+  import AreaWindow from "../components/play/AreaWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -199,20 +200,25 @@
   let startingCliX;
   let startingCliY;
 
+  let startingAreaWidth;
+  let startingAreaHeight;
+  let startingAreaX;
+  let startingAreaY;
+
   onMount(async () => {
     console.log(wrapper.offsetHeight);
     console.log(wrapper.offsetWidth);
     console.log(wrapper.clientHeight);
     console.log(wrapper.clientWidth);
 
-    startingMapWidth = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
       (wrapper.offsetHeight - 64) * 0.5
     ).toString();
     startingMapX = "0";
     startingMapY = "0";
 
-    startingInventoryWidth = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingInventoryWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingInventoryHeight = Math.floor(
       (wrapper.offsetHeight - 64) * 0.5
     ).toString();
@@ -221,15 +227,20 @@
       (wrapper.offsetHeight - 64) * 0.5
     ).toString();
 
-    startingStoryWidth = Math.floor(wrapper.offsetWidth * 0.67).toString();
+    startingStoryWidth = Math.floor(wrapper.offsetWidth * 0.4).toString();
     startingStoryHeight = Math.floor(wrapper.offsetHeight - 144).toString();
-    startingStoryX = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingStoryX = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingStoryY = "0";
 
-    startingCliWidth = Math.floor(wrapper.offsetWidth * 0.67).toString();
+    startingCliWidth = Math.floor(wrapper.offsetWidth * 0.4).toString();
     startingCliHeight = Math.floor(80).toString();
-    startingCliX = Math.floor(wrapper.offsetWidth * 0.33).toString();
+    startingCliX = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingCliY = Math.floor(wrapper.offsetHeight - 144).toString();
+
+    startingAreaWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
+    startingAreaHeight = wrapper.offsetHeight - 64;
+    startingAreaX = Math.floor(wrapper.offsetWidth * 0.7).toString();
+    startingAreaY = "0";
 
     const character = $characters.filter(
       (character) => character.id == params.characterId
@@ -307,6 +318,16 @@
         bind:initialY={startingInventoryY}
       >
         <InventoryWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="areaWindow"
+        label="Area"
+        bind:initialHeight={startingAreaHeight}
+        bind:initialWidth={startingAreaWidth}
+        bind:initialX={startingAreaX}
+        bind:initialY={startingAreaY}
+      >
+        <AreaWindow />
       </LayoutItemWrapper>
     </div>
     {#if $view == "settings"}

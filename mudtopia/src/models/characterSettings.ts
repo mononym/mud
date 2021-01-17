@@ -17,6 +17,7 @@ export interface CharacterSettingsInterface {
     toi_label: string;
     exit_label: string;
     character_label: string;
+    on_ground_label: string;
     base: string;
     // Item Types
     furniture: string;
@@ -74,6 +75,7 @@ const state: CharacterSettingsInterface = {
     toi_label: "#ffffff",
     exit_label: "#ffffff",
     character_label: "#ffffff",
+    on_ground_label: "#ffffff",
     base: "#ffffff",
     // Item Types
     furniture: "#ffffff",

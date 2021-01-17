@@ -14,6 +14,7 @@ import CharacterSettingsState, {
 } from "../../models/characterSettings";
 import { Socket } from "phoenix";
 import type { AreaInterface } from "../../models/area";
+import AreaState from "../../models/area";
 import type { LinkInterface } from "../../models/link";
 
 export const key = {};
@@ -345,13 +346,10 @@ export function createState() {
       console.log("received an update for area");
       console.log(msg);
 
-      // double check that this update is for the selected character, as it should be
-      // if (get(selectedCharacter).id == msg.character.id) {
-      //   console.log("character matches as expected");
-      //   selectedCharacter.set(msg.character);
-      // } else {
-      //   console.log("characters do not match");
-      // }
+      currentArea.set(msg.area);
+      otherCharactersInArea.set(msg.otherCharacters);
+      onGroundInArea.set(msg.onGround);
+      toiInArea.set(msg.toi);
     });
 
     newChannel.join();
@@ -383,6 +381,7 @@ export function createState() {
   const exitsInArea = writable([]);
   const denizensInArea = writable([]);
   const toiInArea = writable([]);
+  const currentArea = writable({ ...AreaState });
 
   //
   // Story/History Window stuff
@@ -393,6 +392,8 @@ export function createState() {
   const historyWindowMessageBuffer = writable([]);
   const historyWindowMessages = writable([]);
   const maxHistoryWindowMessagesCount = writable(10000);
+  const echoCommands = writable(true);
+  const echoInterface = writable(true);
 
   async function flushHistoryMessageBuffer() {
     await historyWindowMessages.update(function (buffer) {
@@ -401,7 +402,7 @@ export function createState() {
       );
     });
 
-    await historyWindowMessageBuffer.set([]);
+    historyWindowMessageBuffer.set([]);
   }
 
   async function appendNewStoryMessage(newMessage) {
@@ -432,10 +433,11 @@ export function createState() {
   }
 
   async function toggleHistoryWindow() {
+    console.log(get(storyWindowView));
     if (get(storyWindowView) == "history") {
       await storyWindowView.set("current");
     } else {
-      await flushHistoryMessageBuffer();
+      flushHistoryMessageBuffer();
       await storyWindowView.set("history");
     }
   }
@@ -444,6 +446,12 @@ export function createState() {
     storyWindowView.set("current");
   }
 
+  // async function maybeEchoCommand(text, isInterface) {
+  //   if (get(echoCommands) && isInterface && get(echoInterface)) {
+  //     appendNewStoryMessage({...Mess})
+  //   }
+  // }
+
   return {
     //
     // Overall UI stuff, such as whether to show the play view or the other views
@@ -451,6 +459,15 @@ export function createState() {
     view,
     selectSettingsView,
     selectPlayView,
+    //
+    // Area Stuff
+    //
+    otherCharactersInArea,
+    onGroundInArea,
+    exitsInArea,
+    denizensInArea,
+    toiInArea,
+    currentArea,
     //
     // Settings stuff
     //
@@ -510,6 +527,8 @@ export function createState() {
     historyWindowMessageBuffer,
     historyWindowMessages,
     maxHistoryWindowMessagesCount,
+    echoCommands,
+    echoInterface,
   };
 }
 

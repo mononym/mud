@@ -6,6 +6,10 @@ defmodule Mud.Engine.Session do
   alias Mud.Engine.CharacterSessionData
   alias Mud.Engine.Event
   alias Mud.Engine.Message
+  alias Mud.Engine.Area
+  alias Mud.Engine.Character
+  alias Mud.Engine.Item
+  alias Mud.Engine.Event.Client.UpdateArea
 
   @character_context_buffer_trim_size Application.get_env(
                                         :mud,
@@ -328,6 +332,7 @@ defmodule Mud.Engine.Session do
         |> Enum.each(fn subscriber ->
           GenServer.cast(
             subscriber.pid,
+            # TODO: fix this, the event is wrong
             {:story_output, Enum.reverse(state.undelivered_events) |> Enum.map(&convert_event/1)}
           )
         end)
@@ -336,6 +341,38 @@ defmodule Mud.Engine.Session do
       else
         state
       end
+
+    {:ok, params} =
+      Mud.Repo.transaction(fn ->
+        character = Character.get_by_id!(state.character_id)
+        area = Area.get!(character.area_id)
+        # items_in_area = Item.list_in_area(area.id)
+        items_are_scenery =
+          Item.list_in_area(area.id)
+          |> Enum.group_by(fn area ->
+            area.is_scenery
+          end)
+
+        scenery = items_are_scenery[true]
+        items_in_area = items_are_scenery[false]
+        characters = Character.list_others_active_in_areas(character.id, [area.id])
+
+        %{
+          action: :replace,
+          area: area,
+          other_characters: characters,
+          on_ground: items_in_area || [],
+          toi: scenery || []
+        }
+      end)
+
+    GenServer.cast(
+      process,
+      {:update_area,
+       Phoenix.View.render_one(UpdateArea.new(params), MudWeb.MudClientView, "update_area.json",
+         as: :event
+       )}
+    )
 
     Logger.debug("Finished subscription request from: #{inspect(process)}")
 
@@ -416,6 +453,11 @@ defmodule Mud.Engine.Session do
   # Private functions
   #
   #
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
+    {:update_area,
+     Phoenix.View.render_many(event.items, MudWeb.ItemView, "item.json", as: :event)}
+  end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
     {:update_area,

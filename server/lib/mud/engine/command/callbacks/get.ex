@@ -206,7 +206,7 @@ defmodule Mud.Engine.Command.Get do
       )
       |> Context.append_event(
         [context.character_id | others],
-        UpdateArea.new(:remove, all_items)
+        UpdateArea.new(%{action: :remove, on_ground: [item]})
       )
     else
       context

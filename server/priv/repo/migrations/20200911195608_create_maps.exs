@@ -8,6 +8,8 @@ defmodule Mud.Repo.Migrations.CreateMaps do
       add(:description, :text)
       add(:grid_size, :integer)
       add(:view_size, :integer)
+      add(:minimum_zoom_index, :integer)
+      add(:maximum_zoom_index, :integer)
       add(:labels, {:array, :map}, default: [])
 
       timestamps()

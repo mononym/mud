@@ -25,11 +25,14 @@ defmodule MudWeb.MudClientView do
   end
 
   def render("update_area.json", %{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
+    IO.inspect(event)
+
     %{
       area: render_one(event.area, MudWeb.AreaView, "area.json"),
       otherCharacters:
         render_many(event.other_characters, MudWeb.CharacterView, "character.json"),
-      onGround: render_many(event.on_ground, MudWeb.ItemView, "item.json")
+      onGround: render_many(event.on_ground, MudWeb.ItemView, "item.json"),
+      toi: render_many(event.toi, MudWeb.ItemView, "item.json")
     }
   end
 end

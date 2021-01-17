@@ -15,6 +15,7 @@ defmodule Mud.Engine.Item do
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
+    @derive Jason.Encoder
     ##
     #
     # Common Fields
@@ -143,6 +144,29 @@ defmodule Mud.Engine.Item do
   end
 
   @topic inspect(__MODULE__)
+
+  @doc """
+  Takes an item and returns its type, such as container, worn_container, and so on
+  """
+  @spec get_type(%__MODULE__{}) :: String.t()
+  def get_type(item) do
+    cond do
+      item.is_furniture ->
+        "furniture"
+
+      item.is_wearable && item.is_container ->
+        "worn_container"
+
+      item.is_container ->
+        "container"
+
+      item.is_scenery ->
+        "scenery"
+
+      item.is_weapon ->
+        "weapon"
+    end
+  end
 
   @doc """
   Subscribe to the PubSub topic for all Character events.

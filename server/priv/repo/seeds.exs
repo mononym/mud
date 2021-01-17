@@ -161,18 +161,8 @@ Mud.Repo.insert!(%Link{
   type: "Direction",
   short_description: "east",
   long_description: "east",
-  icon: "fas fa-compass"
-})
-
-Mud.Repo.insert!(%Link{
-  from_id: maze_1.id,
-  to_id: east_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
+  icon: "fas fa-compass",
+  has_marker: true
 })
 
 {:ok, maze_2} =
@@ -951,7 +941,8 @@ Mud.Repo.insert!(%Link{
   type: "Direction",
   short_description: "north",
   long_description: "north",
-  icon: "fas fa-compass"
+  icon: "fas fa-compass",
+  has_marker: true
 })
 
 # maze_26 =

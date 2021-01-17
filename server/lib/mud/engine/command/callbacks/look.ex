@@ -44,7 +44,8 @@ defmodule Mud.Engine.Command.Look do
 
     case ast do
       %TAP{thing: nil} ->
-        description = Area.long_description_to_story_output(context.character.area_id, context.character)
+        description =
+          Area.long_description_to_story_output(context.character.area_id, context.character)
 
         context
         |> Context.append_message(description)
@@ -258,10 +259,10 @@ defmodule Mud.Engine.Command.Look do
       true ->
         Context.append_message(
           context,
-          Message.new_output(
+          Message.new_story_output(
             context.character.id,
             match.long_description,
-            "info"
+            "base"
           )
         )
     end
