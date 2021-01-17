@@ -38,6 +38,11 @@
     submitPlayerInput(`get ${item.shortDescription}`);
   }
 
+  function dropItem(item) {
+    console.log(item);
+    submitPlayerInput(`drop ${item.shortDescription}`);
+  }
+
   function copyShort(item) {
     console.log(item);
     navigator.clipboard.writeText(item.shortDescription);
@@ -85,6 +90,12 @@
       />
     {:else if item.holdableIsHeld && item.isWearable}
       <MenuOption on:click={console.log} text="wear" />
+    {:else if item.holdableIsHeld}
+      <MenuOption
+        on:click={dropItem(item)}
+        text="drop"
+        enabledTooltip="Drop item on ground"
+      />
     {:else if item.containerId != null && item.containerId != undefined && item.containerId != "" && (!$leftHandHasItem || !$rightHandHasItem)}
       <MenuOption
         on:click={getItem(item)}

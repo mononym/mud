@@ -115,11 +115,12 @@ defmodule Mud.Engine.Command.Drop do
     )
     |> Context.append_event(
       [context.character_id | others],
-      UpdateArea.new(:add, all_items)
+      UpdateArea.new(%{action: :add, on_ground: all_items})
     )
-    |> Context.append_event(
-      context.character_id,
-      UpdateInventory.new(:remove, all_items)
-    )
+
+    # |> Context.append_event(
+    #   context.character_id,
+    #   UpdateInventory.new(:remove, all_items)
+    # )
   end
 end

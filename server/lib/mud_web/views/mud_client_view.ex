@@ -28,6 +28,7 @@ defmodule MudWeb.MudClientView do
     IO.inspect(event)
 
     %{
+      action: event.action,
       area: render_one(event.area, MudWeb.AreaView, "area.json"),
       otherCharacters:
         render_many(event.other_characters, MudWeb.CharacterView, "character.json"),

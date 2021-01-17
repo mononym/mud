@@ -49,6 +49,7 @@
 <div class="h-full w-full p-2 flex flex-col relative" bind:this={windowDiv}>
   <div class="cursor-pointer select-none" on:click={toggleHeldItems}>
     <i class="fas fa-minus" />
+    &nbsp;
     <pre
       class="inline"
       style="color:{$selectedCharacter.settings.colors[
@@ -59,7 +60,7 @@
     <div class="ml-2">
       {#if $selectedCharacter.handedness == "right"}
         <div class="flex">
-          <i class="fas fa-hand-paper text-xl text-white" />
+          <i class="fas fa-hand-paper text-xl text-white cursor-not-allowed" />
           &nbsp;
           {#if $rightHandHasItem}
             <InventoryItem
@@ -67,11 +68,14 @@
               on:showContextMenu={showRightClickMenu}
             />
           {:else}
-            <pre>nothing</pre>
+            &nbsp;
+            <pre class="select-none cursor-not-allowed">EMPTY</pre>
           {/if}
         </div>
         <div class="flex">
-          <i class="fas fa-hand-paper fa-flip-horizontal text-xl text-white" />
+          <i
+            class="fas fa-hand-paper fa-flip-horizontal text-xl text-white cursor-not-allowed"
+          />
           &nbsp;
           {#if $leftHandHasItem}
             <InventoryItem
@@ -79,12 +83,15 @@
               on:showContextMenu={showRightClickMenu}
             />
           {:else}
-            <pre>nothing</pre>
+            &nbsp;
+            <pre class="select-none cursor-not-allowed">EMPTY</pre>
           {/if}
         </div>
       {:else}
         <div class="flex">
-          <i class="fas fa-hand-paper fa-flip-horizontal text-xl text-white" />
+          <i
+            class="fas fa-hand-paper fa-flip-horizontal text-xl text-white cursor-not-allowed"
+          />
           &nbsp;
           {#if $leftHandHasItem}
             <InventoryItem
@@ -92,11 +99,12 @@
               on:showContextMenu={showRightClickMenu}
             />
           {:else}
-            <pre>nothing</pre>
+            &nbsp;
+            <pre class="select-none cursor-not-allowed">EMPTY</pre>
           {/if}
         </div>
         <div class="flex">
-          <i class="fas fa-hand-paper text-xl text-white" />
+          <i class="fas fa-hand-paper text-xl text-white cursor-not-allowed" />
           &nbsp;
           {#if $rightHandHasItem}
             <InventoryItem
@@ -104,7 +112,8 @@
               on:showContextMenu={showRightClickMenu}
             />
           {:else}
-            <pre>nothing</pre>
+            &nbsp;
+            <pre class="select-none cursor-not-allowed">EMPTY</pre>
           {/if}
         </div>
       {/if}
@@ -112,6 +121,7 @@
   {/if}
   <div class="cursor-pointer select-none" on:click={toggleWornItems}>
     <i class="fas fa-minus" />
+    &nbsp;
     <pre
       class="inline"
       style="color:{$selectedCharacter.settings.colors[

@@ -84,6 +84,7 @@
   {/if}
   <div class="cursor-pointer select-none" on:click={toggleToi}>
     <i class="fas fa-minus" />
+    &nbsp;
     <pre
       class="inline"
       style="color:{$selectedCharacter.settings.colors[
@@ -99,6 +100,7 @@
   {/if}
   <div class="cursor-pointer select-none" on:click={toggleOnGround}>
     <i class="fas fa-minus" />
+    &nbsp;
     <pre
       class="inline"
       style="color:{$selectedCharacter.settings.colors[
@@ -119,6 +121,7 @@
     on:click={toggleAlsoPresent}
   >
     <i class="fas fa-minus" />
+    &nbsp;
     <pre class="inline">Also Present</pre>
   </div>
   {#if showOtherCharacters}

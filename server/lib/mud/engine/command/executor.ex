@@ -132,6 +132,7 @@ defmodule Mud.Engine.Command.Executor do
     case string_to_command(context.input) do
       {:ok, command} ->
         Logger.debug("do_execute string_to_command succeeded")
+        Logger.debug(inspect(command))
         context = Map.put(context, :command, command)
         {:ok, context} = transaction(context, &command.callback_module.execute/1)
 

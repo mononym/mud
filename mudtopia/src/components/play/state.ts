@@ -346,10 +346,43 @@ export function createState() {
       console.log("received an update for area");
       console.log(msg);
 
-      currentArea.set(msg.area);
-      otherCharactersInArea.set(msg.otherCharacters);
-      onGroundInArea.set(msg.onGround);
-      toiInArea.set(msg.toi);
+      if (msg.action == "replace") {
+        currentArea.set(msg.area);
+        otherCharactersInArea.set(msg.otherCharacters);
+        onGroundInArea.set(msg.onGround);
+        toiInArea.set(msg.toi);
+      } else if (msg.action == "add") {
+        otherCharactersInArea.set([
+          ...get(otherCharactersInArea),
+          ...msg.otherCharacters,
+        ]);
+
+        onGroundInArea.set([...get(onGroundInArea), ...msg.onGround]);
+
+        toiInArea.set([...get(toiInArea), ...msg.toi]);
+      } else if (msg.action == "remove") {
+        const removeCharacterIds = msg.otherCharacters.map((char) => char.id);
+        otherCharactersInArea.update(function (otherCharacters) {
+          otherCharacters.filter(
+            (character, i, a) => !removeCharacterIds.includes(character.id)
+          );
+          return otherCharacters;
+        });
+
+        const removeOnGroundIds = msg.onGround.map((item) => item.id);
+        onGroundInArea.update(function (itemsOnGround) {
+          itemsOnGround.filter(
+            (item, i, a) => !removeOnGroundIds.includes(item.id)
+          );
+          return itemsOnGround;
+        });
+
+        const removeToiIds = msg.toi.map((item) => item.id);
+        toiInArea.update(function (toi) {
+          toi.filter((item, i, a) => !removeToiIds.includes(item.id));
+          return toi;
+        });
+      }
     });
 
     newChannel.join();
