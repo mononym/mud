@@ -103,7 +103,7 @@
         'held_items_label'
       ]}"
     >
-      <i class="fas fa-minus" />
+      <i class="fas fa-{heldItemsExpanded ? 'minus' : 'plus'}" />
       &nbsp;
       <pre
         class="inline">Held Items ({($leftHandHasItem ? 1 : 0) + ($rightHandHasItem ? 1 : 0)})</pre>
@@ -204,7 +204,7 @@
         'worn_containers_label'
       ]}"
     >
-      <i class="fas fa-minus" />
+      <i class="fas fa-{wornContainersExpanded ? 'minus' : 'plus'}" />
       &nbsp;
       <pre class="inline">Worn Containers ({$wornContainers.length})</pre>
     </div>
@@ -226,7 +226,7 @@
       'worn_items_label'
     ]}"
   >
-    <i class="fas fa-minus" />
+    <i class="fas fa-{wornItemsExpanded ? 'minus' : 'plus'}" />
     &nbsp;
     <pre class="inline">Other Worn Items ({wornItems.length})</pre>
   </div>
