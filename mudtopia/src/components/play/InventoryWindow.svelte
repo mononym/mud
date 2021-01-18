@@ -54,8 +54,7 @@
   }
 
   let wornItems = [];
-  $: $characterSettings.inventoryWindow.show_held_items,
-    $characterSettings.inventoryWindow.show_worn_containers,
+  $: $characterSettings.inventoryWindow.show_worn_containers,
     $characterSettings.inventoryWindow.show_worn_clothes,
     $characterSettings.inventoryWindow.show_worn_armor,
     $characterSettings.inventoryWindow.show_worn_weapons,
@@ -64,24 +63,6 @@
 
   function buildWornItems() {
     wornItems = [];
-
-    if (!$characterSettings.inventoryWindow.show_held_items) {
-      const item1 =
-        $selectedCharacter.handedness == "right"
-          ? $itemInRightHand
-          : $itemInLeftHand;
-      const item2 =
-        $selectedCharacter.handedness == "right"
-          ? $itemInLeftHand
-          : $itemInRightHand;
-
-      if (item1 != undefined && item1.id != "") {
-        wornItems.push(item1);
-      }
-      if (item2 != undefined && item2.id != "") {
-        wornItems.push(item2);
-      }
-    }
 
     if (!$characterSettings.inventoryWindow.show_worn_containers) {
       $wornContainers.forEach((container) => wornItems.push(container));
@@ -219,26 +200,28 @@
       </div>
     {/if}
   {/if}
-  <div
-    class="cursor-pointer select-none"
-    on:click={toggleWornItems}
-    style="color:{$selectedCharacter.settings.inventoryWindow[
-      'worn_items_label'
-    ]}"
-  >
-    <i class="fas fa-{wornItemsExpanded ? 'minus' : 'plus'}" />
-    &nbsp;
-    <pre class="inline">Other Worn Items ({wornItems.length})</pre>
-  </div>
-  {#if wornItemsExpanded}
-    <div class="ml-2">
-      {#each wornItems as wornItem}
-        <InventoryItem
-          item={wornItem}
-          on:showContextMenu={showRightClickMenu}
-        />
-      {/each}
+  {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
+    <div
+      class="cursor-pointer select-none"
+      on:click={toggleWornItems}
+      style="color:{$selectedCharacter.settings.inventoryWindow[
+        'worn_items_label'
+      ]}"
+    >
+      <i class="fas fa-{wornItemsExpanded ? 'minus' : 'plus'}" />
+      &nbsp;
+      <pre class="inline">Other Worn Items ({wornItems.length})</pre>
     </div>
+    {#if wornItemsExpanded}
+      <div class="ml-2">
+        {#each wornItems as wornItem}
+          <InventoryItem
+            item={wornItem}
+            on:showContextMenu={showRightClickMenu}
+          />
+        {/each}
+      </div>
+    {/if}
   {/if}
   <div class="spacer flex-1" />
   <div
@@ -272,7 +255,7 @@
       inactiveTooltip="Show worn armor"
     />
     <InventoryWindowFilterButton
-      icon="fas fa-shield"
+      icon="fas fa-sword"
       bind:active={$characterSettings.inventoryWindow.show_worn_weapons}
       activeTooltip="Hide worn weapons"
       inactiveTooltip="Show worn weapons"
@@ -282,6 +265,12 @@
       bind:active={$characterSettings.inventoryWindow.show_worn_jewelry}
       activeTooltip="Hide worn jewelry"
       inactiveTooltip="Show worn jewelry"
+    />
+    <InventoryWindowFilterButton
+      icon="fas fa-certificate"
+      bind:active={$characterSettings.inventoryWindow.show_worn_items}
+      activeTooltip="Hide other worn items"
+      inactiveTooltip="Show other worn items"
     />
   </div>
   <InventoryItemRightClickMenu {pos} item={menuItem} bind:showMenu />
