@@ -312,7 +312,8 @@
         <label
           for="exitLabelTextColor"
           style="color:{$characterSettings.colors.exit_label}"
-          class="block text-sm font-medium">'Exit' Label Text Color</label
+          class="block text-sm font-medium"
+          >'Obvious Exits' Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.exit_label}
@@ -380,6 +381,132 @@
       </div>
       <div class="col-span-2">
         <label
+          for="wornContainerTextColor"
+          style="color:{$characterSettings.colors.worn_container}"
+          class="block text-sm font-medium">Worn Container Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.worn_container}
+          type="color"
+          name="wornContainerTextColor"
+          id="wornContainerTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="containerTextColor"
+          style="color:{$characterSettings.colors.container}"
+          class="block text-sm font-medium">Container Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.container}
+          type="color"
+          name="containerTextColor"
+          id="containerTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="weaponTextColor"
+          style="color:{$characterSettings.colors.weapon}"
+          class="block text-sm font-medium">Weapon Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.weapon}
+          type="color"
+          name="weaponTextColor"
+          id="weaponTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="armorTextColor"
+          style="color:{$characterSettings.colors.armor}"
+          class="block text-sm font-medium">Armor Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.armor}
+          type="color"
+          name="armorTextColor"
+          id="armorTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="shieldTextColor"
+          style="color:{$characterSettings.colors.shield}"
+          class="block text-sm font-medium">Shield Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.shield}
+          type="color"
+          name="shieldTextColor"
+          id="shieldTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="gemTextColor"
+          style="color:{$characterSettings.colors.gem}"
+          class="block text-sm font-medium">Gem Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.gem}
+          type="color"
+          name="gemTextColor"
+          id="gemTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="ammoTextColor"
+          style="color:{$characterSettings.colors.ammunition}"
+          class="block text-sm font-medium">Ammunition Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.ammunition}
+          type="color"
+          name="ammoTextColor"
+          id="ammoTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="clothingTextColor"
+          style="color:{$characterSettings.colors.clothing}"
+          class="block text-sm font-medium">Clothing Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.clothing}
+          type="color"
+          name="clothingTextColor"
+          id="clothingTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="sceneryTextColor"
+          style="color:{$characterSettings.colors.scenery}"
+          class="block text-sm font-medium">Scenery Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.scenery}
+          type="color"
+          name="sceneryTextColor"
+          id="sceneryTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
           for="onGroundLabelTextColor"
           style="color:{$characterSettings.colors.on_ground_label}"
           class="block text-sm font-medium">'On Ground' Label Text Color</label
@@ -389,6 +516,20 @@
           type="color"
           name="onGroundLabelTextColor"
           id="onGroundLabelTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="echoTextColor"
+          style="color:{$characterSettings.colors.echo}"
+          class="block text-sm font-medium">Echo Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.echo}
+          type="color"
+          name="echoTextColor"
+          id="echoTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>

@@ -10,7 +10,8 @@
     leftHandHasItem,
     rightHandHasItem,
     channel,
-    inventoryItemsParentChildIndex,
+    selectedCharacter,
+    appendNewStoryMessage,
   } = state;
 
   export let showMenu = false;
@@ -21,26 +22,37 @@
     showMenu = false;
   }
 
-  function submitPlayerInput(input) {
-    $channel.push("cli", { text: input });
-    // commandHistory.unshift(actualInput);
+  function submitPlayerInput(command, item) {
+    $channel.push("cli", { text: `${command} ${item.id}` });
 
-    // actualInput = "";
+    if ($selectedCharacter.settings.echo.ui_commands_in_story) {
+      if ($selectedCharacter.settings.echo.ui_commands_replace_ids_in_story) {
+        appendNewStoryMessage({
+          segments: [
+            { type: "echo", text: `> ${command} ${item.shortDescription}` },
+          ],
+        });
+      } else {
+        appendNewStoryMessage({
+          segments: [{ type: "echo", text: `> ${command} ${item.id}` }],
+        });
+      }
+    }
   }
 
   function lookAtItem(item) {
     console.log(item);
-    submitPlayerInput(`look at ${item.shortDescription}`);
+    submitPlayerInput("look at", item);
   }
 
   function getItem(item) {
     console.log(item);
-    submitPlayerInput(`get ${item.shortDescription}`);
+    submitPlayerInput("get", item);
   }
 
   function dropItem(item) {
     console.log(item);
-    submitPlayerInput(`drop ${item.shortDescription}`);
+    submitPlayerInput("drop", item);
   }
 
   function copyShort(item) {
@@ -55,12 +67,12 @@
 
   function closeContainer(item) {
     console.log(item);
-    submitPlayerInput(`close ${item.shortDescription}`);
+    submitPlayerInput("close", item);
   }
 
   function openContainer(item) {
     console.log(item);
-    submitPlayerInput(`open ${item.shortDescription}`);
+    submitPlayerInput("open", item);
   }
 </script>
 

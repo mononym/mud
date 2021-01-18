@@ -18,20 +18,20 @@
       return $selectedCharacter.settings.colors.container;
     } else if (item.isFurniture) {
       return $selectedCharacter.settings.colors.furniture;
+    } else if (item.isScenery) {
+      return $selectedCharacter.settings.colors.scenery;
     } else {
-      return "#000000";
+      return $selectedCharacter.settings.colors.base;
     }
   }
 
   let containerExpanded = false;
   function toggleContainerExpanded() {
-    console.log("toggleContainerExpanded");
     containerExpanded = !containerExpanded;
   }
 
   let itemExpanded = false;
   function toggleItemExpanded() {
-    console.log("toggleItemExpanded");
     itemExpanded = !itemExpanded;
   }
 
@@ -49,12 +49,12 @@
   >
     {#if item.isContainer && item.containerOpen}
       <i
-        class="text-white fas fa-plus"
+        class="fas fa-plus"
         on:click|preventDefault={toggleContainerExpanded}
       />
     {:else if item.isContainer && !item.containerOpen}
       <i
-        class="text-white fas fa-minus"
+        class="fas fa-minus"
         on:click|preventDefault={toggleContainerExpanded}
       />
     {/if}

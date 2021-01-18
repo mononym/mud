@@ -113,7 +113,7 @@ export function createState() {
   const rightHandHasItem = writable(false);
   // worn items list
   //    for displaying worn items, the slots they occupy, and so on
-  const wornItems = writable(<ItemInterface[]>[]);
+  const wornContainers = writable(<ItemInterface[]>[]);
   // all items index
   //    For referencing during all other actions, maybe even other lists are just ids which all reference this
   const allInventoryItemsIndex = writable(<Record<string, ItemInterface>>{});
@@ -155,7 +155,7 @@ export function createState() {
     );
     knownLinksForCharacterIndex.set(newLinksIndex);
 
-    const newWornItems = [];
+    const newWornContainers = [];
     const newAllItemsIndex = {};
     const newParentChildIndex = {};
 
@@ -168,8 +168,8 @@ export function createState() {
           itemInRightHand.set(item);
           rightHandHasItem.set(true);
         }
-      } else if (item.wearableIsWorn) {
-        newWornItems.push(item);
+      } else if (item.wearableIsWorn && item.isContainer) {
+        newWornContainers.push(item);
       }
 
       newAllItemsIndex[item.id] = item;
@@ -181,7 +181,7 @@ export function createState() {
       }
     });
 
-    wornItems.set(newWornItems);
+    wornContainers.set(newWornContainers);
     allInventoryItemsIndex.set(newAllItemsIndex);
     inventoryItemsParentChildIndex.set(newParentChildIndex);
 
@@ -536,7 +536,7 @@ export function createState() {
     leftHandHasItem,
     itemInRightHand,
     rightHandHasItem,
-    wornItems,
+    wornContainers,
     allInventoryItemsIndex,
     inventoryItemsParentChildIndex,
     //

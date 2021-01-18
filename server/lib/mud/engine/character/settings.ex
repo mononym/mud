@@ -14,6 +14,7 @@ defmodule Mud.Engine.Character.Settings do
 
     embeds_one :colors, TextColors, on_replace: :delete do
       @derive Jason.Encoder
+
       # Text colors
       field(:system_info, :string, default: "#5bc0de")
       field(:system_warning, :string, default: "#f0ad4e")
@@ -24,10 +25,12 @@ defmodule Mud.Engine.Character.Settings do
       field(:exit, :string, default: "#ffffff")
       field(:denizen, :string, default: "#ffffff")
       field(:denizen_label, :string, default: "#ffffff")
+      field(:on_ground_label, :string, default: "#ffffff")
       field(:toi_label, :string, default: "#ffffff")
       field(:exit_label, :string, default: "#ffffff")
       field(:character_label, :string, default: "#ffffff")
       field(:base, :string, default: "#ffffff")
+      field(:echo, :string, default: "#ffffff")
 
       # Item Types
       field(:furniture, :string, default: "#ffffff")
@@ -40,6 +43,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:ammunition, :string, default: "#ffffff")
       field(:shield, :string, default: "#ffffff")
       field(:clothing, :string, default: "#ffffff")
+      field(:scenery, :string, default: "#ffffff")
 
       # Command Input window colors
       field(:input, :string, default: "#ffffff")
@@ -79,6 +83,19 @@ defmodule Mud.Engine.Character.Settings do
       field(:key, :string, default: "")
       field(:command, :string, default: "")
     end
+
+    embeds_one :echo, Echo, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:cli_commands_in_story, :boolean, default: true)
+      field(:hotkey_commands_in_story, :boolean, default: true)
+      field(:ui_commands_in_story, :boolean, default: true)
+      field(:ui_commands_replace_ids_in_story, :boolean, default: true)
+
+      field(:cli_commands_in_logs, :boolean, default: true)
+      field(:hotkey_commands_in_logs, :boolean, default: true)
+      field(:ui_commands_in_logs, :boolean, default: true)
+      field(:ui_commands_replace_ids_in_logs, :boolean, default: true)
+    end
   end
 
   @doc false
@@ -95,6 +112,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:custom_hotkeys, with: &custom_hotkeys_changeset/2)
     |> cast_embed(:preset_hotkeys, with: &preset_hotkeys_changeset/2)
     |> cast_embed(:colors, with: &colors_changeset/2)
+    |> cast_embed(:echo, with: &echo_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -114,8 +132,10 @@ defmodule Mud.Engine.Character.Settings do
       :exit_label,
       :denizen,
       :denizen_label,
+      :on_ground_label,
       :toi_label,
       :base,
+      :echo,
       # Item types
       :furniture,
       :container,
@@ -127,6 +147,7 @@ defmodule Mud.Engine.Character.Settings do
       :ammunition,
       :shield,
       :clothing,
+      :scenery,
       # Command Input window colors
       :input,
       :input_background,
@@ -154,8 +175,8 @@ defmodule Mud.Engine.Character.Settings do
       :open_play,
       :open_settings,
       :toggle_history_view,
-      :zoom_map_out,
-      :zoom_map_in
+      :zoom_map_in,
+      :zoom_map_out
     ])
     |> validate_required([])
   end
@@ -164,14 +185,29 @@ defmodule Mud.Engine.Character.Settings do
     schema
     |> cast(params, [
       :id,
-      :ctrl_key,
       :alt_key,
-      :shift_key,
-      :meta_key,
+      :command,
+      :ctrl_key,
       :key,
-      :command
+      :meta_key,
+      :shift_key
     ])
     |> validate_required([:key, :command])
+  end
+
+  defp echo_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :cli_commands_in_story,
+      :hotkey_commands_in_story,
+      :ui_commands_in_story,
+      :ui_commands_replace_ids_in_story,
+      :cli_commands_in_logs,
+      :hotkey_commands_in_logs,
+      :ui_commands_in_logs,
+      :ui_commands_replace_ids_in_logs
+    ])
   end
 
   def create(attrs \\ %{}) do
@@ -182,16 +218,18 @@ defmodule Mud.Engine.Character.Settings do
       system_alert: "#d9534f",
       system_info: "#5bc0de",
       system_warning: "#f0ad4e",
-      area_name: "#ffffff",
-      area_description: "#ffffff",
+      area_name: "#D5873F",
+      area_description: "#5A8FAF",
       character: "#ffffff",
       character_label: "#ffffff",
       denizen: "#ffffff",
       denizen_label: "#ffffff",
-      exit: "#ffffff",
-      exit_label: "#ffffff",
+      on_ground_label: "#F57575",
+      exit: "#EAA353",
+      exit_label: "#5CB777",
       toi_label: "#ffffff",
       base: "#ffffff",
+      echo: "#61A889",
 
       # Item Types
       furniture: "#ffffff",
@@ -204,6 +242,7 @@ defmodule Mud.Engine.Character.Settings do
       ammunition: "#ffffff",
       shield: "#ffffff",
       clothing: "#ffffff",
+      scenery: "#ffffff",
 
       # Command Input window colors
       input: "#ffffff",
@@ -222,7 +261,15 @@ defmodule Mud.Engine.Character.Settings do
       window_lock_unlocked: "#fca5a5",
       window_lock_locked: "#a7f3d0",
       window_move_unlocked: "#a7f3d0",
-      window_move_locked: "#6b7280"
+      window_move_locked: "#6b7280",
+
+      # Story window colors
+      empty_hand: "#374151",
+      held_items_label: "#fca5a5",
+      worn_containers_label: "#ffffff",
+      worn_clothes_label: "#ffffff",
+      worn_armor_label: "#ffffff",
+      worn_weapons_label: "#ffffff"
     }
 
     attrs =
@@ -312,6 +359,24 @@ defmodule Mud.Engine.Character.Settings do
         Map.put(attrs, :custom_hotkeys, Enum.concat(default_custom_hotkeys, attrs.custom_hotkeys))
       else
         Map.put(attrs, :custom_hotkeys, default_custom_hotkeys)
+      end
+
+    default_ecno_settings = %{
+      cli_commands_in_story: true,
+      hotkey_commands_in_story: true,
+      ui_commands_in_story: true,
+      ui_commands_replace_ids_in_story: true,
+      cli_commands_in_logs: true,
+      hotkey_commands_in_logs: true,
+      ui_commands_in_logs: true,
+      ui_commands_replace_ids_in_logs: true
+    }
+
+    attrs =
+      if Map.has_key?(attrs, :echo) do
+        Map.put(attrs, :echo, Map.merge(default_ecno_settings, attrs.echo))
+      else
+        Map.put(attrs, :echo, default_ecno_settings)
       end
 
     Logger.debug(inspect(attrs))

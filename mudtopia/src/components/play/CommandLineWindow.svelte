@@ -11,7 +11,7 @@
   import { key } from "./state";
 
   const state = getContext(key);
-  const { channel, showHistoryWindow, selectedCharacter } = state;
+  const { channel, selectedCharacter, appendNewStoryMessage } = state;
 
   export let input = "";
   let actualInput = "";
@@ -100,6 +100,12 @@
     $channel.push("cli", { text: actualInput });
     commandHistory.unshift(actualInput);
 
+    if ($selectedCharacter.settings.echo.cli_commands_in_story) {
+      appendNewStoryMessage({
+        segments: [{ type: "echo", text: `> ${actualInput}` }],
+      });
+    }
+
     actualInput = "";
   }
 
@@ -108,11 +114,11 @@
   });
 
   function setupHotkeyWatcher() {
-    commandLineDiv.addEventListener("keydown", maybeHandleApplicationHotkey);
+    commandLineDiv.addEventListener("keydown", maybeHandleCustomHotkey);
   }
 
   function teardownHotkeyWatcher() {
-    commandLineDiv.removeEventListener("keydown", maybeHandleApplicationHotkey);
+    commandLineDiv.removeEventListener("keydown", maybeHandleCustomHotkey);
   }
 
   let normalizedCustomHotkeys = {};
@@ -126,7 +132,7 @@
     });
   }
 
-  function maybeHandleApplicationHotkey(event) {
+  function maybeHandleCustomHotkey(event) {
     const potentialHotkeyString = buildHotkeyStringFromEvent(event);
 
     if (potentialHotkeyString in normalizedCustomHotkeys) {
@@ -136,6 +142,12 @@
 
       $channel.push("cli", { text: commandString });
       commandHistory.unshift(commandString);
+
+      if ($selectedCharacter.settings.echo.hotkey_commands_in_story) {
+        appendNewStoryMessage({
+          segments: [{ type: "echo", text: `> ${commandString}` }],
+        });
+      }
     }
   }
 </script>
@@ -154,6 +166,9 @@
       on:submit|preventDefault={submitPlayerInput}
       bind:value={actualInput}
       class="flex-grow"
-      style="resize:none;color:{$selectedCharacter.settings.colors.input};background-color:{$selectedCharacter.settings.colors.input_background}" />
+      style="resize:none;color:{$selectedCharacter.settings.colors
+        .input};background-color:{$selectedCharacter.settings.colors
+        .input_background}"
+    />
   </form>
 </div>

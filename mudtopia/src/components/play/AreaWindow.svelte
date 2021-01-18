@@ -82,14 +82,14 @@
       {$currentArea.description}
     </pre>
   {/if}
-  <div class="cursor-pointer select-none" on:click={toggleToi}>
-    <i class="fas fa-minus" />
+  <div
+    class="cursor-pointer select-none"
+    on:click={toggleToi}
+    style="color:{$selectedCharacter.settings.colors['toi_label']}"
+  >
+    <i class="fas fa-{showToi ? 'minus' : 'plus'}" />
     &nbsp;
-    <pre
-      class="inline"
-      style="color:{$selectedCharacter.settings.colors[
-        'toi_label'
-      ]}">Things of Interest</pre>
+    <pre class="inline">Things of Interest ({$toiInArea.length})</pre>
   </div>
   {#if showToi}
     {#each $toiInArea as item}
@@ -98,14 +98,14 @@
       </div>
     {/each}
   {/if}
-  <div class="cursor-pointer select-none" on:click={toggleOnGround}>
-    <i class="fas fa-minus" />
+  <div
+    class="cursor-pointer select-none"
+    on:click={toggleOnGround}
+    style="color:{$selectedCharacter.settings.colors['on_ground_label']}"
+  >
+    <i class="fas fa-{showOnGround ? 'minus' : 'plus'}" />
     &nbsp;
-    <pre
-      class="inline"
-      style="color:{$selectedCharacter.settings.colors[
-        'area_description'
-      ]}">On Ground</pre>
+    <pre class="inline">On Ground ({$onGroundInArea.length})</pre>
   </div>
   {#if showOnGround}
     {#each $onGroundInArea as item}
@@ -119,10 +119,11 @@
       ? 'cursor-pointer'
       : 'cursor-not-allowed'} select-none"
     on:click={toggleAlsoPresent}
+    style="color:{$selectedCharacter.settings.colors['character_label']}"
   >
-    <i class="fas fa-minus" />
+    <i class="fas fa-{showOtherCharacters ? 'minus' : 'plus'}" />
     &nbsp;
-    <pre class="inline">Also Present</pre>
+    <pre class="inline">Also Present ({$otherCharactersInArea.length})</pre>
   </div>
   {#if showOtherCharacters}
     {#each $otherCharactersInArea as character}

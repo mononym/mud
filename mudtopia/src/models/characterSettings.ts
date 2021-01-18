@@ -19,6 +19,7 @@ export interface CharacterSettingsInterface {
     character_label: string;
     on_ground_label: string;
     base: string;
+    echo: string;
     // Item Types
     furniture: string;
     container: string;
@@ -30,6 +31,7 @@ export interface CharacterSettingsInterface {
     ammunition: string;
     shield: string;
     clothing: string;
+    scenery: string;
     // Command Input window colors
     input: string;
     input_background: string;
@@ -55,11 +57,31 @@ export interface CharacterSettingsInterface {
     zoom_map_out: string;
     zoom_map_in: string;
   };
+  echo: {
+    cli_commands_in_story: boolean;
+    hotkey_commands_in_story: boolean;
+    ui_commands_in_story: boolean;
+    ui_commands_replace_ids_in_story: boolean;
+    cli_commands_in_logs: boolean;
+    hotkey_commands_in_logs: boolean;
+    ui_commands_in_logs: boolean;
+    ui_commands_replace_ids_in_logs: boolean;
+  };
   customHotkeys: HotkeyInterface[];
 }
 
 const state: CharacterSettingsInterface = {
   id: "",
+  echo: {
+    cli_commands_in_story: true,
+    hotkey_commands_in_story: true,
+    ui_commands_in_story: true,
+    ui_commands_replace_ids_in_story: true,
+    cli_commands_in_logs: true,
+    hotkey_commands_in_logs: true,
+    ui_commands_in_logs: true,
+    ui_commands_replace_ids_in_logs: true,
+  },
   colors: {
     id: "",
     // Text colors
@@ -77,6 +99,7 @@ const state: CharacterSettingsInterface = {
     character_label: "#ffffff",
     on_ground_label: "#ffffff",
     base: "#ffffff",
+    echo: "#ffffff",
     // Item Types
     furniture: "#ffffff",
     container: "#ffffff",
@@ -88,6 +111,7 @@ const state: CharacterSettingsInterface = {
     ammunition: "#ffffff",
     shield: "#ffffff",
     clothing: "#ffffff",
+    scenery: "#ffffff",
     // Command Input window colors
     input: "#000000",
     input_background: "#ffffff",

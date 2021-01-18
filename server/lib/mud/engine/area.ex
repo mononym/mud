@@ -292,62 +292,76 @@ defmodule Mud.Engine.Area do
     things_of_interest =
       area.id
       |> Item.list_visible_scenery_in_area()
-      |> Stream.map(& &1.short_description)
-      |> Enum.sort()
-      |> Enum.join(", ")
 
-    if things_of_interest == "" do
+    if things_of_interest == [] do
       story_output
     else
-      Message.append_text(story_output, "Things of Interest: #{things_of_interest}\n", "text")
+      story_output = Message.append_text(story_output, "Things of Interest: ", "toi_label")
+
+      things_of_interest
+      |> Enum.reduce(
+        story_output,
+        fn item, message ->
+          message
+          |> Message.append_text(item.short_description, get_item_type(item))
+          |> Message.append_text(", ", "base")
+        end
+      )
+      |> Message.drop_last_text()
+      |> Message.append_text("\n", "base")
     end
   end
 
   defp maybe_build_on_ground(story_output, area) do
-    on_ground =
+    items_on_ground =
       Item.list_in_area(area.id)
-      |> Stream.filter(&(!&1.is_scenery))
-      |> Stream.map(& &1.short_description)
-      |> Enum.sort()
-      |> Enum.join(", ")
+      |> Enum.filter(&(!&1.is_scenery))
 
-    if on_ground == "" do
+    if items_on_ground == [] do
       story_output
     else
-      Message.append_text(story_output, "On Ground: #{on_ground}\n", "text")
+      story_output = Message.append_text(story_output, "On Ground: ", "on_ground_label")
+
+      items_on_ground
+      |> Enum.reduce(
+        story_output,
+        fn item, message ->
+          message
+          |> Message.append_text(item.short_description, get_item_type(item))
+          |> Message.append_text(", ", "base")
+        end
+      )
+      |> Message.drop_last_text()
+      |> Message.append_text("\n", "base")
     end
   end
 
-  defp maybe_build_also_present(story_output, area, character_id) do
-    also_present = build_player_characters_string(area.id, character_id)
+  defp maybe_build_also_present(story_output, area, character) do
+    also_present =
+      Mud.Engine.Character.list_active_in_areas(area.id)
+      # filter out self
+      # |> Enum.filter(fn char ->
+      #   char.id != character.id
+      # end)
+      |> Enum.sort(&(&1.name <= &2.name))
 
-    if also_present == "" do
+    if also_present == [] do
       story_output
     else
-      Message.append_text(story_output, "Also Present: #{also_present}\n", "text")
+      story_output = Message.append_text(story_output, "Also Present: ", "character_label")
+
+      also_present
+      |> Enum.reduce(
+        story_output,
+        fn character, message ->
+          message
+          |> Message.append_text(character.name, "character")
+          |> Message.append_text(", ", "base")
+        end
+      )
+      |> Message.drop_last_text()
+      |> Message.append_text("\n", "base")
     end
-  end
-
-  defp maybe_build_obvious_exits(story_output, area) do
-    obvious_exits = build_obvious_exits_string(area.id)
-
-    if obvious_exits == "" do
-      story_output
-    else
-      Message.append_text(story_output, "Obvious Exits: #{obvious_exits}\n", "text")
-    end
-  end
-
-  defp build_obvious_exits_string(area_id) do
-    links = Mud.Engine.Link.list_obvious_exits_in_area(area_id)
-    Logger.debug(links)
-
-    links
-    |> Stream.map(fn link ->
-      link.short_description
-    end)
-    |> Enum.sort()
-    |> Enum.join(", ")
   end
 
   defp maybe_build_exits(story_output, area) do
@@ -383,5 +397,17 @@ defmodule Mud.Engine.Area do
     |> Enum.sort(&(&1.name <= &2.name))
     |> Enum.map(&Character.describe_room_glance/1)
     |> Enum.join(", ")
+  end
+
+  defp get_item_type(item) do
+    cond do
+      item.is_container && item.is_wearable -> "worn_container"
+      item.is_container -> "container"
+      item.is_furniture -> "furniture"
+      # item.is_weapon -> "weapon"
+      # item.is_clothing -> "clothing"
+      item.is_scenery -> "scenery"
+      true -> "base"
+    end
   end
 end

@@ -140,7 +140,7 @@
   <div
     bind:this={currentStoryWindowDiv}
     id="StoryWindowCurrentView"
-    class="flex flex-col overflow-hidden w-full p-4"
+    class="flex flex-col overflow-hidden w-full pl-4 pr-4 pt-4"
     style="height:{$storyWindowView == 'history'
       ? '50%'
       : '100%'};background-color:{$selectedCharacter.settings.colors
@@ -148,12 +148,9 @@
   >
     {#each $storyWindowMessages as message}
       <pre
-        class="whitespace-pre-wrap">
-          {#each message.segments as segment}
-          <span
-            style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
-        {/each}
-        </pre>
+        class="whitespace-pre-wrap mb-4">
+          {#each message.segments as segment}<span
+            style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>{/each}</pre>
     {/each}
   </div>
   <!-- </div> -->

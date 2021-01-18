@@ -6,7 +6,7 @@
 
   const state = getContext(key);
   const {
-    wornItems,
+    wornContainers,
     itemInLeftHand,
     itemInRightHand,
     leftHandHasItem,
@@ -47,14 +47,15 @@
 </script>
 
 <div class="h-full w-full p-2 flex flex-col relative" bind:this={windowDiv}>
-  <div class="cursor-pointer select-none" on:click={toggleHeldItems}>
+  <div
+    class="cursor-pointer select-none"
+    on:click={toggleHeldItems}
+    style="color:{$selectedCharacter.settings.colors['held_items_label']}"
+  >
     <i class="fas fa-minus" />
     &nbsp;
     <pre
-      class="inline"
-      style="color:{$selectedCharacter.settings.colors[
-        'toi_label'
-      ]}">Held Items</pre>
+      class="inline">Held Items ({($leftHandHasItem ? 1 : 0) + ($rightHandHasItem ? 1 : 0)})</pre>
   </div>
   {#if showHeldItems}
     <div class="ml-2">
@@ -63,6 +64,7 @@
           <i class="fas fa-hand-paper text-xl text-white cursor-not-allowed" />
           &nbsp;
           {#if $rightHandHasItem}
+            &nbsp;
             <InventoryItem
               item={$itemInRightHand}
               on:showContextMenu={showRightClickMenu}
@@ -78,6 +80,7 @@
           />
           &nbsp;
           {#if $leftHandHasItem}
+            &nbsp;
             <InventoryItem
               item={$itemInLeftHand}
               on:showContextMenu={showRightClickMenu}
@@ -94,6 +97,7 @@
           />
           &nbsp;
           {#if $leftHandHasItem}
+            &nbsp;
             <InventoryItem
               item={$itemInLeftHand}
               on:showContextMenu={showRightClickMenu}
@@ -107,6 +111,7 @@
           <i class="fas fa-hand-paper text-xl text-white cursor-not-allowed" />
           &nbsp;
           {#if $rightHandHasItem}
+            &nbsp;
             <InventoryItem
               item={$itemInRightHand}
               on:showContextMenu={showRightClickMenu}
@@ -119,18 +124,18 @@
       {/if}
     </div>
   {/if}
-  <div class="cursor-pointer select-none" on:click={toggleWornItems}>
+  <div
+    class="cursor-pointer select-none"
+    on:click={toggleWornItems}
+    style="color:{$selectedCharacter.settings.colors['worn_containers']}"
+  >
     <i class="fas fa-minus" />
     &nbsp;
-    <pre
-      class="inline"
-      style="color:{$selectedCharacter.settings.colors[
-        'toi_label'
-      ]}">Worn Items</pre>
+    <pre class="inline">Worn Containers ({$wornContainers.length})</pre>
   </div>
   {#if showWornItems}
     <div class="ml-2">
-      {#each $wornItems as wornItem}
+      {#each $wornContainers as wornItem}
         <InventoryItem
           item={wornItem}
           on:showContextMenu={showRightClickMenu}
