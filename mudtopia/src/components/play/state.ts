@@ -35,13 +35,13 @@ export function createState() {
     }
   }
 
-  async function selectSettingsColorsView() {
-    if (get(settingsView) != "colors") {
+  async function selectSettingsGeneralView() {
+    if (get(settingsView) != "general") {
       const settings = get(selectedCharacter).settings;
       const newSettings = _.cloneDeep(settings);
       characterSettings.set(newSettings);
 
-      settingsView.set("colors");
+      settingsView.set("general");
     }
   }
 
@@ -64,7 +64,7 @@ export function createState() {
   //
   // Settings stuff
   //
-  const settingsView = writable("colors");
+  const settingsView = writable("general");
   const characterSettings = writable(<CharacterSettingsInterface>{
     ...CharacterSettingsState,
   });
@@ -184,6 +184,7 @@ export function createState() {
     wornContainers.set(newWornContainers);
     allInventoryItemsIndex.set(newAllItemsIndex);
     inventoryItemsParentChildIndex.set(newParentChildIndex);
+    characterSettings.set(_.cloneDeep(character.settings));
 
     characterInitializing.set(false);
     characterInitialized.set(true);
@@ -509,7 +510,7 @@ export function createState() {
     resetCharacterSettings,
     saveCharacterSettings,
     selectSettingsHotkeysView,
-    selectSettingsColorsView,
+    selectSettingsGeneralView,
     //
     // Map stuff
     //

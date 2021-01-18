@@ -136,7 +136,6 @@
         .story_history_icon}"
     />
   {/if}
-  <!-- <div class="flex-1 overflow-hidden"> -->
   <div
     bind:this={currentStoryWindowDiv}
     id="StoryWindowCurrentView"
@@ -153,5 +152,4 @@
             style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>{/each}</pre>
     {/each}
   </div>
-  <!-- </div> -->
 </div>

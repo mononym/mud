@@ -579,6 +579,212 @@
         />
       </div>
     </div>
+
+    <div
+      class="col-span-4 grid grid-cols-8 gap-4"
+      style="background-color:{$characterSettings.inventoryWindow.background}"
+    >
+      <h2
+        class="text-center text-white border-b-2 border-black col-span-8"
+        style="background-color:{$characterSettings.colors
+          .window_toolbar_background};color:{$characterSettings.colors
+          .window_toolbar_label}"
+      >Inventory Window</h2>
+      <div class="col-span-4">
+        <label
+          for="inventoryWindowBackgroundColor"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.background}
+          type="color"
+          name="inventoryWindowBackgroundColor"
+          id="inventoryWindowBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="emptyHandTextColor"
+          style="color:{$characterSettings.inventoryWindow.empty_hand}"
+          class="block text-sm font-medium">Empty Hand Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.empty_hand}
+          type="color"
+          name="emptyHandTextColor"
+          id="emptyHandTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="heldItemsColor"
+          style="color:{$characterSettings.inventoryWindow.held_items_label}"
+          class="block text-sm font-medium">Held Items Label Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.held_items_label}
+          type="color"
+          name="heldItemsColor"
+          id="heldItemsColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="wornContainersLabel"
+          style="color:{$characterSettings.inventoryWindow
+            .worn_containers_label}"
+          class="block text-sm font-medium">Worn Containers Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.worn_containers_label}
+          type="color"
+          name="wornContainersLabel"
+          id="wornContainersLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="wornClothesLabel"
+          style="color:{$characterSettings.inventoryWindow.worn_clothes_label}"
+          class="block text-sm font-medium">Worn Clothes Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.worn_clothes_label}
+          type="color"
+          name="wornClothesLabel"
+          id="wornClothesLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="wornArmorLabel"
+          style="color:{$characterSettings.inventoryWindow.worn_armor_label}"
+          class="block text-sm font-medium">Worn Armor Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.worn_armor_label}
+          type="color"
+          name="wornArmorLabel"
+          id="wornArmorLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="wornWeaponsLabel"
+          style="color:{$characterSettings.inventoryWindow.worn_weapons_label}"
+          class="block text-sm font-medium">Worn Weapons Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.worn_weapons_label}
+          type="color"
+          name="wornWeaponsLabel"
+          id="wornWeaponsLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="wornJewelryLabel"
+          style="color:{$characterSettings.inventoryWindow.worn_jewelry_label}"
+          class="block text-sm font-medium">Worn Jewelry Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.worn_jewelry_label}
+          type="color"
+          name="wornJewelryLabel"
+          id="wornJewelryLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="filterBorderColorColor"
+          style="color:{$characterSettings.inventoryWindow.filter_border_color}"
+          class="block text-sm font-medium">Filter Border Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.filter_border_color}
+          type="color"
+          name="filterBorderColorColor"
+          id="filterBorderColorColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="filterActiveIconColor"
+          style="color:{$characterSettings.inventoryWindow
+            .filter_active_icon_color}"
+          class="block text-sm font-medium">Filter Active Icon Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow
+            .filter_active_icon_color}
+          type="color"
+          name="filterActiveIconColor"
+          id="filterActiveIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="filterInactiveIconColor"
+          style="color:{$characterSettings.inventoryWindow
+            .filter_inactive_icon_color}"
+          class="block text-sm font-medium">Filter Inactive Icon Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow
+            .filter_inactive_icon_color}
+          type="color"
+          name="filterInactiveIconColor"
+          id="filterInactiveIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="filterActiveBackgroundColor"
+          style="color:{$characterSettings.inventoryWindow
+            .filter_active_background_color}"
+          class="block text-sm font-medium"
+          >Filter Active Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow
+            .filter_active_background_color}
+          type="color"
+          name="filterActiveBackgroundColor"
+          id="filterActiveBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="filterInactiveBackgroundColor"
+          style="color:{$characterSettings.inventoryWindow
+            .filter_inactive_background_color}"
+          class="block text-sm font-medium"
+          >Filter Inactive Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow
+            .filter_inactive_background_color}
+          type="color"
+          name="filterInactiveBackgroundColor"
+          id="filterInactiveBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
     <div class="px-4 py-3 text-right sm:px-6">
       <button
         disabled={!settingsChanged}

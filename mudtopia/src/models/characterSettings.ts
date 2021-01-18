@@ -58,6 +58,7 @@ export interface CharacterSettingsInterface {
     zoom_map_in: string;
   };
   echo: {
+    id: string;
     cli_commands_in_story: boolean;
     hotkey_commands_in_story: boolean;
     ui_commands_in_story: boolean;
@@ -67,12 +68,59 @@ export interface CharacterSettingsInterface {
     ui_commands_in_logs: boolean;
     ui_commands_replace_ids_in_logs: boolean;
   };
+  inventoryWindow: {
+    id: string;
+    empty_hand: string;
+    held_items_label: string;
+    show_held_items: boolean;
+    worn_containers_label: string;
+    show_worn_containers: boolean;
+    worn_clothes_label: string;
+    show_worn_clothes: boolean;
+    worn_armor_label: string;
+    show_worn_armor: boolean;
+    worn_weapons_label: string;
+    show_worn_weapons: boolean;
+    worn_jewelry_label: string;
+    show_worn_jewelry: boolean;
+    worn_items_label: string;
+    background: string;
+    filter_border_color: string;
+    filter_active_icon_color: string;
+    filter_inactive_icon_color: string;
+    filter_active_background_color: string;
+    filter_inactive_background_color: string;
+  };
   customHotkeys: HotkeyInterface[];
 }
 
 const state: CharacterSettingsInterface = {
   id: "",
+  inventoryWindow: {
+    id: "",
+    empty_hand: "",
+    held_items_label: "",
+    show_held_items: true,
+    worn_containers_label: "",
+    show_worn_containers: true,
+    worn_clothes_label: "",
+    show_worn_clothes: true,
+    worn_armor_label: "",
+    show_worn_armor: true,
+    worn_weapons_label: "",
+    show_worn_weapons: true,
+    worn_jewelry_label: "",
+    show_worn_jewelry: true,
+    worn_items_label: "",
+    background: "",
+    filter_border_color: "",
+    filter_active_icon_color: "",
+    filter_inactive_icon_color: "",
+    filter_active_background_color: "",
+    filter_inactive_background_color: "",
+  },
   echo: {
+    id: "",
     cli_commands_in_story: true,
     hotkey_commands_in_story: true,
     ui_commands_in_story: true,

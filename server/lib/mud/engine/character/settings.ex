@@ -12,6 +12,31 @@ defmodule Mud.Engine.Character.Settings do
     @derive Jason.Encoder
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
+    embeds_one :inventory_window, InventoryWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:empty_hand, :string, default: "#111827")
+      field(:held_items_label, :string, default: "#d9534f")
+      field(:show_held_items, :boolean, default: true)
+      field(:worn_containers_label, :string, default: "#fca5a5")
+      field(:show_worn_containers, :boolean, default: true)
+      field(:worn_clothes_label, :string, default: "#a7f3d0")
+      field(:show_worn_clothes, :boolean, default: true)
+      field(:worn_armor_label, :string, default: "#a7f3d0")
+      field(:show_worn_armor, :boolean, default: true)
+      field(:worn_weapons_label, :string, default: "#6b7280")
+      field(:show_worn_weapons, :boolean, default: true)
+      field(:worn_jewelry_label, :string, default: "#6b7280")
+      field(:show_worn_jewelry, :boolean, default: true)
+      field(:worn_items_label, :string, default: "#6b7280")
+      field(:background, :string, default: "#28282D")
+      field(:filter_border_color, :string, default: "#ffffff")
+      field(:filter_active_icon_color, :string, default: "#a7f3d0")
+      field(:filter_inactive_icon_color, :string, default: "#fca5a5")
+      field(:filter_active_background_color, :string, default: "#6b7280")
+      field(:filter_inactive_background_color, :string, default: "#28282D")
+    end
+
     embeds_one :colors, TextColors, on_replace: :delete do
       @derive Jason.Encoder
 
@@ -35,7 +60,7 @@ defmodule Mud.Engine.Character.Settings do
       # Item Types
       field(:furniture, :string, default: "#ffffff")
       field(:container, :string, default: "#ffffff")
-      field(:worn_container, :string, default: "#ffffff")
+      field(:worn_container, :string, default: "#A098DD")
       field(:weapon, :string, default: "#ffffff")
       field(:armor, :string, default: "#ffffff")
       field(:gem, :string, default: "#ffffff")
@@ -52,7 +77,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:input_button_icon, :string, default: "#ffffff")
 
       # Story window colors
-      field(:story_background, :string, default: "#374151")
+      field(:story_background, :string, default: "#28282D")
       field(:story_history_icon, :string, default: "#fca5a5")
       field(:story_history_border, :string, default: "#ffffff")
 
@@ -113,6 +138,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:preset_hotkeys, with: &preset_hotkeys_changeset/2)
     |> cast_embed(:colors, with: &colors_changeset/2)
     |> cast_embed(:echo, with: &echo_changeset/2)
+    |> cast_embed(:inventory_window, with: &inventory_window_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -164,6 +190,34 @@ defmodule Mud.Engine.Character.Settings do
       :window_lock_locked,
       :window_move_unlocked,
       :window_move_locked
+    ])
+    |> validate_required([])
+  end
+
+  defp inventory_window_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :empty_hand,
+      :held_items_label,
+      :show_held_items,
+      :worn_containers_label,
+      :show_worn_containers,
+      :worn_clothes_label,
+      :show_worn_clothes,
+      :worn_armor_label,
+      :show_worn_armor,
+      :worn_weapons_label,
+      :show_worn_weapons,
+      :worn_jewelry_label,
+      :show_worn_jewelry,
+      :worn_items_label,
+      :background,
+      :filter_border_color,
+      :filter_active_icon_color,
+      :filter_inactive_icon_color,
+      :filter_active_background_color,
+      :filter_inactive_background_color
     ])
     |> validate_required([])
   end
@@ -220,21 +274,21 @@ defmodule Mud.Engine.Character.Settings do
       system_warning: "#f0ad4e",
       area_name: "#D5873F",
       area_description: "#5A8FAF",
-      character: "#ffffff",
-      character_label: "#ffffff",
+      character: "#A99BEE",
+      character_label: "#388F85",
       denizen: "#ffffff",
       denizen_label: "#ffffff",
       on_ground_label: "#F57575",
       exit: "#EAA353",
       exit_label: "#5CB777",
-      toi_label: "#ffffff",
-      base: "#ffffff",
+      toi_label: "#C27BDE",
+      base: "#95DFCE",
       echo: "#61A889",
 
       # Item Types
-      furniture: "#ffffff",
-      container: "#ffffff",
-      worn_container: "#ffffff",
+      furniture: "#E8B773",
+      container: "#73A6E8",
+      worn_container: "#A098DD",
       weapon: "#ffffff",
       armor: "#ffffff",
       gem: "#ffffff",
@@ -242,7 +296,7 @@ defmodule Mud.Engine.Character.Settings do
       ammunition: "#ffffff",
       shield: "#ffffff",
       clothing: "#ffffff",
-      scenery: "#ffffff",
+      scenery: "#9BD2EE",
 
       # Command Input window colors
       input: "#ffffff",
@@ -251,7 +305,7 @@ defmodule Mud.Engine.Character.Settings do
       input_button_icon: "#ffffff",
 
       # Story window colors
-      story_background: "#374151",
+      story_background: "#28282D",
       story_history_icon: "#fca5a5",
       story_history_border: "#ffffff",
 
@@ -264,12 +318,13 @@ defmodule Mud.Engine.Character.Settings do
       window_move_locked: "#6b7280",
 
       # Story window colors
-      empty_hand: "#374151",
+      empty_hand_icon: "#374151",
       held_items_label: "#fca5a5",
       worn_containers_label: "#ffffff",
       worn_clothes_label: "#ffffff",
       worn_armor_label: "#ffffff",
-      worn_weapons_label: "#ffffff"
+      worn_weapons_label: "#ffffff",
+      worn_jewelry_label: "#ffffff"
     }
 
     attrs =
@@ -361,7 +416,7 @@ defmodule Mud.Engine.Character.Settings do
         Map.put(attrs, :custom_hotkeys, default_custom_hotkeys)
       end
 
-    default_ecno_settings = %{
+    default_echo_settings = %{
       cli_commands_in_story: true,
       hotkey_commands_in_story: true,
       ui_commands_in_story: true,
@@ -374,10 +429,12 @@ defmodule Mud.Engine.Character.Settings do
 
     attrs =
       if Map.has_key?(attrs, :echo) do
-        Map.put(attrs, :echo, Map.merge(default_ecno_settings, attrs.echo))
+        Map.put(attrs, :echo, Map.merge(default_echo_settings, attrs.echo))
       else
-        Map.put(attrs, :echo, default_ecno_settings)
+        Map.put(attrs, :echo, default_echo_settings)
       end
+
+    attrs = insert_default_inventory_window_settings(attrs)
 
     Logger.debug(inspect(attrs))
 
@@ -425,5 +482,36 @@ defmodule Mud.Engine.Character.Settings do
       where: settings.character_id == ^character_id
     )
     |> Repo.one!()
+  end
+
+  #
+  #
+  # Default settings helper functions
+  #
+  #
+
+  defp insert_default_inventory_window_settings(attrs) do
+    Map.put(attrs, :inventory_window, %{
+      empty_hand: "#f0ad4e",
+      held_items_label: "#5bc0de",
+      show_held_items: true,
+      worn_containers_label: "#fca5a5",
+      show_worn_containers: true,
+      worn_clothes_label: "#a7f3d0",
+      show_worn_clothes: true,
+      worn_armor_label: "#a7f3d0",
+      show_worn_armor: true,
+      worn_weapons_label: "#a7f3d0",
+      show_worn_weapons: true,
+      worn_jewelry_label: "#a7f3d0",
+      show_worn_jewelry: true,
+      worn_items_label: "#a7f3d0",
+      background: "#28282D",
+      filter_border_color: "#ffffff",
+      filter_active_icon_color: "#a7f3d0",
+      filter_inactive_icon_color: "#fca5a5",
+      filter_active_background_color: "#28282D",
+      filter_inactive_background_color: "#28282D"
+    })
   end
 end

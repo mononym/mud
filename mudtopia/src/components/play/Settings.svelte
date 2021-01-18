@@ -1,6 +1,6 @@
 <script>
   import SettingsTabBar from "./SettingsTabBar.svelte";
-  import SettingsColorsView from "./SettingsColorsView.svelte";
+  import SettingsGeneralView from "./SettingsGeneralView.svelte";
   import SettingsHotkeysView from "./SettingsHotkeysView.svelte";
 
   import { getContext } from "svelte";
@@ -10,12 +10,12 @@
   const { settingsView, view } = state;
 </script>
 
-<div class="flex flex-col" hidden={$view != 'settings'}>
+<div class="flex flex-col" hidden={$view != "settings"}>
   <SettingsTabBar />
-  {#if $settingsView == 'colors'}
-    <SettingsColorsView />
+  {#if $settingsView == "general"}
+    <SettingsGeneralView />
   {/if}
-  {#if $settingsView == 'hotkeys'}
+  {#if $settingsView == "hotkeys"}
     <SettingsHotkeysView />
   {/if}
 </div>
