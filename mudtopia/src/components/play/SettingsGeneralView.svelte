@@ -581,6 +581,365 @@
     </div>
 
     <div
+      class="col-span-4 grid grid-cols-12 gap-4"
+      style="background-color:{$characterSettings.areaWindow.background}"
+    >
+      <h2
+        class="text-center text-white border-b-2 border-black col-span-12"
+        style="background-color:{$characterSettings.colors
+          .window_toolbar_background};color:{$characterSettings.colors
+          .window_toolbar_label}"
+      >Area Window</h2>
+      <div class="col-span-12">
+        <label
+          for="areaWindowBackgroundColor"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.background}
+          type="color"
+          name="areaWindowBackgroundColor"
+          id="areaWindowBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-6">
+        <label
+          for="showDescription"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show Description</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_description}
+          type="checkbox"
+          name="showDescription"
+          id="showDescription"
+        />
+      </div>
+      <div class="col-span-6">
+        <label
+          for="descriptionExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Description Expansion Mode</label
+        >
+        <select
+          id="descriptionExpansionMode"
+          bind:value={$characterSettings.areaWindow.description_expansion_mode}
+          name="descriptionExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>manual</option>
+          <option>open</option>
+          <option>close</option>
+        </select>
+      </div>
+
+      <div class="col-span-4">
+        <label
+          for="showToi"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show Things Of Interest</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_toi}
+          type="checkbox"
+          name="showToi"
+          id="showToi"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="toiExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium"
+          >Things Of Interest Expansion Mode</label
+        >
+        <select
+          id="toiExpansionMode"
+          bind:value={$characterSettings.areaWindow.toi_expansion_mode}
+          name="toiExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>manual</option>
+          <option>manual-threshold</option>
+          <option>open</option>
+          <option>open-threshold</option>
+          <option>close</option>
+        </select>
+      </div>
+      <div class="col-span-4">
+        <label
+          for="toiThreshold"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium"
+          >Things Of Interest Collapse Threshold</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.toi_collapse_threshold}
+          type="number"
+          name="toiThreshold"
+          id="toiThreshold"
+          max="1000"
+          min="5"
+        />
+      </div>
+
+      <div class="col-span-4">
+        <label
+          for="showOnGround"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show On Ground</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_on_ground}
+          type="checkbox"
+          name="showOnGround"
+          id="showOnGround"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="onGroundExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">On Ground Expansion Mode</label
+        >
+        <select
+          id="onGroundExpansionMode"
+          bind:value={$characterSettings.areaWindow.on_ground_expansion_mode}
+          name="onGroundExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>manual</option>
+          <option>manual-threshold</option>
+          <option>open</option>
+          <option>open-threshold</option>
+          <option>close</option>
+        </select>
+      </div>
+      <div class="col-span-4">
+        <label
+          for="onGroundThreshold"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">On Ground Collapse Threshold</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow
+            .on_ground_collapse_threshold}
+          type="number"
+          name="onGroundThreshold"
+          id="onGroundThreshold"
+          max="1000"
+          min="5"
+        />
+      </div>
+
+      <div class="col-span-4">
+        <label
+          for="showAlsoPresent"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show Also Present</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_also_present}
+          type="checkbox"
+          name="showAlsoPresent"
+          id="showAlsoPresent"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="alsoPresentExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Also Present Expansion Mode</label
+        >
+        <select
+          id="alsoPresentExpansionMode"
+          bind:value={$characterSettings.areaWindow.also_present_expansion_mode}
+          name="alsoPresentExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>manual</option>
+          <option>manual-threshold</option>
+          <option>open</option>
+          <option>open-threshold</option>
+          <option>close</option>
+        </select>
+      </div>
+      <div class="col-span-4">
+        <label
+          for="alsoPresentThreshold"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium"
+          >Also Present Collapse Threshold</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow
+            .also_present_collapse_threshold}
+          type="number"
+          name="alsoPresentThreshold"
+          id="alsoPresentThreshold"
+          max="1000"
+          min="5"
+        />
+      </div>
+
+      <div class="col-span-4">
+        <label
+          for="showExits"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show Exits</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_exits}
+          type="checkbox"
+          name="showExits"
+          id="showExits"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="exitsExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Exits Expansion Mode</label
+        >
+        <select
+          id="exitsExpansionMode"
+          bind:value={$characterSettings.areaWindow.exits_expansion_mode}
+          name="exitsExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>manual</option>
+          <option>manual-threshold</option>
+          <option>open</option>
+          <option>open-threshold</option>
+          <option>close</option>
+        </select>
+      </div>
+      <div class="col-span-4">
+        <label
+          for="exitsThreshold"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Exits Collapse Threshold</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.exits_collapse_threshold}
+          type="number"
+          name="exitsThreshold"
+          id="exitsThreshold"
+          max="1000"
+          min="5"
+        />
+      </div>
+
+      <div class="col-span-6">
+        <label
+          for="overallExpansionMode"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Overall Expansion Mode</label
+        >
+        <select
+          id="overallExpansionMode"
+          bind:value={$characterSettings.areaWindow.total_collapse_mode}
+          name="overallExpansionMode"
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option>largest</option>
+          <option>smallest</option>
+          <option>all</option>
+          <option>none</option>
+        </select>
+      </div>
+      <div class="col-span-6">
+        <label
+          for="overallThreshold"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Overall Collapse Threshold</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow
+            .total_count_collapse_threshold}
+          type="number"
+          name="overallThreshold"
+          id="overallThreshold"
+          max="1000"
+          min="5"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowfilterBorderColorColor"
+          style="color:{$characterSettings.areaWindow.filter_border_color}"
+          class="block text-sm font-medium">Filter Border Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.filter_border_color}
+          type="color"
+          name="areaWindowfilterBorderColorColor"
+          id="areaWindowfilterBorderColorColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowfilterActiveIconColor"
+          style="color:{$characterSettings.areaWindow.filter_active_icon_color}"
+          class="block text-sm font-medium">Filter Active Icon Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.filter_active_icon_color}
+          type="color"
+          name="areaWindowfilterActiveIconColor"
+          id="areaWindowfilterActiveIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowfilterInactiveIconColor"
+          style="color:{$characterSettings.areaWindow
+            .filter_inactive_icon_color}"
+          class="block text-sm font-medium">Filter Inactive Icon Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.filter_inactive_icon_color}
+          type="color"
+          name="areaWindowfilterInactiveIconColor"
+          id="areaWindowfilterInactiveIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowfilterActiveBackgroundColor"
+          style="color:{$characterSettings.areaWindow
+            .filter_active_background_color}"
+          class="block text-sm font-medium"
+          >Filter Active Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow
+            .filter_active_background_color}
+          type="color"
+          name="areaWindowfilterActiveBackgroundColor"
+          id="areaWindowfilterActiveBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowfilterInactiveBackgroundColor"
+          style="color:{$characterSettings.areaWindow
+            .filter_inactive_background_color}"
+          class="block text-sm font-medium"
+          >Filter Inactive Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow
+            .filter_inactive_background_color}
+          type="color"
+          name="areaWindowfilterInactiveBackgroundColor"
+          id="areaWindowfilterInactiveBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
+    <div
       class="col-span-4 grid grid-cols-8 gap-4"
       style="background-color:{$characterSettings.inventoryWindow.background}"
     >

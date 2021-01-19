@@ -34,15 +34,9 @@
     bind:this={itemDiv}
     on:contextmenu={dispatchContextMenuEvent}
   >
-    {#if item.isContainer && item.containerOpen}
+    {#if item.isContainer}
       <i
-        class="fas fa-plus"
-        on:click|preventDefault={toggleContainerExpanded}
-      />
-      &nbsp;
-    {:else if item.isContainer && !item.containerOpen}
-      <i
-        class="fas fa-minus"
+        class="fas fa-{item.containerOpen ? 'minus' : 'plus'}"
         on:click|preventDefault={toggleContainerExpanded}
       />
       &nbsp;
@@ -63,7 +57,7 @@
       </div>
     {/if}
   </div>
-  {#if containerExpanded && $inventoryItemsParentChildIndex[item.id] != undefined}
+  {#if item.containerOpen && $inventoryItemsParentChildIndex[item.id] != undefined}
     <div class="flex">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
         &nbsp; &nbsp;

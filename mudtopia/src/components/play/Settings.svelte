@@ -10,7 +10,7 @@
   const { settingsView, view } = state;
 </script>
 
-<div class="flex flex-col" hidden={$view != "settings"}>
+<div class="flex flex-col overflow-y-auto" hidden={$view != "settings"}>
   <SettingsTabBar />
   {#if $settingsView == "general"}
     <SettingsGeneralView />

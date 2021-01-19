@@ -12,6 +12,33 @@ defmodule Mud.Engine.Character.Settings do
     @derive Jason.Encoder
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
+    embeds_one :area_window, AreaWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:show_description, :boolean, default: true)
+      field(:show_toi, :boolean, default: true)
+      field(:show_on_ground, :boolean, default: true)
+      field(:show_also_present, :boolean, default: true)
+      field(:show_exits, :boolean, default: true)
+      field(:background, :string, default: "#28282D")
+      field(:description_expansion_mode, :string, default: "manual")
+      field(:toi_expansion_mode, :string, default: "manual")
+      field(:toi_collapse_threshold, :integer, default: 10)
+      field(:on_ground_expansion_mode, :string, default: "manual")
+      field(:on_ground_collapse_threshold, :integer, default: 10)
+      field(:also_present_expansion_mode, :string, default: "manual")
+      field(:also_present_collapse_threshold, :integer, default: 10)
+      field(:exits_expansion_mode, :string, default: "manual")
+      field(:exits_collapse_threshold, :integer, default: 10)
+      field(:total_count_collapse_threshold, :integer, default: 50)
+      field(:total_collapse_mode, :string, default: "largest")
+      field(:filter_border_color, :string, default: "#ffffff")
+      field(:filter_active_icon_color, :string, default: "#a7f3d0")
+      field(:filter_inactive_icon_color, :string, default: "#fca5a5")
+      field(:filter_active_background_color, :string, default: "#6b7280")
+      field(:filter_inactive_background_color, :string, default: "#28282D")
+    end
+
     embeds_one :inventory_window, InventoryWindow, on_replace: :delete do
       @derive Jason.Encoder
 
@@ -140,6 +167,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:colors, with: &colors_changeset/2)
     |> cast_embed(:echo, with: &echo_changeset/2)
     |> cast_embed(:inventory_window, with: &inventory_window_changeset/2)
+    |> cast_embed(:area_window, with: &area_window_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -191,6 +219,36 @@ defmodule Mud.Engine.Character.Settings do
       :window_lock_locked,
       :window_move_unlocked,
       :window_move_locked
+    ])
+    |> validate_required([])
+  end
+
+  defp area_window_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :show_description,
+      :show_toi,
+      :show_on_ground,
+      :show_also_present,
+      :show_exits,
+      :background,
+      :description_expansion_mode,
+      :toi_expansion_mode,
+      :toi_collapse_threshold,
+      :on_ground_expansion_mode,
+      :on_ground_collapse_threshold,
+      :also_present_expansion_mode,
+      :also_present_collapse_threshold,
+      :exits_expansion_mode,
+      :exits_collapse_threshold,
+      :total_count_collapse_threshold,
+      :total_collapse_mode,
+      :filter_border_color,
+      :filter_active_icon_color,
+      :filter_inactive_icon_color,
+      :filter_active_background_color,
+      :filter_inactive_background_color
     ])
     |> validate_required([])
   end
@@ -436,6 +494,7 @@ defmodule Mud.Engine.Character.Settings do
         Map.put(attrs, :echo, default_echo_settings)
       end
 
+    attrs = insert_default_area_window_settings(attrs)
     attrs = insert_default_inventory_window_settings(attrs)
 
     Logger.debug(inspect(attrs))
@@ -491,6 +550,33 @@ defmodule Mud.Engine.Character.Settings do
   # Default settings helper functions
   #
   #
+
+  defp insert_default_area_window_settings(attrs) do
+    Map.put(attrs, :area_window, %{
+      show_description: true,
+      show_toi: true,
+      show_on_ground: true,
+      show_also_present: true,
+      show_exits: true,
+      background: "#28282D",
+      description_expansion_mode: "manual-threshold",
+      toi_expansion_mode: "manual-threshold",
+      toi_collapse_threshold: 20,
+      on_ground_expansion_mode: "manual-threshold",
+      on_ground_collapse_threshold: 20,
+      also_present_expansion_mode: "manual-threshold",
+      also_present_collapse_threshold: 20,
+      exits_expansion_mode: "manual-threshold",
+      exits_collapse_threshold: 20,
+      total_count_collapse_threshold: 50,
+      total_collapse_mode: "largest",
+      filter_border_color: "#ffffff",
+      filter_active_icon_color: "#a7f3d0",
+      filter_inactive_icon_color: "#fca5a5",
+      filter_active_background_color: "#28282D",
+      filter_inactive_background_color: "#28282D"
+    })
+  end
 
   defp insert_default_inventory_window_settings(attrs) do
     Map.put(attrs, :inventory_window, %{

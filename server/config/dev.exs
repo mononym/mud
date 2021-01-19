@@ -20,7 +20,8 @@ config :mud, MudWeb.Endpoint,
     port: 4000,
     cipher_suite: :strong,
     certfile: "priv/cert/selfsigned.pem",
-    keyfile: "priv/cert/selfsigned_key.pem"
+    keyfile: "priv/cert/selfsigned_key.pem",
+    compress: true
   ],
   debug_errors: false,
   code_reloader: true,

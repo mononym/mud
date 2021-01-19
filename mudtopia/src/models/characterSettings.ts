@@ -91,11 +91,65 @@ export interface CharacterSettingsInterface {
     filter_active_background_color: string;
     filter_inactive_background_color: string;
   };
+  areaWindow: {
+    id: string;
+    show_description: boolean;
+    show_toi: boolean;
+    show_on_ground: boolean;
+    show_also_present: boolean;
+    show_exits: boolean;
+    background: string;
+    description_expansion_mode: string;
+    toi_expansion_mode: string;
+    toi_collapse_threshold: number;
+    on_ground_expansion_mode: string;
+    on_ground_collapse_threshold: number;
+    also_present_expansion_mode: string;
+    also_present_collapse_threshold: number;
+    exits_expansion_mode: string;
+    exits_collapse_threshold: number;
+    total_count_collapse_threshold: number;
+    total_collapse_mode: string;
+    filter_active_icon_color: string;
+    filter_inactive_icon_color: string;
+    filter_active_background_color: string;
+    filter_inactive_background_color: string;
+    filter_border_color: string;
+  };
   customHotkeys: HotkeyInterface[];
 }
 
 const state: CharacterSettingsInterface = {
   id: "",
+  areaWindow: {
+    id: "",
+    background: "#28282D",
+    show_description: true,
+    description_expansion_mode: "manual",
+
+    show_toi: true,
+    toi_expansion_mode: "manual-threshold",
+    toi_collapse_threshold: 20,
+
+    show_on_ground: true,
+    on_ground_expansion_mode: "manual-threshold",
+    on_ground_collapse_threshold: 20,
+    show_also_present: true,
+
+    also_present_expansion_mode: "manual-threshold",
+    also_present_collapse_threshold: 20,
+    show_exits: true,
+
+    exits_expansion_mode: "manual-threshold",
+    exits_collapse_threshold: 20,
+    total_count_collapse_threshold: 50,
+    total_collapse_mode: "largest",
+    filter_border_color: "",
+    filter_active_icon_color: "",
+    filter_inactive_icon_color: "",
+    filter_active_background_color: "",
+    filter_inactive_background_color: "",
+  },
   inventoryWindow: {
     id: "",
     empty_hand: "",
