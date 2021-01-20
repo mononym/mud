@@ -1,10 +1,11 @@
 <script>
-  import InventoryWindowFilterButton from "./InventoryWindowFilterButton.svelte";
+  import FilterButton from "./FilterButton.svelte";
   import InventoryItem from "./InventoryItem.svelte";
   import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
   import { getContext } from "svelte";
   import { key } from "./state";
   import { getItemColor } from "../../utils/utils";
+  import QuickAction from "./QuickAction.svelte";
 
   const state = getContext(key);
   const {
@@ -15,6 +16,7 @@
     rightHandHasItem,
     selectedCharacter,
     characterSettings,
+    saveCharacterSettings,
   } = state;
 
   let menuItem;
@@ -51,6 +53,10 @@
   let wornItemsExpanded = true;
   function toggleWornItems() {
     wornItemsExpanded = !wornItemsExpanded;
+  }
+
+  function saveSettings() {
+    saveCharacterSettings();
   }
 
   let wornItems = [];
@@ -102,14 +108,43 @@
               : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
           >
             {#if $rightHandHasItem}
-              <i class="fas fa-hand-paper text-xl cursor-not-allowed" />
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+              />
               &nbsp; &nbsp;
+              {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
+                <QuickAction
+                  icon="fas fa-backpack"
+                  activeTooltip="stow"
+                  cliInput="stow {$itemInRightHand.id}"
+                  storyOutput="get {$itemInRightHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                <QuickAction
+                  icon="fas fa-hand-holding-box fa-rotate-180"
+                  activeTooltip="drop"
+                  cliInput="drop {$itemInRightHand.id}"
+                  storyOutput="drop {$itemInRightHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                &nbsp; &nbsp;
+              {/if}
               <InventoryItem
                 item={$itemInRightHand}
                 on:showContextMenu={showRightClickMenu}
               />
             {:else}
-              <i class="fas fa-hand-paper text-xl cursor-not-allowed" />
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+              />
               &nbsp; &nbsp;
               <pre
                 class="select-none cursor-not-allowed self-center"
@@ -128,17 +163,40 @@
               : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
           >
             <i
-              class="fas fa-hand-paper fa-flip-horizontal text-xl cursor-not-allowed"
+              class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed"
             />
-            &nbsp;
+            &nbsp; &nbsp;
             {#if $leftHandHasItem}
-              &nbsp;
+              {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
+                <QuickAction
+                  icon="fas fa-backpack"
+                  activeTooltip="stow"
+                  cliInput="stow {$itemInLeftHand.id}"
+                  storyOutput="get {$itemInLeftHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                <QuickAction
+                  icon="fas fa-hand-holding-box fa-rotate-180"
+                  activeTooltip="drop"
+                  cliInput="drop {$itemInLeftHand.id}"
+                  storyOutput="drop {$itemInLeftHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                &nbsp; &nbsp;
+              {/if}
               <InventoryItem
                 item={$itemInLeftHand}
                 on:showContextMenu={showRightClickMenu}
               />
             {:else}
-              &nbsp;
               <pre
                 class="select-none cursor-not-allowed self-center">EMPTY</pre>
             {/if}
@@ -146,11 +204,36 @@
         {:else}
           <div class="flex">
             <i
-              class="fas fa-hand-paper fa-flip-horizontal text-xl cursor-not-allowed"
+              class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed"
             />
             &nbsp;
             {#if $leftHandHasItem}
-              &nbsp;
+              &nbsp; &nbsp;
+              {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
+                <QuickAction
+                  icon="fas fa-backpack"
+                  activeTooltip="stow"
+                  cliInput="stow {$itemInLeftHand.id}"
+                  storyOutput="get {$itemInLeftHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                <QuickAction
+                  icon="fas fa-hand-holding-box fa-rotate-180"
+                  activeTooltip="drop"
+                  cliInput="drop {$itemInLeftHand.id}"
+                  storyOutput="drop {$itemInLeftHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                &nbsp; &nbsp;
+              {/if}
               <InventoryItem
                 item={$itemInLeftHand}
                 on:showContextMenu={showRightClickMenu}
@@ -162,10 +245,40 @@
             {/if}
           </div>
           <div class="flex">
-            <i class="fas fa-hand-paper text-xl cursor-not-allowed" />
+            <i
+              class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+            />
             &nbsp;
             {#if $rightHandHasItem}
-              &nbsp;
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+              />
+              &nbsp; &nbsp;
+              {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
+                <QuickAction
+                  icon="fas fa-backpack"
+                  activeTooltip="stow"
+                  cliInput="stow {$itemInRightHand.id}"
+                  storyOutput="get {$itemInRightHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                <QuickAction
+                  icon="fas fa-hand-holding-box fa-rotate-180"
+                  activeTooltip="drop"
+                  cliInput="drop {$itemInRightHand.id}"
+                  storyOutput="drop {$itemInRightHand.shortDescription}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+                &nbsp; &nbsp;
+              {/if}
               <InventoryItem
                 item={$itemInRightHand}
                 on:showContextMenu={showRightClickMenu}
@@ -233,47 +346,109 @@
       'filter_border_color'
     ]}"
   >
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-hands"
       bind:active={$characterSettings.inventoryWindow.show_held_items}
+      on:toggle={saveSettings}
       activeTooltip="Hide held items"
       inactiveTooltip="Show held items"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-backpack"
       bind:active={$characterSettings.inventoryWindow.show_worn_containers}
+      on:toggle={saveSettings}
       activeTooltip="Hide worn containers"
       inactiveTooltip="Show worn containers"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-tshirt"
       bind:active={$characterSettings.inventoryWindow.show_worn_clothes}
+      on:toggle={saveSettings}
       activeTooltip="Hide worn clothes"
       inactiveTooltip="Show worn clothes"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-shield"
       bind:active={$characterSettings.inventoryWindow.show_worn_armor}
+      on:toggle={saveSettings}
       activeTooltip="Hide worn armor"
       inactiveTooltip="Show worn armor"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-sword"
       bind:active={$characterSettings.inventoryWindow.show_worn_weapons}
+      on:toggle={saveSettings}
       activeTooltip="Hide worn weapons"
       inactiveTooltip="Show worn weapons"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-ring"
       bind:active={$characterSettings.inventoryWindow.show_worn_jewelry}
+      on:toggle={saveSettings}
       activeTooltip="Hide worn jewelry"
       inactiveTooltip="Show worn jewelry"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
-    <InventoryWindowFilterButton
+    <FilterButton
       icon="fas fa-certificate"
       bind:active={$characterSettings.inventoryWindow.show_worn_items}
+      on:toggle={saveSettings}
       activeTooltip="Hide other worn items"
       inactiveTooltip="Show other worn items"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
+    />
+    <FilterButton
+      icon="fas fa-rabbit-fast"
+      bind:active={$characterSettings.inventoryWindow.show_quick_actions}
+      on:toggle={saveSettings}
+      activeTooltip="Hide Quick Actions"
+      inactiveTooltip="Show Quick Actions"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
     />
   </div>
   <InventoryItemRightClickMenu {pos} item={menuItem} bind:showMenu />

@@ -254,8 +254,7 @@
     }
   }
 
-  function saveSettings(event) {
-    console.log();
+  function saveSettings() {
     saveCharacterSettings();
   }
 
@@ -353,10 +352,9 @@
               inactiveTooltip="Hands are full"
               cliInput="get {item.id}"
               storyOutput="get {item.shortDescription}"
-              activeIconColor={getItemColor(
-                $selectedCharacter.settings.colors,
-                item
-              )}
+              activeIconColor={$selectedCharacter.settings.areaWindow[
+                "enabled_quick_action_color"
+              ]}
               inactiveIconColor={$selectedCharacter.settings.areaWindow[
                 "disabled_quick_action_color"
               ]}
@@ -414,7 +412,9 @@
               activeTooltip="go"
               cliInput="go {link.id}"
               storyOutput="go {link.shortDescription}"
-              activeIconColor={$selectedCharacter.settings.colors["exit"]}
+              activeIconColor={$selectedCharacter.settings.areaWindow[
+                "enabled_quick_action_color"
+              ]}
               inactiveIconColor={$selectedCharacter.settings.areaWindow[
                 "disabled_quick_action_color"
               ]}

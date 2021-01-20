@@ -91,6 +91,9 @@ export interface CharacterSettingsInterface {
     filter_inactive_icon_color: string;
     filter_active_background_color: string;
     filter_inactive_background_color: string;
+    enabled_quick_action_color: string;
+    disabled_quick_action_color: string;
+    show_quick_actions: boolean;
   };
   areaWindow: {
     id: string;
@@ -116,6 +119,7 @@ export interface CharacterSettingsInterface {
     filter_active_background_color: string;
     filter_inactive_background_color: string;
     filter_border_color: string;
+    enabled_quick_action_color: string;
     disabled_quick_action_color: string;
     show_quick_actions: boolean;
   };
@@ -154,6 +158,7 @@ const state: CharacterSettingsInterface = {
     filter_inactive_icon_color: "",
     filter_active_background_color: "",
     filter_inactive_background_color: "",
+    enabled_quick_action_color: "",
     disabled_quick_action_color: "",
     show_quick_actions: true,
   },
@@ -179,6 +184,9 @@ const state: CharacterSettingsInterface = {
     filter_inactive_icon_color: "",
     filter_active_background_color: "",
     filter_inactive_background_color: "",
+    enabled_quick_action_color: "",
+    disabled_quick_action_color: "",
+    show_quick_actions: true,
   },
   echo: {
     id: "",
