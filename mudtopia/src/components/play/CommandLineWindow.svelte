@@ -162,6 +162,7 @@
   </button>
   <form class="flex-1 flex">
     <textarea
+      id="cli"
       bind:this={commandLineDiv}
       on:submit|preventDefault={submitPlayerInput}
       bind:value={actualInput}

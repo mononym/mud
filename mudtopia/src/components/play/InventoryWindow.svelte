@@ -112,7 +112,7 @@
               <i class="fas fa-hand-paper text-xl cursor-not-allowed" />
               &nbsp; &nbsp;
               <pre
-                class="select-none cursor-not-allowed"
+                class="select-none cursor-not-allowed self-center"
                 style="color:{$selectedCharacter.settings.inventoryWindow[
                   'empty_hand'
                 ]}">EMPTY</pre>
@@ -139,7 +139,8 @@
               />
             {:else}
               &nbsp;
-              <pre class="select-none cursor-not-allowed">EMPTY</pre>
+              <pre
+                class="select-none cursor-not-allowed self-center">EMPTY</pre>
             {/if}
           </div>
         {:else}
@@ -156,7 +157,8 @@
               />
             {:else}
               &nbsp;
-              <pre class="select-none cursor-not-allowed">EMPTY</pre>
+              <pre
+                class="select-none cursor-not-allowed self-center">EMPTY</pre>
             {/if}
           </div>
           <div class="flex">
@@ -170,7 +172,8 @@
               />
             {:else}
               &nbsp;
-              <pre class="select-none cursor-not-allowed">EMPTY</pre>
+              <pre
+                class="select-none cursor-not-allowed self-center">EMPTY</pre>
             {/if}
           </div>
         {/if}

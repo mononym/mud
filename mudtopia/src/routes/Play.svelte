@@ -49,6 +49,7 @@
     toggle_history_view: () => state.toggleHistoryWindow(),
     zoom_map_out: () => state.zoom_map_out(),
     zoom_map_in: () => state.zoom_map_in(),
+    select_cli: () => document.getElementById("cli").focus(),
   };
 
   function generatePresetHotkeyCallbacks() {

@@ -120,6 +120,7 @@ defmodule Mud.Engine.Character.Settings do
 
     embeds_one :preset_hotkeys, PresetHotkeys, on_replace: :delete do
       @derive Jason.Encoder
+      field(:select_cli, :string, default: "CTRL + SHIFT + KeyC")
       field(:open_play, :string, default: "CTRL + SHIFT + KeyP")
       field(:open_settings, :string, default: "CTRL + SHIFT + KeyS")
       field(:toggle_history_view, :string, default: "CTRL + SHIFT + KeyH")
@@ -286,6 +287,7 @@ defmodule Mud.Engine.Character.Settings do
     schema
     |> cast(params, [
       :id,
+      :select_cli,
       :open_play,
       :open_settings,
       :toggle_history_view,
@@ -395,6 +397,7 @@ defmodule Mud.Engine.Character.Settings do
       end
 
     default_preset_hotkeys = %{
+      select_cli: "CTRL + SHIFT + KeyC",
       open_settings: "CTRL + SHIFT + KeyS",
       open_play: "CTRL + SHIFT + KeyP",
       toggle_history_view: "CTRL + SHIFT + KeyH",

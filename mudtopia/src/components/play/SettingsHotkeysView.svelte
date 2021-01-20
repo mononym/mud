@@ -97,43 +97,63 @@
 
 <form
   class="flex-1 grid grid-cols-8 gap-4"
-  on:submit|preventDefault={saveCharacterSettings}>
+  on:submit|preventDefault={saveCharacterSettings}
+>
   <div class="col-span-2 grid grid-cols-8">
     <h2 class="text-center border-b-2 border-black col-span-8 text-white">
       Application Hotkeys
     </h2>
     <div class="col-span-2">
-      <label
-        for="openSettings"
-        class="block text-sm font-medium text-white">Open Settings Tab</label>
+      <label for="openSettings" class="block text-sm font-medium text-white"
+        >Open Settings Tab</label
+      >
       <input
-        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_settings')}
+        on:keydown|preventDefault={(e) =>
+          buildPresetHotkeyString(e, "open_settings")}
         bind:value={$characterSettings.presetHotkeys.open_settings}
         name="openSettings"
         id="openSettings"
-        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+      />
     </div>
     <div class="col-span-2">
-      <label for="openPlay" class="block text-sm font-medium text-white">Open
-        Play Tab</label>
+      <label for="openPlay" class="block text-sm font-medium text-white"
+        >Open Play Tab</label
+      >
       <input
-        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'open_play')}
+        on:keydown|preventDefault={(e) =>
+          buildPresetHotkeyString(e, "open_play")}
         bind:value={$characterSettings.presetHotkeys.open_play}
         name="openPlay"
         id="openPlay"
-        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+      />
     </div>
     <div class="col-span-2">
-      <label
-        for="toggleHistory"
-        class="block text-sm font-medium text-white">Toggle History View in
-        Story Window</label>
+      <label for="toggleHistory" class="block text-sm font-medium text-white"
+        >Toggle History View in Story Window</label
+      >
       <input
-        on:keydown|preventDefault={(e) => buildPresetHotkeyString(e, 'toggle_history')}
+        on:keydown|preventDefault={(e) =>
+          buildPresetHotkeyString(e, "toggle_history")}
         bind:value={$characterSettings.presetHotkeys.toggle_history}
         name="toggleHistory"
         id="toggleHistory"
-        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+      />
+    </div>
+    <div class="col-span-2">
+      <label for="selectCli" class="block text-sm font-medium text-white"
+        >Select Commandline</label
+      >
+      <input
+        on:keydown|preventDefault={(e) =>
+          buildPresetHotkeyString(e, "select_cli")}
+        bind:value={$characterSettings.presetHotkeys.select_cli}
+        name="selectCli"
+        id="selectCli"
+        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+      />
     </div>
   </div>
   <div class="col-span-6 grid grid-cols-8 gap-16">
@@ -156,12 +176,14 @@
           bind:value={customHotkey.string}
           name={`${customHotkey.id}-${i}-key`}
           id={`${customHotkey.id}-${i}-key`}
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4" />
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4"
+        />
         <input
           bind:value={customHotkey.command}
           name={`${customHotkey.id}-${i}-cmd`}
           id={`${customHotkey.id}-${i}-cmd`}
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4" />
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md col-span-4"
+        />
         <button
           on:click|preventDefault={deleteCustomHotkey(customHotkey.id)}
           class="col-span-1 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -179,7 +201,9 @@
     <button
       disabled={!settingsChanged}
       type="submit"
-      class="{!settingsChanged ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      class="{!settingsChanged
+        ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
+        : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
       Save
     </button>
     <button

@@ -56,6 +56,7 @@ export interface CharacterSettingsInterface {
     toggle_history_view: string;
     zoom_map_out: string;
     zoom_map_in: string;
+    select_cli: string;
   };
   echo: {
     id: string;
@@ -134,18 +135,18 @@ const state: CharacterSettingsInterface = {
     show_on_ground: true,
     on_ground_expansion_mode: "manual-threshold",
     on_ground_collapse_threshold: 20,
-    
+
     show_also_present: true,
     also_present_expansion_mode: "manual-threshold",
     also_present_collapse_threshold: 20,
-    
+
     show_exits: true,
     exits_expansion_mode: "manual-threshold",
     exits_collapse_threshold: 20,
-    
+
     total_count_collapse_threshold: 50,
     total_collapse_mode: "largest",
-    
+
     filter_border_color: "",
     filter_active_icon_color: "",
     filter_inactive_icon_color: "",
@@ -240,6 +241,7 @@ const state: CharacterSettingsInterface = {
     toggle_history_view: "CTRL + SHIFT + KeyH",
     zoom_map_out: "CTRL + SHIFT + Minus",
     zoom_map_in: "CTRL + SHIFT + Equals",
+    select_cli: "CTRL + SHIFT + KeyC",
   },
   customHotkeys: [],
 };
