@@ -7,7 +7,6 @@
   import QuickAction from "./QuickAction.svelte";
   import tippy from "tippy.js";
   import "tippy.js/dist/tippy.css";
-  import { getItemColor } from "../../utils/utils";
 
   const state = getContext(key);
   const {

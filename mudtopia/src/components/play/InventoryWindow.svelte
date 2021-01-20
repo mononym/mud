@@ -2,10 +2,12 @@
   import FilterButton from "./FilterButton.svelte";
   import InventoryItem from "./InventoryItem.svelte";
   import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
-  import { getContext } from "svelte";
+  import { afterUpdate, getContext } from "svelte";
   import { key } from "./state";
   import { getItemColor } from "../../utils/utils";
   import QuickAction from "./QuickAction.svelte";
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
 
   const state = getContext(key);
   const {
@@ -24,6 +26,10 @@
   let pos = { x: 0, y: 0 };
 
   let windowDiv;
+
+  afterUpdate(() => {
+    tippy("[data-tippy-content]");
+  });
 
   async function showRightClickMenu(customEvent) {
     if (showMenu) {
@@ -107,10 +113,11 @@
                 )
               : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
           >
+            <i
+              class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+              data-tippy-content="Right Hand"
+            />
             {#if $rightHandHasItem}
-              <i
-                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
-              />
               &nbsp; &nbsp;
               {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
                 <QuickAction
@@ -142,9 +149,6 @@
                 on:showContextMenu={showRightClickMenu}
               />
             {:else}
-              <i
-                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
-              />
               &nbsp; &nbsp;
               <pre
                 class="select-none cursor-not-allowed self-center"
@@ -164,6 +168,7 @@
           >
             <i
               class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed"
+              data-tippy-content="Left Hand"
             />
             &nbsp; &nbsp;
             {#if $leftHandHasItem}
@@ -205,6 +210,7 @@
           <div class="flex">
             <i
               class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed"
+              data-tippy-content="Left Hand"
             />
             &nbsp;
             {#if $leftHandHasItem}
@@ -247,13 +253,10 @@
           <div class="flex">
             <i
               class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
+              data-tippy-content="Right Hand"
             />
-            &nbsp;
+            &nbsp; &nbsp;
             {#if $rightHandHasItem}
-              <i
-                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed"
-              />
-              &nbsp; &nbsp;
               {#if $selectedCharacter.settings.inventoryWindow["show_quick_actions"]}
                 <QuickAction
                   icon="fas fa-backpack"
