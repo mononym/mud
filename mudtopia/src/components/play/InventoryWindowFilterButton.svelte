@@ -38,7 +38,7 @@
   class="InventoryWindowFilterButton py-1 px-1 border-r"
   on:click={toggleActive}>
   <i
-    class={icon}
+    class={`fa-fw fa-lg ${icon}`}
     style="color:{$selectedCharacter.settings.inventoryWindow[
       active ? 'filter_active_icon_color' : 'filter_inactive_icon_color'
     ]}"

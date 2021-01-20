@@ -39,7 +39,7 @@
   class="py-1 px-1 border-r"
   on:click={toggleActive}>
   <i
-    class={icon}
+    class={`fa-fw fa-lg ${icon}`}
     style="color:{active ? activeIconColor : inactiveIconColor}"
   />
 </button>

@@ -1,9 +1,12 @@
 <script>
-  import { getContext } from "svelte";
+  import { getContext, tick, afterUpdate } from "svelte";
   import { key } from "./state";
   import InventoryItem from "./InventoryItem.svelte";
   import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
   import FilterButton from "./FilterButton.svelte";
+  import QuickAction from "./QuickAction.svelte";
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
 
   const state = getContext(key);
   const {
@@ -14,31 +17,237 @@
     toiInArea,
     characterSettings,
     saveCharacterSettings,
+    exitsInArea,
   } = state;
 
   $: otherCharactersAreInArea = $otherCharactersInArea.length > 0;
   $: hasToiInArea = $toiInArea.length > 0;
-  $: hasThingsInArea = $onGroundInArea.length > 0;
+  $: hasThingsOnGround = $onGroundInArea.length > 0;
+  $: hasExitsInArea = $exitsInArea.length > 0;
 
   let menuItem;
   let showDescription = true;
   let showOnGround = true;
   let showOtherCharacters = true;
   let showToi = true;
+  let showExits = true;
 
   let windowDiv;
+
+  afterUpdate(() => {
+    tippy("[data-tippy-content]");
+  });
+
+  let lastAreaId;
+  $: $currentArea, maybeHandleToggles();
+  async function maybeHandleToggles() {
+    console.log("maybeHandleToggles");
+    await tick();
+
+    if (lastAreaId != $currentArea.id) {
+      lastAreaId = $currentArea.id;
+
+      runThroughToggles();
+    }
+  }
+
+  function runThroughToggles() {
+    let runningTotal = 0;
+
+    switch ($selectedCharacter.settings.areaWindow.description_expansion_mode) {
+      case "close":
+        showDescription = false;
+        break;
+      case "open":
+        showDescription = true;
+        break;
+      default:
+        break;
+    }
+
+    switch ($selectedCharacter.settings.areaWindow.toi_expansion_mode) {
+      case "close":
+        showToi = false;
+        break;
+      case "open":
+        runningTotal += $toiInArea.length;
+        showToi = true;
+        break;
+      case "open-threshold":
+      case "manual-threshold":
+        if (
+          $toiInArea.length >
+          $selectedCharacter.settings.areaWindow.toi_collapse_threshold
+        ) {
+          showToi = false;
+        } else {
+          runningTotal += $toiInArea.length;
+        }
+        break;
+      default:
+        break;
+    }
+
+    switch ($selectedCharacter.settings.areaWindow.on_ground_expansion_mode) {
+      case "close":
+        showOnGround = false;
+        break;
+      case "open":
+        runningTotal += $onGroundInArea.length;
+        showOnGround = true;
+        break;
+      case "open-threshold":
+      case "manual-threshold":
+        if (
+          $onGroundInArea.length >
+          $selectedCharacter.settings.areaWindow.on_ground_collapse_threshold
+        ) {
+          showOnGround = false;
+        } else {
+          runningTotal += $onGroundInArea.length;
+        }
+        break;
+      default:
+        break;
+    }
+
+    switch (
+      $selectedCharacter.settings.areaWindow.also_present_expansion_mode
+    ) {
+      case "close":
+        showOtherCharacters = false;
+        break;
+      case "open":
+        runningTotal += $otherCharactersInArea.length;
+        showOtherCharacters = true;
+        break;
+      case "open-threshold":
+      case "manual-threshold":
+        if (
+          $otherCharactersInArea.length >
+          $selectedCharacter.settings.areaWindow.also_present_collapse_threshold
+        ) {
+          showOtherCharacters = false;
+        } else {
+          runningTotal += $otherCharactersInArea.length;
+        }
+        break;
+      default:
+        break;
+    }
+
+    switch ($selectedCharacter.settings.areaWindow.exits_expansion_mode) {
+      case "close":
+        showExits = false;
+        break;
+      case "open":
+        runningTotal += $exitsInArea.length;
+        showExits = true;
+        break;
+      case "open-threshold":
+      case "manual-threshold":
+        if (
+          $exitsInArea.length >
+          $selectedCharacter.settings.areaWindow.exits_collapse_threshold
+        ) {
+          showExits = false;
+        } else {
+          runningTotal += $exitsInArea.length;
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (
+      $selectedCharacter.settings.areaWindow.total_collapse_mode != "none" &&
+      $selectedCharacter.settings.areaWindow.total_count_collapse_threshold <
+        runningTotal
+    ) {
+      var l = [];
+      l.push({
+        count: $toiInArea.length,
+        callback: () => {
+          showToi = false;
+        },
+      });
+      l.push({
+        count: $onGroundInArea.length,
+        callback: () => {
+          showOnGround = false;
+        },
+      });
+      l.push({
+        count: $otherCharactersInArea.length,
+        callback: () => {
+          showOtherCharacters = false;
+        },
+      });
+      l.push({
+        count: $exitsInArea.length,
+        callback: () => {
+          showExits = false;
+        },
+      });
+
+      switch ($selectedCharacter.settings.areaWindow.total_collapse_mode) {
+        case "largest":
+          l.sort(function (a, b) {
+            return a.count - b.count;
+          });
+
+          closeUntilBelowThreshold(l, runningTotal);
+          break;
+        case "smallest":
+          l.sort(function (a, b) {
+            return b.count - a.count;
+          });
+
+          closeUntilBelowThreshold(l, runningTotal);
+          break;
+        case "all":
+          showDescription = false;
+          showOnGround = false;
+          showOtherCharacters = false;
+          showToi = false;
+          showExits = false;
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+  function closeUntilBelowThreshold(list, runningTotal) {
+    if (
+      runningTotal >
+      $selectedCharacter.settings.areaWindow.total_count_collapse_threshold
+    ) {
+      const val = list.pop();
+      val.callback();
+      closeUntilBelowThreshold(list, runningTotal - val.count);
+    }
+  }
 
   function toggleDescription() {
     showDescription = !showDescription;
   }
 
   function toggleOnGround() {
-    showOnGround = !showOnGround;
+    if (hasThingsOnGround) {
+      showOnGround = !showOnGround;
+    }
   }
 
   function toggleAlsoPresent() {
     if (otherCharactersAreInArea) {
       showOtherCharacters = !showOtherCharacters;
+    }
+  }
+
+  function toggleExits() {
+    if (hasExitsInArea) {
+      showExits = !showExits;
     }
   }
 
@@ -151,6 +360,39 @@
         <pre class="ml-4">
         {character.name}
       </pre>
+      {/each}
+    {/if}
+  {/if}
+  {#if $selectedCharacter.settings.areaWindow["show_exits"]}
+    <div
+      class="{hasExitsInArea
+        ? 'cursor-pointer'
+        : 'cursor-not-allowed'} select-none"
+      on:click={toggleExits}
+      style="color:{$selectedCharacter.settings.colors['exit_label']}"
+    >
+      <i class="fas fa-{showExits ? 'minus' : 'plus'}" />
+      &nbsp;
+      <pre class="inline">Exits ({$exitsInArea.length})</pre>
+    </div>
+    {#if showExits}
+      {#each $exitsInArea as link}
+        <div
+          class="flex"
+          style="color:{$selectedCharacter.settings.colors['exit']}"
+        >
+          <QuickAction
+            icon="fas fa-sign-out"
+            tooltip="go"
+            cliInput="go {link.id}"
+            storyOutput="go {link.shortDescription}"
+          />
+          <i
+            class="fas fa-eye fa-lg fa-fw ml-1 mr-1 self-center"
+            data-tippy-content="peer"
+          />
+          <pre>{link.shortDescription}</pre>
+        </div>
       {/each}
     {/if}
   {/if}

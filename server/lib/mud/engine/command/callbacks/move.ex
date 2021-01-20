@@ -191,6 +191,8 @@ defmodule Mud.Engine.Command.Move do
     # Grab minimum info necessary to display other characters in area. Do not expose 'private' character info like stats and settings
     others_in_new_area = characters_by_area[link.to_id] || []
 
+    links = Link.list_obvious_exits_in_area(area.id)
+
     # Perform look logic for character
     context
     |> Context.append_message(Area.long_description_to_story_output(area, context.character))
@@ -231,11 +233,12 @@ defmodule Mud.Engine.Command.Move do
     |> Context.append_event(
       character.id,
       UpdateArea.new(%{
-        action: :replace,
+        action: :look,
         area: area,
         other_characters: others_in_new_area,
         on_ground: items_in_area || [],
-        toi: scenery || []
+        toi: scenery || [],
+        exits: links || []
       })
     )
 

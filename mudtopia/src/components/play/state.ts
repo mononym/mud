@@ -347,11 +347,12 @@ export function createState() {
       console.log("received an update for area");
       console.log(msg);
 
-      if (msg.action == "replace") {
+      if (msg.action == "look") {
         currentArea.set(msg.area);
         otherCharactersInArea.set(msg.otherCharacters);
         onGroundInArea.set(msg.onGround);
         toiInArea.set(msg.toi);
+        exitsInArea.set(msg.exits);
       } else if (msg.action == "add") {
         otherCharactersInArea.set([
           ...get(otherCharactersInArea),
@@ -361,6 +362,7 @@ export function createState() {
         onGroundInArea.set([...get(onGroundInArea), ...msg.onGround]);
 
         toiInArea.set([...get(toiInArea), ...msg.toi]);
+        exitsInArea.set([...get(exitsInArea), ...msg.exits]);
       } else if (msg.action == "remove") {
         const removeCharacterIds = msg.otherCharacters.map((char) => char.id);
         otherCharactersInArea.update(function (otherCharacters) {
@@ -382,6 +384,12 @@ export function createState() {
         toiInArea.update(function (toi) {
           toi.filter((item, i, a) => !removeToiIds.includes(item.id));
           return toi;
+        });
+
+        const removeExitIds = msg.exits.map((exit) => exit.id);
+        exitsInArea.update(function (exit) {
+          exit.filter((exit, i, a) => !removeExitIds.includes(exit.id));
+          return exit;
         });
       }
     });

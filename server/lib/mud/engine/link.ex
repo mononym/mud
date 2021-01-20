@@ -190,7 +190,7 @@ defmodule Mud.Engine.Link do
 
   ## Examples
 
-      iex> list_obvious_exits("valid room id")
+      iex> list_obvious_exits_in_area("valid room id")
       [%__MODULE__{}, ...]
 
   """

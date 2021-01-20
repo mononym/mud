@@ -134,16 +134,18 @@ const state: CharacterSettingsInterface = {
     show_on_ground: true,
     on_ground_expansion_mode: "manual-threshold",
     on_ground_collapse_threshold: 20,
+    
     show_also_present: true,
-
     also_present_expansion_mode: "manual-threshold",
     also_present_collapse_threshold: 20,
+    
     show_exits: true,
-
     exits_expansion_mode: "manual-threshold",
     exits_collapse_threshold: 20,
+    
     total_count_collapse_threshold: 50,
     total_collapse_mode: "largest",
+    
     filter_border_color: "",
     filter_active_icon_color: "",
     filter_inactive_icon_color: "",

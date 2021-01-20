@@ -8,21 +8,24 @@ defmodule Mud.Engine.Event.Client.UpdateArea do
              :other_characters,
              :on_ground,
              :denizens,
-             :toi
+             :toi,
+             :exits
            ]}
   typedstruct do
     # add, remove, update
-    field(:action, String.t(), required: false, default: :replace)
+    field(:action, String.t(), required: false, default: :look)
     # the item being updated
     field(:area, [struct()], required: true)
     # Other characters in the area
     field(:other_characters, [struct()], required: false, default: [])
     # Items on the ground
     field(:on_ground, [struct()], required: false, default: [])
-    # Items on the ground
+    # Denizens in the area
     field(:denizens, [struct()], required: false, default: [])
-    # Items on the ground
+    # Things of Interest in the area
     field(:toi, [struct()], required: false, default: [])
+    # Exits leading from the area
+    field(:exits, [struct()], required: false, default: [])
   end
 
   def new(params) do

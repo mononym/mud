@@ -7,6 +7,7 @@ defmodule Mud.Engine.Session do
   alias Mud.Engine.Event
   alias Mud.Engine.Message
   alias Mud.Engine.Area
+  alias Mud.Engine.Link
   alias Mud.Engine.Character
   alias Mud.Engine.Item
   alias Mud.Engine.Event.Client.UpdateArea
@@ -356,14 +357,17 @@ defmodule Mud.Engine.Session do
         scenery = items_are_scenery[true]
         items_in_area = items_are_scenery[false]
         characters = Character.list_others_active_in_areas(character.id, [area.id])
+        links = Link.list_obvious_exits_in_area(area.id)
 
         %{
-          action: :replace,
+          action: :look,
           area: area,
           other_characters: characters,
           on_ground: items_in_area || [],
-          toi: scenery || []
+          toi: scenery || [],
+          exits: links || []
         }
+        |> IO.inspect(label: "AKJSHDKSHDKASHDKSAHDAKSLHKSDAHASKDH")
       end)
 
     GenServer.cast(
