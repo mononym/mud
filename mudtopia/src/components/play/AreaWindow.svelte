@@ -315,15 +315,14 @@
       style="color:{$selectedCharacter.settings.colors['toi_label']}"
     >
       <i class="fas fa-{showToi ? 'minus' : 'plus'} fa-fw" />
-      &nbsp;
-      <pre class="inline">Things of Interest ({$toiInArea.length})</pre>
+      <pre class="inline ml-2">Things of Interest ({$toiInArea.length})</pre>
     </div>
     {#if showToi}
-      {#each $toiInArea as item}
-        <div class="ml-4">
+      <div class="pl-2">
+        {#each $toiInArea as item}
           <InventoryItem {item} on:showContextMenu={showRightClickMenu} />
-        </div>
-      {/each}
+        {/each}
+      </div>
     {/if}
   {/if}
   {#if $selectedCharacter.settings.areaWindow["show_on_ground"]}
@@ -333,51 +332,50 @@
       style="color:{$selectedCharacter.settings.colors['on_ground_label']}"
     >
       <i class="fas fa-{showOnGround ? 'minus' : 'plus'} fa-fw" />
-      &nbsp;
-      <pre class="inline">On Ground ({$onGroundInArea.length})</pre>
+      <pre class="inline ml-2">On Ground ({$onGroundInArea.length})</pre>
     </div>
     {#if showOnGround}
-      {#each $onGroundInArea as item}
-        <div
-          class="flex space-x-1"
-          style="color:{$selectedCharacter.settings.colors['exit']}"
-        >
-          &nbsp; &nbsp;
-          {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
-            <QuickAction
-              icon="fas fa-hand-rock"
-              active={!$leftHandHasItem || !$rightHandHasItem}
-              activeTooltip="get"
-              inactiveTooltip="Hands are full"
-              cliInput="get {item.id}"
-              storyOutput="get {item.shortDescription}"
-              activeIconColor={$selectedCharacter.settings.areaWindow[
-                "enabled_quick_action_color"
-              ]}
-              inactiveIconColor={$selectedCharacter.settings.areaWindow[
-                "disabled_quick_action_color"
-              ]}
-            />
-            <QuickAction
-              icon="fas fa-backpack"
-              active={!$leftHandHasItem || !$rightHandHasItem}
-              activeTooltip="stow"
-              inactiveTooltip="Hands are full"
-              cliInput="stow {item.id}"
-              storyOutput="stow {item.shortDescription}"
-              activeIconColor={$selectedCharacter.settings.areaWindow[
-                "enabled_quick_action_color"
-              ]}
-              inactiveIconColor={$selectedCharacter.settings.areaWindow[
-                "disabled_quick_action_color"
-              ]}
-            />
-            &nbsp; &nbsp;
-          {/if}
-          <InventoryItem {item} on:showContextMenu={showRightClickMenu} />
-        </div>
-        <div class="ml-4" />
-      {/each}
+      <div class="pl-2">
+        {#each $onGroundInArea as item}
+          <InventoryItem
+            {item}
+            on:showContextMenu={showRightClickMenu}
+            showQuickActions={$selectedCharacter.settings.areaWindow
+              .show_quick_actions}
+          >
+            <div class="flex" slot="quickActions">
+              <QuickAction
+                icon="fas fa-hand-rock"
+                active={!$leftHandHasItem || !$rightHandHasItem}
+                activeTooltip="get"
+                inactiveTooltip="Hands are full"
+                cliInput="get {item.id}"
+                storyOutput="get {item.shortDescription}"
+                activeIconColor={$selectedCharacter.settings.areaWindow[
+                  "enabled_quick_action_color"
+                ]}
+                inactiveIconColor={$selectedCharacter.settings.areaWindow[
+                  "disabled_quick_action_color"
+                ]}
+              />
+              <QuickAction
+                icon="fas fa-backpack"
+                active={!$leftHandHasItem || !$rightHandHasItem}
+                activeTooltip="stow"
+                inactiveTooltip="Hands are full"
+                cliInput="stow {item.id}"
+                storyOutput="stow {item.shortDescription}"
+                activeIconColor={$selectedCharacter.settings.areaWindow[
+                  "enabled_quick_action_color"
+                ]}
+                inactiveIconColor={$selectedCharacter.settings.areaWindow[
+                  "disabled_quick_action_color"
+                ]}
+              />
+            </div>
+          </InventoryItem>
+        {/each}
+      </div>
     {/if}
   {/if}
   {#if $selectedCharacter.settings.areaWindow["show_also_present"]}
@@ -389,8 +387,8 @@
       style="color:{$selectedCharacter.settings.colors['character_label']}"
     >
       <i class="fas fa-{showOtherCharacters ? 'minus' : 'plus'} fa-fw" />
-      &nbsp;
-      <pre class="inline">Also Present ({$otherCharactersInArea.length})</pre>
+      <pre
+        class="inline ml-2">Also Present ({$otherCharactersInArea.length})</pre>
     </div>
     {#if showOtherCharacters}
       {#each $otherCharactersInArea as character}
@@ -409,8 +407,7 @@
       style="color:{$selectedCharacter.settings.colors['exit_label']}"
     >
       <i class="fas fa-{showExits ? 'minus' : 'plus'} fa-fw" />
-      &nbsp;
-      <pre class="inline">Exits ({$exitsInArea.length})</pre>
+      <pre class="inline ml-2">Exits ({$exitsInArea.length})</pre>
     </div>
     {#if showExits}
       {#each $exitsInArea as link}

@@ -9,6 +9,7 @@
   const { selectedCharacter, inventoryItemsParentChildIndex } = state;
 
   export let item;
+  export let showQuickActions = true;
   let wrapperDiv;
   let itemDiv;
 
@@ -29,25 +30,37 @@
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>
   <div
-    class="cursor-pointer"
+    class="cursor-pointer grid gap-1 grid-cols-12 items-center"
     style="color:{getItemColor($selectedCharacter.settings.colors, item)}"
     bind:this={itemDiv}
     on:contextmenu={dispatchContextMenuEvent}
   >
-    {#if item.isContainer}
+    {#if showQuickActions}
+      <div class="col-span-1 mr-2">
+        <slot name="quickActions" />
+      </div>
+    {/if}
+    <!-- {#if item.isContainer}
       <i
         class="fas fa-{item.containerOpen ? 'minus' : 'plus'}"
         on:click|preventDefault={toggleContainerExpanded}
       />
       &nbsp;
-    {/if}
+    {/if} -->
     <!-- &nbsp;&nbsp;
     <i class={item.icon} on:click|preventDefault={toggleItemExpanded} /> -->
     <pre
       on:click|preventDefault={toggleItemExpanded}
-      class="inline">{item.shortDescription}</pre>
+      class="ml-2 col-span-{showQuickActions && $$slots.quickActions
+        ? 11
+        : 12}">{item.shortDescription}</pre>
     {#if itemExpanded}
-      <div class="pl-{item.isContainer ? '6' : '0'}">
+      <div
+        on:click|preventDefault={toggleItemExpanded}
+        class={showQuickActions && $$slots.quickActions
+          ? "col-start-2 col-span-11 ml-2"
+          : "col-span-12 ml-2"}
+      >
         <pre
           class="whitespace-pre-wrap"
           style="color:{getItemColor(
@@ -58,19 +71,21 @@
     {/if}
   </div>
   {#if item.containerOpen && $inventoryItemsParentChildIndex[item.id] != undefined}
-    <div class="flex">
+    <div class="flex flex-col ml-4">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
-        &nbsp; &nbsp;
-        <i
-          class="fas fa-level-up fa-rotate-90"
-          style="color:{getItemColor(
-            $selectedCharacter.settings.colors,
-            childItem
-          )}"
-        />
-        &nbsp; &nbsp; &nbsp;
-        <div class="flex-1">
-          <svelte:self item={childItem} on:showContextMenu />
+        <div class="flex">
+          <div class="flex-shrink mr-2 mt-1">
+            <i
+              class="fas fa-level-up fa-rotate-90 fa-fw"
+              style="color:{getItemColor(
+                $selectedCharacter.settings.colors,
+                childItem
+              )}"
+            />
+          </div>
+          <div class="flex-1">
+            <svelte:self item={childItem} on:showContextMenu />
+          </div>
         </div>
       {/each}
     </div>
