@@ -116,6 +116,8 @@ export interface CharacterSettingsInterface {
     filter_active_background_color: string;
     filter_inactive_background_color: string;
     filter_border_color: string;
+    disabled_quick_action_color: string;
+    show_quick_actions: boolean;
   };
   customHotkeys: HotkeyInterface[];
 }
@@ -152,6 +154,8 @@ const state: CharacterSettingsInterface = {
     filter_inactive_icon_color: "",
     filter_active_background_color: "",
     filter_inactive_background_color: "",
+    disabled_quick_action_color: "",
+    show_quick_actions: true,
   },
   inventoryWindow: {
     id: "",

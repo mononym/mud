@@ -4,11 +4,24 @@
   import { onMount } from "svelte";
   import { getContext } from "svelte";
   import { key } from "./state";
+  export let active = true;
   export let icon = "";
-  export let tooltip = "";
+  export let activeTooltip = "";
+  export let inactiveTooltip = "";
   export let cliInput = "";
   export let storyOutput = "";
+  export let activeIconColor = "";
+  export let inactiveIconColor = "";
+  let tippyInstance;
   let iconDiv;
+
+  $: active, updateTooltip();
+
+  function updateTooltip() {
+    if (tippyInstance != undefined) {
+      tippyInstance.setContent(active ? activeTooltip : inactiveTooltip);
+    }
+  }
 
   const state = getContext(key);
   const { channel, selectedCharacter, appendNewStoryMessage } = state;
@@ -30,8 +43,8 @@
   }
 
   onMount(() => {
-    tippy(iconDiv, {
-      content: tooltip,
+    tippyInstance = tippy(iconDiv, {
+      content: active ? activeTooltip : inactiveTooltip,
     });
   });
 </script>
@@ -40,5 +53,5 @@
   on:click={submitPlayerInput}
   bind:this={iconDiv}
   class="{icon} fa-lg fa-fw self-center"
-  data-tippy-content="go"
+  style="color:{active ? activeIconColor : inactiveIconColor}"
 />

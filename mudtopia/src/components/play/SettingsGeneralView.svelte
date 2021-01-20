@@ -937,6 +937,34 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
+      <div class="col-span-6">
+        <label
+          for="showQuickActions"
+          style="color:{$characterSettings.colors.window_toolbar_label}"
+          class="block text-sm font-medium">Show Quick Actions</label
+        >
+        <input
+          bind:checked={$characterSettings.areaWindow.show_quick_actions}
+          type="checkbox"
+          name="showQuickActions"
+          id="showQuickActions"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="areaWindowDisabledQuickActionColor"
+          style="color:{$characterSettings.areaWindow
+            .disabled_quick_action_color}"
+          class="block text-sm font-medium">Disabled Quick Action Color</label
+        >
+        <input
+          bind:value={$characterSettings.areaWindow.disabled_quick_action_color}
+          type="color"
+          name="areaWindowDisabledQuickActionColor"
+          id="areaWindowDisabledQuickActionColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
     </div>
 
     <div

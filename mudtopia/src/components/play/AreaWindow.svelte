@@ -7,6 +7,7 @@
   import QuickAction from "./QuickAction.svelte";
   import tippy from "tippy.js";
   import "tippy.js/dist/tippy.css";
+  import { getItemColor } from "../../utils/utils";
 
   const state = getContext(key);
   const {
@@ -18,6 +19,8 @@
     characterSettings,
     saveCharacterSettings,
     exitsInArea,
+    rightHandHasItem,
+    leftHandHasItem,
   } = state;
 
   $: otherCharactersAreInArea = $otherCharactersInArea.length > 0;
@@ -313,7 +316,7 @@
       on:click={toggleToi}
       style="color:{$selectedCharacter.settings.colors['toi_label']}"
     >
-      <i class="fas fa-{showToi ? 'minus' : 'plus'}" />
+      <i class="fas fa-{showToi ? 'minus' : 'plus'} fa-fw" />
       &nbsp;
       <pre class="inline">Things of Interest ({$toiInArea.length})</pre>
     </div>
@@ -331,15 +334,38 @@
       on:click={toggleOnGround}
       style="color:{$selectedCharacter.settings.colors['on_ground_label']}"
     >
-      <i class="fas fa-{showOnGround ? 'minus' : 'plus'}" />
+      <i class="fas fa-{showOnGround ? 'minus' : 'plus'} fa-fw" />
       &nbsp;
       <pre class="inline">On Ground ({$onGroundInArea.length})</pre>
     </div>
     {#if showOnGround}
       {#each $onGroundInArea as item}
-        <div class="ml-4">
+        <div
+          class="flex space-x-1"
+          style="color:{$selectedCharacter.settings.colors['exit']}"
+        >
+          &nbsp; &nbsp;
+          {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
+            <QuickAction
+              icon="fas fa-hand-rock"
+              active={!$leftHandHasItem || !$rightHandHasItem}
+              activeTooltip="get"
+              inactiveTooltip="Hands are full"
+              cliInput="get {item.id}"
+              storyOutput="get {item.shortDescription}"
+              activeIconColor={getItemColor(
+                $selectedCharacter.settings.colors,
+                item
+              )}
+              inactiveIconColor={$selectedCharacter.settings.areaWindow[
+                "disabled_quick_action_color"
+              ]}
+            />
+            &nbsp; &nbsp;
+          {/if}
           <InventoryItem {item} on:showContextMenu={showRightClickMenu} />
         </div>
+        <div class="ml-4" />
       {/each}
     {/if}
   {/if}
@@ -351,7 +377,7 @@
       on:click={toggleAlsoPresent}
       style="color:{$selectedCharacter.settings.colors['character_label']}"
     >
-      <i class="fas fa-{showOtherCharacters ? 'minus' : 'plus'}" />
+      <i class="fas fa-{showOtherCharacters ? 'minus' : 'plus'} fa-fw" />
       &nbsp;
       <pre class="inline">Also Present ({$otherCharactersInArea.length})</pre>
     </div>
@@ -371,7 +397,7 @@
       on:click={toggleExits}
       style="color:{$selectedCharacter.settings.colors['exit_label']}"
     >
-      <i class="fas fa-{showExits ? 'minus' : 'plus'}" />
+      <i class="fas fa-{showExits ? 'minus' : 'plus'} fa-fw" />
       &nbsp;
       <pre class="inline">Exits ({$exitsInArea.length})</pre>
     </div>
@@ -381,16 +407,24 @@
           class="flex"
           style="color:{$selectedCharacter.settings.colors['exit']}"
         >
-          <QuickAction
-            icon="fas fa-sign-out"
-            tooltip="go"
-            cliInput="go {link.id}"
-            storyOutput="go {link.shortDescription}"
-          />
-          <i
-            class="fas fa-eye fa-lg fa-fw ml-1 mr-1 self-center"
-            data-tippy-content="peer"
-          />
+          &nbsp; &nbsp;
+          {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
+            <QuickAction
+              icon="fas fa-sign-out"
+              activeTooltip="go"
+              cliInput="go {link.id}"
+              storyOutput="go {link.shortDescription}"
+              activeIconColor={$selectedCharacter.settings.colors["exit"]}
+              inactiveIconColor={$selectedCharacter.settings.areaWindow[
+                "disabled_quick_action_color"
+              ]}
+            />
+            <i
+              class="fas fa-eye fa-lg fa-fw ml-1 self-center"
+              data-tippy-content="peer"
+            />
+            &nbsp; &nbsp;
+          {/if}
           <pre>{link.shortDescription}</pre>
         </div>
       {/each}
@@ -461,6 +495,19 @@
       on:toggle={saveSettings}
       activeTooltip="Hide Exits"
       inactiveTooltip="Show Exits"
+      activeIconColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_icon_color"
+      ]}
+    />
+    <FilterButton
+      icon="fas fa-rabbit-fast"
+      bind:active={$characterSettings.areaWindow.show_quick_actions}
+      on:toggle={saveSettings}
+      activeTooltip="Hide Quick Actions"
+      inactiveTooltip="Show Quick Actions"
       activeIconColor={$selectedCharacter.settings.areaWindow[
         "filter_active_icon_color"
       ]}

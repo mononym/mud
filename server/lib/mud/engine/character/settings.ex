@@ -37,6 +37,8 @@ defmodule Mud.Engine.Character.Settings do
       field(:filter_inactive_icon_color, :string, default: "#fca5a5")
       field(:filter_active_background_color, :string, default: "#6b7280")
       field(:filter_inactive_background_color, :string, default: "#28282D")
+      field(:disabled_quick_action_color, :string, default: "#6B7280")
+      field(:show_quick_actions, :boolean, default: true)
     end
 
     embeds_one :inventory_window, InventoryWindow, on_replace: :delete do
@@ -249,7 +251,9 @@ defmodule Mud.Engine.Character.Settings do
       :filter_active_icon_color,
       :filter_inactive_icon_color,
       :filter_active_background_color,
-      :filter_inactive_background_color
+      :filter_inactive_background_color,
+      :disabled_quick_action_color,
+      :show_quick_actions
     ])
     |> validate_required([])
   end
@@ -577,7 +581,9 @@ defmodule Mud.Engine.Character.Settings do
       filter_active_icon_color: "#a7f3d0",
       filter_inactive_icon_color: "#fca5a5",
       filter_active_background_color: "#28282D",
-      filter_inactive_background_color: "#28282D"
+      filter_inactive_background_color: "#28282D",
+      disabled_quick_action_color: "#6B7280",
+      show_quick_actions: true
     })
   end
 
