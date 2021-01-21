@@ -11,7 +11,8 @@ defmodule Mud.Engine.Command.Close do
     - close pouch in backpack
   """
 
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
+  alias Mud.Engine.Event.Client.{UpdateInventory}
+  alias Mud.Engine.Message
   alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
@@ -41,6 +42,7 @@ defmodule Mud.Engine.Command.Close do
       if Util.is_uuid4(context.command.ast.thing.input) do
         item = Item.get!(context.command.ast.thing.input)
 
+        # Close an item that is worn on the character executing the command
         if Util.is_item_on_character?(item, context.character) do
           close_thing(context, item)
         else
@@ -84,37 +86,29 @@ defmodule Mud.Engine.Command.Close do
         container_open: false
       })
 
-    other_msg =
-      "{{character}}#{context.character.name}{{/character}} closes {{item}}#{
-        item.short_description
-      }{{/item}}."
-
-    self_msg = "You close {{item}}#{item.short_description}{{/item}}."
-
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
-    # context =
-    #   if is_nil()
+    other_msg =
+      others
+      |> Message.new_story_output()
+      |> Message.append_text("[#{context.character.name}]", "character")
+      |> Message.append_text(" closes ", "base")
+      |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+
+    self_msg =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("You", "character")
+      |> Message.append_text(" close ", "base")
+      |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
 
     context
-    |> Context.append_output(
-      others,
-      other_msg,
-      "info"
-    )
-    |> Context.append_output(
-      context.character.id,
-      self_msg,
-      "info"
-    )
-    |> Context.append_event(
-      [context.character_id | others],
-      UpdateArea.new(:add, item)
-    )
+    |> Context.append_message(other_msg)
+    |> Context.append_message(self_msg)
     |> Context.append_event(
       context.character_id,
-      UpdateInventory.new(:remove, item)
+      UpdateInventory.new(:update, item)
     )
   end
 end

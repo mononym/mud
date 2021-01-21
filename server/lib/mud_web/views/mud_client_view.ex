@@ -37,4 +37,13 @@ defmodule MudWeb.MudClientView do
       exits: render_many(event.exits, MudWeb.LinkView, "link.json")
     }
   end
+
+  def render("update_inventory.json", %{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
+    IO.inspect(event, label: "update_inventory.json")
+
+    %{
+      action: event.action,
+      items: render_many(event.items, MudWeb.ItemView, "item.json")
+    }
+  end
 end

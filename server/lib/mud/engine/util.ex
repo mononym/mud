@@ -312,4 +312,32 @@ defmodule Mud.Engine.Util do
   end
 
   def via(registry, key), do: {:via, Registry, {registry, key}}
+
+  @doc """
+  Given an item, examine it and return an atom that represents its type such as 'worn_container' or 'weapon'
+  """
+  def get_item_type(item) do
+    cond do
+      item.is_container and item.is_wearable ->
+        "worn_container"
+
+      item.is_container ->
+        "container"
+
+      item.is_weapon ->
+        "weapon"
+
+      item.is_furniture ->
+        "furniture"
+
+      item.is_scenery ->
+        "scenery"
+
+      item.is_link ->
+        "exit"
+
+      true ->
+        "base"
+    end
+  end
 end

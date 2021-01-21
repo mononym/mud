@@ -13,11 +13,6 @@
   let wrapperDiv;
   let itemDiv;
 
-  let containerExpanded = false;
-  function toggleContainerExpanded() {
-    containerExpanded = !containerExpanded;
-  }
-
   let itemExpanded = false;
   function toggleItemExpanded() {
     itemExpanded = !itemExpanded;
@@ -40,15 +35,6 @@
         <slot name="quickActions" />
       </div>
     {/if}
-    <!-- {#if item.isContainer}
-      <i
-        class="fas fa-{item.containerOpen ? 'minus' : 'plus'}"
-        on:click|preventDefault={toggleContainerExpanded}
-      />
-      &nbsp;
-    {/if} -->
-    <!-- &nbsp;&nbsp;
-    <i class={item.icon} on:click|preventDefault={toggleItemExpanded} /> -->
     <pre
       on:click|preventDefault={toggleItemExpanded}
       class="ml-2 col-span-{showQuickActions && $$slots.quickActions

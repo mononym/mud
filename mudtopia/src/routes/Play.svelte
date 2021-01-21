@@ -3,9 +3,9 @@
   import { Circle2 } from "svelte-loading-spinners";
   import { CharactersStore } from "../stores/characters";
   const { characters } = CharactersStore;
-  import { createState, State, key } from "../components/play/state";
+  import { createState, key } from "../components/play/state";
 
-  import { onMount, onDestroy, getContext, setContext } from "svelte";
+  import { onMount, onDestroy, setContext } from "svelte";
   import StoryWindow from "../components/play/StoryWindow.svelte";
   import CommandLineWindow from "../components/play/CommandLineWindow.svelte";
   import LayoutItemWrapper from "../components/play/LayoutItemWrapper.svelte";

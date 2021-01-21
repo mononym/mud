@@ -318,7 +318,7 @@
           <div class="flex space-x-2 pl-2" slot="quickActions">
             {#if wornContainer.containerOpen}
               <QuickAction
-                icon="fas fa-box"
+                icon="fas fa-box-open"
                 activeTooltip="close"
                 cliInput="close {wornContainer.id}"
                 storyOutput="close {wornContainer.shortDescription}"
@@ -331,7 +331,7 @@
               />
             {:else}
               <QuickAction
-                icon="fas fa-box-open"
+                icon="fas fa-box"
                 activeTooltip="open"
                 cliInput="open {wornContainer.id}"
                 storyOutput="open {wornContainer.shortDescription}"

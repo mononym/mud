@@ -365,9 +365,8 @@ defmodule Mud.Engine.Session do
           other_characters: characters,
           on_ground: items_in_area || [],
           toi: scenery || [],
-          exits: links || []
+          exits: links
         }
-        |> IO.inspect(label: "AKJSHDKSHDKASHDKSAHDAKSLHKSDAHASKDH")
       end)
 
     GenServer.cast(
@@ -459,8 +458,8 @@ defmodule Mud.Engine.Session do
   #
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
-    {:update_area,
-     Phoenix.View.render_many(event.items, MudWeb.ItemView, "item.json", as: :event)}
+    {:update_inventory,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_inventory.json", as: :event)}
   end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do

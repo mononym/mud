@@ -1,172 +1,114 @@
 defmodule Mud.Engine.Command.Open do
   @moduledoc """
-  The OPEN command allows the Character to open something such as a door or a chest.
+  The CLOSE command allows the Character to open something such as a door or a chest.
 
   Syntax:
-    - open <my>? <thing>
+    - open <target>
 
   Examples:
-    - open my backpack
+    - open backpack
     - open door
+    - open pouch in backpack
   """
 
-  alias Mud.Repo
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
+  alias Mud.Engine.Event.Client.{UpdateInventory}
+  alias Mud.Engine.Message
   alias Mud.Engine.Util
-  alias Mud.Engine.Search
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.Command.SingleTargetCallback
   alias Mud.Engine.{Character, Item}
 
   require Logger
 
-  @behaviour Mud.Engine.Command.Callback
+  use Mud.Engine.Command.Callback
 
-  defp target_types(), do: [:item]
-
-  @doc false
-  @impl true
-  @spec continue(Mud.Engine.Command.Context.t()) ::
-          Mud.Engine.Command.Context.t()
-  def continue(context) do
-    target = Util.refresh_thing(context.input.match)
-
-    cond do
-      context.character.area_id == target.area_id ->
-        do_thing_to_match(context, %{context.input | match: target}, false)
-
-      context.character.id == target.worn_by_id ->
-        do_thing_to_match(context, %{context.input | match: target}, true)
-
-      true ->
-        Context.append_output(
-          context,
-          context.character.id,
-          "The #{context.input.short_description} is no longer present.",
-          "error"
-        )
-    end
+  @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.OneThing.t()
+  def build_ast(ast_nodes) do
+    Mud.Engine.Command.AstUtil.build_one_thing_ast(ast_nodes)
   end
 
-  @doc false
   @impl true
-  @spec execute(Mud.Engine.Command.Context.t()) ::
-          Mud.Engine.Command.Context.t()
   def execute(context) do
-    {input, which_target} = extract_input_and_target(context.command.ast)
+    ast = context.command.ast
 
-    result =
-      Search.find_matches_in_area_v2(
-        target_types(),
-        context.character.area_id,
-        input,
-        which_target
+    if is_nil(ast.thing) do
+      Context.append_output(
+        context,
+        context.character.id,
+        Util.get_module_docs(__MODULE__),
+        "error"
       )
+    else
+      if Util.is_uuid4(context.command.ast.thing.input) do
+        item = Item.get!(context.command.ast.thing.input)
 
-    multi_error = "Which of these did you intend to open?"
-    too_many = "You can't possibly open all of those at once. Please be more specific."
-
-    case result do
-      {:ok, [match]} ->
-        do_thing_to_match(context, match, false)
-
-      {:ok, matches} ->
-        SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
-
-      {:error, _} ->
-        character = Repo.preload(context.character, :worn_items)
-        worn_items = character.worn_items
-
-        case Search.generate_matches(worn_items, input, which_target) do
-          {:ok, [match]} ->
-            do_thing_to_match(context, match, true)
-
-          {:ok, matches} ->
-            SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
+        # Open an item that is worn on the character executing the command
+        if Util.is_item_on_character?(item, context.character) do
+          open_thing(context, item)
+        else
+          Util.dave_error(context)
         end
+      else
+        find_thing_to_open(context)
+      end
     end
   end
 
-  defp extract_input_and_target(ast) do
-    cond do
-      ast.generations == 3 ->
-        target = ast[:my][:number][:input]
-        input = ast[:my][:number][:target][:input]
+  defp find_thing_to_open(context) do
+    # held_items = Character.list_held_items(context.character)
 
-        {input, target}
+    # if length(held_items) == 0 do
+    #   context
+    #   |> Context.append_error("You aren't holding anything.")
+    # else
+    #   ast = context.command.ast
 
-      ast.generations == 2 and ast[:number] != nil ->
-        target = ast[:number][:input]
-        input = ast[:number][:target][:input]
+    #   matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
 
-        {input, target}
+    #   case matches do
+    #     {:ok, [match]} ->
+    #       open_thing(context, match.match)
 
-      ast.generations == 2 ->
-        input = ast[:number][:target][:input]
+    #     {:ok, matches} when length(matches) > 1 ->
+    #       Util.multiple_error(context)
 
-        {input, 0}
-
-      true ->
-        input = ast[:target][:input]
-
-        {input, 0}
-    end
+    #     _ ->
+    #       context
+    #       |> Context.append_error("Could not find what you were attempting to open.")
+    #   end
+    # end
+    context
   end
 
-  @spec do_thing_to_match(Context.t(), Mud.Engine.Match.t(), boolean()) ::
-          Context.t()
-  defp do_thing_to_match(context, match, private) do
-    item = match.match
+  defp open_thing(context, item) do
+    item =
+      Item.update!(item, %{
+        container_open: true
+      })
 
-    cond do
-      item.is_container and not item.container_open ->
-        Item.update!(item, %{container_open: true})
+    others =
+      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
-        others =
-          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+    other_msg =
+      others
+      |> Message.new_story_output()
+      |> Message.append_text("[#{context.character.name}]", "character")
+      |> Message.append_text(" opens ", "base")
+      |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
 
-        context =
-          if private do
-            Context.append_event(
-              context,
-              context.character_id,
-              UpdateInventory.new(:update, item)
-            )
-          else
-            Context.append_event(
-              context,
-              [context.character_id | others],
-              UpdateArea.new(:update, item)
-            )
-          end
+    self_msg =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("You", "character")
+      |> Message.append_text(" open ", "base")
+      |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
 
-        context
-        |> Context.append_output(
-          others,
-          "#{context.character.name} opened #{match.short_description}.",
-          "info"
-        )
-        |> Context.append_output(
-          context.character.id,
-          String.capitalize("#{match.short_description} is now open."),
-          "info"
-        )
-
-      item.is_container and item.container_open ->
-        Context.append_output(
-          context,
-          context.character.id,
-          String.capitalize("#{match.short_description} is already open."),
-          "error"
-        )
-
-      not item.is_container ->
-        Context.append_output(
-          context,
-          context.character.id,
-          String.capitalize("#{match.short_description} cannot be opened."),
-          "error"
-        )
-    end
+    context
+    |> Context.append_message(other_msg)
+    |> Context.append_message(self_msg)
+    |> Context.append_event(
+      context.character_id,
+      UpdateInventory.new(:update, item)
+    )
   end
 end

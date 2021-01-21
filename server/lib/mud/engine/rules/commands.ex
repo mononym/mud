@@ -132,20 +132,9 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &Enum.join/1
         },
         %Part{
-          matches: ["my"],
-          key: :my,
-          transformer: &Enum.join/1
-        },
-        %Part{
-          key: :number,
-          matches: [~r/^\d$/],
-          must_follow: [:my, :open],
-          transformer: &string_to_int/1
-        },
-        %Part{
-          must_follow: [:my, :number, :open],
+          must_follow: [:open],
           matches: [~r/.*/],
-          key: :target,
+          key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         }

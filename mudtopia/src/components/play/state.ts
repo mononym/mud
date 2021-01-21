@@ -119,7 +119,9 @@ export function createState() {
   const allInventoryItemsIndex = writable(<Record<string, ItemInterface>>{});
   // parent child index
   //    keep track of what items belong to what containers for easy display
-  const inventoryItemsParentChildIndex = writable(<Record<string, string>>{});
+  const inventoryItemsParentChildIndex = writable(
+    <Record<string, ItemInterface[]>>{}
+  );
 
   // This is where all of the setup should occur for a character logging in.
   // This means getting data for the map where the character is, getting inventory data, getting room data
@@ -155,11 +157,20 @@ export function createState() {
     );
     knownLinksForCharacterIndex.set(newLinksIndex);
 
+    setupInventory(res.inventory);
+
+    characterSettings.set(_.cloneDeep(character.settings));
+
+    characterInitializing.set(false);
+    characterInitialized.set(true);
+  }
+
+  function setupInventory(items) {
     const newWornContainers = [];
     const newAllItemsIndex = {};
     const newParentChildIndex = {};
 
-    res.inventory.forEach((item) => {
+    items.forEach((item) => {
       if (item.holdableIsHeld) {
         if (item.holdableHand == "left") {
           itemInLeftHand.set(item);
@@ -184,10 +195,111 @@ export function createState() {
     wornContainers.set(newWornContainers);
     allInventoryItemsIndex.set(newAllItemsIndex);
     inventoryItemsParentChildIndex.set(newParentChildIndex);
-    characterSettings.set(_.cloneDeep(character.settings));
+  }
 
-    characterInitializing.set(false);
-    characterInitialized.set(true);
+  function updateInventory(items) {
+    items.forEach((item) => {
+      if (item.holdableIsHeld) {
+        if (item.holdableHand == "left") {
+          itemInLeftHand.set(item);
+          leftHandHasItem.set(true);
+        } else if (item.holdableHand == "right") {
+          itemInRightHand.set(item);
+          rightHandHasItem.set(true);
+        }
+      } else if (item.wearableIsWorn && item.isContainer) {
+        wornContainers.update(function (containers) {
+          var foundIndex = containers.findIndex(
+            (container) => container.id == item.id
+          );
+          containers[foundIndex] = item;
+          return containers;
+        });
+      }
+
+      allInventoryItemsIndex.update(function (index) {
+        index[item.id] = item;
+        return index;
+      });
+
+      if (item.containerId != "") {
+        inventoryItemsParentChildIndex.update(function (index) {
+          const existingChildren = index[item.containerId] || [];
+          existingChildren.push(item);
+          index[item.containerId] = existingChildren;
+
+          return index;
+        });
+      }
+    });
+  }
+
+  function addInventory(items) {
+    items.forEach((item) => {
+      if (item.holdableIsHeld) {
+        if (item.holdableHand == "left") {
+          itemInLeftHand.set(item);
+          leftHandHasItem.set(true);
+        } else if (item.holdableHand == "right") {
+          itemInRightHand.set(item);
+          rightHandHasItem.set(true);
+        }
+      } else if (item.wearableIsWorn && item.isContainer) {
+        wornContainers.update(function (containers) {
+          containers.push(item);
+          return containers;
+        });
+      }
+
+      allInventoryItemsIndex.update(function (index) {
+        index[item.id] = item;
+        return index;
+      });
+
+      if (item.containerId != "") {
+        inventoryItemsParentChildIndex.update(function (index) {
+          const existingChildren = index[item.containerId] || [];
+          existingChildren.push(item.id);
+          index[item.containerId] = existingChildren;
+
+          return index;
+        });
+      }
+    });
+  }
+
+  function removeInventory(items) {
+    items.forEach((item) => {
+      if (item.holdableIsHeld) {
+        if (item.holdableHand == "left") {
+          itemInLeftHand.set({ ...ItemState });
+          leftHandHasItem.set(false);
+        } else if (item.holdableHand == "right") {
+          itemInRightHand.set({ ...ItemState });
+          rightHandHasItem.set(false);
+        }
+      } else if (item.wearableIsWorn && item.isContainer) {
+        wornContainers.update(function (containers) {
+          containers.filter((container) => container.id != item.id);
+          return containers;
+        });
+      }
+
+      allInventoryItemsIndex.update(function (index) {
+        delete index[item.id];
+        return index;
+      });
+
+      if (item.containerId != "") {
+        inventoryItemsParentChildIndex.update(function (index) {
+          const existingChildren = index[item.containerId] || [];
+          existingChildren.filter((child) => child.id != item.id);
+          index[item.containerId] = existingChildren;
+
+          return index;
+        });
+      }
+    });
   }
 
   //
@@ -394,6 +506,19 @@ export function createState() {
       }
     });
 
+    newChannel.on("update:inventory", async function (msg) {
+      console.log("received an update for inventory");
+      console.log(msg);
+
+      if (msg.action == "update") {
+        updateInventory(msg.items);
+      } else if (msg.action == "add") {
+        addInventory(msg.items);
+      } else if (msg.action == "remove") {
+        removeInventory(msg.items);
+      }
+    });
+
     newChannel.join();
 
     channel.set(newChannel);
@@ -548,6 +673,9 @@ export function createState() {
     wornContainers,
     allInventoryItemsIndex,
     inventoryItemsParentChildIndex,
+    updateInventory,
+    addInventory,
+    removeInventory,
     //
     // Connection Stuff
     //
