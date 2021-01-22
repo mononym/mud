@@ -35,6 +35,7 @@ export interface CharacterInterface {
   areaId: string;
 
   settings: CharacterSettingsInterface;
+  moved_location_at: string;
 }
 
 const state: CharacterInterface = {
@@ -70,6 +71,7 @@ const state: CharacterInterface = {
   areaId: "",
 
   settings: { ...CharacterSettingsState },
+  moved_location_at: "",
 };
 
 export default state;

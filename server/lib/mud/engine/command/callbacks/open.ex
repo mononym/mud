@@ -118,6 +118,11 @@ defmodule Mud.Engine.Command.Open do
         open_item(context, thing)
 
       {:ok, _things} ->
+        Context.append_message(
+          context,
+          Message.new_story_output(context.character.id, "Found too many items to open")
+        )
+
         Logger.debug("Found too many items to open, or no item")
 
         context
@@ -156,58 +161,72 @@ defmodule Mud.Engine.Command.Open do
   end
 
   defp open_item(context, thing = %Search.Match{}) do
-    if thing.match.is_container do
-      item =
-        Item.update!(thing.match, %{
-          container_open: true
-        })
+    cond do
+      thing.match.is_container and not thing.match.container_open ->
+        item =
+          Item.update!(thing.match, %{
+            container_open: true
+          })
 
-      others =
-        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+        others =
+          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
-      other_msg =
-        others
-        |> Message.new_story_output()
-        |> Message.append_text("[#{context.character.name}]", "character")
-        |> Message.append_text(" opens ", "base")
-        |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+        other_msg =
+          others
+          |> Message.new_story_output()
+          |> Message.append_text("[#{context.character.name}]", "character")
+          |> Message.append_text(" opens ", "base")
+          |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
 
-      self_msg =
-        context.character.id
-        |> Message.new_story_output()
-        |> Message.append_text("You", "character")
-        |> Message.append_text(" open ", "base")
-        |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You", "character")
+          |> Message.append_text(" open ", "base")
+          |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
 
-      context =
-        if item.wearable_is_worn or item.holdable_is_held do
-          Context.append_event(
-            context,
-            context.character_id,
-            UpdateInventory.new(:update, item)
+        context =
+          if item.wearable_is_worn or item.holdable_is_held do
+            Context.append_event(
+              context,
+              context.character_id,
+              UpdateInventory.new(:update, item)
+            )
+          else
+            Context.append_event(
+              context,
+              [context.character_id | others],
+              UpdateArea.new(%{action: :update, on_ground: [item]})
+            )
+          end
+
+        context
+        |> Context.append_message(other_msg)
+        |> Context.append_message(self_msg)
+
+      thing.match.is_container and thing.match.container_open ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            Util.upcase_first(thing.match.short_description),
+            Mud.Engine.Util.get_item_type(thing.match)
           )
-        else
-          Context.append_event(
-            context,
-            [context.character_id | others],
-            UpdateArea.new(%{action: :update, on_ground: [item]})
+          |> Message.append_text(" is already open.", "system_warning")
+
+        Context.append_message(context, self_msg)
+
+      true ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You cannot open ", "system_alert")
+          |> Message.append_text(
+            thing.match.short_description,
+            Mud.Engine.Util.get_item_type(thing.match)
           )
-        end
 
-      context
-      |> Context.append_message(other_msg)
-      |> Context.append_message(self_msg)
-    else
-      self_msg =
-        context.character.id
-        |> Message.new_story_output()
-        |> Message.append_text("You cannot open ", "system_alert")
-        |> Message.append_text(
-          thing.match.short_description,
-          Mud.Engine.Util.get_item_type(thing.match)
-        )
-
-      Context.append_message(context, self_msg)
+        Context.append_message(context, self_msg)
     end
   end
 end

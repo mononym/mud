@@ -8,7 +8,6 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.Instance
   require Logger
 
   @type id :: String.t()
@@ -21,6 +20,7 @@ defmodule Mud.Engine.Item do
     # Common Fields
     #
     ##
+    field(:moved_location_at, :utc_datetime_usec, required: true)
 
     belongs_to(:area, Mud.Engine.Area, type: :binary_id)
 
@@ -137,7 +137,8 @@ defmodule Mud.Engine.Item do
       :holdable_is_held,
       :holdable_hand,
       :holdable_held_by_id,
-      :icon
+      :icon,
+      :moved_location_at
     ])
     |> foreign_key_constraint(:character_id)
     |> foreign_key_constraint(:area_id)
@@ -188,8 +189,9 @@ defmodule Mud.Engine.Item do
 
   def create(attrs \\ %{}) do
     %__MODULE__{}
-    |> changeset(attrs)
+    |> changeset(Map.put(attrs, :moved_location_at, DateTime.utc_now()))
     |> Repo.insert!()
+    |> IO.inspect(label: "make item")
   end
 
   @spec update!(String.t(), map()) :: %__MODULE__{}
@@ -300,6 +302,7 @@ defmodule Mud.Engine.Item do
       {"item_tree", __MODULE__}
       |> recursive_ctes(true)
       |> with_cte("item_tree", as: ^item_tree_query)
+      |> order_by([i], i.moved_location_at)
 
     Repo.all(final_query)
     |> Enum.map(fn item ->
@@ -337,6 +340,7 @@ defmodule Mud.Engine.Item do
       {"item_tree", __MODULE__}
       |> recursive_ctes(true)
       |> with_cte("item_tree", as: ^item_tree_query)
+      |> order_by([i], i.moved_location_at)
 
     Repo.all(final_query)
   end
@@ -348,7 +352,8 @@ defmodule Mud.Engine.Item do
   def list_in_area(area_id) do
     from(
       item in __MODULE__,
-      where: item.area_id == ^area_id
+      where: item.area_id == ^area_id,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end
@@ -360,7 +365,8 @@ defmodule Mud.Engine.Item do
   def list_furniture_in_area(area_id) do
     from(
       item in __MODULE__,
-      where: item.area_id == ^area_id and item.is_furniture == true
+      where: item.area_id == ^area_id and item.is_furniture == true,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end
@@ -369,62 +375,25 @@ defmodule Mud.Engine.Item do
   def list_visible_scenery_in_area(area_id) do
     from(
       item in __MODULE__,
-      where: item.area_id == ^area_id and item.is_scenery == true and item.is_hidden == false
+      where: item.area_id == ^area_id and item.is_scenery == true and item.is_hidden == false,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
-  end
-
-  @spec list_non_scenery_in_areas(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
-          Ecto.Multi.t()
-  def list_non_scenery_in_areas(multi, name, area_ids) do
-    Ecto.Multi.run(multi, name, fn repo, _changes ->
-      area_ids = List.wrap(area_ids)
-
-      from(
-        item in __MODULE__,
-        where: item.area_id in ^area_ids and item.is_scenery == false
-      )
-      |> repo.all()
-      |> (&{:ok, &1}).()
-    end)
-  end
-
-  @spec list_visible_scenery_in_area(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
-          Ecto.Multi.t()
-  def list_visible_scenery_in_area(multi, name, area_ids) do
-    Ecto.Multi.run(multi, name, fn repo, _changes ->
-      area_ids = List.wrap(area_ids)
-
-      from(
-        item in __MODULE__,
-        where: item.area_id in ^area_ids and item.is_scenery == true and item.is_hidden == false
-      )
-      |> repo.all()
-      |> (&{:ok, &1}).()
-    end)
   end
 
   @spec list_held_or_worn_items_and_children(String.t()) :: [%__MODULE__{}]
   def list_held_or_worn_items_and_children(character_id) do
     character_id
     |> held_or_worn_and_children_query()
+    |> order_by([i], i.moved_location_at)
     |> Repo.all()
-  end
-
-  @spec list_held_or_worn_items_and_children(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
-          Ecto.Multi.t()
-  def list_held_or_worn_items_and_children(multi, name, character_id) do
-    Ecto.Multi.run(multi, name, fn repo, _changes ->
-      character_id
-      |> held_or_worn_and_children_query()
-      |> repo.all()
-    end)
   end
 
   def list_contained_items(container_id) do
     from(
       item in __MODULE__,
-      where: item.container_id == ^container_id
+      where: item.container_id == ^container_id,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end
@@ -432,7 +401,8 @@ defmodule Mud.Engine.Item do
   def list_worn_containers(character_id) do
     from(
       item in __MODULE__,
-      where: item.wearable_worn_by_id == ^character_id and item.is_container == true
+      where: item.wearable_worn_by_id == ^character_id and item.is_container == true,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end
@@ -440,7 +410,8 @@ defmodule Mud.Engine.Item do
   def list_worn_by(character_id) do
     from(
       item in __MODULE__,
-      where: item.wearable_worn_by_id == ^character_id
+      where: item.wearable_worn_by_id == ^character_id,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end
@@ -448,7 +419,8 @@ defmodule Mud.Engine.Item do
   def list_held_by(character_id) do
     from(
       item in __MODULE__,
-      where: item.holdable_held_by_id == ^character_id
+      where: item.holdable_held_by_id == ^character_id,
+      order_by: item.moved_location_at
     )
     |> Repo.all()
   end

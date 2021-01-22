@@ -11,6 +11,7 @@ defmodule Mud.Repo.Migrations.CreateItems do
       add(:short_description, :text)
       add(:long_description, :text)
       add(:icon, :string)
+      add(:moved_location_at, :utc_datetime_usec)
 
       add(:area_id, references(:areas, on_delete: :nilify_all, type: :binary_id))
 

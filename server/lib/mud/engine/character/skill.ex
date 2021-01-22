@@ -111,6 +111,7 @@ defmodule Mud.Engine.Character.Skill do
       end)
 
     Repo.insert_all(__MODULE__, records)
+    |> IO.inspect(label: "insert skills")
 
     :ok
   end

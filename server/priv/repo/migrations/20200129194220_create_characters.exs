@@ -9,6 +9,7 @@ defmodule Mud.Repo.Migrations.CreateCharacters do
       add(:active, :boolean)
       add(:handedness, :string)
       add(:gender_pronoun, :string)
+      add(:moved_location_at, :utc_datetime_usec)
 
       add(:strength, :integer)
       add(:stamina, :integer)

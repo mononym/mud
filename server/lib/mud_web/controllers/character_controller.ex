@@ -16,7 +16,6 @@ defmodule MudWeb.CharacterController do
 
   def list_player_characters(conn, %{"player_id" => player_id}) do
     characters = Character.list_by_player_id(player_id)
-    IO.inspect(characters, label: :list_player_characters)
     render(conn, "index.json", characters: characters)
   end
 

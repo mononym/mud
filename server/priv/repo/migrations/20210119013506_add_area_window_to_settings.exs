@@ -4,6 +4,7 @@ defmodule Mud.Repo.Migrations.AddAreaWindowToSettings do
   def change do
     alter table(:character_settings) do
       add(:area_window, :map)
+      add(:inventory_window, :map)
     end
   end
 end

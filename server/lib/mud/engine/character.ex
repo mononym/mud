@@ -32,6 +32,7 @@ defmodule Mud.Engine.Character do
 
     # Game Status
     field(:active, :boolean, default: false)
+    field(:moved_location_at, :utc_datetime_usec, required: true)
 
     # Attributes
     field(:agility, :integer, default: 10)
@@ -179,7 +180,8 @@ defmodule Mud.Engine.Character do
       :stamina,
       :strength,
       :wisdom,
-      :handedness
+      :handedness,
+      :moved_location_at
     ])
     |> validate_required([
       :name,
@@ -238,7 +240,9 @@ defmodule Mud.Engine.Character do
     result =
       %__MODULE__{}
       |> changeset(Map.put(attrs, "area_id", area.id))
+      |> changeset(Map.put(attrs, "moved_location_at", DateTime.utc_now()))
       |> Repo.insert()
+      |> IO.inspect(label: "insert char")
 
     case result do
       {:ok, character} ->

@@ -26,6 +26,7 @@ export interface ItemInterface {
   holdableHand: string;
   holdableHeldById: string;
   icon: string;
+  moved_location_at: string;
 }
 
 const state: ItemInterface = {
@@ -56,6 +57,7 @@ const state: ItemInterface = {
   holdableHand: "",
   holdableHeldById: "",
   icon: "",
+  moved_location_at: "",
 };
 
 export default state;
