@@ -230,6 +230,35 @@ defmodule Mud.Engine.Util do
     )
   end
 
+  def dave_error_v2(context) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("I'm sorry ", "system_alert")
+      |> Message.append_text(context.character.name, "character")
+      |> Message.append_text(", I'm afraid I can't do that.", "system_alert")
+
+    Context.append_message(context, message)
+  end
+
+  def parent_container_closed_error(context) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("That is in a closed container.", "system_alert")
+
+    Context.append_message(context, message)
+  end
+
+  def not_found_error(context) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("Could not find what you were referring to.", "system_alert")
+
+    Context.append_message(context, message)
+  end
+
   def multiple_error(context) do
     Context.append_output(
       context,

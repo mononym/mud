@@ -33,6 +33,31 @@ defmodule Mud.Engine.Search do
           }
   end
 
+  @doc """
+  Find matches in an area or return an error.
+  """
+  @spec find_matches_v2(
+          [:character | :item | :link | :worn_container],
+          String.t(),
+          String.t(),
+          integer()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
+  def find_matches_v2(target_types, id_of_something, input, which_target) do
+    target_types
+    |> Stream.map(fn type -> find_matches(type, id_of_something) end)
+    |> Enum.map(fn matches ->
+      matches
+      |> things_to_match()
+      |> build_search_results(input)
+    end)
+    |> merge_search_results()
+    |> check_search_results(which_target)
+  end
+
+  @doc """
+  Find matches in an area or return an error.
+  """
   @spec find_matches_in_area_v2(
           [:character | :item | :link],
           String.t(),
@@ -40,9 +65,9 @@ defmodule Mud.Engine.Search do
           integer()
         ) ::
           {:ok, [Match.t()]} | {:error, :out_of_range | :no_match}
-  def find_matches_in_area_v2(target_types, area_id, input, which_target) do
+  def find_matches_in_area_v2(target_types, id_of_something, input, which_target) do
     target_types
-    |> Stream.map(fn type -> find_matches(type, area_id) end)
+    |> Stream.map(fn type -> find_matches(type, id_of_something) end)
     |> Enum.map(fn matches ->
       matches
       |> things_to_match()
@@ -123,6 +148,11 @@ defmodule Mud.Engine.Search do
     |> Character.list_in_area()
   end
 
+  defp find_matches(:worn_container, character_id) do
+    character_id
+    |> Item.list_worn_containers()
+  end
+
   defp find_matches(:item, area_id) do
     area_id
     |> Item.list_in_area()
@@ -173,6 +203,7 @@ defmodule Mud.Engine.Search do
     end
   end
 
+  @spec things_to_match(any) :: [%Match{}]
   def things_to_match(things) when not is_list(things), do: things_to_match(List.wrap(things))
 
   def things_to_match(links = [%Link{} | _]) do

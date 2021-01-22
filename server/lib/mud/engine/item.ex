@@ -192,6 +192,7 @@ defmodule Mud.Engine.Item do
     |> Repo.insert!()
   end
 
+  @spec update!(String.t(), map()) :: %__MODULE__{}
   def update!(item_id, attrs) when is_binary(item_id) do
     keywords =
       attrs
@@ -260,13 +261,28 @@ defmodule Mud.Engine.Item do
     |> List.first()
   end
 
+  @doc """
+  Given one or more items, return them and all of their parents.
+  """
+  @spec list_all_recursive(%__MODULE__{} | [%__MODULE__{}] | String.t() | [String.t()]) :: [
+          %__MODULE__{}
+        ]
   def list_all_recursive([]) do
     []
   end
 
   def list_all_recursive(items) do
     Logger.debug(inspect(items), label: :list_all_recursive)
-    ids = Enum.map(List.wrap(items), & &1.id)
+
+    ids =
+      Enum.map(
+        List.wrap(items),
+        &if is_struct(&1) do
+          &1.id
+        else
+          &1
+        end
+      )
 
     item_tree_initial_query =
       __MODULE__
@@ -286,6 +302,9 @@ defmodule Mud.Engine.Item do
       |> with_cte("item_tree", as: ^item_tree_query)
 
     Repo.all(final_query)
+    |> Enum.map(fn item ->
+      %{item | __meta__: Map.put(item.__meta__, :source, "items")}
+    end)
   end
 
   def list_all_recursive_parents(items) do
@@ -322,6 +341,9 @@ defmodule Mud.Engine.Item do
     Repo.all(final_query)
   end
 
+  @doc """
+  List all items in an Area.
+  """
   @spec list_in_area(id) :: [%__MODULE__{}]
   def list_in_area(area_id) do
     from(
@@ -331,6 +353,9 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
+  @doc """
+  List all furniture in an Area.
+  """
   @spec list_furniture_in_area(id) :: [%__MODULE__{}]
   def list_furniture_in_area(area_id) do
     from(
