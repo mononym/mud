@@ -162,6 +162,7 @@ defmodule Mud.Engine.Command.Open do
 
   defp open_item(context, thing = %Search.Match{}) do
     cond do
+      # Is container and container is closed, meaning it can be opened
       thing.match.is_container and not thing.match.container_open ->
         item =
           Item.update!(thing.match, %{
@@ -177,6 +178,7 @@ defmodule Mud.Engine.Command.Open do
           |> Message.append_text("[#{context.character.name}]", "character")
           |> Message.append_text(" opens ", "base")
           |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+          |> Message.append_text(".", "base")
 
         self_msg =
           context.character.id
@@ -184,6 +186,7 @@ defmodule Mud.Engine.Command.Open do
           |> Message.append_text("You", "character")
           |> Message.append_text(" open ", "base")
           |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+          |> Message.append_text(".", "base")
 
         context =
           if item.wearable_is_worn or item.holdable_is_held do
@@ -204,6 +207,7 @@ defmodule Mud.Engine.Command.Open do
         |> Context.append_message(other_msg)
         |> Context.append_message(self_msg)
 
+      # It is a container but the container is open,
       thing.match.is_container and thing.match.container_open ->
         self_msg =
           context.character.id
@@ -216,6 +220,7 @@ defmodule Mud.Engine.Command.Open do
 
         Context.append_message(context, self_msg)
 
+      # Assume the thing is not a container
       true ->
         self_msg =
           context.character.id
@@ -225,6 +230,7 @@ defmodule Mud.Engine.Command.Open do
             thing.match.short_description,
             Mud.Engine.Util.get_item_type(thing.match)
           )
+          |> Message.append_text(".", "system_alert")
 
         Context.append_message(context, self_msg)
     end
