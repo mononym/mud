@@ -135,7 +135,7 @@ defmodule Mud.Engine.Command.Stow do
         })
       end)
 
-    descriptions = Enum.map(items, & &1.short_description)
+    descriptions = Enum.map(items, & &1.description.short)
     desc_string = "{{item}}#{Enum.join(descriptions, "{{/item}} and {{item}}")}{{/item}}"
 
     others = Character.list_active_in_areas(context.character.id)
@@ -164,13 +164,13 @@ defmodule Mud.Engine.Command.Stow do
     |> Context.append_output(
       others,
       "{{character}}#{context.character.name}{{/character}} stowed #{desc_string} in their {{item}}#{
-        primary_container.short_description
+        primary_container.description.short
       }{{/item}}.",
       "info"
     )
     |> Context.append_output(
       context.character.id,
-      "{{item}}#{String.capitalize(primary_container.short_description)}{{/item}} now contains #{
+      "{{item}}#{String.capitalize(primary_container.description.short)}{{/item}} now contains #{
         desc_string
       }.",
       "info"

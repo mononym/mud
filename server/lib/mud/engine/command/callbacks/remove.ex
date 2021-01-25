@@ -74,7 +74,7 @@ defmodule Mud.Engine.Command.Remove do
         {:ok, matches} when length(matches) > 1 ->
           Util.handle_multiple_items(
             context,
-            Enum.map(matches, & &1.short_description),
+            Enum.map(matches, & &1.description.short),
             matches,
             "Which thing did you wish to remove?"
           )
@@ -113,14 +113,14 @@ defmodule Mud.Engine.Command.Remove do
     |> Context.append_output(
       others,
       "{{character}}#{context.character.name}{{/character}} removed {{item}}#{
-        item.short_description
+        item.description.short
       }{{/item}} from their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
       "info"
     )
     |> Context.append_output(
       context.character.id,
       String.capitalize(
-        "You remove {{item}}#{item.short_description}{{/item}} from your {{bodypart}}#{
+        "You remove {{item}}#{item.description.short}{{/item}} from your {{bodypart}}#{
           item.wearable_location
         }{{/bodypart}}."
       ),

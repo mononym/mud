@@ -43,12 +43,12 @@ defmodule Mud.Engine.Command.Swap do
     case items do
       [item] ->
         other_msg =
-          "{{character}}#{context.character.name}{{/character}} moves #{item.short_description} to their {{bodypart}}#{
+          "{{character}}#{context.character.name}{{/character}} moves #{item.description.short} to their {{bodypart}}#{
             item.holdable_hand
           } hand{{/bodypart}}"
 
         msg =
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(item.description.short)}{{/item}} is now in your {{bodypart}}#{
             item.holdable_hand
           } hand{{/bodypart}}."
 
@@ -68,16 +68,16 @@ defmodule Mud.Engine.Command.Swap do
 
       [item1, item2] ->
         other_msg =
-          "{{character}}#{context.character.name}{{/character}} moves #{item1.short_description} to their {{bodypart}}#{
+          "{{character}}#{context.character.name}{{/character}} moves #{item1.description.short} to their {{bodypart}}#{
             item1.holdable_hand
-          } hand{{/bodypart}}, and #{item2.short_description} to their {{bodypart}}#{
+          } hand{{/bodypart}}, and #{item2.description.short} to their {{bodypart}}#{
             item2.holdable_hand
           } hand{{/bodypart}} hand."
 
         msg =
-          "{{item}}#{String.capitalize(item1.short_description)}{{/item}} is now in your {{bodypart}}#{
+          "{{item}}#{String.capitalize(item1.description.short)}{{/item}} is now in your {{bodypart}}#{
             item1.holdable_hand
-          } hand{{/bodypart}}, and #{item2.short_description} is in your {{bodypart}}#{
+          } hand{{/bodypart}}, and #{item2.description.short} is in your {{bodypart}}#{
             item2.holdable_hand
           } hand{{/bodypart}}."
 

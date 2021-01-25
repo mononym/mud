@@ -33,6 +33,7 @@ defmodule Mud.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:arbor, "~> 1.1"},
       {:bamboo, "~> 1.5"},
       {:cloak, "1.0.0"},
       {:corsica, "~> 1.1"},

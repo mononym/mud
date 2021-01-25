@@ -41,7 +41,7 @@ defmodule Mud.Engine.Command.Lock do
         Context.append_output(
           context,
           context.character.id,
-          "The #{context.input.short_description} is no longer present.",
+          "The #{context.input.description.short} is no longer present.",
           "error"
         )
     end
@@ -146,7 +146,7 @@ defmodule Mud.Engine.Command.Lock do
         )
         |> Context.append_output(
           context.character.id,
-          String.capitalize("#{match.short_description} is now locked."),
+          String.capitalize("#{match.description.short} is now locked."),
           "info"
         )
 
@@ -154,7 +154,7 @@ defmodule Mud.Engine.Command.Lock do
         Context.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.short_description} can't be locked while open."),
+          String.capitalize("#{match.description.short} can't be locked while open."),
           "error"
         )
 
@@ -162,7 +162,7 @@ defmodule Mud.Engine.Command.Lock do
         Context.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.short_description} is already locked."),
+          String.capitalize("#{match.description.short} is already locked."),
           "error"
         )
 
@@ -170,7 +170,7 @@ defmodule Mud.Engine.Command.Lock do
         Context.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.short_description} is not lockable."),
+          String.capitalize("#{match.description.short} is not lockable."),
           "error"
         )
     end

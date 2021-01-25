@@ -15,7 +15,7 @@ defmodule MudWeb.LinkView do
     #   id: link.id,
     #   arrivalText: link.arrival_text,
     #   departureText: link.departure_text,
-    #   shortDescription: link.short_description,
+    #   shortDescription: link.description.short,
     #   longDescription: link.long_description,
     #   lineWidth: link.line_width,
     #   lineDash: link.line_dash,

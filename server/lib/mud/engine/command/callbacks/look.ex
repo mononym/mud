@@ -208,10 +208,10 @@ defmodule Mud.Engine.Command.Look do
             thing = Mud.Repo.preload(thing, :container_items)
 
             items_description =
-              Stream.map(thing.container_items, & &1.short_description)
+              Stream.map(thing.container_items, & &1.description.short)
               |> Enum.join("{{/item}}, {{item}}")
 
-            container_desc = String.capitalize(match.short_description)
+            container_desc = String.capitalize(match.description.short)
 
             if length(thing.container_items) > 0 do
               Context.append_message(
@@ -239,7 +239,7 @@ defmodule Mud.Engine.Command.Look do
               Message.new_output(
                 context.character.id,
                 String.capitalize(
-                  "{{item}}#{match.short_description}{{/item}} must be opened first."
+                  "{{item}}#{match.description.short}{{/item}} must be opened first."
                 ),
                 "info"
               )
@@ -250,7 +250,7 @@ defmodule Mud.Engine.Command.Look do
               context,
               Message.new_output(
                 context.character.id,
-                "You cannot look inside {{item}}#{match.short_description}{{/item}}.",
+                "You cannot look inside {{item}}#{match.description.short}{{/item}}.",
                 "info"
               )
             )

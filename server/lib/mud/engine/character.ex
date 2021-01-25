@@ -426,7 +426,7 @@ defmodule Mud.Engine.Character do
 
     worn_items =
       character.worn_items
-      |> Stream.map(& &1.short_description)
+      |> Stream.map(& &1.description.short)
       |> Enum.join("{{/item}}, {{item}}")
 
     worn_items_string = "{{item}}" <> worn_items <> "{{/item}}"
@@ -441,7 +441,7 @@ defmodule Mud.Engine.Character do
         character.relative_item_id != nil ->
           item = Item.get!(character.relative_item_id)
 
-          " who is #{character.position} #{character.relative_position} #{item.short_description}"
+          " who is #{character.position} #{character.relative_position} #{item.description.short}"
 
         character.position != standing() ->
           " who is #{character.position}"

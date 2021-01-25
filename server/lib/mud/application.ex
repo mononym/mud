@@ -22,11 +22,7 @@ defmodule Mud.Application do
       {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.CharacterSessionSupervisor},
       {Task.Supervisor, name: Mud.Engine.TaskSupervisor},
       {Registry, keys: :unique, name: :scripts},
-      {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.ScriptSupervisor},
-      {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.TelnetSupervisor},
-      Supervisor.child_spec({Task, fn -> Mud.Engine.Telnet.Acceptor.accept() end},
-        restart: :permanent
-      )
+      {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.ScriptSupervisor}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

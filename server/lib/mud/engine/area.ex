@@ -292,6 +292,7 @@ defmodule Mud.Engine.Area do
     things_of_interest =
       area.id
       |> Item.list_scenery_in_area()
+      |> Enum.filter(&(&1.flags.hidden != true))
 
     if things_of_interest == [] do
       story_output
@@ -303,7 +304,7 @@ defmodule Mud.Engine.Area do
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.short_description, get_item_type(item))
+          |> Message.append_text(item.description.short, get_item_type(item))
           |> Message.append_text(", ", "base")
         end
       )
@@ -325,7 +326,7 @@ defmodule Mud.Engine.Area do
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.short_description, get_item_type(item))
+          |> Message.append_text(item.description.short, get_item_type(item))
           |> Message.append_text(", ", "base")
         end
       )
@@ -399,12 +400,12 @@ defmodule Mud.Engine.Area do
 
   defp get_item_type(item) do
     cond do
-      item.is_container && item.is_wearable -> "worn_container"
-      item.is_container -> "container"
-      item.is_furniture -> "furniture"
+      item.flags.container && item.flags.wearable -> "worn_container"
+      item.flags.container -> "container"
+      item.flags.furniture -> "furniture"
       # item.is_weapon -> "weapon"
       # item.is_clothing -> "clothing"
-      item.is_scenery -> "scenery"
+      item.flags.scenery -> "scenery"
       true -> "base"
     end
   end

@@ -100,13 +100,13 @@ defmodule Mud.Engine.Command.Wear do
       |> Context.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
-          item.short_description
+          item.description.short
         }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
         "info"
       )
       |> Context.append_output(
         context.character.id,
-        "You put {{item}}#{item.short_description}{{/item}} on your {{bodypart}}#{
+        "You put {{item}}#{item.description.short}{{/item}} on your {{bodypart}}#{
           item.wearable_location
         }{{/bodypart}}.",
         "info"
@@ -119,7 +119,7 @@ defmodule Mud.Engine.Command.Wear do
       Context.append_output(
         context,
         context.character.id,
-        String.capitalize("{{item}}#{item.short_description}{{/item}} cannot be worn."),
+        String.capitalize("{{item}}#{item.description.short}{{/item}} cannot be worn."),
         "error"
       )
     end

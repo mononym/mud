@@ -40,7 +40,7 @@ defmodule Mud.Engine.Command.Unlock do
         Context.append_output(
           context,
           context.character.id,
-          "The #{context.input.short_description} is no longer present.",
+          "The #{context.input.description.short} is no longer present.",
           "error"
         )
     end
@@ -141,12 +141,12 @@ defmodule Mud.Engine.Command.Unlock do
         context
         |> Context.append_output(
           others,
-          "#{context.character.name} unlocked #{match.short_description}.",
+          "#{context.character.name} unlocked #{match.description.short}.",
           "info"
         )
         |> Context.append_output(
           context.character.id,
-          String.capitalize("#{match.short_description} is now unlocked."),
+          String.capitalize("#{match.description.short} is now unlocked."),
           "info"
         )
 
@@ -154,7 +154,7 @@ defmodule Mud.Engine.Command.Unlock do
         Context.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.short_description} is already unlocked."),
+          String.capitalize("#{match.description.short} is already unlocked."),
           "error"
         )
 
@@ -162,7 +162,7 @@ defmodule Mud.Engine.Command.Unlock do
         Context.append_output(
           context,
           context.character.id,
-          String.capitalize("#{match.short_description} is not lockable."),
+          String.capitalize("#{match.description.short} is not lockable."),
           "error"
         )
     end

@@ -350,7 +350,7 @@
                 activeTooltip="get"
                 inactiveTooltip="Hands are full"
                 cliInput="get {item.id}"
-                storyOutput="get {item.shortDescription}"
+                storyOutput="get {item.description.short}"
                 activeIconColor={$selectedCharacter.settings.areaWindow[
                   "enabled_quick_action_color"
                 ]}
@@ -364,7 +364,7 @@
                 activeTooltip="stow"
                 inactiveTooltip="Hands are full"
                 cliInput="stow {item.id}"
-                storyOutput="stow {item.shortDescription}"
+                storyOutput="stow {item.description.short}"
                 activeIconColor={$selectedCharacter.settings.areaWindow[
                   "enabled_quick_action_color"
                 ]}

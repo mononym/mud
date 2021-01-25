@@ -3,7 +3,7 @@
     <%= if @item_index[@id].is_container do %>
       <div class="flex-shrink"><i phx-click="toggle_container" phx-target="<%= @myself %>" class="fas fa-<%= if @item_index[@id].container_open do "minus" else "plus" end %>-circle"></i>&nbsp;</div>
     <% end %>
-    <div class="flex-shrink"><i class="<%= @item_index[@id].icon %>"></i>&nbsp;<%= @item_index[@id].short_description %></div>
+    <div class="flex-shrink"><i class="<%= @item_index[@id].icon %>"></i>&nbsp;<%= @item_index[@id].description.short %></div>
     <%= if @item_index[@id].is_container do %>
       <div>&nbsp;(<%= length(@child_index[@id] || []) %>)</div>
     <% end %>

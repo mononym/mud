@@ -45,7 +45,7 @@ defmodule Mud.Engine.Command.SingleTargetCallback do
           Mud.Engine.Command.Context.t()
   def handle_multiple_matches(context, matches, multiple_matches_err, _too_many_matches_err)
       when length(matches) < 10 do
-    descriptions = Enum.map(matches, & &1.short_description)
+    descriptions = Enum.map(matches, & &1.description.short)
 
     Util.multiple_match_error(
       context,

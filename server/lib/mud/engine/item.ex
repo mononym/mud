@@ -208,7 +208,7 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
-  List all items in an Area.
+  List all items on the ground. Does not include scenery
   """
   @spec list_on_ground(id) :: [%__MODULE__{}]
   def list_on_ground(area_id) do
@@ -219,14 +219,12 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
-  List all items in an Area.
+  List all items in an Area, those on the ground and scenery included.
   """
   @spec list_in_area(id) :: [%__MODULE__{}]
   def list_in_area(area_id) do
-    from(
-      item in __MODULE__,
-      where: item.area_id == ^area_id,
-      order_by: item.moved_location_at
+    from([location: location] in all_in_area_query(area_id),
+      order_by: location.moved_at
     )
     |> Repo.all()
   end
@@ -293,7 +291,7 @@ defmodule Mud.Engine.Item do
   end
 
   defp build_parent_string(item = %{container_id: d}, parent_index) do
-    "#{item.short_description}, #{d}"
+    "#{item.description.short}, #{d}"
   end
 
   @doc """
@@ -426,6 +424,13 @@ defmodule Mud.Engine.Item do
     from(
       [item, location: location, flags: flags] in base_query_with_preload(),
       where: location.on_ground == true and location.area_id == ^area_id and flags.scenery
+    )
+  end
+
+  defp all_in_area_query(area_id) do
+    from(
+      [location: location] in base_query_with_preload(),
+      where: location.area_id == ^area_id
     )
   end
 

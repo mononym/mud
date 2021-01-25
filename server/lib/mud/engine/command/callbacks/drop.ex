@@ -94,10 +94,10 @@ defmodule Mud.Engine.Command.Drop do
 
     other_msg =
       "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
-        item.short_description
+        item.description.short
       }{{/item}} on the ground."
 
-    self_msg = "You drop {{item}}#{item.short_description}{{/item}} on the ground."
+    self_msg = "You drop {{item}}#{item.description.short}{{/item}} on the ground."
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)

@@ -124,7 +124,7 @@ defmodule Mud.Engine.Command.Move do
   end
 
   # defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-  #   descriptions = Enum.map(matches, & &1.short_description)
+  #   descriptions = Enum.map(matches, & &1.description.short)
 
   #   error_msg = "{{warning}}Which exit?{{/warning}}"
 
@@ -168,14 +168,19 @@ defmodule Mud.Engine.Command.Move do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
+    IO.inspect(area, label: "move")
 
     items_are_scenery =
       Item.list_in_area(area.id)
-      |> Enum.group_by(fn area ->
-        area.is_scenery
+      |> IO.inspect(label: "items_are_scenery1")
+      |> Stream.filter(fn item ->
+        item.flags.hidden != true
+      end)
+      |> Enum.group_by(fn item ->
+        item.flags.scenery
       end)
 
-    IO.inspect(items_are_scenery, label: "items_are_scenery")
+    IO.inspect(items_are_scenery, label: "items_are_scenery2")
 
     scenery = items_are_scenery[true]
     items_in_area = items_are_scenery[false]

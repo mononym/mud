@@ -99,7 +99,7 @@ defmodule Mud.Engine.Command.Kneel do
   end
 
   defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-    descriptions = Enum.map(matches, fn match -> match.short_description end)
+    descriptions = Enum.map(matches, fn match -> match.description.short end)
 
     error_msg = "{{warning}}Please choose where to kneel.{{/warning}}"
 
@@ -179,14 +179,14 @@ defmodule Mud.Engine.Command.Kneel do
         |> Context.append_message(
           Message.new_output(
             others,
-            "#{context.character.name} kneels down on #{furniture_object.short_description}.",
+            "#{context.character.name} kneels down on #{furniture_object.description.short}.",
             "info"
           )
         )
         |> Context.append_message(
           Message.new_output(
             context.character.id,
-            "You kneel down on #{furniture_object.short_description}.",
+            "You kneel down on #{furniture_object.description.short}.",
             "info"
           )
         )
@@ -196,7 +196,7 @@ defmodule Mud.Engine.Command.Kneel do
           context,
           Message.new_output(
             context.character.id,
-            "Unfortunately, #{furniture_object.short_description} can not be knelt on.",
+            "Unfortunately, #{furniture_object.description.short} can not be knelt on.",
             "error"
           )
         )

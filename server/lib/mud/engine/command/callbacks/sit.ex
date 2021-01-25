@@ -157,14 +157,14 @@ defmodule Mud.Engine.Command.Sit do
         |> Context.append_message(
           Message.new_output(
             others,
-            "#{context.character.name} sits down on #{furniture_object.short_description}.",
+            "#{context.character.name} sits down on #{furniture_object.description.short}.",
             "info"
           )
         )
         |> Context.append_message(
           Message.new_output(
             context.character.id,
-            "You sit down on #{furniture_object.short_description}.",
+            "You sit down on #{furniture_object.description.short}.",
             "info"
           )
         )
@@ -182,7 +182,7 @@ defmodule Mud.Engine.Command.Sit do
           context,
           Message.new_output(
             context.character.id,
-            "Unfortunately, #{furniture_object.short_description} can not be sat on.",
+            "Unfortunately, #{furniture_object.description.short} can not be sat on.",
             "error"
           )
         )

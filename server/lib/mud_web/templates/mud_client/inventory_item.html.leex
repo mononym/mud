@@ -6,7 +6,7 @@
         <div class="flex-shrink"><i phx-click="set_primary_container" phx-value-id="<%= @item.id%>" class="<%= if @item.container_primary do "fas fa-star" else "far fa-star" end %>"></i>&nbsp;</div>
       <% end %>
     <% end %>
-    <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.short_description %></div>
+    <div class="flex-shrink"><i class="<%= @item.icon %>"></i>&nbsp;<%= @item.description.short %></div>
     <%= if @item_index[@id].is_container do %>
       <div>&nbsp;(<%= length(@child_index[@id] || []) %>)</div>
     <% end %>

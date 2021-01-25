@@ -69,7 +69,7 @@ defmodule Mud.Engine.Command.Put do
 
             # cont_data = %ContinuationData{thing: indexed_things, type: :thing}
 
-            # descriptions = Enum.map(matches, & &1.short_description)
+            # descriptions = Enum.map(matches, & &1.description.short)
 
             # Util.handle_multiple_items(
             #   context,
@@ -139,7 +139,7 @@ defmodule Mud.Engine.Command.Put do
 
         # cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        # descriptions = Enum.map(matches, & &1.short_description)
+        # descriptions = Enum.map(matches, & &1.description.short)
 
         # Util.handle_multiple_items(
         #   context,
@@ -154,7 +154,7 @@ defmodule Mud.Engine.Command.Put do
         Context.append_output(
           context,
           context.character.id,
-          "Could not find where you wished to put {{item}}#{item_match.short_description}{{/item}}.",
+          "Could not find where you wished to put {{item}}#{item_match.description.short}{{/item}}.",
           "error"
         )
     end
@@ -181,7 +181,7 @@ defmodule Mud.Engine.Command.Put do
 
         # cont_data = %ContinuationData{place: indexed_places, type: :place}
 
-        # descriptions = Enum.map(matches, & &1.short_description)
+        # descriptions = Enum.map(matches, & &1.description.short)
 
         # Util.handle_multiple_items(
         #   context,
@@ -250,33 +250,33 @@ defmodule Mud.Engine.Command.Put do
 
     cond do
       container.container_open ->
-        {"You put {{item}}#{item_match.short_description}{{/item}} inside {{item}}#{
-           container_match.short_description
+        {"You put {{item}}#{item_match.description.short}{{/item}} inside {{item}}#{
+           container_match.description.short
          }{{/item}}.",
          "{{character}}#{character.name}{{/character}} puts {{item}}#{
-           item_match.short_description
-         }{{/item}} inside {{item}}#{container_match.short_description}{{/item}}."}
+           item_match.description.short
+         }{{/item}} inside {{item}}#{container_match.description.short}{{/item}}."}
 
       not container.container_open and not container.container_locked and
           character.auto_open_containers ->
         if character.auto_close_containers do
-          {"You open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
-             item_match.short_description
+          {"You open {{item}}#{container_match.description.short}{{/item}} just long enough to put {{item}}#{
+             item_match.description.short
            }{{/item}} inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{
-             container_match.short_description
-           }{{/item}} just long enough to put {{item}}#{item_match.short_description}{{/item}} inside."}
+             container_match.description.short
+           }{{/item}} just long enough to put {{item}}#{item_match.description.short}{{/item}} inside."}
         else
           Item.update!(container, %{
             container_open: true
           })
 
-          {"You open {{item}}#{container_match.short_description}{{/item}} and put {{item}}#{
-             item_match.short_description
+          {"You open {{item}}#{container_match.description.short}{{/item}} and put {{item}}#{
+             item_match.description.short
            }{{/item}} inside.",
            "{{character}}#{character.name}{{/character}} opens {{item}}#{
-             container_match.short_description
-           }{{/item}} and puts {{item}}#{item_match.short_description}{{/item}} inside."}
+             container_match.description.short
+           }{{/item}} and puts {{item}}#{item_match.description.short}{{/item}} inside."}
         end
 
       container.container_locked and character.auto_unlock_containers ->
@@ -285,13 +285,13 @@ defmodule Mud.Engine.Command.Put do
 
         cond do
           close and lock ->
-            {"You unlock and open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
-               item_match.short_description
+            {"You unlock and open {{item}}#{container_match.description.short}{{/item}} just long enough to put {{item}}#{
+               item_match.description.short
              }{{/item}} inside, securing it once more.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.short_description
+               container_match.description.short
              }{{/item}} a moment before opening it just long enough to put {{item}}#{
-               item_match.short_description
+               item_match.description.short
              }{{/item}} inside, fiddling with it again once it is closed."}
 
           close ->
@@ -299,13 +299,13 @@ defmodule Mud.Engine.Command.Put do
               container_locked: false
             })
 
-            {"You unlock and open {{item}}#{container_match.short_description}{{/item}} just long enough to put {{item}}#{
-               item_match.short_description
+            {"You unlock and open {{item}}#{container_match.description.short}{{/item}} just long enough to put {{item}}#{
+               item_match.description.short
              }{{/item}} inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.short_description
+               container_match.description.short
              }{{/item}} a moment before opening it just long enough to put {{item}}#{
-               item_match.short_description
+               item_match.description.short
              }{{/item}} inside."}
 
           true ->
@@ -314,12 +314,12 @@ defmodule Mud.Engine.Command.Put do
               container_open: true
             })
 
-            {"You unlock and open {{item}}#{container_match.short_description}{{/item}}, putting {{item}}#{
-               item_match.short_description
+            {"You unlock and open {{item}}#{container_match.description.short}{{/item}}, putting {{item}}#{
+               item_match.description.short
              }{{/item}} inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               container_match.short_description
-             }{{/item}} a moment before opening it to put {{item}}#{item_match.short_description}{{/item}} inside."}
+               container_match.description.short
+             }{{/item}} a moment before opening it to put {{item}}#{item_match.description.short}{{/item}} inside."}
         end
     end
   end

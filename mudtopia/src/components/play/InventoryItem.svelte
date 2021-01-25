@@ -4,6 +4,7 @@
   import { getContext } from "svelte";
   import { key } from "./state";
   import { getItemColor } from "../../utils/utils";
+  import App from "../../App.svelte";
 
   const state = getContext(key);
   const { selectedCharacter, inventoryItemsParentChildIndex } = state;
@@ -39,7 +40,7 @@
       on:click|preventDefault={toggleItemExpanded}
       class="ml-2 col-span-{showQuickActions && $$slots.quickActions
         ? 11
-        : 12}">{item.description.short}</pre>
+        : 12}">{item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}</pre>
     {#if itemExpanded}
       <div
         on:click|preventDefault={toggleItemExpanded}

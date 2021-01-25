@@ -1503,7 +1503,8 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true
+    furniture: true,
+    scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
 })
@@ -1517,7 +1518,8 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true
+    furniture: true,
+    scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
 })
@@ -1531,7 +1533,8 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true
+    furniture: true,
+    scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
 })
@@ -1545,7 +1548,8 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true
+    furniture: true,
+    scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
 })

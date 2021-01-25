@@ -191,13 +191,13 @@ defmodule Mud.Engine.Command.Get do
       |> Context.append_output(
         others,
         "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
-          thing.short_description
+          thing.description.short
         }{{/item}} from the ground.",
         "info"
       )
       |> Context.append_output(
         context.character.id,
-        "You pick up {{item}}#{thing.short_description}{{/item}}.",
+        "You pick up {{item}}#{thing.description.short}{{/item}}.",
         "info"
       )
       |> Context.append_event(
@@ -210,7 +210,7 @@ defmodule Mud.Engine.Command.Get do
       )
     else
       context
-      |> Context.append_error("You cannot pick up {{item}}#{thing.short_description}{{/item}}.")
+      |> Context.append_error("You cannot pick up {{item}}#{thing.description.short}{{/item}}.")
     end
   end
 
@@ -302,7 +302,7 @@ defmodule Mud.Engine.Command.Get do
         match = %Search.Match{
           match_string: "",
           match: item,
-          short_description: item.short_description,
+          short_description: item.description.short,
           long_description: item.long_description
         }
 
@@ -312,19 +312,19 @@ defmodule Mud.Engine.Command.Get do
           not character.auto_open_containers ->
         context
         |> Context.append_error(
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked and open first."
+          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be unlocked and open first."
         )
 
       item.container_locked and not character.auto_unlock_containers ->
         context
         |> Context.append_error(
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be unlocked first."
+          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be unlocked first."
         )
 
       not item.container_open and not character.auto_open_containers ->
         context
         |> Context.append_error(
-          "{{item}}#{String.capitalize(item.short_description)}{{/item}} must be open first."
+          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be open first."
         )
     end
   end
@@ -361,7 +361,7 @@ defmodule Mud.Engine.Command.Get do
             Context.append_output(
               context,
               context.character.id,
-              "{{item}}#{place.short_description}{{/item}} must be open first.",
+              "{{item}}#{place.description.short}{{/item}} must be open first.",
               "error"
             )
 
@@ -369,7 +369,7 @@ defmodule Mud.Engine.Command.Get do
             Context.append_output(
               context,
               context.character.id,
-              "{{item}}#{place.short_description}{{/item}} is not a container.",
+              "{{item}}#{place.description.short}{{/item}} is not a container.",
               "error"
             )
         end
@@ -399,7 +399,7 @@ defmodule Mud.Engine.Command.Get do
         Context.append_output(
           context,
           context.character.id,
-          "Multiple potential matches found inside {{item}}#{place.short_description}{{/item}}, please be more specific.",
+          "Multiple potential matches found inside {{item}}#{place.description.short}{{/item}}, please be more specific.",
           "error"
         )
 
@@ -407,7 +407,7 @@ defmodule Mud.Engine.Command.Get do
         Context.append_output(
           context,
           context.character.id,
-          "Could not find any matching item to get from {{item}}#{place.short_description}{{/item}}.",
+          "Could not find any matching item to get from {{item}}#{place.description.short}{{/item}}.",
           "help_docs"
         )
     end
@@ -495,21 +495,21 @@ defmodule Mud.Engine.Command.Get do
 
     cond do
       container.container_open ->
-        {"You get {{item}}#{thing.short_description}{{/item}} from inside {{item}}#{
-           place.short_description
+        {"You get {{item}}#{thing.description.short}{{/item}} from inside {{item}}#{
+           place.description.short
          }{{/item}}.",
-         "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.short_description}{{/item}} from inside {{item}}#{
-           place.short_description
+         "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.description.short}{{/item}} from inside {{item}}#{
+           place.description.short
          }{{/item}}.", [item]}
 
       not container.container_open and not container.container_locked and
           character.auto_open_containers ->
         if character.auto_close_containers do
-          {"You open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
-             thing.short_description
+          {"You open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
+             thing.description.short
            }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
-             thing.short_description
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
+             thing.description.short
            }{{/item}} from inside.", [item]}
         else
           container =
@@ -517,11 +517,11 @@ defmodule Mud.Engine.Command.Get do
               container_open: true
             })
 
-          {"You open {{item}}#{place.short_description}{{/item}} and get {{item}}#{
-             thing.short_description
+          {"You open {{item}}#{place.description.short}{{/item}} and get {{item}}#{
+             thing.description.short
            }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.short_description}{{/item}} and gets {{item}}#{
-             thing.short_description
+           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.description.short}{{/item}} and gets {{item}}#{
+             thing.description.short
            }{{/item}} from inside.", [item, container]}
         end
 
@@ -531,13 +531,13 @@ defmodule Mud.Engine.Command.Get do
 
         cond do
           close and lock ->
-            {"You unlock and open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
-               thing.short_description
+            {"You unlock and open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
+               thing.description.short
              }{{/item}} from inside it, securing it once more.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.short_description
+               place.description.short
              }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.short_description
+               thing.description.short
              }{{/item}} from inside, fiddling with it again once it is closed."}
 
           close ->
@@ -546,13 +546,13 @@ defmodule Mud.Engine.Command.Get do
                 container_locked: false
               })
 
-            {"You unlock and open {{item}}#{place.short_description}{{/item}} just long enough to get {{item}}#{
-               thing.short_description
+            {"You unlock and open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
+               thing.description.short
              }{{/item}} from inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.short_description
+               place.description.short
              }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.short_description
+               thing.description.short
              }{{/item}} from inside.", [item, container]}
 
           true ->
@@ -562,12 +562,12 @@ defmodule Mud.Engine.Command.Get do
                 container_open: true
               })
 
-            {"You unlock and open {{item}}#{place.short_description}{{/item}}, getting {{item}}#{
-               thing.short_description
+            {"You unlock and open {{item}}#{place.description.short}{{/item}}, getting {{item}}#{
+               thing.description.short
              }{{/item}} from inside it.",
              "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.short_description
-             }{{/item}} a moment before opening it to get {{item}}#{thing.short_description}{{/item}} from inside.",
+               place.description.short
+             }{{/item}} a moment before opening it to get {{item}}#{thing.description.short}{{/item}} from inside.",
              [item, container]}
         end
     end

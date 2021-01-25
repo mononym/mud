@@ -72,7 +72,7 @@ defmodule Mud.Engine.Command.Stand do
     if character.relative_item_id != nil do
       item = Item.get!(character.relative_item_id)
 
-      " from #{item.short_description}"
+      " from #{item.description.short}"
     else
       ""
     end
