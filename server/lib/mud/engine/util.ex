@@ -347,23 +347,20 @@ defmodule Mud.Engine.Util do
   """
   def get_item_type(item) do
     cond do
-      item.is_container and item.is_wearable ->
+      item.flags.container and item.flags.wearable ->
         "worn_container"
 
-      item.is_container ->
+      item.flags.container ->
         "container"
 
-      item.is_weapon ->
+      item.flags.weapon ->
         "weapon"
 
-      item.is_furniture ->
+      item.flags.furniture ->
         "furniture"
 
-      item.is_scenery ->
+      item.flags.scenery ->
         "scenery"
-
-      item.is_link ->
-        "exit"
 
       true ->
         "base"

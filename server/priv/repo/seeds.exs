@@ -1417,122 +1417,219 @@ Mud.Repo.insert!(%Link{
 # Object insertions
 
 Mud.Engine.Item.create(%{
-  key: "rock",
-  is_scenery: false,
-  area_id: north_room.id,
-  short_description: "a flat rounded rock",
-  long_description:
-    "This rock has been worn down over time by water into a smooth, flat round shape.",
-  is_holdable: true,
-  icon: "fas fa-leaf",
-  is_physical: true
+  description: %{
+    key: "rock",
+    short: "a flat rounded rock",
+    long: "This rock has been worn down over time by water into a smooth, flat round shape."
+  },
+  flags: %{
+    drop: true,
+    hold: true,
+    look: true,
+    stow: true,
+    trash: true,
+    material: true
+  },
+  location: %{area_id: north_room.id, on_ground: true},
+  physics: %{
+    weight: 1
+  }
 })
 
 Mud.Engine.Item.create(%{
-  key: "rock",
-  is_scenery: false,
-  area_id: north_room.id,
-  short_description: "a rough round rock",
-  long_description:
-    "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
-  is_holdable: true,
-  icon: "fas fa-leaf",
-  is_physical: true
+  description: %{
+    key: "rock",
+    short: "a rough rounded rock",
+    long:
+      "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+  },
+  flags: %{
+    drop: true,
+    hold: true,
+    look: true,
+    stow: true,
+    trash: true,
+    material: true
+  },
+  location: %{area_id: north_room.id, on_ground: true},
+  physics: %{
+    weight: 1
+  }
 })
 
 Mud.Engine.Item.create(%{
-  key: "branch",
-  is_scenery: false,
-  area_id: north_room.id,
-  short_description: "a leafy branch",
-  long_description:
-    "The leafy branch has only recently been removed from its tree, the leaves not yet wilted.",
-  is_holdable: true,
-  icon: "fas fa-leaf",
-  is_physical: true,
-  physical_length: 10,
-  physical_weight: 10
+  description: %{
+    key: "branch",
+    short: "a leafy branch",
+    long:
+      "The leafy branch has only recently been removed from its tree, the leaves not yet wilted."
+  },
+  flags: %{
+    drop: true,
+    hold: true,
+    look: true,
+    stow: true,
+    trash: true,
+    material: true
+  },
+  location: %{area_id: north_room.id, on_ground: true},
+  physics: %{
+    length: 10,
+    weight: 10
+  }
 })
 
 Mud.Engine.Item.create(%{
-  key: "fountain",
-  is_scenery: true,
-  area_id: center_room.id,
-  short_description: "a massive fountain",
-  long_description:
-    "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself.",
-  is_hidden: true,
-  icon: "fas fa-water",
-  is_physical: true
+  description: %{
+    key: "fountain",
+    short: "a massive fountain",
+    long:
+      "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself."
+  },
+  flags: %{
+    hidden: true,
+    look: true,
+    scenery: true
+  },
+  location: %{area_id: center_room.id, on_ground: true}
 })
 
 Mud.Engine.Item.create(%{
-  key: "bench",
-  is_scenery: true,
-  is_furniture: true,
-  area_id: center_room.id,
-  short_description: "a worn wooden bench",
-  long_description:
-    "The sturdy wooden bench has seen many years of use, and is still solid as a rock. A testament to its maker.",
-  icon: "fas fa-chair",
-  is_physical: true
+  description: %{
+    key: "bench",
+    short: "a worn copperwood bench",
+    long:
+      "The sturdy copperwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+  },
+  flags: %{
+    look: true,
+    furniture: true
+  },
+  location: %{area_id: center_room.id, on_ground: true}
 })
 
 Mud.Engine.Item.create(%{
-  key: "chest",
-  area_id: center_room.id,
-  short_description: "a simple wooden chest",
-  long_description:
-    "The chest is big enough to fit an average human, and is bolted to the ground.",
-  is_container: true,
-  container_closeable: true,
-  container_closed: true,
-  container_lockable: true,
-  container_locked: true,
-  container_length: 100,
-  container_width: 75,
-  container_height: 75,
-  container_capacity: 1000,
-  is_holdable: true,
-  icon: "fas fa-box",
-  is_physical: true,
-  physical_length: 105,
-  physical_width: 90,
-  physical_height: 80,
-  physical_weight: 200
+  description: %{
+    key: "bench",
+    short: "a worn goldenwood bench",
+    long:
+      "The sturdy goldenwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+  },
+  flags: %{
+    look: true,
+    furniture: true
+  },
+  location: %{area_id: center_room.id, on_ground: true}
 })
 
 Mud.Engine.Item.create(%{
-  key: "backpack",
-  area_id: center_room.id,
-  short_description: "a ragged leather backpack",
-  long_description: "The backpack has clearly seen better days.",
-  is_container: true,
-  container_closeable: true,
-  container_length: 100,
-  container_width: 75,
-  container_height: 75,
-  container_capacity: 1000,
-  is_wearable: true,
-  wearable_location: "back",
-  is_holdable: true,
-  icon: "fas fa-box",
-  is_physical: true,
-  physical_length: 105,
-  physical_width: 90,
-  physical_height: 80,
-  physical_weight: 50
+  description: %{
+    key: "bench",
+    short: "a worn silverwood bench",
+    long:
+      "The sturdy silverwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+  },
+  flags: %{
+    look: true,
+    furniture: true
+  },
+  location: %{area_id: center_room.id, on_ground: true}
 })
 
 Mud.Engine.Item.create(%{
-  key: "rock",
-  area_id: center_room.id,
-  short_description: "a rough round rock",
-  long_description:
-    "This rock has, judging by the dry dirt still attached, been recently separated from the ground.",
-  is_holdable: true,
-  icon: "fas fa-leaf",
-  is_physical: true
+  description: %{
+    key: "bench",
+    short: "a worn rosewood bench",
+    long:
+      "The sturdy rosewood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
+  },
+  flags: %{
+    look: true,
+    furniture: true
+  },
+  location: %{area_id: center_room.id, on_ground: true}
+})
+
+Mud.Engine.Item.create(%{
+  description: %{
+    key: "chest",
+    short: "a simple wooden chest",
+    long: "The chest is big enough to fit an average human, and is bolted to the ground."
+  },
+  flags: %{
+    look: true,
+    open: true,
+    close: true,
+    container: true
+  },
+  location: %{area_id: center_room.id, on_ground: true},
+  container: %{
+    capacity: 2000,
+    length: 100,
+    width: 50,
+    height: 75
+  },
+  physics: %{
+    length: 105,
+    width: 55,
+    height: 80,
+    weight: 200
+  }
+})
+
+Mud.Engine.Item.create(%{
+  description: %{
+    key: "backpack",
+    short: "a ragged leather backpack",
+    long: "The backpack has clearly seen better days."
+  },
+  flags: %{
+    look: true,
+    open: true,
+    close: true,
+    wear: true,
+    remove: true,
+    trash: true,
+    drop: true,
+    hold: true,
+    stow: true,
+    container: true,
+    wearable: true
+  },
+  location: %{area_id: center_room.id, on_ground: true},
+  container: %{
+    capacity: 1000,
+    length: 75,
+    width: 50,
+    height: 75
+  },
+  physics: %{
+    length: 100,
+    width: 50,
+    height: 75,
+    weight: 50
+  }
+})
+
+Mud.Engine.Item.create(%{
+  description: %{
+    key: "rock",
+    short: "a rough rounded rock",
+    long:
+      "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
+  },
+  flags: %{
+    drop: true,
+    hold: true,
+    look: true,
+    stow: true,
+    trash: true,
+    material: true
+  },
+  location: %{area_id: center_room.id, on_ground: true},
+  physics: %{
+    weight: 1
+  }
 })
 
 #####

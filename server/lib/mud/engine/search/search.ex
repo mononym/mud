@@ -4,6 +4,7 @@ defmodule Mud.Engine.Search do
   """
 
   alias Mud.Engine.{Character, Item, Link}
+  alias Mud.Repo
   import Mud.Engine.Util
   require Logger
 
@@ -31,6 +32,48 @@ defmodule Mud.Engine.Search do
             exact_matches: [Mud.Engine.Search.Match.t()],
             partial_matches: [Mud.Engine.Search.Match.t()]
           }
+  end
+
+  @doc """
+  Find matches in an area or return an error.
+  """
+  @spec find_matches_in_worn_containers(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_in_worn_containers(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_worn_containers(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in an area or return an error.
+  """
+  @spec find_matches_in_worn_items(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_in_worn_items(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_worn_containers(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
   end
 
   @doc """
@@ -231,13 +274,27 @@ defmodule Mud.Engine.Search do
   def things_to_match(items = [%Item{} | _]) do
     Enum.map(items, fn item ->
       %Match{
-        match_string: String.downcase(item.short_description),
-        short_description: item.short_description,
-        long_description: item.long_description,
+        match_string: String.downcase(item.description.short),
+        short_description: item.description.short,
+        long_description: item.description.long,
         match: item
       }
     end)
   end
 
   def things_to_match([]), do: []
+
+  defp input_to_wildcard_string(input, "advanced") do
+    input
+    |> String.graphemes()
+    |> Stream.map(&"%#{&1}%")
+    |> Enum.join()
+  end
+
+  defp input_to_wildcard_string(input, "simple") do
+    input
+    |> String.split()
+    |> Stream.map(&"%#{&1}%")
+    |> Enum.join()
+  end
 end

@@ -291,7 +291,7 @@ defmodule Mud.Engine.Area do
   defp maybe_build_things_of_interest(story_output, area) do
     things_of_interest =
       area.id
-      |> Item.list_visible_scenery_in_area()
+      |> Item.list_scenery_in_area()
 
     if things_of_interest == [] do
       story_output
@@ -313,9 +313,7 @@ defmodule Mud.Engine.Area do
   end
 
   defp maybe_build_on_ground(story_output, area) do
-    items_on_ground =
-      Item.list_in_area(area.id)
-      |> Enum.filter(&(!&1.is_scenery))
+    items_on_ground = Item.list_on_ground(area.id)
 
     if items_on_ground == [] do
       story_output

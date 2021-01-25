@@ -12,6 +12,11 @@ defmodule Mud.Engine.Character.Settings do
     @derive Jason.Encoder
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
+    embeds_one :commands, Commands, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:search_mode, :string, default: "simple")
+    end
+
     embeds_one :area_window, AreaWindow, on_replace: :delete do
       @derive Jason.Encoder
 
@@ -175,6 +180,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:echo, with: &echo_changeset/2)
     |> cast_embed(:inventory_window, with: &inventory_window_changeset/2)
     |> cast_embed(:area_window, with: &area_window_changeset/2)
+    |> cast_embed(:commands, with: &commands_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -335,6 +341,14 @@ defmodule Mud.Engine.Character.Settings do
       :hotkey_commands_in_logs,
       :ui_commands_in_logs,
       :ui_commands_replace_ids_in_logs
+    ])
+  end
+
+  defp commands_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :search_mode
     ])
   end
 
@@ -511,6 +525,7 @@ defmodule Mud.Engine.Character.Settings do
 
     attrs = insert_default_area_window_settings(attrs)
     attrs = insert_default_inventory_window_settings(attrs)
+    attrs = insert_default_commands_settings(attrs)
 
     Logger.debug(inspect(attrs))
 
@@ -622,6 +637,12 @@ defmodule Mud.Engine.Character.Settings do
       enabled_quick_action_color: "#a7f3d0",
       disabled_quick_action_color: "#6B7280",
       show_quick_actions: true
+    })
+  end
+
+  defp insert_default_commands_settings(attrs) do
+    Map.put(attrs, :commands, %{
+      search_mode: "simple"
     })
   end
 end

@@ -39,7 +39,7 @@
       on:click|preventDefault={toggleItemExpanded}
       class="ml-2 col-span-{showQuickActions && $$slots.quickActions
         ? 11
-        : 12}">{item.shortDescription}</pre>
+        : 12}">{item.description.short}</pre>
     {#if itemExpanded}
       <div
         on:click|preventDefault={toggleItemExpanded}
@@ -52,11 +52,11 @@
           style="color:{getItemColor(
             $selectedCharacter.settings.colors,
             item
-          )}">{item.longDescription}</pre>
+          )}">{item.description.long}</pre>
       </div>
     {/if}
   </div>
-  {#if item.containerOpen && $inventoryItemsParentChildIndex[item.id] != undefined}
+  {#if item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
     <div class="flex flex-col ml-4">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
         <div class="flex">

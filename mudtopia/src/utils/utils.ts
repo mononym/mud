@@ -89,13 +89,13 @@ export function buildRecordFromHotkeyString(hotkeyString) {
 }
 
 export function getItemColor(colors, item) {
-  if (item.isWearable && item.isContainer) {
+  if (item.flags.wearable && item.flags.container) {
     return colors.worn_container;
-  } else if (item.isContainer) {
+  } else if (item.flags.container) {
     return colors.container;
-  } else if (item.isFurniture) {
+  } else if (item.flags.furniture) {
     return colors.furniture;
-  } else if (item.isScenery) {
+  } else if (item.flags.scenery) {
     return colors.scenery;
   } else {
     return colors.base;

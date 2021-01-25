@@ -45,6 +45,16 @@ export function createState() {
     }
   }
 
+  async function selectSettingsCommandsView() {
+    if (get(settingsView) != "commands") {
+      const settings = get(selectedCharacter).settings;
+      const newSettings = _.cloneDeep(settings);
+      characterSettings.set(newSettings);
+
+      settingsView.set("commands");
+    }
+  }
+
   async function selectSettingsHotkeysView() {
     if (get(settingsView) != "hotkeys") {
       const settings = get(selectedCharacter).settings;
@@ -171,24 +181,29 @@ export function createState() {
     const newParentChildIndex = {};
 
     items.forEach((item) => {
-      if (item.holdableIsHeld) {
-        if (item.holdableHand == "left") {
+      if (item.location.held_in_hand) {
+        if (item.location.hand == "left") {
           itemInLeftHand.set(item);
           leftHandHasItem.set(true);
-        } else if (item.holdableHand == "right") {
+        } else if (item.location.hand == "right") {
           itemInRightHand.set(item);
           rightHandHasItem.set(true);
         }
-      } else if (item.wearableIsWorn && item.isContainer) {
+      } else if (
+        item.location.worn_on_character &&
+        item.flags.container &&
+        item.flags.wearable
+      ) {
         newWornContainers.push(item);
       }
 
       newAllItemsIndex[item.id] = item;
 
-      if (item.containerId != "") {
-        const existingChildren = newParentChildIndex[item.containerId] || [];
+      if (item.location.relative_to_item) {
+        const existingChildren =
+          newParentChildIndex[item.location.relative_item_id] || [];
         existingChildren.push(item);
-        newParentChildIndex[item.containerId] = existingChildren;
+        newParentChildIndex[item.location.relative_item_id] = existingChildren;
       }
     });
 
@@ -199,15 +214,19 @@ export function createState() {
 
   function updateInventory(items) {
     items.forEach((item) => {
-      if (item.holdableIsHeld) {
-        if (item.holdableHand == "left") {
+      if (item.location.held_in_hand) {
+        if (item.location.hand == "left") {
           itemInLeftHand.set(item);
           leftHandHasItem.set(true);
-        } else if (item.holdableHand == "right") {
+        } else if (item.location.hand == "right") {
           itemInRightHand.set(item);
           rightHandHasItem.set(true);
         }
-      } else if (item.wearableIsWorn && item.isContainer) {
+      } else if (
+        item.location.worn_on_character &&
+        item.flags.container &&
+        item.flags.wearable
+      ) {
         wornContainers.update(function (containers) {
           var foundIndex = containers.findIndex(
             (container) => container.id == item.id
@@ -222,11 +241,11 @@ export function createState() {
         return index;
       });
 
-      if (item.containerId != "") {
+      if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
-          const existingChildren = index[item.containerId] || [];
+          const existingChildren = index[item.location.relative_item_id] || [];
           existingChildren.push(item);
-          index[item.containerId] = existingChildren;
+          index[item.location.relative_item_id] = existingChildren;
 
           return index;
         });
@@ -236,15 +255,19 @@ export function createState() {
 
   function addInventory(items) {
     items.forEach((item) => {
-      if (item.holdableIsHeld) {
-        if (item.holdableHand == "left") {
+      if (item.location.held_in_hand) {
+        if (item.location.hand == "left") {
           itemInLeftHand.set(item);
           leftHandHasItem.set(true);
-        } else if (item.holdableHand == "right") {
+        } else if (item.location.hand == "right") {
           itemInRightHand.set(item);
           rightHandHasItem.set(true);
         }
-      } else if (item.wearableIsWorn && item.isContainer) {
+      } else if (
+        item.location.worn_on_character &&
+        item.flags.container &&
+        item.flags.wearable
+      ) {
         wornContainers.update(function (containers) {
           containers.push(item);
           return containers;
@@ -256,11 +279,11 @@ export function createState() {
         return index;
       });
 
-      if (item.containerId != "") {
+      if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
-          const existingChildren = index[item.containerId] || [];
+          const existingChildren = index[item.location.relative_item_id] || [];
           existingChildren.push(item.id);
-          index[item.containerId] = existingChildren;
+          index[item.location.relative_item_id] = existingChildren;
 
           return index;
         });
@@ -270,15 +293,19 @@ export function createState() {
 
   function removeInventory(items) {
     items.forEach((item) => {
-      if (item.holdableIsHeld) {
-        if (item.holdableHand == "left") {
+      if (item.location.held_in_hand) {
+        if (item.location.hand == "left") {
           itemInLeftHand.set({ ...ItemState });
           leftHandHasItem.set(false);
-        } else if (item.holdableHand == "right") {
+        } else if (item.location.hand == "right") {
           itemInRightHand.set({ ...ItemState });
           rightHandHasItem.set(false);
         }
-      } else if (item.wearableIsWorn && item.isContainer) {
+      } else if (
+        item.location.worn_on_character &&
+        item.flags.container &&
+        item.flags.wearable
+      ) {
         wornContainers.update(function (containers) {
           containers.filter((container) => container.id != item.id);
           return containers;
@@ -290,11 +317,11 @@ export function createState() {
         return index;
       });
 
-      if (item.containerId != "") {
+      if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
-          const existingChildren = index[item.containerId] || [];
+          const existingChildren = index[item.location.relative_item_id] || [];
           existingChildren.filter((child) => child.id != item.id);
-          index[item.containerId] = existingChildren;
+          index[item.location.relative_item_id] = existingChildren;
 
           return index;
         });
@@ -644,6 +671,7 @@ export function createState() {
     saveCharacterSettings,
     selectSettingsHotkeysView,
     selectSettingsGeneralView,
+    selectSettingsCommandsView,
     //
     // Map stuff
     //

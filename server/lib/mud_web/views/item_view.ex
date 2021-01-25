@@ -1,6 +1,16 @@
 defmodule MudWeb.ItemView do
   use MudWeb, :view
-  alias MudWeb.ItemView
+
+  alias MudWeb.{
+    ItemView,
+    ItemLocationView,
+    ItemFlagsView,
+    ItemPhysicsView,
+    ItemContainerView,
+    ItemDescriptionView
+  }
+
+  alias MudWeb.ItemLocationView
 
   def render("index.json", %{items: items}) do
     render_many(items, ItemView, "item.json")
@@ -11,14 +21,13 @@ defmodule MudWeb.ItemView do
   end
 
   def render("item.json", %{item: item}) do
-    item
-    |> Map.from_struct()
-    |> Map.delete(:__meta__)
-    |> Map.delete(:container_items)
-    |> Map.delete(:container)
-    |> Map.delete(:area)
-    |> Map.delete(:wearable_worn_by)
-    |> Map.delete(:holdable_held_by)
-    |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
+    %{
+      id: item.id,
+      location: render_one(item.location, ItemLocationView, "item_location.json"),
+      flags: render_one(item.flags, ItemFlagsView, "item_flags.json"),
+      description: render_one(item.description, ItemDescriptionView, "item_description.json"),
+      container: render_one(item.container, ItemContainerView, "item_container.json"),
+      physics: render_one(item.physics, ItemPhysicsView, "item_physics.json")
+    }
   end
 end

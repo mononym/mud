@@ -17,6 +17,7 @@ defmodule Mud.Engine.Command.Open do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
+  alias Item.{Container, Location}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
 
@@ -58,7 +59,7 @@ defmodule Mud.Engine.Command.Open do
         # Make sure they are all open
         all_parents_open =
           Enum.all?(items, fn item ->
-            item.container_open or item.id == context.command.ast.thing.input
+            item.container.open or item.id == context.command.ast.thing.input
           end)
 
         cond do
@@ -105,11 +106,9 @@ defmodule Mud.Engine.Command.Open do
     # open an item in inventory
     # sql search for all items in inventory which match text
     result =
-      Search.find_matches_v2(
-        [:worn_container],
+      Search.find_matches_in_worn_items(
         context.character.id,
-        context.command.ast.thing.input,
-        0
+        context.command.ast.thing.input
       )
 
     case result do
@@ -117,10 +116,12 @@ defmodule Mud.Engine.Command.Open do
         Logger.debug("Found the item to Open")
         open_item(context, thing)
 
-      {:ok, _things} ->
+      {:ok, [thing | _things]} ->
+        open_item(context, thing)
+
         Context.append_message(
           context,
-          Message.new_story_output(context.character.id, "Found too many items to open")
+          Message.new_story_output(context.character.id, "Multiple items were found, please be m")
         )
 
         Logger.debug("Found too many items to open, or no item")
@@ -135,7 +136,8 @@ defmodule Mud.Engine.Command.Open do
 
   defp find_thing_to_open(context = %Mud.Engine.Command.Context{}) do
     case context.command.ast do
-      # open thing in inventory on character
+      # Open thing in inventory on character
+      # If nothing is found worn on the character do not look further
       %TAP{place: nil, thing: %Thing{personal: true}} ->
         Logger.debug("Item to Open should be on character")
 
@@ -160,14 +162,16 @@ defmodule Mud.Engine.Command.Open do
     end
   end
 
-  defp open_item(context, thing = %Search.Match{}) do
+  defp open_item(context, thing = %Search.Match{}, other_matches \\ []) do
     cond do
       # Is container and container is closed, meaning it can be opened
-      thing.match.is_container and not thing.match.container_open ->
-        item =
-          Item.update!(thing.match, %{
-            container_open: true
+      thing.match.flags.container and not thing.match.container.open ->
+        container =
+          Container.update!(thing.match.container, %{
+            open: true
           })
+
+        item = Map.put(thing.match, :container, container)
 
         others =
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)
@@ -177,7 +181,7 @@ defmodule Mud.Engine.Command.Open do
           |> Message.new_story_output()
           |> Message.append_text("[#{context.character.name}]", "character")
           |> Message.append_text(" opens ", "base")
-          |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+          |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
           |> Message.append_text(".", "base")
 
         self_msg =
@@ -185,11 +189,19 @@ defmodule Mud.Engine.Command.Open do
           |> Message.new_story_output()
           |> Message.append_text("You", "character")
           |> Message.append_text(" open ", "base")
-          |> Message.append_text(item.short_description, Mud.Engine.Util.get_item_type(item))
+          |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
           |> Message.append_text(".", "base")
 
+        self_msg =
+          if other_matches != [] do
+            # ("Assuming that was your intended target. #{length(other_matches)} other possible matches were found: ")
+            Message.append_text(self_msg, "\n", "base")
+          else
+            self_msg
+          end
+
         context =
-          if item.wearable_is_worn or item.holdable_is_held do
+          if item.location.worn_on_character or item.location.held_in_hand do
             Context.append_event(
               context,
               context.character_id,
@@ -208,12 +220,12 @@ defmodule Mud.Engine.Command.Open do
         |> Context.append_message(self_msg)
 
       # It is a container but the container is open,
-      thing.match.is_container and thing.match.container_open ->
+      thing.match.flags.container and thing.match.container.open ->
         self_msg =
           context.character.id
           |> Message.new_story_output()
           |> Message.append_text(
-            Util.upcase_first(thing.match.short_description),
+            Util.upcase_first(thing.match.description.short),
             Mud.Engine.Util.get_item_type(thing.match)
           )
           |> Message.append_text(" is already open.", "system_warning")
@@ -227,7 +239,7 @@ defmodule Mud.Engine.Command.Open do
           |> Message.new_story_output()
           |> Message.append_text("You cannot open ", "system_alert")
           |> Message.append_text(
-            thing.match.short_description,
+            thing.match.description.short,
             Mud.Engine.Util.get_item_type(thing.match)
           )
           |> Message.append_text(".", "system_alert")

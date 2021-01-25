@@ -7,6 +7,7 @@
     settingsView,
     selectSettingsHotkeysView,
     selectSettingsGeneralView,
+    selectSettingsCommandsView,
   } = state;
 </script>
 
@@ -26,6 +27,14 @@
       'hotkeys'
         ? 'text-white bg-gray-900'
         : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Hotkeys</button
+    >
+
+    <button
+      on:click={selectSettingsCommandsView}
+      class="px-3 py-2 rounded-md text-sm font-medium {$settingsView ==
+      'commands'
+        ? 'text-white bg-gray-900'
+        : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Commands</button
     >
   </div>
 </nav>

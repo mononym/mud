@@ -124,6 +124,9 @@ export interface CharacterSettingsInterface {
     show_quick_actions: boolean;
   };
   customHotkeys: HotkeyInterface[];
+  characters: {
+    search_mode: string;
+  };
 }
 
 const state: CharacterSettingsInterface = {
@@ -256,6 +259,9 @@ const state: CharacterSettingsInterface = {
     select_cli: "CTRL + SHIFT + KeyC",
   },
   customHotkeys: [],
+  characters: {
+    search_mode: "simple",
+  },
 };
 
 export default state;

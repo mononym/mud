@@ -32,7 +32,7 @@ defmodule Mud.Engine.Character do
 
     # Game Status
     field(:active, :boolean, default: false)
-    field(:moved_location_at, :utc_datetime_usec, required: true)
+    field(:moved_at, :utc_datetime_usec, required: true)
 
     # Attributes
     field(:agility, :integer, default: 10)
@@ -181,7 +181,7 @@ defmodule Mud.Engine.Character do
       :strength,
       :wisdom,
       :handedness,
-      :moved_location_at
+      :moved_at
     ])
     |> validate_required([
       :name,
@@ -240,14 +240,11 @@ defmodule Mud.Engine.Character do
     result =
       %__MODULE__{}
       |> changeset(Map.put(attrs, "area_id", area.id))
-      |> changeset(Map.put(attrs, "moved_location_at", DateTime.utc_now()))
+      |> changeset(Map.put(attrs, "moved_at", DateTime.utc_now()))
       |> Repo.insert()
-      |> IO.inspect(label: "insert char")
 
     case result do
       {:ok, character} ->
-        Logger.debug(inspect(character))
-
         # Set up skills
         :ok = Skill.initialize(character.id)
 
@@ -271,51 +268,78 @@ defmodule Mud.Engine.Character do
 
   defp setup_default_items(character) do
     Mud.Engine.Item.create(%{
-      key: "rock",
-      is_scenery: false,
-      short_description: "a flat rounded rock",
-      long_description:
-        "This rock has been worn down over time by water into a smooth, flat round shape.",
-      is_holdable: true,
-      holdable_is_held: true,
-      holdable_held_by_id: character.id,
-      holdable_hand: "right",
-      icon: "fas fa-leaf",
-      is_physical: true
+      description: %{
+        key: "rock",
+        short: "a flat rounded rock",
+        long: "This rock has been worn down over time by water into a smooth, flat round shape."
+      },
+      flags: %{
+        drop: true,
+        hold: true,
+        look: true,
+        stow: true,
+        trash: true,
+        material: true
+      },
+      location: %{character_id: character.id, held_in_hand: true, hand: "right"},
+      physics: %{
+        weight: 1
+      }
     })
 
-    backpack =
+    {:ok, backpack} =
       Mud.Engine.Item.create(%{
-        key: "backpack",
-        short_description: "a ragged leather backpack",
-        long_description: "The backpack has clearly seen better days.",
-        is_container: true,
-        container_closeable: true,
-        container_length: 100,
-        container_width: 75,
-        container_height: 75,
-        container_capacity: 1000,
-        is_wearable: true,
-        wearable_location: "back",
-        wearable_is_worn: true,
-        wearable_worn_by_id: character.id,
-        is_holdable: true,
-        icon: "fas fa-box",
-        is_physical: true,
-        physical_length: 105,
-        physical_width: 90,
-        physical_height: 80,
-        physical_weight: 50
+        description: %{
+          key: "backpack",
+          short: "a ragged leather backpack",
+          long: "The backpack has clearly seen better days."
+        },
+        flags: %{
+          look: true,
+          open: true,
+          close: true,
+          wear: true,
+          remove: true,
+          trash: true,
+          drop: true,
+          hold: true,
+          stow: true,
+          container: true,
+          wearable: true
+        },
+        location: %{character_id: character.id, worn_on_character: true},
+        container: %{
+          capacity: 1000,
+          length: 75,
+          width: 50,
+          height: 75
+        },
+        physics: %{
+          length: 100,
+          width: 50,
+          height: 75,
+          weight: 50
+        }
       })
 
     Mud.Engine.Item.create(%{
-      key: "rock",
-      short_description: "a flat rounded rock",
-      long_description:
-        "This rock has been worn down over time by water into a smooth, flat round shape.",
-      container_id: backpack.id,
-      icon: "fas fa-leaf",
-      is_physical: true
+      description: %{
+        key: "rock",
+        short: "a flat rounded rock",
+        long: "This rock has been worn down over time by water into a smooth, flat round shape."
+      },
+      flags: %{
+        drop: true,
+        hold: true,
+        look: true,
+        stow: true,
+        trash: true,
+        material: true
+      },
+      location: %{relative_item_id: backpack.id, relative_to_item: true},
+      physics: %{
+        weight: 1
+      }
     })
   end
 

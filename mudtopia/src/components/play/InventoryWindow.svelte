@@ -29,6 +29,8 @@
 
   afterUpdate(() => {
     tippy("[data-tippy-content]");
+    console.log("$wornContainers");
+    console.log($wornContainers);
   });
 
   async function showRightClickMenu(customEvent) {
@@ -131,7 +133,7 @@
                     icon="fas fa-backpack"
                     activeTooltip="stow"
                     cliInput="stow {$itemInRightHand.id}"
-                    storyOutput="stow {$itemInRightHand.shortDescription}"
+                    storyOutput="stow {$itemInRightHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -141,7 +143,7 @@
                     icon="fas fa-hand-holding-box fa-rotate-180"
                     activeTooltip="drop"
                     cliInput="drop {$itemInRightHand.id}"
-                    storyOutput="drop {$itemInRightHand.shortDescription}"
+                    storyOutput="drop {$itemInRightHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -185,7 +187,7 @@
                     icon="fas fa-backpack"
                     activeTooltip="stow"
                     cliInput="stow {$itemInLeftHand.id}"
-                    storyOutput="stow {$itemInLeftHand.shortDescription}"
+                    storyOutput="stow {$itemInLeftHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -195,7 +197,7 @@
                     icon="fas fa-hand-holding-box fa-rotate-180"
                     activeTooltip="drop"
                     cliInput="drop {$itemInLeftHand.id}"
-                    storyOutput="drop {$itemInLeftHand.shortDescription}"
+                    storyOutput="drop {$itemInLeftHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -226,7 +228,7 @@
                     icon="fas fa-backpack"
                     activeTooltip="stow"
                     cliInput="stow {$itemInLeftHand.id}"
-                    storyOutput="stow {$itemInLeftHand.shortDescription}"
+                    storyOutput="stow {$itemInLeftHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -236,7 +238,7 @@
                     icon="fas fa-hand-holding-box fa-rotate-180"
                     activeTooltip="drop"
                     cliInput="drop {$itemInLeftHand.id}"
-                    storyOutput="drop {$itemInLeftHand.shortDescription}"
+                    storyOutput="drop {$itemInLeftHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -269,7 +271,7 @@
                     icon="fas fa-backpack"
                     activeTooltip="stow"
                     cliInput="stow {$itemInRightHand.id}"
-                    storyOutput="stow {$itemInRightHand.shortDescription}"
+                    storyOutput="stow {$itemInRightHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -279,7 +281,7 @@
                     icon="fas fa-hand-holding-box fa-rotate-180"
                     activeTooltip="drop"
                     cliInput="drop {$itemInRightHand.id}"
-                    storyOutput="drop {$itemInRightHand.shortDescription}"
+                    storyOutput="drop {$itemInRightHand.description.short}"
                     activeIconColor={$selectedCharacter.settings
                       .inventoryWindow["enabled_quick_action_color"]}
                     inactiveIconColor={$selectedCharacter.settings
@@ -316,12 +318,12 @@
           on:showContextMenu={showRightClickMenu}
         >
           <div class="flex space-x-2 pl-2" slot="quickActions">
-            {#if wornContainer.containerOpen}
+            {#if wornContainer.container.open}
               <QuickAction
                 icon="fas fa-box-open"
                 activeTooltip="close"
                 cliInput="close {wornContainer.id}"
-                storyOutput="close {wornContainer.shortDescription}"
+                storyOutput="close {wornContainer.description.short}"
                 activeIconColor={$selectedCharacter.settings.inventoryWindow[
                   "enabled_quick_action_color"
                 ]}
@@ -334,7 +336,7 @@
                 icon="fas fa-box"
                 activeTooltip="open"
                 cliInput="open {wornContainer.id}"
-                storyOutput="open {wornContainer.shortDescription}"
+                storyOutput="open {wornContainer.description.short}"
                 activeIconColor={$selectedCharacter.settings.inventoryWindow[
                   "enabled_quick_action_color"
                 ]}

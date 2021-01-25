@@ -2,6 +2,7 @@
   import SettingsTabBar from "./SettingsTabBar.svelte";
   import SettingsGeneralView from "./SettingsGeneralView.svelte";
   import SettingsHotkeysView from "./SettingsHotkeysView.svelte";
+  import SettingsCommandsView from "./SettingsCommandsView.svelte";
 
   import { getContext } from "svelte";
   import { key } from "./state";
@@ -17,5 +18,8 @@
   {/if}
   {#if $settingsView == "hotkeys"}
     <SettingsHotkeysView />
+  {/if}
+  {#if $settingsView == "commands"}
+    <SettingsCommandsView />
   {/if}
 </div>

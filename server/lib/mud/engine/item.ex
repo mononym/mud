@@ -8,166 +8,36 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Item.{Flags, Location, Physics, Description, Container}
   require Logger
 
   @type id :: String.t()
 
+  @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
-    @derive Jason.Encoder
     ##
     #
     # Common Fields
     #
     ##
-    field(:moved_location_at, :utc_datetime_usec, required: true)
-
-    belongs_to(:area, Mud.Engine.Area, type: :binary_id)
+    has_one(:location, Location)
+    has_one(:flags, Flags)
+    has_one(:description, Description)
+    has_one(:container, Container)
+    has_one(:physics, Physics)
 
     timestamps()
-
-    # The state of the item
-    field(:is_hidden, :boolean, default: false)
-
-    # How to describe the item
-    field(:short_description, :string, default: "item")
-    field(:long_description, :string, default: "item")
-
-    # How to display the item in the client
-    field(:icon, :string, default: "fas fa-question")
-
-    ##
-    #
-    # Container Component
-    #
-    ##
-
-    field(:is_container, :boolean, default: false)
-    field(:container_capacity, :integer, default: 0)
-    field(:container_closeable, :boolean, default: false)
-    field(:container_height, :integer, default: 0)
-    field(:container_length, :integer, default: 0)
-    field(:container_lockable, :boolean, default: false)
-    field(:container_locked, :boolean, default: false)
-    field(:container_open, :boolean, default: true)
-    field(:container_primary, :boolean, default: false)
-    field(:container_width, :integer, default: 0)
-
-    has_many(:container_items, __MODULE__, foreign_key: :container_id)
-    belongs_to(:container, __MODULE__, type: :binary_id)
-
-    ##
-    #
-    # Furniture Component
-    #
-    ##
-
-    field(:is_furniture, :boolean, default: false)
-
-    ##
-    #
-    # Scenery Component
-    #
-    ##
-
-    field(:is_scenery, :boolean, default: false)
-
-    ##
-    #
-    # Wearable Component
-    #
-    ##
-
-    field(:is_wearable, :boolean, default: false)
-    field(:wearable_is_worn, :boolean, default: false)
-    field(:wearable_location, :string)
-    belongs_to(:wearable_worn_by, Mud.Engine.Character, type: :binary_id)
-
-    ##
-    #
-    # Holdable Component
-    #
-    ##
-
-    field(:is_holdable, :boolean, default: false)
-    field(:holdable_is_held, :boolean, default: false)
-    field(:holdable_hand, :string)
-    belongs_to(:holdable_held_by, Mud.Engine.Character, type: :binary_id)
-
-    ##
-    #
-    # Physical Component: The item has a physical presence in the world that needs describing such as dimensions, weight, the the like
-    #
-    ##
-
-    field(:is_physical, :boolean, default: false)
-    field(:physical_length, :integer, default: 1)
-    field(:physical_height, :integer, default: 1)
-    field(:physical_width, :integer, default: 1)
-    field(:physical_weight, :integer, default: 1)
   end
 
   @doc false
   def changeset(item, attrs) do
     item
     |> change()
-    |> cast(attrs, [
-      :area_id,
-      :is_hidden,
-      :is_furniture,
-      :is_scenery,
-      :short_description,
-      :long_description,
-      :container_id,
-      :is_container,
-      :container_closeable,
-      :container_open,
-      :container_lockable,
-      :container_locked,
-      :container_length,
-      :container_width,
-      :container_height,
-      :container_capacity,
-      :container_primary,
-      :is_wearable,
-      :wearable_is_worn,
-      :wearable_location,
-      :wearable_worn_by_id,
-      :is_holdable,
-      :holdable_is_held,
-      :holdable_hand,
-      :holdable_held_by_id,
-      :icon,
-      :moved_location_at
-    ])
-    |> foreign_key_constraint(:character_id)
-    |> foreign_key_constraint(:area_id)
+    |> cast(attrs, [])
   end
 
   @topic inspect(__MODULE__)
-
-  @doc """
-  Takes an item and returns its type, such as container, worn_container, and so on
-  """
-  @spec get_type(%__MODULE__{}) :: String.t()
-  def get_type(item) do
-    cond do
-      item.is_furniture ->
-        "furniture"
-
-      item.is_wearable && item.is_container ->
-        "worn_container"
-
-      item.is_container ->
-        "container"
-
-      item.is_scenery ->
-        "scenery"
-
-      item.is_weapon ->
-        "weapon"
-    end
-  end
 
   @doc """
   Subscribe to the PubSub topic for all Character events.
@@ -188,10 +58,41 @@ defmodule Mud.Engine.Item do
   end
 
   def create(attrs \\ %{}) do
-    %__MODULE__{}
-    |> changeset(Map.put(attrs, :moved_location_at, DateTime.utc_now()))
-    |> Repo.insert!()
-    |> IO.inspect(label: "make item")
+    Repo.transaction(fn ->
+      item = insert_new()
+      # result =
+      #   %__MODULE__{}
+
+      # case result do
+      # {:ok, item} ->
+      # Set up flags
+      flags = Flags.create(Map.put(Map.get(attrs, :flags, %{}), :item_id, item.id))
+      # Set up description
+      description =
+        Description.create(Map.put(Map.get(attrs, :description, %{}), :item_id, item.id))
+
+      # Set up container
+      container = Container.create(Map.put(Map.get(attrs, :container, %{}), :item_id, item.id))
+      # Set up physics
+      physics = Physics.create(Map.put(Map.get(attrs, :physics, %{}), :item_id, item.id))
+      # Set up location
+      location = Location.create(Map.put(Map.get(attrs, :location, %{}), :item_id, item.id))
+
+      %{
+        item
+        | flags: flags,
+          description: description,
+          container: container,
+          physics: physics,
+          location: location
+      }
+    end)
+
+    # {:ok, item}
+
+    # error ->
+    #   error
+    # end
   end
 
   @spec update!(String.t(), map()) :: %__MODULE__{}
@@ -206,6 +107,7 @@ defmodule Mud.Engine.Item do
       |> Repo.update_all(set: keywords)
       |> elem(1)
       |> List.first()
+      |> Repo.preload(:location)
 
     item
   end
@@ -214,18 +116,27 @@ defmodule Mud.Engine.Item do
     item
     |> changeset(attrs)
     |> Repo.update!()
+    |> Repo.preload(:location)
   end
 
   def update(item, attrs) do
-    item
-    |> changeset(attrs)
-    |> Repo.update()
+    result =
+      item
+      |> changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, item} ->
+        {:ok, Repo.preload(item, :location)}
+
+      error ->
+        error
+    end
   end
 
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
-    from(
-      item in __MODULE__,
+    from([item] in base_query_with_preload(),
       where: item.id == ^id
     )
     |> Repo.one!()
@@ -233,8 +144,7 @@ defmodule Mud.Engine.Item do
 
   @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
-    from(
-      item in __MODULE__,
+    from([item] in base_query_with_preload(),
       where: item.id == ^id
     )
     |> Repo.one()
@@ -274,40 +184,7 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_recursive(items) do
-    Logger.debug(inspect(items), label: :list_all_recursive)
-
-    ids =
-      Enum.map(
-        List.wrap(items),
-        &if is_struct(&1) do
-          &1.id
-        else
-          &1
-        end
-      )
-
-    item_tree_initial_query =
-      __MODULE__
-      |> where([i], i.id in ^ids)
-
-    item_tree_recursion_query =
-      __MODULE__
-      |> join(:inner, [i], it in "item_tree", on: i.container_id == it.id)
-
-    item_tree_query =
-      item_tree_initial_query
-      |> union_all(^item_tree_recursion_query)
-
-    final_query =
-      {"item_tree", __MODULE__}
-      |> recursive_ctes(true)
-      |> with_cte("item_tree", as: ^item_tree_query)
-      |> order_by([i], i.moved_location_at)
-
-    Repo.all(final_query)
-    |> Enum.map(fn item ->
-      %{item | __meta__: Map.put(item.__meta__, :source, "items")}
-    end)
+    Repo.all(list_all_recursive_query(items))
   end
 
   def list_all_recursive_parents(items) do
@@ -322,27 +199,23 @@ defmodule Mud.Engine.Item do
         end
       )
 
-    Logger.debug(inspect(ids))
-
-    item_tree_initial_query =
-      __MODULE__
-      |> where([i], i.id in ^ids)
-
-    item_tree_recursion_query =
-      __MODULE__
-      |> join(:inner, [i], it in "item_tree", on: i.id == it.container_id)
-
-    item_tree_query =
-      item_tree_initial_query
-      |> union_all(^item_tree_recursion_query)
-
     final_query =
-      {"item_tree", __MODULE__}
-      |> recursive_ctes(true)
-      |> with_cte("item_tree", as: ^item_tree_query)
-      |> order_by([i], i.moved_location_at)
+      from(item in list_all_recursive_query(items),
+        where: item.id not in ^ids
+      )
 
     Repo.all(final_query)
+  end
+
+  @doc """
+  List all items in an Area.
+  """
+  @spec list_on_ground(id) :: [%__MODULE__{}]
+  def list_on_ground(area_id) do
+    from([location: location] in items_on_ground_query(area_id),
+      order_by: location.moved_at
+    )
+    |> Repo.all()
   end
 
   @doc """
@@ -366,7 +239,7 @@ defmodule Mud.Engine.Item do
     from(
       item in __MODULE__,
       where: item.area_id == ^area_id and item.is_furniture == true,
-      order_by: item.moved_location_at
+      order_by: item.moved_at
     )
     |> Repo.all()
   end
@@ -376,7 +249,16 @@ defmodule Mud.Engine.Item do
     from(
       item in __MODULE__,
       where: item.area_id == ^area_id and item.is_scenery == true and item.is_hidden == false,
-      order_by: item.moved_location_at
+      order_by: item.moved_at
+    )
+    |> Repo.all()
+  end
+
+  @spec list_scenery_in_area(id) :: [%__MODULE__{}]
+  def list_scenery_in_area(area_id) do
+    from(
+      item in scenery_in_area_query(area_id),
+      order_by: item.moved_at
     )
     |> Repo.all()
   end
@@ -385,7 +267,7 @@ defmodule Mud.Engine.Item do
   def list_held_or_worn_items_and_children(character_id) do
     character_id
     |> held_or_worn_and_children_query()
-    |> order_by([i], i.moved_location_at)
+    |> order_by([i], i.moved_at)
     |> Repo.all()
   end
 
@@ -393,16 +275,63 @@ defmodule Mud.Engine.Item do
     from(
       item in __MODULE__,
       where: item.container_id == ^container_id,
-      order_by: item.moved_location_at
+      order_by: item.moved_at
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Turn a list of items into a string like: a wooden spoon on a ovaled silver plate on a tall wooden counter, a silver fork on the ground
+  """
+  def items_to_short_desc_with_nested_location(items) do
+    parents = list_all_recursive_parents(items)
+    parent_index = Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
+
+    Enum.map(items, fn item ->
+      build_parent_string(item, parent_index)
+    end)
+  end
+
+  defp build_parent_string(item = %{container_id: d}, parent_index) do
+    "#{item.short_description}, #{d}"
+  end
+
+  @doc """
+  Worn containers are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  def search_worn_containers(character_id, search_string) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        location.character_id == ^character_id and location.worn_on_character and
+          flags.container == true and flags.wearable and
+          like(description.short, ^search_string),
+      order_by: location.moved_at
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Worn items are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  def search_worn_items(character_id, search_string) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        location.character_id == ^character_id and location.worn_on_character and flags.wearable and
+          like(description.short, ^search_string),
+      order_by: location.moved_at
     )
     |> Repo.all()
   end
 
   def list_worn_containers(character_id) do
     from(
-      item in __MODULE__,
-      where: item.wearable_worn_by_id == ^character_id and item.is_container == true,
-      order_by: item.moved_location_at
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        location.character_id == ^character_id and location.worn_on_character and
+          flags.container == true and flags.wearable,
+      order_by: location.moved_at
     )
     |> Repo.all()
   end
@@ -411,7 +340,7 @@ defmodule Mud.Engine.Item do
     from(
       item in __MODULE__,
       where: item.wearable_worn_by_id == ^character_id,
-      order_by: item.moved_location_at
+      order_by: item.moved_at
     )
     |> Repo.all()
   end
@@ -420,29 +349,130 @@ defmodule Mud.Engine.Item do
     from(
       item in __MODULE__,
       where: item.holdable_held_by_id == ^character_id,
-      order_by: item.moved_location_at
+      order_by: item.moved_at
     )
     |> Repo.all()
   end
 
   defp held_or_worn_and_children_query(character_id) do
     item_tree_initial_query =
-      __MODULE__
+      Location
       |> where(
-        [i],
-        i.wearable_worn_by_id == ^character_id or i.holdable_held_by_id == ^character_id
+        [l],
+        l.character_id == ^character_id and (l.held_in_hand or l.worn_on_character)
       )
 
     item_tree_recursion_query =
-      __MODULE__
-      |> join(:inner, [i], it in "item_tree", on: i.container_id == it.id)
+      Location
+      |> join(
+        :inner,
+        [location],
+        lt in "location_tree",
+        on:
+          location.relative_item_id == lt.item_id and location.relative_to_item and
+            location.relation == ^"in"
+      )
 
     item_tree_query =
       item_tree_initial_query
       |> union_all(^item_tree_recursion_query)
 
-    {"item_tree", __MODULE__}
-    |> recursive_ctes(true)
-    |> with_cte("item_tree", as: ^item_tree_query)
+    all_item_ids =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+      |> select([l], l.item_id)
+
+    from(item in base_query_with_preload(), where: item.id in subquery(all_item_ids))
+  end
+
+  #
+  #
+  # Helper functions
+  #
+  #
+
+  defp base_query_with_preload() do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: container in assoc(item, :container),
+      as: :container,
+      left_join: description in assoc(item, :description),
+      as: :description,
+      left_join: flags in assoc(item, :flags),
+      as: :flags,
+      left_join: physics in assoc(item, :physics),
+      as: :physics,
+      preload: [
+        container: container,
+        description: description,
+        flags: flags,
+        location: location,
+        physics: physics
+      ]
+    )
+  end
+
+  defp items_on_ground_query(area_id) do
+    from(
+      [item, location: location, flags: flags] in base_query_with_preload(),
+      where: location.on_ground == true and location.area_id == ^area_id and not flags.scenery
+    )
+  end
+
+  defp scenery_in_area_query(area_id) do
+    from(
+      [item, location: location, flags: flags] in base_query_with_preload(),
+      where: location.on_ground == true and location.area_id == ^area_id and flags.scenery
+    )
+  end
+
+  defp insert_new() do
+    Repo.insert!(%__MODULE__{})
+  end
+
+  defp list_all_recursive_query(items) do
+    ids =
+      items
+      |> List.wrap()
+      |> Enum.map(
+        &if is_struct(&1) do
+          &1.id
+        else
+          &1
+        end
+      )
+
+    item_tree_initial_query =
+      Location
+      |> where(
+        [l],
+        l.relative_item_id in ^ids or l.item_id in ^ids
+      )
+
+    item_tree_recursion_query =
+      Location
+      |> join(
+        :inner,
+        [location],
+        lt in "location_tree",
+        on:
+          location.relative_item_id == lt.item_id and location.relative_to_item and
+            location.relation == ^"in"
+      )
+
+    item_tree_query =
+      item_tree_initial_query
+      |> union_all(^item_tree_recursion_query)
+
+    all_item_ids =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+      |> select([l], l.item_id)
+
+    from(item in base_query_with_preload(), where: item.id in subquery(all_item_ids))
   end
 end
