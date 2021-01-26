@@ -37,6 +37,22 @@
             <option>advanced</option>
           </select>
         </div>
+        <div class="col-span-6">
+          <label
+            for="multipleMatchMode"
+            style="color:{$characterSettings.commands.multiple_matches_mode}"
+            class="block text-sm font-medium">Multiple Item Match Mode</label
+          >
+          <select
+            id="multipleMatchMode"
+            bind:value={$characterSettings.commands.multiple_matches_mode}
+            name="multipleMatchMode"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            <option>alert</option>
+            <option>choose</option>
+            <option>silent</option>
+          </select>
+        </div>
       </div>
     </div>
   </form>

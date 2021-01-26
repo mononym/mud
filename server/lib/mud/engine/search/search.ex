@@ -56,6 +56,27 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
+  Find matches in worn or held items.
+  """
+  @spec find_matches_in_worn_or_held_items(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_in_worn_or_held_items(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_worn_or_held_items(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
   Find matches in worn items.
   """
   @spec find_matches_in_worn_items(
@@ -116,6 +137,137 @@ defmodule Mud.Engine.Search do
 
       matches ->
         {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in worn items.
+  """
+  @spec find_matches_on_ground_or_worn_or_held_items(
+          String.t(),
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_on_ground_or_worn_or_held_items(area_id, character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_on_ground_or_worn_or_held_items(area_id, character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in items in unspecified location
+  """
+  @spec find_matches_relative_to_place_on_ground_in_hands_or_worn(
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_relative_to_place_on_ground_in_hands_or_worn(
+        area_id,
+        character_id,
+        thing_input,
+        where,
+        place_input,
+        mode \\ "simple"
+      ) do
+    place_search_string = input_to_wildcard_string(place_input, mode)
+
+    items =
+      Item.search_on_ground_or_worn_or_held_items(area_id, character_id, place_search_string)
+
+    item_index =
+      items
+      |> Stream.with_index()
+      |> Enum.reduce(%{}, fn {item, index}, map ->
+        Map.put(map, item.id, index)
+      end)
+
+    case items do
+      [] ->
+        {:error, :no_match}
+
+      _ ->
+        thing_search_string = input_to_wildcard_string(thing_input, mode)
+
+        items =
+          Item.search_relative_to_items(items, where, thing_search_string)
+          |> Enum.sort(fn item1, item2 ->
+            item_index[item1.location.relative_item_id] <=
+              item_index[item2.location.relative_item_id]
+          end)
+
+        case things_to_match(items) do
+          [] ->
+            {:error, :no_match}
+
+          matches ->
+            {:ok, matches}
+        end
+    end
+  end
+
+  @doc """
+  Find matches in items in unspecified location
+  """
+  @spec find_matches_relative_to_place_in_hands_or_worn(
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_relative_to_place_in_hands_or_worn(
+        character_id,
+        thing_input,
+        where,
+        place_input,
+        mode \\ "simple"
+      ) do
+    place_search_string = input_to_wildcard_string(place_input, mode)
+
+    items =
+      Item.search_worn_or_held_items(character_id, place_search_string)
+
+    item_index =
+      items
+      |> Stream.with_index()
+      |> Enum.reduce(%{}, fn {item, index}, map ->
+        Map.put(map, item.id, index)
+      end)
+
+    case items do
+      [] ->
+        {:error, :no_match}
+
+      _ ->
+        thing_search_string = input_to_wildcard_string(thing_input, mode)
+
+        items =
+          Item.search_relative_to_items(items, where, thing_search_string)
+          |> Enum.sort(fn item1, item2 ->
+            item_index[item1.location.relative_item_id] <=
+              item_index[item2.location.relative_item_id]
+          end)
+
+        case things_to_match(items) do
+          [] ->
+            {:error, :no_match}
+
+          matches ->
+            {:ok, matches}
+        end
     end
   end
 

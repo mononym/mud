@@ -230,6 +230,47 @@ defmodule Mud.Engine.Util do
     )
   end
 
+  @doc """
+  Given an item and a list of items representing potential matches, create and attach an 'assumption' line to message.
+  """
+  @spec append_assumption_text(
+          Mud.Engine.Message.StoryOutput.t(),
+          Mud.Engine.Item.t(),
+          [Mud.Engine.Item.t()]
+        ) :: Mud.Engine.Message.StoryOutput.t()
+  def append_assumption_text(message, item, other_items) do
+    message =
+      message
+      |> Message.append_text("\n(Assuming you meant ", "system_info")
+      |> Message.append_text(
+        elem(List.first(Item.items_to_short_desc_with_nested_location(item)), 1),
+        get_item_type(item)
+      )
+      |> Message.append_text(
+        ". #{length(other_items)} other potential matches: ",
+        "system_info"
+      )
+
+    item_strings = Item.items_to_short_desc_with_nested_location(other_items)
+
+    Enum.reduce(item_strings, message, fn {item, string}, msg ->
+      msg
+      |> Message.append_text(
+        string,
+        get_item_type(item)
+      )
+      |> Message.append_text(
+        ", ",
+        "system_info"
+      )
+    end)
+    |> Message.drop_last_text()
+    |> Message.append_text(
+      ")",
+      "system_info"
+    )
+  end
+
   def dave_error_v2(context) do
     message =
       context.character.id

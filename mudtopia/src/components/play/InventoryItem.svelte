@@ -45,8 +45,8 @@
       <div
         on:click|preventDefault={toggleItemExpanded}
         class={showQuickActions && $$slots.quickActions
-          ? "col-start-2 col-span-11 ml-2"
-          : "col-span-12 ml-2"}
+          ? "col-start-2 col-span-11 ml-4"
+          : "col-span-12 ml-4"}
       >
         <pre
           class="whitespace-pre-wrap"
