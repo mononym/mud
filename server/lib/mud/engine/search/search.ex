@@ -35,7 +35,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in an area or return an error.
+  Find matches in worn containers.
   """
   @spec find_matches_in_worn_containers(
           String.t(),
@@ -56,7 +56,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in an area or return an error.
+  Find matches in worn items.
   """
   @spec find_matches_in_worn_items(
           String.t(),
@@ -65,7 +65,50 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_worn_items(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_worn_containers(character_id, search_string)
+    items = Item.search_worn_items(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in worn items.
+  """
+  @spec find_matches_on_ground(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_on_ground(area_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_on_ground(area_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in worn items.
+  """
+  @spec find_matches_on_ground_or_worn_items(
+          String.t(),
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_on_ground_or_worn_items(area_id, character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_on_ground_or_worn_items(area_id, character_id, search_string)
 
     case things_to_match(items) do
       [] ->

@@ -25,8 +25,6 @@ defmodule MudWeb.MudClientView do
   end
 
   def render("update_area.json", %{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
-    IO.inspect(event, label: "update_area.json")
-
     %{
       action: event.action,
       area: render_one(event.area, MudWeb.AreaView, "area.json"),
@@ -39,8 +37,6 @@ defmodule MudWeb.MudClientView do
   end
 
   def render("update_inventory.json", %{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
-    IO.inspect(event, label: "update_inventory.json")
-
     %{
       action: event.action,
       items: render_many(event.items, MudWeb.ItemView, "item.json")

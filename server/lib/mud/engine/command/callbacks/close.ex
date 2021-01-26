@@ -116,18 +116,22 @@ defmodule Mud.Engine.Command.Close do
         Logger.debug("Found the item to Close")
         close_item(context, thing)
 
-      {:ok, [thing | _things]} ->
-        close_item(context, thing)
-
-        Context.append_message(
-          context,
-          Message.new_story_output(context.character.id, "Multiple items were found, please be m")
-        )
+      {:ok, _} ->
+        # close_item(context, thing)
 
         Logger.debug("Found too many items to close, or no item")
 
-        context
-        |> Context.append_error("Multiple potential items found, please be more specific.")
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "Multiple items were found, please be more specific.",
+            "system_alert"
+          )
+        )
+
+      # context
+      # |> Context.append_error("Multiple potential items found, please be more specific.")
 
       error ->
         error
@@ -135,6 +139,8 @@ defmodule Mud.Engine.Command.Close do
   end
 
   defp find_thing_to_close(context = %Mud.Engine.Command.Context{}) do
+    Logger.debug(inspect(context.command.ast))
+
     case context.command.ast do
       # Close thing in inventory on character
       # If nothing is found worn on the character do not look further
@@ -219,7 +225,7 @@ defmodule Mud.Engine.Command.Close do
         |> Context.append_message(other_msg)
         |> Context.append_message(self_msg)
 
-      # It is a container but the container is close,
+      # It is a container but the container is closed,
       thing.match.flags.container and not thing.match.container.open ->
         self_msg =
           context.character.id

@@ -189,12 +189,52 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           matches: ["close"],
           key: :close,
-          transformer: &Enum.join/1
+          transformer: &List.first/1
         },
         %Part{
           must_follow: [:close],
+          matches: ["my"],
+          key: :thing_personal,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:close, :thing_personal],
+          matches: [~r/^\d$/],
+          key: :thing_which,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:thing_which, :close, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:place, :thing],
+          matches: ["in"],
+          key: :place_where,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place_where],
+          matches: ["my"],
+          key: :place_personal,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place_personal, :place_where],
+          matches: [~r/^\d$/],
+          key: :place_which,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:place_which, :place_where, :place_personal],
+          matches: [~r/.*/],
+          key: :place,
           greedy: true,
           transformer: &join_with_space_downcase/1
         }

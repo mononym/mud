@@ -120,7 +120,8 @@
         .story_history_border}"
     >
       {#each $historyWindowMessages as message}
-        <pre>
+        <pre
+          class="whitespace-pre-wrap mb-4">
         {#each message.segments as segment}
             <span
               style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>

@@ -274,9 +274,6 @@ defmodule Mud.Engine.Link do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(%__MODULE__{} = link, attrs) do
-    IO.inspect(link, label: "link to update")
-    IO.inspect(attrs, label: "attrs to update")
-
     link
     |> __MODULE__.changeset(attrs)
     |> Repo.update()

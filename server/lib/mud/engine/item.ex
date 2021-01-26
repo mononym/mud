@@ -184,23 +184,17 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_recursive(items) do
-    Repo.all(list_all_recursive_query(items))
+    items
+    |> items_to_ids()
+    |> list_all_recursive_query()
+    |> Repo.all()
   end
 
   def list_all_recursive_parents(items) do
-    ids =
-      items
-      |> List.wrap()
-      |> Enum.map(
-        &if is_struct(&1) do
-          &1.id
-        else
-          &1
-        end
-      )
+    ids = items_to_ids(items)
 
     final_query =
-      from(item in list_all_recursive_query(items),
+      from(item in list_all_recursive_query(ids),
         where: item.id not in ^ids
       )
 
@@ -323,6 +317,39 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
+  @doc """
+  Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  def search_on_ground(area_id, search_string) do
+    from(
+      [description: description, location: location] in base_query_with_preload(),
+      where:
+        location.area_id == ^area_id and location.on_ground and
+          like(description.short, ^search_string),
+      order_by: location.moved_at
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_on_ground_or_worn_items(String.t(), String.t(), String.t()) :: [Item.t()]
+  def search_on_ground_or_worn_items(area_id, character_id, search_string) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        (location.area_id == ^area_id and location.on_ground and
+           like(description.short, ^search_string)) or
+          (location.character_id == ^character_id and location.worn_on_character and
+             flags.wearable and
+             like(description.short, ^search_string)),
+      order_by: location.moved_at,
+      order_by: fragment("CASE i1.on_ground WHEN true THEN 0 ELSE 1 END")
+    )
+    |> Repo.all()
+  end
+
   def list_worn_containers(character_id) do
     from(
       [description: description, location: location, flags: flags] in base_query_with_preload(),
@@ -438,18 +465,7 @@ defmodule Mud.Engine.Item do
     Repo.insert!(%__MODULE__{})
   end
 
-  defp list_all_recursive_query(items) do
-    ids =
-      items
-      |> List.wrap()
-      |> Enum.map(
-        &if is_struct(&1) do
-          &1.id
-        else
-          &1
-        end
-      )
-
+  defp list_all_recursive_query(ids) do
     item_tree_initial_query =
       Location
       |> where(
@@ -479,5 +495,17 @@ defmodule Mud.Engine.Item do
       |> select([l], l.item_id)
 
     from(item in base_query_with_preload(), where: item.id in subquery(all_item_ids))
+  end
+
+  defp items_to_ids(items) do
+    items
+    |> List.wrap()
+    |> Enum.map(
+      &if is_struct(&1) do
+        &1.id
+      else
+        &1
+      end
+    )
   end
 end

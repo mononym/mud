@@ -70,24 +70,31 @@ defmodule Mud.Engine.Command.Look do
 
     if is_nil(ast.place) do
       result =
-        Search.find_matches_in_area_v2(
-          target_types(),
+        Search.find_matches_on_ground(
           context.character.area_id,
-          ast.thing.input,
-          ast.thing.which
+          ast.thing.input
         )
 
       case result do
         {:ok, [match]} ->
           look_in_or_at(context, match)
 
-        {:ok, matches} ->
-          SingleTargetCallback.handle_multiple_matches(
+        {:ok, _matches} ->
+          Context.append_message(
             context,
-            matches,
-            "What were you trying to look at?",
-            "Please be more specific."
+            Message.new_story_output(
+              context.character.id,
+              "Multiple items were found, please be more specific.",
+              "system_warning"
+            )
           )
+
+        # SingleTargetCallback.handle_multiple_matches(
+        #   context,
+        #   matches,
+        #   "What were you trying to look at?",
+        #   "Please be more specific."
+        # )
 
         _error ->
           look_worn(context)

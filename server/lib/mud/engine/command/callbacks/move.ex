@@ -168,19 +168,15 @@ defmodule Mud.Engine.Command.Move do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
-    IO.inspect(area, label: "move")
 
     items_are_scenery =
       Item.list_in_area(area.id)
-      |> IO.inspect(label: "items_are_scenery1")
       |> Stream.filter(fn item ->
         item.flags.hidden != true
       end)
       |> Enum.group_by(fn item ->
         item.flags.scenery
       end)
-
-    IO.inspect(items_are_scenery, label: "items_are_scenery2")
 
     scenery = items_are_scenery[true]
     items_in_area = items_are_scenery[false]

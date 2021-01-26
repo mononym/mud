@@ -98,8 +98,46 @@ defmodule Mud.Engine.Command.Open do
     context
   end
 
-  defp open_item_on_ground_or_in_inventory(context) do
-    context
+  defp open_item_on_ground_or_in_worn_inventory(context) do
+    IO.inspect(context.command.ast.thing)
+
+    results =
+      Search.find_matches_on_ground_or_worn_items(
+        context.character.area_id,
+        context.character.id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    IO.inspect(results)
+
+    case results do
+      {:ok, [match]} ->
+        open_item(context, match)
+
+      {:ok, matches = [_ | _]} ->
+        case context.command.ast do
+          # If which is greater than 0, then more than one match was anticipated.
+          # Make sure provided selection is not more than the number of items that were found
+          %TAP{thing: %Thing{which: which}}
+          when is_integer(which) and which > 0 and which <= length(matches) ->
+            open_item(context, Enum.at(matches, which - 1))
+
+          # If the user provided a number but it is greater than the number of items found,
+          %TAP{thing: %Thing{which: which}} when which > 0 and which > length(matches) ->
+            Util.not_found_error(context)
+
+          _ ->
+            [match | matches] = matches
+            open_item(context, match, matches)
+        end
+
+      {:ok, []} ->
+        Util.not_found_error(context)
+
+      _ ->
+        Util.dave_error_v2(context)
+    end
   end
 
   defp open_worn_item_in_inventory(context) do
@@ -108,7 +146,8 @@ defmodule Mud.Engine.Command.Open do
     result =
       Search.find_matches_in_worn_items(
         context.character.id,
-        context.command.ast.thing.input
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
       )
 
     case result do
@@ -116,18 +155,22 @@ defmodule Mud.Engine.Command.Open do
         Logger.debug("Found the item to Open")
         open_item(context, thing)
 
-      {:ok, [thing | _things]} ->
-        open_item(context, thing)
-
-        Context.append_message(
-          context,
-          Message.new_story_output(context.character.id, "Multiple items were found, please be m")
-        )
+      {:ok, _} ->
+        # open_item(context, thing)
 
         Logger.debug("Found too many items to open, or no item")
 
-        context
-        |> Context.append_error("Multiple potential items found, please be more specific.")
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "Multiple items were found, please be more specific.",
+            "system_alert"
+          )
+        )
+
+      # context
+      # |> Context.append_error("Multiple potential items found, please be more specific.")
 
       error ->
         error
@@ -143,13 +186,27 @@ defmodule Mud.Engine.Command.Open do
 
         open_worn_item_in_inventory(context)
 
-      # open thing on ground/in area, fallback to item in inventory
       %TAP{place: nil, thing: %Thing{personal: false}} ->
+        # An id for a specific item was given.
         if Util.is_uuid4(context.command.ast.thing.input) do
           item = Item.get!(context.command.ast.thing.input)
-          open_item(context, List.first(Search.things_to_match(item)))
+          # TODO: Add check here to make sure that all parent containers, if any, are open
+          if item.location.relative_to_item and item.location.relation == "in" do
+            parents_open =
+              Item.list_all_recursive_parents(item)
+              |> Enum.all?(fn parent ->
+                parent.flags.container and parent.container.open
+              end)
+
+            if parents_open do
+              open_item(context, List.first(Search.things_to_match(item)))
+            else
+              Util.dave_error_v2(context)
+            end
+          end
         else
-          open_item_on_ground_or_in_inventory(context)
+          # open thing on ground/in area, fallback to item in worn inventory
+          open_item_on_ground_or_in_worn_inventory(context)
         end
 
       # get thing from container on ground, fallback to worn containers
@@ -237,12 +294,11 @@ defmodule Mud.Engine.Command.Open do
         self_msg =
           context.character.id
           |> Message.new_story_output()
-          |> Message.append_text("You cannot open ", "system_alert")
           |> Message.append_text(
             thing.match.description.short,
             Mud.Engine.Util.get_item_type(thing.match)
           )
-          |> Message.append_text(".", "system_alert")
+          |> Message.append_text(" cannot be opened.", "system_alert")
 
         Context.append_message(context, self_msg)
     end

@@ -644,7 +644,7 @@ defmodule Mud.Engine.Character do
   """
   @spec get_by_id!(String.t()) :: %__MODULE__{} | nil
   def get_by_id!(character_id) do
-    Repo.get!(__MODULE__, character_id)
+    Repo.one!(from(character in base_query_with_preload(), where: character.id == ^character_id))
   end
 
   @doc """
@@ -809,6 +809,15 @@ defmodule Mud.Engine.Character do
     from(
       character in __MODULE__,
       where: character.id == ^character_id
+    )
+  end
+
+  defp base_query_with_preload() do
+    from(
+      character in __MODULE__,
+      join: settings in assoc(character, :settings),
+      # join: skills in assoc(character, :skills),
+      preload: [settings: settings]
     )
   end
 
