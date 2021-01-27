@@ -244,8 +244,15 @@ export function createState() {
       if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
           const existingChildren = index[item.location.relative_item_id] || [];
-          existingChildren.push(item);
-          index[item.location.relative_item_id] = existingChildren;
+          const newChildren = existingChildren.map((child) => {
+            if (child.id == item.id) {
+              return item;
+            } else {
+              return child;
+            }
+          });
+
+          index[item.location.relative_item_id] = newChildren;
 
           return index;
         });

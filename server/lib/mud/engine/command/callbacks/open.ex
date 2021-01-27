@@ -318,19 +318,23 @@ defmodule Mud.Engine.Command.Open do
               self_msg
             end
 
+          # for items that are not root items, check to see whether the update needs to go to inventory or the area
           context =
-            if item.location.worn_on_character or item.location.held_in_hand do
-              Context.append_event(
-                context,
-                context.character_id,
-                UpdateInventory.new(:update, item)
-              )
-            else
-              Context.append_event(
-                context,
-                [context.character_id | others],
-                UpdateArea.new(%{action: :update, on_ground: [item]})
-              )
+            cond do
+              item.location.worn_on_character or item.location.held_in_hand or
+                  Item.in_inventory?(item) ->
+                Context.append_event(
+                  context,
+                  context.character_id,
+                  UpdateInventory.new(:update, item)
+                )
+
+              item.location.on_ground ->
+                Context.append_event(
+                  context,
+                  [context.character_id | others],
+                  UpdateArea.new(%{action: :update, on_ground: [item]})
+                )
             end
 
           context

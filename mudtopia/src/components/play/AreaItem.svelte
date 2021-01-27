@@ -3,35 +3,19 @@
   const dispatch = createEventDispatcher();
   import { getContext } from "svelte";
   import { key } from "./state";
+  import { getItemColor } from "../../utils/utils";
+  import App from "../../App.svelte";
 
   const state = getContext(key);
   const { selectedCharacter, inventoryItemsParentChildIndex } = state;
 
   export let item;
+  export let showQuickActions = true;
   let wrapperDiv;
   let itemDiv;
 
-  function getItemColor(item) {
-    if (item.isWearable && item.isContainer) {
-      return $selectedCharacter.settings.colors.worn_container;
-    } else if (item.isContainer) {
-      return $selectedCharacter.settings.colors.container;
-    } else if (item.isFurniture) {
-      return $selectedCharacter.settings.colors.furniture;
-    } else {
-      return "#000000";
-    }
-  }
-
-  let containerExpanded = false;
-  function toggleContainerExpanded() {
-    console.log("toggleContainerExpanded");
-    containerExpanded = !containerExpanded;
-  }
-
   let itemExpanded = false;
   function toggleItemExpanded() {
-    console.log("toggleItemExpanded");
     itemExpanded = !itemExpanded;
   }
 
@@ -40,33 +24,56 @@
   }
 </script>
 
-<div class="flex-shrink flex flex-col" bind:this={wrapperDiv}>
+<div class="flex flex-col select-none" bind:this={wrapperDiv}>
   <div
-    class="cursor-pointer"
-    style="color:{getItemColor(item)}"
+    class="cursor-pointer grid gap-1 grid-cols-12 items-center"
+    style="color:{getItemColor($selectedCharacter.settings.colors, item)}"
     bind:this={itemDiv}
-    on:contextmenu={dispatchContextMenuEvent}>
-    {#if item.isContainer}
-      <i
-        class="text-white fas fa-plus"
-        on:click|preventDefault={toggleContainerExpanded} />&nbsp;
+    on:contextmenu={dispatchContextMenuEvent}
+  >
+    {#if showQuickActions}
+      <div class="col-span-1 mr-2">
+        <slot name="quickActions" />
+      </div>
     {/if}
-    <i class={item.icon} on:click|preventDefault={toggleItemExpanded} />
     <pre
       on:click|preventDefault={toggleItemExpanded}
-      class="inline">{` ${item.shortDescription}`}</pre>
+      class="ml-2 col-span-{showQuickActions && $$slots.quickActions
+        ? 11
+        : 12}">{item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}</pre>
     {#if itemExpanded}
-      <div class="pl-{item.isContainer ? '12' : '8'}">
+      <div
+        on:click|preventDefault={toggleItemExpanded}
+        class={showQuickActions && $$slots.quickActions
+          ? "col-start-2 col-span-11 ml-4"
+          : "col-span-12 ml-4"}
+      >
         <pre
           class="whitespace-pre-wrap"
-          style="color:{$selectedCharacter.settings.colors.base}">{item.longDescription}</pre>
+          style="color:{getItemColor(
+            $selectedCharacter.settings.colors,
+            item
+          )}">{item.description.long}</pre>
       </div>
     {/if}
   </div>
-  {#if containerExpanded && $inventoryItemsParentChildIndex[item.id] != undefined}
-    <div class="pl-12">
+  {#if item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
+    <div class="flex flex-col ml-2">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
-        <svelte:self item={childItem} on:showContextMenu />
+        <div class="flex">
+          <div class="flex-shrink mr-2 mt-1">
+            <i
+              class="fas fa-level-up fa-rotate-90 fa-fw"
+              style="color:{getItemColor(
+                $selectedCharacter.settings.colors,
+                childItem
+              )}"
+            />
+          </div>
+          <div class="flex-1">
+            <svelte:self item={childItem} on:showContextMenu />
+          </div>
+        </div>
       {/each}
     </div>
   {/if}

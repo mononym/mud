@@ -322,6 +322,76 @@ defmodule Mud.Engine.Character do
         }
       })
 
+    {:ok, pack1} =
+      Mud.Engine.Item.create(%{
+        description: %{
+          key: "sack",
+          short: "a fine cloth sack",
+          long: "The sack is made of fine cloth."
+        },
+        flags: %{
+          look: true,
+          open: true,
+          close: true,
+          wear: true,
+          remove: true,
+          trash: true,
+          drop: true,
+          hold: true,
+          stow: true,
+          container: true,
+          wearable: true
+        },
+        location: %{relative_item_id: backpack.id, relative_to_item: true},
+        container: %{
+          capacity: 1000,
+          length: 75,
+          width: 50,
+          height: 75
+        },
+        physics: %{
+          length: 100,
+          width: 50,
+          height: 75,
+          weight: 50
+        }
+      })
+
+    {:ok, pouch1} =
+      Mud.Engine.Item.create(%{
+        description: %{
+          key: "pouch",
+          short: "a silk pouch",
+          long: "The pouch is made of fine silk."
+        },
+        flags: %{
+          look: true,
+          open: true,
+          close: true,
+          wear: true,
+          remove: true,
+          trash: true,
+          drop: true,
+          hold: true,
+          stow: true,
+          container: true,
+          wearable: true
+        },
+        location: %{relative_item_id: pack1.id, relative_to_item: true},
+        container: %{
+          capacity: 1000,
+          length: 75,
+          width: 50,
+          height: 75
+        },
+        physics: %{
+          length: 100,
+          width: 50,
+          height: 75,
+          weight: 50
+        }
+      })
+
     Mud.Engine.Item.create(%{
       description: %{
         key: "rock",
@@ -336,7 +406,7 @@ defmodule Mud.Engine.Character do
         trash: true,
         material: true
       },
-      location: %{relative_item_id: backpack.id, relative_to_item: true},
+      location: %{relative_item_id: pouch1.id, relative_to_item: true},
       physics: %{
         weight: 1
       }

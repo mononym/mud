@@ -4,7 +4,7 @@
   import { getContext } from "svelte";
   import { key } from "./state";
   import { getItemColor } from "../../utils/utils";
-  import App from "../../App.svelte";
+  import QuickAction from "./QuickAction.svelte";
 
   const state = getContext(key);
   const { selectedCharacter, inventoryItemsParentChildIndex } = state;
@@ -58,7 +58,7 @@
     {/if}
   </div>
   {#if item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
-    <div class="flex flex-col ml-4">
+    <div class="flex flex-col ml-2">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
         <div class="flex">
           <div class="flex-shrink mr-2 mt-1">
@@ -71,7 +71,33 @@
             />
           </div>
           <div class="flex-1">
-            <svelte:self item={childItem} on:showContextMenu />
+            <svelte:self item={childItem} on:showContextMenu>
+              <div class="flex space-x-2 pl-2" slot="quickActions">
+                {#if childItem.flags.container && childItem.container.open}
+                  <QuickAction
+                    icon="fas fa-box-open"
+                    activeTooltip="close"
+                    cliInput="close {childItem.id}"
+                    storyOutput="close {childItem.description.short}"
+                    activeIconColor={$selectedCharacter.settings
+                      .inventoryWindow["enabled_quick_action_color"]}
+                    inactiveIconColor={$selectedCharacter.settings
+                      .inventoryWindow["disabled_quick_action_color"]}
+                  />
+                {:else}
+                  <QuickAction
+                    icon="fas fa-box"
+                    activeTooltip="open"
+                    cliInput="open {childItem.id}"
+                    storyOutput="open {childItem.description.short}"
+                    activeIconColor={$selectedCharacter.settings
+                      .inventoryWindow["enabled_quick_action_color"]}
+                    inactiveIconColor={$selectedCharacter.settings
+                      .inventoryWindow["disabled_quick_action_color"]}
+                  />
+                {/if}
+              </div>
+            </svelte:self>
           </div>
         </div>
       {/each}

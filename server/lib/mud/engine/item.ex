@@ -186,14 +186,14 @@ defmodule Mud.Engine.Item do
   def list_all_recursive(items) do
     items
     |> items_to_ids()
-    |> list_all_recursive_query()
+    |> list_all_recursive_parent_query(true)
     |> Repo.all()
   end
 
   def list_all_recursive_parents(items) do
     ids = items_to_ids(items)
 
-    Repo.all(list_all_parents_recursive_query(ids))
+    Repo.all(list_all_recursive_parent_query(ids))
   end
 
   @doc """
@@ -426,6 +426,21 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
+  Given an item, determines if any of the parents are held/worn by a character
+  """
+  def in_inventory?(item = %__MODULE__{}) do
+    in_inventory?(item.id)
+  end
+
+  def in_inventory?(item_id) do
+    Repo.one(
+      from([location: location] in list_all_recursive_parent_query([item_id]),
+        where: location.held_in_hand or location.worn_on_character
+      )
+    ) != nil
+  end
+
+  @doc """
   Checks all parents up to the root to ensure that they are open if they are containers.
 
   If the item is a root item itself, being held in the hand or worn or on the ground, `true` is returned.
@@ -443,8 +458,7 @@ defmodule Mud.Engine.Item do
 
   def parent_containers_open?(item = %__MODULE__{}) do
     from(container in Container,
-      where:
-        container.item_id in subquery(list_all_parents_ids_recursive_query(List.wrap(item.id))),
+      where: container.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id))),
       select: fragment("bool_and(?)", container.open)
     )
     |> Repo.one!()
@@ -570,31 +584,17 @@ defmodule Mud.Engine.Item do
     Repo.insert!(%__MODULE__{})
   end
 
-  defp list_all_parents_ids_recursive_query(ids) do
-    from(item in base_query_without_preload(),
-      where: item.id in subquery(recursive_query(ids)) and item.id not in ^ids,
-      select: item.id
-    )
-  end
-
-  defp list_all_parents_recursive_query(ids) do
-    from(item in list_all_recursive_query(ids),
-      where: item.id not in ^ids
-    )
-  end
-
-  defp list_all_recursive_query(ids) do
-    from(item in base_query_with_preload(), where: item.id in subquery(recursive_query(ids)))
-  end
-
-  defp list_all_ids_recursive_query(ids) do
+  defp list_all_recursive_parent_query(ids, include_self \\ false) do
     from(item in base_query_with_preload(),
-      where: item.id in subquery(recursive_query(ids)),
-      select: item.id
+      where: item.id in subquery(recursive_parent_ids_query(ids, include_self))
     )
   end
 
-  defp recursive_query(ids) do
+  defp recursive_parent_ids_query(ids, include_self \\ false) do
+    from(location in recursive_parent_query(ids, include_self), select: location.item_id)
+  end
+
+  def recursive_parent_query(ids, include_self) do
     item_tree_initial_query =
       Location
       |> where(
@@ -608,19 +608,56 @@ defmodule Mud.Engine.Item do
         :inner,
         [location],
         lt in "location_tree",
-        on:
-          lt.relative_item_id == location.item_id and lt.relative_to_item and
-            lt.relation == ^"in"
+        on: lt.relative_item_id == location.item_id
       )
 
     item_tree_query =
       item_tree_initial_query
       |> union_all(^item_tree_recursion_query)
 
-    {"location_tree", Location}
-    |> recursive_ctes(true)
-    |> with_cte("location_tree", as: ^item_tree_query)
-    |> select([l], l.item_id)
+    final_query =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+
+    if include_self do
+      final_query
+    else
+      from(item in final_query, where: item.item_id not in ^ids)
+    end
+  end
+
+  defp recursive_child_query(ids, include_self \\ false) do
+    item_tree_initial_query =
+      Location
+      |> where(
+        [l],
+        l.item_id in ^ids
+      )
+
+    item_tree_recursion_query =
+      Location
+      |> join(
+        :inner,
+        [location],
+        lt in "location_tree",
+        on: location.relative_item_id == lt.item_id
+      )
+
+    item_tree_query =
+      item_tree_initial_query
+      |> union_all(^item_tree_recursion_query)
+
+    final_query =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+
+    if include_self do
+      final_query
+    else
+      from(item in final_query, where: item.item_id not in ^ids)
+    end
   end
 
   defp items_to_ids(items) do
