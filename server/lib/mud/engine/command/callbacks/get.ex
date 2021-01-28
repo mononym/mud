@@ -103,7 +103,7 @@ defmodule Mud.Engine.Command.Get do
       end
     else
       # the item is assumed to be inside a container
-      items = Item.list_all_recursive_parents(ast.thing.input)
+      items = Item.list_all_parents(ast.thing.input)
       char = context.character
 
       # is item inside containers either on character or in character's area or in character's hand

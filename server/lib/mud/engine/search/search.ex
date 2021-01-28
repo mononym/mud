@@ -58,14 +58,14 @@ defmodule Mud.Engine.Search do
   @doc """
   Find matches in worn or held items.
   """
-  @spec find_matches_in_worn_or_held_items(
+  @spec find_matches_in_inventory(
           String.t(),
           String.t()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_in_worn_or_held_items(character_id, input, mode \\ "simple") do
+  def find_matches_in_inventory(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_worn_or_held_items(character_id, search_string)
+    items = Item.search_inventory(character_id, search_string)
 
     case things_to_match(items) do
       [] ->
@@ -141,7 +141,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in worn items.
+  Find matches in held or worn items.
   """
   @spec find_matches_on_ground_or_worn_or_held_items(
           String.t(),
@@ -168,106 +168,148 @@ defmodule Mud.Engine.Search do
   @spec find_matches_relative_to_place_on_ground_in_hands_or_worn(
           String.t(),
           String.t(),
-          String.t(),
-          String.t(),
+          Mud.Engine.Command.AstNode.Thing.t(),
+          Mud.Engine.Command.AstNode.Place.t(),
           String.t()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_relative_to_place_on_ground_in_hands_or_worn(
         area_id,
         character_id,
-        thing_input,
-        where,
-        place_input,
+        thing,
+        place,
         mode \\ "simple"
       ) do
-    place_search_string = input_to_wildcard_string(place_input, mode)
+    # take ast and unnest the entire path
+    # create two queries and check the path both ways
+    # only one of them *should* match but is possible for more than one, in which case take first match and alert for other
+    # If the beginning place of either of the potential 'directions' specifies 'my' then that is the only query which should be pursued
+    # If both specify 'my' then look at both
+    path = [first_path | _rest_path] = unnest_place_path(place, [])
+    reversed_path = [first_reversed_path | _rest_reversed_path] = Enum.reverse(path)
+
+    IO.inspect(path, label: :path)
+    IO.inspect(reversed_path, label: :reversed_path)
 
     items =
-      Item.search_on_ground_or_worn_or_held_items(area_id, character_id, place_search_string)
+      cond do
+        first_path.personal and not first_reversed_path.personal ->
+          Item.search_relative_to_item_on_ground_or_worn_or_held_items(
+            area_id,
+            character_id,
+            path,
+            thing,
+            mode
+          )
 
-    item_index =
-      items
-      |> Stream.with_index()
-      |> Enum.reduce(%{}, fn {item, index}, map ->
-        Map.put(map, item.id, index)
-      end)
+        first_reversed_path.personal and not first_path.personal ->
+          Item.search_relative_to_item_on_ground_or_worn_or_held_items(
+            area_id,
+            character_id,
+            reversed_path,
+            thing,
+            mode
+          )
 
-    case items do
+        (not first_path.personal and not first_reversed_path.personal) or
+            (first_path.personal and first_reversed_path.personal) ->
+          Item.search_relative_to_item_on_ground_or_worn_or_held_items(
+            area_id,
+            character_id,
+            path,
+            reversed_path,
+            thing,
+            mode
+          )
+      end
+
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
-      _ ->
-        thing_search_string = input_to_wildcard_string(thing_input, mode)
-
-        items =
-          Item.search_relative_to_items(items, where, thing_search_string)
-          |> Enum.sort(fn item1, item2 ->
-            item_index[item1.location.relative_item_id] <=
-              item_index[item2.location.relative_item_id]
-          end)
-
-        case things_to_match(items) do
-          [] ->
-            {:error, :no_match}
-
-          matches ->
-            {:ok, matches}
-        end
+      matches ->
+        {:ok, matches}
     end
+  end
+
+  defp unnest_place_path(place = %{path: nil}, path) do
+    [place | path]
+  end
+
+  defp unnest_place_path(place = %{path: place_path}, path) do
+    unnest_place_path(place_path, [%{place | path: nil} | path])
   end
 
   @doc """
   Find matches in items in unspecified location
   """
-  @spec find_matches_relative_to_place_in_hands_or_worn(
+  @spec find_matches_relative_to_place_in_inventory(
           String.t(),
-          String.t(),
-          String.t(),
-          String.t(),
+          Mud.Engine.Command.AstNode.Thing.t(),
+          Mud.Engine.Command.AstNode.Place.t(),
           String.t()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_relative_to_place_in_hands_or_worn(
+  def find_matches_relative_to_place_in_inventory(
         character_id,
-        thing_input,
-        where,
-        place_input,
+        thing,
+        place,
         mode \\ "simple"
       ) do
-    place_search_string = input_to_wildcard_string(place_input, mode)
+    # take ast and unnest the entire path
+    # create two queries and check the path both ways
+    # only one of them *should* match but is possible for more than one, in which case take first match and alert for other
+    # If the beginning place of either of the potential 'directions' specifies 'my' then that is the only query which should be pursued
+    # If both specify 'my' then look at both
+    path = [_first_path | _rest_path] = unnest_place_path(place, []) #|> Enum.reverse()
+    # reversed_path = [first_reversed_path | _rest_reversed_path] = Enum.reverse(path)
+
+    IO.inspect(path, label: :path)
+    # IO.inspect(reversed_path, label: :reversed_path)
+
+    # items =
+    #   cond do
+    #     first_path.personal and not first_reversed_path.personal ->
+    #       Item.search_relative_to_inventory(
+    #         character_id,
+    #         path,
+    #         thing,
+    #         mode
+    #       )
+
+    #     first_reversed_path.personal and not first_path.personal ->
+    #       Item.search_relative_to_inventory(
+    #         character_id,
+    #         reversed_path,
+    #         thing,
+    #         mode
+    #       )
+
+    #     (not first_path.personal and not first_reversed_path.personal) or
+    #         (first_path.personal and first_reversed_path.personal) ->
+    #       Item.search_relative_to_inventory(
+    #         character_id,
+    #         path,
+    #         reversed_path,
+    #         thing,
+    #         mode
+    #       )
+    #   end
 
     items =
-      Item.search_worn_or_held_items(character_id, place_search_string)
+      Item.search_relative_to_inventory(
+        character_id,
+        path,
+        thing,
+        mode
+      )
 
-    item_index =
-      items
-      |> Stream.with_index()
-      |> Enum.reduce(%{}, fn {item, index}, map ->
-        Map.put(map, item.id, index)
-      end)
-
-    case items do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
-      _ ->
-        thing_search_string = input_to_wildcard_string(thing_input, mode)
-
-        items =
-          Item.search_relative_to_items(items, where, thing_search_string)
-          |> Enum.sort(fn item1, item2 ->
-            item_index[item1.location.relative_item_id] <=
-              item_index[item2.location.relative_item_id]
-          end)
-
-        case things_to_match(items) do
-          [] ->
-            {:error, :no_match}
-
-          matches ->
-            {:ok, matches}
-        end
+      matches ->
+        {:ok, matches}
     end
   end
 
@@ -479,14 +521,19 @@ defmodule Mud.Engine.Search do
 
   def things_to_match([]), do: []
 
-  defp input_to_wildcard_string(input, "advanced") do
+  @doc """
+  Given an input, convert it to a wildcard string to be used in querying Postgres
+  """
+  def input_to_wildcard_string(input, mode \\ "simple")
+
+  def input_to_wildcard_string(input, "advanced") do
     input
     |> String.graphemes()
     |> Stream.map(&"%#{&1}%")
     |> Enum.join()
   end
 
-  defp input_to_wildcard_string(input, "simple") do
+  def input_to_wildcard_string(input, "simple") do
     input
     |> String.split()
     |> Stream.map(&"%#{&1}%")

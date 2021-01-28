@@ -336,14 +336,14 @@ defmodule Mud.Engine.Util do
   end
 
   def is_item_on_character?(item, character) do
-    items = Item.list_all_recursive_parents(item)
+    items = Item.list_all_parents(item)
     parent = Enum.find(items, &is_nil(&1.container_id))
 
     parent.wearable_worn_by_id == character.id or parent.holdable_held_by_id == character.id
   end
 
   def is_item_on_character_or_in_area?(item, character) do
-    items = Item.list_all_recursive_parents(item)
+    items = Item.list_all_parents(item)
     parent = Enum.find(items, &is_nil(&1.container_id))
 
     parent.wearable_worn_by_id == character.id or parent.holdable_held_by_id == character.id or
@@ -351,7 +351,7 @@ defmodule Mud.Engine.Util do
   end
 
   def is_item_in_character_area?(item, character) do
-    items = Item.list_all_recursive_parents(item)
+    items = Item.list_all_parents(item)
     parent = Enum.find(items, &is_nil(&1.container_id))
 
     parent.area_id == character.area_id

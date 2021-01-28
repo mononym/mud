@@ -17,7 +17,7 @@ defmodule Mud.Engine.Command.Open do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
-  alias Item.{Container, Location}
+  alias Item.{Container}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
 
@@ -52,34 +52,12 @@ defmodule Mud.Engine.Command.Open do
       if Util.is_uuid4(context.command.ast.thing.input) do
         Logger.debug("Open command provided with uuid: #{context.command.ast.thing.input}")
 
-        # Since it is a "direct" command there is no way of knowing how deeply nested the item might be.
-        # Grab the item and all of its parent containers.
-        items = Item.list_all_recursive(context.command.ast.thing.input)
+        case Item.get(context.command.ast.thing.input) do
+          {:ok, item} ->
+            open_item(context, List.first(Search.things_to_match(item)))
 
-        # Make sure they are all open
-        all_parents_open =
-          Enum.all?(items, fn item ->
-            item.container.open or item.id == context.command.ast.thing.input
-          end)
-
-        cond do
-          # If one of the parents is not open, then we cannot get to the item, and an error should be returned.
-          # Also, make sure something was actually found.
-          length(items) > 0 and all_parents_open ->
-            open_item(
-              context,
-              List.first(
-                Search.things_to_match(
-                  Enum.find(items, &(&1.id == context.command.ast.thing.input))
-                )
-              )
-            )
-
-          length(items) > 0 and not all_parents_open ->
-            Util.parent_container_closed_error(context)
-
-          length(items) == 0 ->
-            Util.not_found_error(context)
+          _ ->
+            Util.dave_error_v2(context)
         end
       else
         Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
@@ -90,27 +68,163 @@ defmodule Mud.Engine.Command.Open do
     end
   end
 
-  defp open_item_in_worn_container(context) do
-    context
+  defp find_thing_to_open(context = %Mud.Engine.Command.Context{}) do
+    case context.command.ast do
+      # Open thing on character
+      # If nothing is found worn on the character do not look further
+      %TAP{place: nil, thing: %Thing{personal: true}} ->
+        Logger.debug("Item to Open should be on character")
+
+        # open_worn_or_held_item_in_inventory(context)
+        open_item_in_inventory(context)
+
+      # Thing being opened did not have 'my' specified, but also no place either
+      %TAP{place: nil, thing: %Thing{personal: false}} ->
+        open_item_on_ground_or_worn_or_held_items(context)
+
+      # This thing will be in a place, but that place might not be on the character
+      %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
+        open_item_with_place(context)
+
+      # open thing in container on character
+      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
+        open_item_with_personal_place(context)
+    end
   end
 
-  defp open_item_in_area_or_in_inventory(context) do
-    context
-  end
-
-  defp open_item_with_place(context) do
-    # look for place on ground on in hands or worn
+  defp open_item_in_inventory(context) do
     results =
-      Search.find_matches_relative_to_place_on_ground_in_hands_or_worn(
-        context.character.area_id,
+      Search.find_matches_in_inventory(
         context.character.id,
         context.command.ast.thing.input,
-        context.command.ast.place.where,
-        context.command.ast.place.input,
         context.character.settings.commands.search_mode
       )
 
-    handle_search_results(context, results)
+    # IO.inspect(results, label: :open_item_in_inventory1)
+
+    case results do
+      {:ok, matches} ->
+        # get all ancestors
+        ancestors = Item.list_all_parents(Enum.map(matches, & &1.match))
+        # IO.inspect(ancestors, label: :ancestors)
+        # create ancestor tree index
+        parent_index =
+          Enum.reduce(ancestors, %{}, fn item, index ->
+            cond do
+              item.location.relative_to_item ->
+                Map.put(index, item.id, item.location.relative_item_id)
+
+              item.location.worn_on_character ->
+                Map.put(index, item.id, "worn")
+
+              item.location.held_in_hand ->
+                Map.put(index, item.id, "held")
+            end
+          end)
+
+        # IO.inspect(parent_index, label: :parent_index)
+
+        # create ancestor tree index
+        parent_move_index =
+          Enum.reduce(ancestors, %{}, fn item, index ->
+            Map.put(index, item.id, item.location.moved_at)
+          end)
+
+        # IO.inspect(parent_move_index, label: :parent_move_index)
+
+        layer_index =
+          Enum.reduce(ancestors, %{}, fn item, index ->
+            cond do
+              item.location.relative_to_item ->
+                Map.put(
+                  index,
+                  item.id,
+                  count_layers(item.location.relative_item_id, parent_index)
+                )
+
+              item.location.worn_on_character ->
+                Map.put(index, item.id, 0)
+
+              item.location.held_in_hand ->
+                Map.put(index, item.id, 0)
+            end
+          end)
+
+        # IO.inspect(layer_index, label: :layer_index)
+
+        # sort by this
+
+        roots = ["held", "worn"]
+
+        sorted_results =
+          Enum.sort(matches, fn match1, match2 ->
+            item1 = match1.match
+            item2 = match2.match
+
+            cond do
+              layer_index[item1.id] == layer_index[item2.id] ->
+                if item1.location.relative_item_id == item2.location.relative_item_id do
+                  # same layer same parent go by own sort order
+                  item1.location.moved_at <= item2.location.moved_at
+                else
+                  # same layer different parents go by parents sort order
+                  parent_move_index[item1.location.relative_item_id] <=
+                    parent_move_index[item2.location.relative_item_id]
+                end
+
+              # both items are root inventory items
+              layer_index[item1.id] in roots and layer_index[item2.id] in roots ->
+                cond do
+                  # different layers with item1 being held and item2 worn
+                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) <
+                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
+                    true
+
+                  # different layers with item2 being held and item1 worn
+                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) >
+                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
+                    false
+
+                  # both on the same root layer, so can go by when they were last moved
+                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) ==
+                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
+                    item1.location.moved_at <= item2.location.moved_at
+                end
+
+              # different layers go by layer order
+              layer_index[item1.id] < layer_index[item2.id] ->
+                true
+
+              # different layers go by layer order
+              layer_index[item1.id] > layer_index[item2.id] ->
+                false
+            end
+          end)
+
+        # IO.inspect(sorted_results, label: :sorted_results)
+
+        # then just handle results as normal
+        handle_search_results(context, {:ok, sorted_results})
+
+      _ ->
+        handle_search_results(context, results)
+    end
+  end
+
+  defp count_layers(_parent_id, _parent_index, _current_layer \\ 0)
+
+  defp count_layers(nil, _parent_index, _current_layer) do
+    0
+  end
+
+  defp count_layers(parent_id, parent_index, current_layer) do
+    result = Map.get(parent_index, parent_id)
+
+    if result in ["worn", "held", "ground"] do
+      current_layer
+    else
+      count_layers(result, parent_index, current_layer + 1)
+    end
   end
 
   defp handle_search_results(context, results) do
@@ -119,7 +233,7 @@ defmodule Mud.Engine.Command.Open do
         open_item(context, match)
 
       {:ok, all_matches = [match | matches]} ->
-        IO.inspect(context.command.ast)
+        # IO.inspect(context.command.ast)
 
         case context.command.ast do
           # If which is greater than 0, then more than one match was anticipated.
@@ -133,9 +247,9 @@ defmodule Mud.Engine.Command.Open do
             Util.not_found_error(context)
 
           _ ->
-            IO.inspect(context.character.settings.commands.multiple_matches_mode,
-              label: "context.character.settings.commands.multiple_matches_mode"
-            )
+            # IO.inspect(context.character.settings.commands.multiple_matches_mode,
+            #   label: "context.character.settings.commands.multiple_matches_mode"
+            # )
 
             case context.character.settings.commands.multiple_matches_mode do
               "silent" ->
@@ -156,35 +270,41 @@ defmodule Mud.Engine.Command.Open do
             end
         end
 
-      {:ok, []} ->
-        Util.not_found_error(context)
-
       _ ->
-        Util.dave_error_v2(context)
+        Util.not_found_error(context)
     end
   end
 
-  defp open_item_with_personal_place(context) do
+  defp open_item_with_place(context) do
+    # IO.inspect("open_item_with_place")
     # look for place on ground on in hands or worn
     results =
-      Search.find_matches_relative_to_place_in_hands_or_worn(
+      Search.find_matches_relative_to_place_on_ground_in_hands_or_worn(
+        context.character.area_id,
         context.character.id,
-        context.command.ast.thing.input,
-        context.command.ast.place.where,
-        context.command.ast.place.input,
+        context.command.ast.thing,
+        context.command.ast.place,
         context.character.settings.commands.search_mode
       )
 
     handle_search_results(context, results)
   end
 
-  defp open_item_in_area_or_in_inventory(context) do
-    context
+  defp open_item_with_personal_place(context) do
+    IO.inspect("open_item_with_personal_place")
+    # look for place on ground on in hands or worn
+    results =
+      Search.find_matches_relative_to_place_in_inventory(
+        context.character.id,
+        context.command.ast.thing,
+        context.command.ast.place,
+        context.character.settings.commands.search_mode
+      )
+
+    handle_search_results(context, results)
   end
 
   defp open_item_on_ground_or_worn_or_held_items(context) do
-    IO.inspect(context.command.ast.thing)
-
     results =
       Search.find_matches_on_ground_or_worn_or_held_items(
         context.character.area_id,
@@ -193,202 +313,179 @@ defmodule Mud.Engine.Command.Open do
         context.character.settings.commands.search_mode
       )
 
-    IO.inspect(results, label: "open_item_on_ground_or_worn_or_held_items")
-
     handle_search_results(context, results)
   end
 
-  defp open_worn_or_held_item_in_inventory(context) do
-    # open an item in inventory
-    # sql search for all items in inventory which match text
-    result =
-      Search.find_matches_in_worn_or_held_items(
-        context.character.id,
-        context.command.ast.thing.input,
-        context.character.settings.commands.search_mode
-      )
+  # defp open_worn_or_held_item_in_inventory(context) do
+  #   # open an item in inventory
+  #   # sql search for all items in inventory which match text
+  #   result =
+  #     Search.find_matches_in_worn_or_held_items(
+  #       context.character.id,
+  #       context.command.ast.thing.input,
+  #       context.character.settings.commands.search_mode
+  #     )
 
-    case result do
-      {:ok, [thing]} ->
-        Logger.debug("Found the item to Open")
-        open_item(context, thing)
+  #   case result do
+  #     {:ok, [thing]} ->
+  #       Logger.debug("Found the item to Open")
+  #       open_item(context, thing)
 
-      {:ok, _} ->
-        # open_item(context, thing)
+  #     {:ok, _} ->
+  #       # open_item(context, thing)
 
-        Logger.debug("Found too many items to open, or no item")
+  #       Logger.debug("Found too many items to open, or no item")
 
-        Context.append_message(
-          context,
-          Message.new_story_output(
-            context.character.id,
-            "Multiple items were found, please be more specific.",
-            "system_alert"
-          )
-        )
+  #       Context.append_message(
+  #         context,
+  #         Message.new_story_output(
+  #           context.character.id,
+  #           "Multiple items were found, please be more specific.",
+  #           "system_alert"
+  #         )
+  #       )
 
-      # context
-      # |> Context.append_error("Multiple potential items found, please be more specific.")
+  #     # context
+  #     # |> Context.append_error("Multiple potential items found, please be more specific.")
 
-      error ->
-        error
-    end
-  end
-
-  defp find_thing_to_open(context = %Mud.Engine.Command.Context{}) do
-    case context.command.ast do
-      # Open thing on character
-      # If nothing is found worn on the character do not look further
-      %TAP{place: nil, thing: %Thing{personal: true}} ->
-        Logger.debug("Item to Open should be on character")
-
-        open_worn_or_held_item_in_inventory(context)
-
-      # Thing being opened did not have 'my' specified, but also no place either
-      %TAP{place: nil, thing: %Thing{personal: false}} ->
-        # An id for a specific item was given.
-        if Util.is_uuid4(context.command.ast.thing.input) do
-          item = Item.get!(context.command.ast.thing.input)
-          # TODO: Add check here to make sure that all parent containers, if any, are open
-          if item.location.relative_to_item and item.location.relation == "in" do
-            parents_open =
-              Item.list_all_recursive_parents(item)
-              |> Enum.all?(fn parent ->
-                parent.flags.container and parent.container.open
-              end)
-
-            if parents_open do
-              open_item(context, List.first(Search.things_to_match(item)))
-            else
-              Util.dave_error_v2(context)
-            end
-          end
-        else
-          # open thing on ground/in area, fallback to items held or in worn inventory
-          open_item_on_ground_or_worn_or_held_items(context)
-        end
-
-      # This thing will be in a place, but that place might not be on the character
-      %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
-        open_item_with_place(context)
-
-      # get thing from container on character
-      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
-        open_item_with_personal_place(context)
-    end
-  end
+  #     _error ->
+  #       Util.not_found_error(context)
+  #   end
+  # end
 
   defp open_item(context, thing = %Search.Match{}, other_matches \\ []) do
-    if Item.parent_containers_open?(thing.match) do
-      cond do
-        # Is container and container is closed, meaning it can be opened
-        thing.match.flags.container and not thing.match.container.open ->
-          container =
-            Container.update!(thing.match.container, %{
-              open: true
-            })
+    in_area = Item.in_area?(thing.match.id, context.character.area_id)
+    in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
+    parent_containers_open = Item.parent_containers_open?(thing.match)
 
-          item = Map.put(thing.match, :container, container)
+    # IO.inspect(
+    #   %{
+    #     area_id: context.character.area_id,
+    #     thing: thing.match,
+    #     in_area: in_area,
+    #     in_inventory: in_inventory,
+    #     parent_containers_open: parent_containers_open
+    #   },
+    #   label: "open_item"
+    # )
 
-          others =
-            Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+    cond do
+      parent_containers_open and (in_area or in_inventory) ->
+        cond do
+          # Is container and container is closed, meaning it can be opened
+          thing.match.flags.container and not thing.match.container.open ->
+            container =
+              Container.update!(thing.match.container, %{
+                open: true
+              })
 
-          other_msg =
-            others
-            |> Message.new_story_output()
-            |> Message.append_text("[#{context.character.name}]", "character")
-            |> Message.append_text(" opens ", "base")
-            |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-            |> Message.append_text(".", "base")
+            item = Map.put(thing.match, :container, container)
 
-          self_msg =
-            context.character.id
-            |> Message.new_story_output()
-            |> Message.append_text("You", "character")
-            |> Message.append_text(" open ", "base")
-            |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-            |> Message.append_text(".", "base")
+            others =
+              Character.list_others_active_in_areas(
+                context.character.id,
+                context.character.area_id
+              )
 
-          self_msg =
-            if other_matches != [] do
-              other_items = Enum.map(other_matches, & &1.match)
+            other_msg =
+              others
+              |> Message.new_story_output()
+              |> Message.append_text("[#{context.character.name}]", "character")
+              |> Message.append_text(" opens ", "base")
+              |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+              |> Message.append_text(".", "base")
 
-              Util.append_assumption_text(self_msg, item, other_items)
-            else
-              self_msg
-            end
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text("You", "character")
+              |> Message.append_text(" open ", "base")
+              |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+              |> Message.append_text(".", "base")
 
-          # for items that are not root items, check to see whether the update needs to go to inventory or the area
-          context =
-            cond do
-              item.location.worn_on_character or item.location.held_in_hand or
-                  Item.in_inventory?(item) ->
-                Context.append_event(
-                  context,
-                  context.character_id,
-                  UpdateInventory.new(:update, item)
-                )
+            self_msg =
+              if other_matches != [] do
+                other_items = Enum.map(other_matches, & &1.match)
 
-              item.location.on_ground ->
-                Context.append_event(
-                  context,
-                  [context.character_id | others],
-                  UpdateArea.new(%{action: :update, on_ground: [item]})
-                )
-            end
+                Util.append_assumption_text(self_msg, item, other_items)
+              else
+                self_msg
+              end
 
-          context
-          |> Context.append_message(other_msg)
-          |> Context.append_message(self_msg)
+            # for items that are not root items, check to see whether the update needs to go to inventory or the area
+            context =
+              cond do
+                item.location.worn_on_character or item.location.held_in_hand or
+                    in_inventory ->
+                  Context.append_event(
+                    context,
+                    context.character_id,
+                    UpdateInventory.new(:update, item)
+                  )
 
-        # It is a container but the container is open,
-        thing.match.flags.container and thing.match.container.open ->
-          self_msg =
-            context.character.id
-            |> Message.new_story_output()
-            |> Message.append_text(
-              Util.upcase_first(thing.match.description.short),
-              Mud.Engine.Util.get_item_type(thing.match)
-            )
-            |> Message.append_text(" is already open.", "system_warning")
+                item.location.on_ground ->
+                  Context.append_event(
+                    context,
+                    [context.character_id | others],
+                    UpdateArea.new(%{action: :update, on_ground: [item]})
+                  )
+              end
 
-          self_msg =
-            if other_matches != [] do
-              other_items = Enum.map(other_matches, & &1.match)
-              IO.inspect(other_items, label: "other_items")
+            context
+            |> Context.append_message(other_msg)
+            |> Context.append_message(self_msg)
 
-              Util.append_assumption_text(self_msg, thing.match, other_items)
-            else
-              self_msg
-            end
+          # It is a container but the container is open,
+          thing.match.flags.container and thing.match.container.open ->
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                Util.upcase_first(thing.match.description.short),
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(" is already open.", "system_warning")
 
-          Context.append_message(context, self_msg)
+            self_msg =
+              if other_matches != [] do
+                other_items = Enum.map(other_matches, & &1.match)
 
-        # Assume the thing is not a container
-        true ->
-          self_msg =
-            context.character.id
-            |> Message.new_story_output()
-            |> Message.append_text(
-              thing.match.description.short,
-              Mud.Engine.Util.get_item_type(thing.match)
-            )
-            |> Message.append_text(" cannot be opened.", "system_alert")
+                Util.append_assumption_text(self_msg, thing.match, other_items)
+              else
+                self_msg
+              end
 
-          self_msg =
-            if other_matches != [] do
-              other_items = Enum.map(other_matches, & &1.match)
+            Context.append_message(context, self_msg)
 
-              Util.append_assumption_text(self_msg, thing.match, other_items)
-            else
-              self_msg
-            end
+          # Assume the thing is not a container
+          true ->
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                thing.match.description.short,
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(" cannot be opened.", "system_alert")
 
-          Context.append_message(context, self_msg)
-      end
-    else
-      # If a parent is closed, pretend like nothing was found
-      Util.not_found_error(context)
+            self_msg =
+              if other_matches != [] do
+                other_items = Enum.map(other_matches, & &1.match)
+
+                Util.append_assumption_text(self_msg, thing.match, other_items)
+              else
+                self_msg
+              end
+
+            Context.append_message(context, self_msg)
+        end
+
+      not parent_containers_open and (in_area or in_inventory) ->
+        # If a parent is closed, warn the player
+        Util.parent_container_closed_error(context)
+
+      not in_area and not in_inventory ->
+        Util.dave_error_v2(context)
     end
   end
 end
