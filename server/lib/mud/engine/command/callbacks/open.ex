@@ -100,8 +100,6 @@ defmodule Mud.Engine.Command.Open do
         context.character.settings.commands.search_mode
       )
 
-    # IO.inspect(results, label: :open_item_in_inventory1)
-
     case results do
       {:ok, matches} ->
         sorted_results = sort_items(matches)
@@ -231,7 +229,6 @@ defmodule Mud.Engine.Command.Open do
         open_item(context, match)
 
       {:ok, all_matches = [match | matches]} ->
-        # IO.inspect(context.command.ast)
 
         case context.command.ast do
           # If which is greater than 0, then more than one match was anticipated.
@@ -245,9 +242,6 @@ defmodule Mud.Engine.Command.Open do
             Util.not_found_error(context)
 
           _ ->
-            # IO.inspect(context.character.settings.commands.multiple_matches_mode,
-            #   label: "context.character.settings.commands.multiple_matches_mode"
-            # )
 
             case context.character.settings.commands.multiple_matches_mode do
               "silent" ->
@@ -274,7 +268,6 @@ defmodule Mud.Engine.Command.Open do
   end
 
   defp open_item_with_place(context) do
-    # IO.inspect("open_item_with_place")
     # look for place on ground on in hands or worn
     area_results =
       Search.find_matches_relative_to_place_in_area(
@@ -286,7 +279,6 @@ defmodule Mud.Engine.Command.Open do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        IO.inspect(area_matches, label: :area_matches)
         handle_search_results(context, {:ok, sort_items(area_matches)})
 
       _ ->
@@ -295,7 +287,6 @@ defmodule Mud.Engine.Command.Open do
   end
 
   defp open_item_with_personal_place(context) do
-    IO.inspect("open_item_with_personal_place")
     # look for place on ground on in hands or worn
     results =
       Search.find_matches_relative_to_place_in_inventory(
@@ -309,7 +300,6 @@ defmodule Mud.Engine.Command.Open do
   end
 
   defp open_item_in_area_or_inventory(context) do
-    IO.inspect("open_item_in_area_or_inventory")
 
     area_results =
       Search.find_matches_in_area(
@@ -317,8 +307,6 @@ defmodule Mud.Engine.Command.Open do
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
       )
-
-    IO.inspect(area_results, label: :area_results)
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->

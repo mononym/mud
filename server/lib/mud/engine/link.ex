@@ -194,7 +194,7 @@ defmodule Mud.Engine.Link do
       [%__MODULE__{}, ...]
 
   """
-  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [%__MODULE__{}]
+  @spec list_obvious_exits_in_area(area_id :: String.t()) :: [%__MODULE__{}] | []
   def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from(link in __MODULE__,
@@ -278,6 +278,21 @@ defmodule Mud.Engine.Link do
     |> __MODULE__.changeset(attrs)
     |> Repo.update()
     |> IO.inspect()
+  end
+
+  @doc """
+  All exits are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_exits(String.t(), String.t()) :: [%__MODULE__{}]
+  def search_exits(area_id, search_string) do
+    search_exits_query(area_id, search_string)
+    |> Repo.all()
+  end
+
+  defp search_exits_query(area_id, search_string) do
+    from(link in __MODULE__,
+      where: link.from_id == ^area_id and like(link.short_description, ^search_string)
+    )
   end
 
   @doc """

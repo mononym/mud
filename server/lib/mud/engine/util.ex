@@ -235,10 +235,10 @@ defmodule Mud.Engine.Util do
   """
   @spec append_assumption_text(
           Mud.Engine.Message.StoryOutput.t(),
-          Mud.Engine.Item.t(),
-          [Mud.Engine.Item.t()]
+          Mud.Engine.Item.t() | Mud.Engine.Link.t(),
+          [Mud.Engine.Item.t() | Mud.Engine.Link.t()]
         ) :: Mud.Engine.Message.StoryOutput.t()
-  def append_assumption_text(message, item, other_items) do
+  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items) do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
@@ -258,6 +258,37 @@ defmodule Mud.Engine.Util do
       |> Message.append_text(
         string,
         get_item_type(item)
+      )
+      |> Message.append_text(
+        ", ",
+        "system_info"
+      )
+    end)
+    |> Message.drop_last_text()
+    |> Message.append_text(
+      ")",
+      "system_info"
+    )
+  end
+
+  def append_assumption_text(message, link = %Mud.Engine.Link{}, other_links) do
+    message =
+      message
+      |> Message.append_text("\n(Assuming you meant ", "system_info")
+      |> Message.append_text(
+        link.short_description,
+        get_item_type(link)
+      )
+      |> Message.append_text(
+        ". #{length(other_links)} other potential matches: ",
+        "system_info"
+      )
+
+    Enum.reduce(other_links, message, fn link, msg ->
+      msg
+      |> Message.append_text(
+        link.short_description,
+        "exit"
       )
       |> Message.append_text(
         ", ",

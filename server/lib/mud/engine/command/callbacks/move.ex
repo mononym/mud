@@ -97,14 +97,20 @@ defmodule Mud.Engine.Command.Move do
     Logger.debug(inspect({direction, context, which}))
 
     result =
-      Search.find_matches_in_area_v2(
-        [:link],
+      Search.find_exits_in_area(
         context.character.area_id,
         direction,
-        which
+        context.character.settings.commands.search_mode
       )
 
     case result do
+      {:ok, [match | matches]}
+      when is_integer(which) and which > 0 and which <= length(matches) ->
+        attempt_move_link(context, match, matches)
+
+      {:ok, matches} when is_integer(which) and which > 0 and which > length(matches) ->
+        Util.not_found_error(context)
+
       {:ok, [match]} ->
         attempt_move_link(context, match.match)
 
@@ -145,13 +151,15 @@ defmodule Mud.Engine.Command.Move do
   @doc """
   Given an Context containing a Character, nothing else required, and a link, attempt to move a Character.
   """
-  @spec attempt_move_link(Mud.Engine.Command.Context.t(), Mud.Engine.Link.t()) ::
+  @spec attempt_move_link(Mud.Engine.Command.Context.t(), Mud.Engine.Link.t(), [
+          Mud.Engine.Link.t()
+        ]) ::
           Mud.Engine.Command.Context.t()
-  def attempt_move_link(context, link) do
+  def attempt_move_link(context, link, other_links \\ []) do
     char = context.character
 
     if char.position == Character.standing() do
-      move(context, link)
+      move(context, link, other_links)
     else
       Context.append_message(
         context,
@@ -164,7 +172,7 @@ defmodule Mud.Engine.Command.Move do
     end
   end
 
-  defp move(context, link) do
+  defp move(context, link, other_matches) do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
@@ -193,6 +201,9 @@ defmodule Mud.Engine.Command.Move do
     others_in_new_area = characters_by_area[link.to_id] || []
 
     links = Link.list_obvious_exits_in_area(area.id)
+
+    # If there were other possible exits, call out that there were *before* any other messaging to the front end
+    context = maybe_add_assumption_message(context, link, other_matches)
 
     # Perform look logic for character
     context
@@ -239,7 +250,7 @@ defmodule Mud.Engine.Command.Move do
         other_characters: others_in_new_area,
         on_ground: items_in_area || [],
         toi: scenery || [],
-        exits: links || []
+        exits: links
       })
     )
 
@@ -248,6 +259,21 @@ defmodule Mud.Engine.Command.Move do
     # items on ground
     # denizens
     # scenery/TOI
+  end
+
+  defp maybe_add_assumption_message(context, _, []) do
+    context
+  end
+
+  defp maybe_add_assumption_message(context, link, other_links) do
+    Context.append_message(
+      context,
+      Util.append_assumption_text(
+        Message.new_story_output(context.character.id),
+        link,
+        other_links
+      )
+    )
   end
 
   defp normalize_direction(direction) do
