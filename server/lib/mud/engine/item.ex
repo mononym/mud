@@ -283,9 +283,16 @@ defmodule Mud.Engine.Item do
     parents = list_all_parents(items)
     parent_index = Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
 
-    Enum.map(items, fn item ->
-      {item, build_parent_string(item, parent_index)}
-    end)
+    result =
+      Enum.map(items, fn item ->
+        {item, build_parent_string(item, parent_index)}
+      end)
+
+    if length(result) == 1 do
+      elem(List.first(result), 1)
+    else
+      result
+    end
   end
 
   defp build_parent_string(item, parent_index) do
@@ -334,6 +341,15 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
+  All area items are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_area(String.t(), String.t()) :: [%__MODULE__{}]
+  def search_area(area_id, search_string) do
+    search_area_query(area_id, search_string)
+    |> Repo.all()
+  end
+
+  @doc """
   Worn items are searched for a match in the Repo using the search_string as part of a LIKE query.
   """
   def search_worn_items(character_id, search_string) do
@@ -345,6 +361,25 @@ defmodule Mud.Engine.Item do
       order_by: location.moved_at
     )
     |> Repo.all()
+  end
+
+  @doc """
+  """
+  def search_relative_to_item_in_area(
+        area_id,
+        [initial_path | path],
+        thing,
+        mode
+      ) do
+    initial_query =
+      specific_nested_item_area_initial_query(
+        area_id,
+        Search.input_to_wildcard_string(initial_path.input, mode)
+      )
+
+    IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+
+    build_and_execute_relative_query(initial_query, path, thing)
   end
 
   @doc """
@@ -364,27 +399,12 @@ defmodule Mud.Engine.Item do
     build_and_execute_relative_query(initial_query, path, thing)
   end
 
-  @doc """
-  """
-  def search_relative_to_item_on_ground_or_worn_or_held_items(
-        area_id,
-        character_id,
-        [initial_path | path],
-        thing,
-        mode
-      ) do
-    initial_query =
-      specific_nested_item_held_ground_worn_initial_query(
-        character_id,
-        area_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
-
-    build_and_execute_relative_query(initial_query, path, thing)
-  end
-
   defp build_and_execute_relative_query(initial_query, path, thing) do
     mostly_constructed_query = build_nested_relative_query(initial_query, path)
+
+    IO.inspect(mostly_constructed_query,
+      label: "build_and_execute_relative_query mostly_constructed_query"
+    )
 
     final_query =
       specific_nested_item_top_level_query(
@@ -392,6 +412,8 @@ defmodule Mud.Engine.Item do
         Search.input_to_wildcard_string(thing.input),
         thing.where
       )
+
+    IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
 
     Repo.all(final_query)
   end
@@ -716,6 +738,19 @@ defmodule Mud.Engine.Item do
     )
   end
 
+  def specific_nested_item_area_initial_query(
+        area_id,
+        search_string
+      ) do
+    from(
+      [description: description, location: location] in base_query_without_preload(),
+      where:
+        description.item_id in subquery(base_query_for_all_area_item_ids(area_id)) and
+          like(description.short, ^search_string),
+      select: description.item_id
+    )
+  end
+
   def specific_nested_item_inventory_initial_query(
         character_id,
         search_string
@@ -863,13 +898,34 @@ defmodule Mud.Engine.Item do
     |> modify_query_select_item_id()
   end
 
+  def base_query_for_all_area_item_ids(area_id) do
+    base_query_for_all_area_items(area_id)
+    |> modify_query_select_item_id()
+  end
+
+  def base_query_for_all_area_items(area_id) do
+    recursive_child_query(base_query_for_root_area_item_ids(area_id), true)
+  end
+
   def base_query_for_all_inventory(character_id) do
     recursive_child_query(base_query_for_root_inventory_ids(character_id), true)
+  end
+
+  def base_query_for_root_area_item_ids(area_id) do
+    base_query_for_root_area_items(area_id)
+    |> modify_query_select_id()
   end
 
   def base_query_for_root_inventory_ids(character_id) do
     base_query_for_root_inventory(character_id)
     |> modify_query_select_id()
+  end
+
+  def base_query_for_root_area_items(area_id) do
+    from(
+      [location: location] in base_query_without_preload(),
+      where: location.on_ground and location.area_id == ^area_id
+    )
   end
 
   def base_query_for_root_inventory(character_id) do
@@ -886,6 +942,16 @@ defmodule Mud.Engine.Item do
       [description: description, location: location] in base_query_with_preload(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
+          like(description.short, ^search_string),
+      order_by: [desc: location.moved_at]
+    )
+  end
+
+  def search_area_query(area_id, search_string) do
+    from(
+      [description: description, location: location] in base_query_with_preload(),
+      where:
+        description.item_id in subquery(base_query_for_all_area_item_ids(area_id)) and
           like(description.short, ^search_string),
       order_by: [desc: location.moved_at]
     )

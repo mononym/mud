@@ -80,7 +80,7 @@ defmodule Mud.Engine.Command.Open do
 
       # Thing being opened did not have 'my' specified, but also no place either
       %TAP{place: nil, thing: %Thing{personal: false}} ->
-        open_item_on_ground_or_worn_or_held_items(context)
+        open_item_in_area_or_inventory(context)
 
       # This thing will be in a place, but that place might not be on the character
       %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
@@ -104,104 +104,7 @@ defmodule Mud.Engine.Command.Open do
 
     case results do
       {:ok, matches} ->
-        # get all ancestors
-        ancestors = Item.list_all_parents(Enum.map(matches, & &1.match))
-        # IO.inspect(ancestors, label: :ancestors)
-        # create ancestor tree index
-        parent_index =
-          Enum.reduce(ancestors, %{}, fn item, index ->
-            cond do
-              item.location.relative_to_item ->
-                Map.put(index, item.id, item.location.relative_item_id)
-
-              item.location.worn_on_character ->
-                Map.put(index, item.id, "worn")
-
-              item.location.held_in_hand ->
-                Map.put(index, item.id, "held")
-            end
-          end)
-
-        # IO.inspect(parent_index, label: :parent_index)
-
-        # create ancestor tree index
-        parent_move_index =
-          Enum.reduce(ancestors, %{}, fn item, index ->
-            Map.put(index, item.id, item.location.moved_at)
-          end)
-
-        # IO.inspect(parent_move_index, label: :parent_move_index)
-
-        layer_index =
-          Enum.reduce(ancestors, %{}, fn item, index ->
-            cond do
-              item.location.relative_to_item ->
-                Map.put(
-                  index,
-                  item.id,
-                  count_layers(item.location.relative_item_id, parent_index)
-                )
-
-              item.location.worn_on_character ->
-                Map.put(index, item.id, 0)
-
-              item.location.held_in_hand ->
-                Map.put(index, item.id, 0)
-            end
-          end)
-
-        # IO.inspect(layer_index, label: :layer_index)
-
-        # sort by this
-
-        roots = ["held", "worn"]
-
-        sorted_results =
-          Enum.sort(matches, fn match1, match2 ->
-            item1 = match1.match
-            item2 = match2.match
-
-            cond do
-              layer_index[item1.id] == layer_index[item2.id] ->
-                if item1.location.relative_item_id == item2.location.relative_item_id do
-                  # same layer same parent go by own sort order
-                  item1.location.moved_at <= item2.location.moved_at
-                else
-                  # same layer different parents go by parents sort order
-                  parent_move_index[item1.location.relative_item_id] <=
-                    parent_move_index[item2.location.relative_item_id]
-                end
-
-              # both items are root inventory items
-              layer_index[item1.id] in roots and layer_index[item2.id] in roots ->
-                cond do
-                  # different layers with item1 being held and item2 worn
-                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) <
-                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
-                    true
-
-                  # different layers with item2 being held and item1 worn
-                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) >
-                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
-                    false
-
-                  # both on the same root layer, so can go by when they were last moved
-                  Enum.find_index(roots, &(&1 == layer_index[item1.id])) ==
-                      Enum.find_index(roots, &(&1 == layer_index[item2.id])) ->
-                    item1.location.moved_at <= item2.location.moved_at
-                end
-
-              # different layers go by layer order
-              layer_index[item1.id] < layer_index[item2.id] ->
-                true
-
-              # different layers go by layer order
-              layer_index[item1.id] > layer_index[item2.id] ->
-                false
-            end
-          end)
-
-        # IO.inspect(sorted_results, label: :sorted_results)
+        sorted_results = sort_items(matches)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -209,6 +112,101 @@ defmodule Mud.Engine.Command.Open do
       _ ->
         handle_search_results(context, results)
     end
+  end
+
+  defp sort_items(matches) do
+    ancestors = Item.list_all_parents(Enum.map(matches, & &1.match))
+
+    # create ancestor tree index
+    parent_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        cond do
+          item.location.relative_to_item ->
+            Map.put(index, item.id, item.location.relative_item_id)
+
+          item.location.worn_on_character ->
+            Map.put(index, item.id, "worn")
+
+          item.location.held_in_hand ->
+            Map.put(index, item.id, "held")
+
+          item.flags.scenery ->
+            Map.put(index, item.id, "scenery")
+
+          item.location.on_ground ->
+            Map.put(index, item.id, "ground")
+        end
+      end)
+
+    # create ancestor tree index
+    parent_move_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        Map.put(index, item.id, item.location.moved_at)
+      end)
+
+    layer_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        cond do
+          item.location.relative_to_item ->
+            Map.put(
+              index,
+              item.id,
+              count_layers(item.location.relative_item_id, parent_index)
+            )
+
+          item.location.on_ground or item.location.worn_on_character or
+              item.location.held_in_hand ->
+            Map.put(index, item.id, 0)
+        end
+      end)
+
+    # sort by this
+
+    roots = ["ground", "scenery", "held", "worn"]
+
+    Enum.sort(matches, fn match1, match2 ->
+      item1 = match1.match
+      item2 = match2.match
+
+      cond do
+        # both items are root inventory items
+        layer_index[item1.id] == 0 and layer_index[item2.id] == 0 ->
+          cond do
+            # different layers with item1 being held and item2 worn
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) <
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              true
+
+            # different layers with item2 being held and item1 worn
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) >
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              false
+
+            # both on the same root layer, so can go by when they were last moved
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) ==
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              item1.location.moved_at <= item2.location.moved_at
+          end
+
+        layer_index[item1.id] == layer_index[item2.id] ->
+          if item1.location.relative_item_id == item2.location.relative_item_id do
+            # same layer same parent go by own sort order
+            item1.location.moved_at <= item2.location.moved_at
+          else
+            # same layer different parents go by parents sort order
+            parent_move_index[item1.location.relative_item_id] <=
+              parent_move_index[item2.location.relative_item_id]
+          end
+
+        # different layers go by layer order
+        layer_index[item1.id] < layer_index[item2.id] ->
+          true
+
+        # different layers go by layer order
+        layer_index[item1.id] > layer_index[item2.id] ->
+          false
+      end
+    end)
   end
 
   defp count_layers(_parent_id, _parent_index, _current_layer \\ 0)
@@ -278,16 +276,22 @@ defmodule Mud.Engine.Command.Open do
   defp open_item_with_place(context) do
     # IO.inspect("open_item_with_place")
     # look for place on ground on in hands or worn
-    results =
-      Search.find_matches_relative_to_place_on_ground_in_hands_or_worn(
+    area_results =
+      Search.find_matches_relative_to_place_in_area(
         context.character.area_id,
-        context.character.id,
         context.command.ast.thing,
         context.command.ast.place,
         context.character.settings.commands.search_mode
       )
 
-    handle_search_results(context, results)
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        IO.inspect(area_matches, label: :area_matches)
+        handle_search_results(context, {:ok, sort_items(area_matches)})
+
+      _ ->
+        open_item_with_personal_place(context)
+    end
   end
 
   defp open_item_with_personal_place(context) do
@@ -304,70 +308,32 @@ defmodule Mud.Engine.Command.Open do
     handle_search_results(context, results)
   end
 
-  defp open_item_on_ground_or_worn_or_held_items(context) do
-    results =
-      Search.find_matches_on_ground_or_worn_or_held_items(
+  defp open_item_in_area_or_inventory(context) do
+    IO.inspect("open_item_in_area_or_inventory")
+
+    area_results =
+      Search.find_matches_in_area(
         context.character.area_id,
-        context.character.id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
       )
 
-    handle_search_results(context, results)
+    IO.inspect(area_results, label: :area_results)
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        IO.inspect(area_matches, label: :area_matches)
+        handle_search_results(context, {:ok, sort_items(area_matches)})
+
+      _ ->
+        open_item_in_inventory(context)
+    end
   end
-
-  # defp open_worn_or_held_item_in_inventory(context) do
-  #   # open an item in inventory
-  #   # sql search for all items in inventory which match text
-  #   result =
-  #     Search.find_matches_in_worn_or_held_items(
-  #       context.character.id,
-  #       context.command.ast.thing.input,
-  #       context.character.settings.commands.search_mode
-  #     )
-
-  #   case result do
-  #     {:ok, [thing]} ->
-  #       Logger.debug("Found the item to Open")
-  #       open_item(context, thing)
-
-  #     {:ok, _} ->
-  #       # open_item(context, thing)
-
-  #       Logger.debug("Found too many items to open, or no item")
-
-  #       Context.append_message(
-  #         context,
-  #         Message.new_story_output(
-  #           context.character.id,
-  #           "Multiple items were found, please be more specific.",
-  #           "system_alert"
-  #         )
-  #       )
-
-  #     # context
-  #     # |> Context.append_error("Multiple potential items found, please be more specific.")
-
-  #     _error ->
-  #       Util.not_found_error(context)
-  #   end
-  # end
 
   defp open_item(context, thing = %Search.Match{}, other_matches \\ []) do
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
     in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
     parent_containers_open = Item.parent_containers_open?(thing.match)
-
-    # IO.inspect(
-    #   %{
-    #     area_id: context.character.area_id,
-    #     thing: thing.match,
-    #     in_area: in_area,
-    #     in_inventory: in_inventory,
-    #     parent_containers_open: parent_containers_open
-    #   },
-    #   label: "open_item"
-    # )
 
     cond do
       parent_containers_open and (in_area or in_inventory) ->
@@ -400,7 +366,10 @@ defmodule Mud.Engine.Command.Open do
               |> Message.new_story_output()
               |> Message.append_text("You", "character")
               |> Message.append_text(" open ", "base")
-              |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+              |> Message.append_text(
+                Item.items_to_short_desc_with_nested_location(item),
+                Mud.Engine.Util.get_item_type(item)
+              )
               |> Message.append_text(".", "base")
 
             self_msg =
@@ -441,7 +410,7 @@ defmodule Mud.Engine.Command.Open do
               context.character.id
               |> Message.new_story_output()
               |> Message.append_text(
-                Util.upcase_first(thing.match.description.short),
+                upcase_item_with_location(thing.match),
                 Mud.Engine.Util.get_item_type(thing.match)
               )
               |> Message.append_text(" is already open.", "system_warning")
@@ -463,7 +432,7 @@ defmodule Mud.Engine.Command.Open do
               context.character.id
               |> Message.new_story_output()
               |> Message.append_text(
-                thing.match.description.short,
+                upcase_item_with_location(thing.match),
                 Mud.Engine.Util.get_item_type(thing.match)
               )
               |> Message.append_text(" cannot be opened.", "system_alert")
@@ -487,5 +456,9 @@ defmodule Mud.Engine.Command.Open do
       not in_area and not in_inventory ->
         Util.dave_error_v2(context)
     end
+  end
+
+  defp upcase_item_with_location(item) do
+    Util.upcase_first(Item.items_to_short_desc_with_nested_location(item))
   end
 end
