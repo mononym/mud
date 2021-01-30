@@ -281,7 +281,7 @@ defmodule Mud.Engine.Item do
   def items_to_short_desc_with_nested_location(items) do
     items = List.wrap(items)
     parents = list_all_parents(items)
-    parent_index = Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
+    parent_index = build_item_index(parents)
 
     result =
       Enum.map(items, fn item ->
@@ -586,6 +586,49 @@ defmodule Mud.Engine.Item do
       select: fragment("bool_and(?)", container.open)
     )
     |> Repo.one!()
+  end
+
+  def list_closed_parent_containers(item = %__MODULE__{}) do
+    sorted_parents = list_sorted_parent_containers(item)
+
+    Enum.filter(sorted_parents, &(not &1.container.open))
+  end
+
+  def list_sorted_parent_containers(item = %__MODULE__{}) do
+    parents =
+      from([container: container] in base_query_with_preload(),
+        where: container.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id)))
+      )
+      |> Repo.all()
+
+    item_index = build_item_index(parents)
+    parent_index = build_parent_index(parents)
+
+    layers =
+      Enum.reduce(parents, %{}, fn it, layer_index ->
+        Map.put(layer_index, it.id, count_layers(it, parent_index, item_index, 0))
+      end)
+
+    Enum.sort(parents, fn item1, item2 ->
+      layers[item1.id] >= layers[item2.id]
+    end)
+  end
+
+  defp count_layers(nil, _parent_index, _item_index, layer) do
+    layer
+  end
+
+  defp count_layers(it, parent_index, item_index, layer) do
+    if it.location.on_ground or it.location.held_in_hand or it.location.worn_on_character do
+      layer
+    else
+      count_layers(
+        item_index[parent_index[it.location.area_id]],
+        parent_index,
+        item_index,
+        layer + 1
+      )
+    end
   end
 
   def list_worn_by(character_id) do
@@ -967,5 +1010,15 @@ defmodule Mud.Engine.Item do
         &1
       end
     )
+  end
+
+  defp build_item_index(parents) do
+    Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
+  end
+
+  defp build_parent_index(items) do
+    Enum.reduce(items, %{}, fn item, map ->
+      Map.put(map, item.id, item.location.relative_item_id)
+    end)
   end
 end
