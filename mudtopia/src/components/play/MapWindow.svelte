@@ -7,7 +7,6 @@
 
   const {
     selectedCharacter,
-    selectedMap,
     knownMapsIndex,
     knownAreasForCharacterMap,
     knownAreasForCharacterMapIndex,
@@ -18,6 +17,7 @@
     zoomMapOut,
     mapAtMinZoom,
     mapAtMaxZoom,
+    exploredAreas,
   } = state;
 
   let svgMap;
@@ -40,6 +40,8 @@
       highlightedLinkIds={[]}
       focusAreaId={$selectedCharacter.areaId}
       zoomMultiplier={$mapZoomMultipliers[$mapZoomMultiplierIndex]}
+      exploredAreas={$exploredAreas}
+      mapSettings={$selectedCharacter.settings.mapWindow}
     />
   </div>
   <div class="flex" style="height:40px">

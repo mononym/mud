@@ -49,6 +49,10 @@ export interface CharacterSettingsInterface {
     window_move_unlocked: string;
     window_move_locked: string;
   };
+  mapWindow: {
+    id: string;
+    unexplored_link_color: string;
+  };
   presetHotkeys: {
     id: string;
     open_settings: string;
@@ -164,6 +168,10 @@ const state: CharacterSettingsInterface = {
     enabled_quick_action_color: "",
     disabled_quick_action_color: "",
     show_quick_actions: true,
+  },
+  mapWindow: {
+    id: "",
+    unexplored_link_color: "",
   },
   inventoryWindow: {
     id: "",

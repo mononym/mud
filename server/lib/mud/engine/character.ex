@@ -118,43 +118,7 @@ defmodule Mud.Engine.Character do
 
   @doc false
   def changeset(character, attrs) do
-    # IO.inspect(Ecto.Changeset.change(character), label: "attrs")
-
-    # IO.inspect(
-    #   cast(character, attrs, [
-    #     :active,
-    #     :age,
-    #     :agility,
-    #     :area_id,
-    #     :charisma,
-    #     :constitution,
-    #     :dexterity,
-    #     :eye_accent_color,
-    #     :eye_color,
-    #     :eye_color_type,
-    #     :height,
-    #     :hair_color,
-    #     :hair_length,
-    #     :hair_style,
-    #     :intelligence,
-    #     :name,
-    #     :player_id,
-    #     :position,
-    #     :race,
-    #     :reflexes,
-    #     :relative_item_id,
-    #     :relative_position,
-    #     :skin_tone,
-    #     :stamina,
-    #     :strength,
-    #     :wisdom,
-    #     :handedness
-    #   ]),
-    #   label: "attrs"
-    # )
-
     character
-    # |> Ecto.Changeset.change()
     |> Ecto.Changeset.cast(attrs, [
       :active,
       :age,
@@ -229,18 +193,21 @@ defmodule Mud.Engine.Character do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    area = Area.list_all() |> Enum.random()
+    area = Area.list_all() |> Enum.find(&(&1.name == "Water Fountain"))
 
     Logger.debug(inspect(area))
     Logger.debug(inspect(attrs))
 
     # TODO: Figure out where to create characters and how to present the options.
     # This random selection is just for prototype.
+    attrs =
+      attrs
+      |> Map.put("area_id", area.id)
+      |> Map.put("moved_at", DateTime.utc_now())
 
     result =
       %__MODULE__{}
-      |> changeset(Map.put(attrs, "area_id", area.id))
-      |> changeset(Map.put(attrs, "moved_at", DateTime.utc_now()))
+      |> changeset(attrs)
       |> Repo.insert()
 
     case result do
@@ -252,10 +219,6 @@ defmodule Mud.Engine.Character do
         :ok = Settings.create(%{character_id: character.id})
 
         character = Repo.preload(character, [:settings])
-
-        # Establish the known maps for a character
-        maps = Mud.Engine.Map.list_all()
-        mark_maps_as_known!(character, maps)
 
         setup_default_items(character)
 
@@ -428,8 +391,13 @@ defmodule Mud.Engine.Character do
   """
   @spec load_known_maps(String.t()) :: String.t()
   def load_known_maps(character_id) do
-    character = Repo.get!(Character, character_id) |> Repo.preload(:maps)
-    character.maps
+    from(
+      map in Mud.Engine.Map,
+      left_join: character_map in Mud.Engine.CharactersMaps,
+      on: character_map.map_id == map.id,
+      where: character_map.character_id == ^character_id or map.permanently_explored
+    )
+    |> Repo.all()
   end
 
   @doc """

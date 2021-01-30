@@ -17,6 +17,9 @@
   // All of the maps that can potentially be referenced by an outgoing/incoming link
   // export let mapsMap = {};
 
+  // All of the areas that the character knows about
+  export let exploredAreas = new Set();
+
   // All of the areas that need to be drawn on the map
   export let areas = [];
 
@@ -44,6 +47,8 @@
   export let svgMapAllowInterMapAreaSelection = false;
 
   export let zoomMultiplier = 1;
+
+  export let mapSettings = <Record<string, string>>{};
 
   const highlightColor = "#ff6600";
 
@@ -123,7 +128,9 @@
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
-          areasMap[link.fromId].mapId == areasMap[link.toId].mapId
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
+          exploredAreas.has(link.toId) &&
+          exploredAreas.has(link.fromId)
         );
       })
       .map((link) => {
@@ -156,7 +163,9 @@
           ((areasMap[link.fromId].mapId == chosenMap.id &&
             link.localToLabel != "") ||
             (areasMap[link.toId].mapId == chosenMap.id &&
-              link.localFromLabel != ""))
+              link.localFromLabel != "")) &&
+          exploredAreas.has(link.toId) &&
+          exploredAreas.has(link.fromId)
         );
       })
       .map((link) => {
@@ -229,6 +238,37 @@
     };
   }
 
+  $: existingUnexploredIntraMapLinks =
+    mapSelected && links != undefined && areasMap != undefined
+      ? buildExistingUnexploredIntraMapLinks()
+      : [];
+
+  // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
+  function buildExistingUnexploredIntraMapLinks() {
+    console.log("buildExistingIntraMapLinks");
+    return links
+      .filter((link) => {
+        return (
+          link.id != "" &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId == chosenMap.id &&
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
+          exploredAreas.has(link.fromId) &&
+          !exploredAreas.has(link.toId)
+        );
+      })
+      .map((link) => {
+        return buildUnexploredPathFromLink(
+          link,
+          areasMap[link.fromId].mapX,
+          areasMap[link.fromId].mapY,
+          areasMap[link.toId].mapX,
+          areasMap[link.toId].mapY
+        );
+      });
+  }
+
   $: existingIntraMapLinks =
     mapSelected && links != undefined && areasMap != undefined
       ? buildExistingIntraMapLinks()
@@ -244,7 +284,9 @@
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
-          areasMap[link.fromId].mapId == areasMap[link.toId].mapId
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
+          exploredAreas.has(link.toId) &&
+          exploredAreas.has(link.fromId)
         );
       })
       .map((link) => {
@@ -273,7 +315,9 @@
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
           (areasMap[link.fromId].mapId == chosenMap.id ||
-            areasMap[link.toId].mapId == chosenMap.id)
+            areasMap[link.toId].mapId == chosenMap.id) &&
+          exploredAreas.has(link.toId) &&
+          exploredAreas.has(link.fromId)
         );
       })
       .map((link) => {
@@ -414,6 +458,60 @@
     });
   }
 
+  function buildUnexploredPathFromLink(link, fromX, fromY, toX, toY) {
+    const gridSize = chosenMap.gridSize;
+    const viewSize = chosenMap.viewSize;
+
+    // (x1,y1)+λ⋅(x2−x1,y2−y1)
+
+    let x1 = fromX * gridSize + viewSize / 2;
+    let y1 = -fromY * gridSize + viewSize / 2;
+    let x2 = toX * gridSize + viewSize / 2;
+    let y2 = -toY * gridSize + viewSize / 2;
+    let distanceBetweenEndPoints = Math.sqrt(
+      Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
+    );
+    let desiredDistance = gridSize * 0.5;
+
+    let x3 = x1 + (desiredDistance / distanceBetweenEndPoints) * (x2 - x1);
+    let y3 = y1 + (desiredDistance / distanceBetweenEndPoints) * (y2 - y1);
+
+    // let delta = 0.33 * gridSize
+    // var startVec = new Victor(x1, y1);
+    // var endVec = new Victor(x2, y2);
+
+    // const unexploredVec = startVec.clone().mix(endVec, 0.5).normalize();
+
+    console.log("buildUnexploredPathFromLink");
+    console.log(x1);
+    console.log(y1);
+    console.log(x2);
+    console.log(y2);
+    console.log(distanceBetweenEndPoints);
+    console.log(desiredDistance);
+    console.log({ x: x3, y: y3 });
+    console.log(mapSettings);
+
+    return {
+      id: link.id,
+      type: "path",
+      x1: fromX * gridSize + viewSize / 2,
+      y1: -fromY * gridSize + viewSize / 2,
+      x2: x3,
+      y2: y3,
+      link: link,
+      lineWidth: link.lineWidth,
+      lineColor: mapSettings.unexplored_link_color,
+      lineDash: link.lineDash,
+      labelColor: mapSettings.unexplored_link_color,
+      hasMarker: false,
+      markerOffset: link.markerOffset,
+      markerColor: mapSettings.unexplored_link_color,
+      markerWidth: link.lineWidth * 3,
+      markerHeight: link.lineWidth * 3,
+    };
+  }
+
   function buildPathFromLink(link, fromX, fromY, toX, toY) {
     const gridSize = chosenMap.gridSize;
     const viewSize = chosenMap.viewSize;
@@ -453,7 +551,8 @@
         return (
           area.id != "" &&
           areasMap[area.id] != undefined &&
-          area.mapId == chosenMap.id
+          area.mapId == chosenMap.id &&
+          exploredAreas.has(area.id)
         );
       })
       .map((area) => {
@@ -534,7 +633,8 @@
         return (
           area.id != "" &&
           areasMap[area.id] != undefined &&
-          area.mapId != chosenMap.id
+          area.mapId != chosenMap.id &&
+          exploredAreas.has(area.id)
         );
       })
       .map((area) => {
@@ -564,13 +664,6 @@
 
           modifiedArea.mapX = link.localToX;
           modifiedArea.mapY = link.localToY;
-
-          console.log("buildExistingInterMapAreas");
-          console.log(modifiedArea);
-          console.log(areasMap[link.toId]);
-          console.log(areasMap[link.toId].mapId);
-          console.log(mapsMap[areasMap[link.toId].mapId]);
-          console.log(mapsMap);
 
           modifiedArea.name = `${mapsMap[areasMap[link.toId].mapId].name}, ${
             areasMap[link.toId].name
@@ -623,6 +716,7 @@
       ...highlightsForExistingIntraMapAreas,
       ...existingIntraMapLinks,
       ...existingInterMapLinks,
+      ...existingUnexploredIntraMapLinks,
       ...existingIntraMapAreas,
       ...existingInterMapAreas,
       ...existingIntraMapLinkText,

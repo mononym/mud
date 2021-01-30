@@ -2,7 +2,6 @@ defmodule MudWeb.CharacterController do
   use MudWeb, :controller
 
   alias Mud.Engine.{Area, Character}
-  alias Mud.Engine.Session
   alias Mud.Engine.Character.Settings
 
   require Logger
@@ -29,14 +28,10 @@ defmodule MudWeb.CharacterController do
   end
 
   def create(conn, character_params) do
-    starting_area =
-      Area.list_all()
-      |> Enum.random()
-
     params =
       character_params
+      |> Recase.Enumerable.convert_keys(&Recase.to_snake/1)
       |> Map.put("player_id", conn.assigns.player_id)
-      |> Map.put("area_id", starting_area.id)
 
     case Character.create(params) do
       {:ok, character} ->

@@ -17,7 +17,8 @@ defmodule MudWeb.MudClientView do
     %{
       mapData: %{
         areas: render_many(map_data.areas, MudWeb.AreaView, "area.json"),
-        links: render_many(map_data.links, MudWeb.LinkView, "link.json")
+        links: render_many(map_data.links, MudWeb.LinkView, "link.json"),
+        exploredAreas: map_data.explored_areas
       },
       inventory: render_many(inventory, MudWeb.ItemView, "item.json"),
       maps: render_many(maps, MudWeb.MapView, "map.json")

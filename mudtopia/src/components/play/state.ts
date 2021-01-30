@@ -133,6 +133,10 @@ export function createState() {
     <Record<string, ItemInterface[]>>{}
   );
 
+  // explored areas set
+  //    A set of ids of the areas known to the character in the current map.
+  const exploredAreas = writable(<Set<string>>new Set());
+
   // This is where all of the setup should occur for a character logging in.
   // This means getting data for the map where the character is, getting inventory data, getting room data
   async function initializeCharacter(character: CharacterInterface) {
@@ -146,6 +150,10 @@ export function createState() {
     console.log("initializeCharacter");
     console.log(res);
 
+    exploredAreas.set(new Set(res.mapData.exploredAreas));
+
+    console.log("knownMapsList");
+    console.log(res.maps);
     knownMapsList.set(res.maps);
     const newMapsIndex = res.maps.reduce(
       (obj, map) => ((obj[map.id] = map), obj),
@@ -153,6 +161,8 @@ export function createState() {
     );
     knownMapsIndex.set(newMapsIndex);
 
+    console.log("knownAreasForCharacterMap");
+    console.log(res.mapData.areas);
     knownAreasForCharacterMap.set(res.mapData.areas);
     const newAreasIndex = res.mapData.areas.reduce(
       (obj, area) => ((obj[area.id] = area), obj),
@@ -173,6 +183,19 @@ export function createState() {
 
     characterInitializing.set(false);
     characterInitialized.set(true);
+    console.log("selectedCharacter");
+    console.log(get(selectedCharacter));
+    console.log(get(knownAreasForCharacterMapIndex));
+    console.log(get(selectedCharacter)["areaId"]);
+    console.log(
+      get(knownAreasForCharacterMapIndex)[get(selectedCharacter)["areaId"]]
+    );
+    console.log(
+      knownMapsIndex[
+        get(knownAreasForCharacterMapIndex)[get(selectedCharacter).areaId].mapId
+      ]
+    );
+    console.log(get(selectedCharacter).areaId);
   }
 
   function setupInventory(items) {
@@ -692,6 +715,7 @@ export function createState() {
     mapZoomMultiplierIndex,
     mapAtMinZoom,
     mapAtMaxZoom,
+    exploredAreas,
     zoomMapIn,
     zoomMapOut,
     //

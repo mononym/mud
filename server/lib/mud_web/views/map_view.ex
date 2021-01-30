@@ -27,6 +27,14 @@ defmodule MudWeb.MapView do
     }
   end
 
+  def render("character_data.json", data) do
+    %{
+      areas: render_many(data.areas, AreaView, "area.json"),
+      links: render_many(data.links, LinkView, "link.json"),
+      exploredAreas: data.explored_areas
+    }
+  end
+
   def render("data.json", data) do
     %{
       areas: render_many(data.areas, AreaView, "area.json"),

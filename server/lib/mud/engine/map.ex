@@ -2,7 +2,7 @@ defmodule Mud.Engine.Map do
   use Ecto.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Area, Link}
+  alias Mud.Engine.{Area, Link, CharactersAreas}
   import Ecto.Query
   require Protocol
 
@@ -16,6 +16,7 @@ defmodule Mud.Engine.Map do
     field(:grid_size, :integer, default: 50)
     field(:minimum_zoom_index, :integer, default: 5)
     field(:maximum_zoom_index, :integer, default: 11)
+    field(:permanently_explored, :boolean, default: false)
 
     embeds_many :labels, Label, on_replace: :delete do
       @derive Jason.Encoder
@@ -112,11 +113,78 @@ defmodule Mud.Engine.Map do
   @doc """
   Returns a list of areas that are all related to a specific map.
 
+  This method takes into account what areas a character actually knows about. This means the areas are either always
+  known or they have been visited by the player, or the player has been otherwise made aware of the rooms.
+
+  ## Examples
+
+      iex> fetch_character_data(42)
+      %{areas: [%Area{}], links: [%Link{}]}
+
+  """
+  def fetch_character_data(character_id, map_id) do
+    # search the map for the areas that are either public knowledge or that the character has visited before.
+    # this means there may be some areas in the map which the player does not know about, which means there may be
+    # internal links which go between rooms where one room is known but the other is not. These links should be
+    # returned so that in the front end the map can be properly constructed to show a partial/unexplored link.
+
+    # All rooms character knows about or are public
+    known_or_public_areas_query = base_known_character_areas_query(character_id, map_id)
+
+    known_or_public_areas = known_or_public_areas_query |> Repo.all()
+
+    permanently_explored_area_ids =
+      Stream.filter(known_or_public_areas, & &1.permanently_explored) |> Enum.map(& &1.id)
+
+    known_area_ids = Enum.map(known_or_public_areas, & &1.id)
+
+    known_links = base_links_from_areas_query(known_or_public_areas_query) |> Repo.all()
+
+    external_ids =
+      known_links
+      |> Stream.flat_map(&[&1.to_id, &1.from_id])
+      |> Stream.uniq()
+      |> Enum.filter(&(&1 not in known_area_ids))
+
+    external_areas =
+      Repo.all(
+        from(
+          area in Area,
+          where: area.id in ^external_ids
+        )
+      )
+
+    all_area_ids = Enum.concat(known_area_ids, external_ids)
+
+    explored_character_areas =
+      Repo.all(
+        from(
+          character_area in CharactersAreas,
+          where:
+            character_area.character_id == ^character_id and
+              character_area.area_id in ^all_area_ids,
+          select: character_area.area_id
+        )
+      )
+
+    all_known_character_areas =
+      Enum.concat(permanently_explored_area_ids, explored_character_areas)
+
+    %{
+      areas: Enum.concat([external_areas, known_or_public_areas]),
+      links: known_links,
+      explored_areas: all_known_character_areas
+    }
+  end
+
+  @doc """
+  Returns a list of areas that are all related to a specific map.
+
   This includes areas that are linked to the areas that actually belong to the map
 
   ## Examples
 
-      iex> list_map_areas(42)
+      iex> fetch_data(42)
       %{areas: [%Area{}], links: [%Link{}]}
 
   """
@@ -210,7 +278,8 @@ defmodule Mud.Engine.Map do
       :view_size,
       :grid_size,
       :maximum_zoom_index,
-      :minimum_zoom_index
+      :minimum_zoom_index,
+      :permanently_explored
     ])
     |> validate_required([
       :name,
@@ -249,5 +318,25 @@ defmodule Mud.Engine.Map do
       :weight,
       :family
     ])
+  end
+
+  defp base_known_character_areas_query(character_id, map_id) do
+    from(
+      area in Area,
+      left_join: character_area in Mud.Engine.CharactersAreas,
+      on: character_area.area_id == area.id,
+      where:
+        area.map_id == ^map_id and
+          (character_area.character_id == ^character_id or area.permanently_explored)
+    )
+  end
+
+  defp base_links_from_areas_query(areas_query) do
+    areas_ids_query = from(area in areas_query, select: area.id)
+
+    from(
+      link in Link,
+      where: link.to_id in subquery(areas_ids_query) or link.from_id in subquery(areas_ids_query)
+    )
   end
 end

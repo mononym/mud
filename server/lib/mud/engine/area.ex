@@ -38,6 +38,7 @@ defmodule Mud.Engine.Area do
     field(:map_y, :integer, default: 0)
     field(:map_size, :integer, default: 21)
     field(:map_corners, :integer, default: 5)
+    field(:permanently_explored, :boolean, default: false)
 
     belongs_to(:map, Map, type: :binary_id)
 
@@ -221,7 +222,8 @@ defmodule Mud.Engine.Area do
       :map_corners,
       :border_color,
       :border_width,
-      :color
+      :color,
+      :permanently_explored
     ])
     |> validate_required([
       :name,

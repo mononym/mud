@@ -11,10 +11,12 @@ defmodule Mud.Repo.Migrations.CreateMaps do
       add(:minimum_zoom_index, :integer)
       add(:maximum_zoom_index, :integer)
       add(:labels, {:array, :map}, default: [])
+      add(:permanently_explored, :boolean, default: false)
 
       timestamps()
     end
 
     create(unique_index(:maps, [:name]))
+    create(index(:maps, [:permanently_explored]))
   end
 end

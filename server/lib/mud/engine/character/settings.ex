@@ -18,6 +18,12 @@ defmodule Mud.Engine.Character.Settings do
       field(:multiple_matches_mode, :string, default: "alert")
     end
 
+    embeds_one :map_window, MapWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:unexplored_link_color, :string, default: "#5bc0de")
+    end
+
     embeds_one :area_window, AreaWindow, on_replace: :delete do
       @derive Jason.Encoder
 
@@ -182,6 +188,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:inventory_window, with: &inventory_window_changeset/2)
     |> cast_embed(:area_window, with: &area_window_changeset/2)
     |> cast_embed(:commands, with: &commands_changeset/2)
+    |> cast_embed(:map_window, with: &map_window_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -233,6 +240,15 @@ defmodule Mud.Engine.Character.Settings do
       :window_lock_locked,
       :window_move_unlocked,
       :window_move_locked
+    ])
+    |> validate_required([])
+  end
+
+  defp map_window_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :unexplored_link_color
     ])
     |> validate_required([])
   end
@@ -527,6 +543,7 @@ defmodule Mud.Engine.Character.Settings do
 
     attrs = insert_default_area_window_settings(attrs)
     attrs = insert_default_inventory_window_settings(attrs)
+    attrs = insert_default_map_window_settings(attrs)
     attrs = insert_default_commands_settings(attrs)
 
     Logger.debug(inspect(attrs))
@@ -582,6 +599,12 @@ defmodule Mud.Engine.Character.Settings do
   # Default settings helper functions
   #
   #
+
+  defp insert_default_map_window_settings(attrs) do
+    Map.put(attrs, :map_window, %{
+      unexplored_link_color: "#f0ad4e"
+    })
+  end
 
   defp insert_default_area_window_settings(attrs) do
     Map.put(attrs, :area_window, %{

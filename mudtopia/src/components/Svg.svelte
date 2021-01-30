@@ -25,8 +25,6 @@
             refX={shape.lineWidth * 2 + shape.markerOffset}
             refY={shape.lineWidth}
             orient="auto">
-            <!-- <path d="M2,2 L2,13 L8,7 L2,2" style="fill: {shape.markerColor};" /> -->
-            <!-- <polygon points="10 0, 10 7, 0 3.5" fill={shape.markerColor} /> -->
             <polygon
               points="0 0, {shape.lineWidth *
                 2} {shape.lineWidth}, 0 {shape.lineWidth * 2}"

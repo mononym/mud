@@ -54,7 +54,7 @@ defmodule MudWeb.MudClientController do
     character_area = Area.get!(character.area_id)
 
     # Internal/external areas for a map, and all links between said areas
-    map_data = Map.fetch_data(character_area.map_id)
+    map_data = Map.fetch_character_data(character_id, character_area.map_id)
 
     # load inventory data
     inventory = Item.list_held_or_worn_items_and_children(character_id)

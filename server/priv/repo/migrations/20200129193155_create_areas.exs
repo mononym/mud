@@ -12,12 +12,12 @@ defmodule Mud.Repo.Migrations.CreateAreas do
       add(:border_width, :integer)
       add(:border_color, :string)
       add(:color, :string)
+      add(:permanently_explored, :boolean, default: false)
 
       timestamps()
     end
 
     create(index(:areas, [:name]))
-    create(index(:areas, [:map_x]))
-    create(index(:areas, [:map_y]))
+    create(index(:areas, [:permanently_explored]))
   end
 end

@@ -589,7 +589,9 @@
         style="background-color:{$characterSettings.colors
           .window_toolbar_background};color:{$characterSettings.colors
           .window_toolbar_label}"
-      >Area Window</h2>
+      >
+        Area Window
+      </h2>
       <div class="col-span-12">
         <label
           for="areaWindowBackgroundColor"
@@ -627,7 +629,8 @@
           id="descriptionExpansionMode"
           bind:value={$characterSettings.areaWindow.description_expansion_mode}
           name="descriptionExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>manual</option>
           <option>open</option>
           <option>close</option>
@@ -658,7 +661,8 @@
           id="toiExpansionMode"
           bind:value={$characterSettings.areaWindow.toi_expansion_mode}
           name="toiExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>manual</option>
           <option>manual-threshold</option>
           <option>open</option>
@@ -706,7 +710,8 @@
           id="onGroundExpansionMode"
           bind:value={$characterSettings.areaWindow.on_ground_expansion_mode}
           name="onGroundExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>manual</option>
           <option>manual-threshold</option>
           <option>open</option>
@@ -754,7 +759,8 @@
           id="alsoPresentExpansionMode"
           bind:value={$characterSettings.areaWindow.also_present_expansion_mode}
           name="alsoPresentExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>manual</option>
           <option>manual-threshold</option>
           <option>open</option>
@@ -803,7 +809,8 @@
           id="exitsExpansionMode"
           bind:value={$characterSettings.areaWindow.exits_expansion_mode}
           name="exitsExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>manual</option>
           <option>manual-threshold</option>
           <option>open</option>
@@ -837,7 +844,8 @@
           id="overallExpansionMode"
           bind:value={$characterSettings.areaWindow.total_collapse_mode}
           name="overallExpansionMode"
-          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
           <option>largest</option>
           <option>smallest</option>
           <option>all</option>
@@ -976,7 +984,9 @@
         style="background-color:{$characterSettings.colors
           .window_toolbar_background};color:{$characterSettings.colors
           .window_toolbar_label}"
-      >Inventory Window</h2>
+      >
+        Inventory Window
+      </h2>
       <div class="col-span-4">
         <label
           for="inventoryWindowBackgroundColor"
@@ -1172,18 +1182,48 @@
       </div>
     </div>
 
+    <div
+      class="col-span-4 grid grid-cols-8 gap-4"
+      style="background-color:{$characterSettings.inventoryWindow.background}"
+    >
+      <h2
+        class="text-center text-white border-b-2 border-black col-span-8"
+        style="background-color:{$characterSettings.colors
+          .window_toolbar_background};color:{$characterSettings.colors
+          .window_toolbar_label}"
+      >
+        Map Window
+      </h2>
+      <div class="col-span-4">
+        <label
+          for="unexploredLinkColor"
+          style="color:{$characterSettings.mapWindow.unexplored_link_color}"
+          class="block text-sm font-medium">Unexplored Link Color</label
+        >
+        <input
+          bind:value={$characterSettings.mapWindow.unexplored_link_color}
+          type="color"
+          name="unexploredLinkColor"
+          id="unexploredLinkColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
     <div class="px-4 py-3 text-right sm:px-6">
       <button
         disabled={!settingsChanged}
         type="submit"
         class="{!settingsChanged
           ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
-          : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
         Save
       </button>
       <button
         on:click|preventDefault={resetCharacterSettings}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+      >
         Reset
       </button>
     </div>

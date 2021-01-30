@@ -3,7 +3,7 @@ defmodule MudWeb.MapController do
 
   alias Mud.Engine.{Map}
 
-  action_fallback MudWeb.FallbackController
+  action_fallback(MudWeb.FallbackController)
 
   def index(conn, _params) do
     maps = Map.list_all()
@@ -26,6 +26,7 @@ defmodule MudWeb.MapController do
 
   def update(conn, %{"id" => id, "map" => map_params}) do
     map = Map.get!(id)
+
     with {:ok, %Map{} = map} <- Map.update(map, map_params) do
       render(conn, "show.json", map: map)
     end
@@ -37,6 +38,10 @@ defmodule MudWeb.MapController do
     with {:ok, %Map{}} <- Map.delete(map) do
       send_resp(conn, :no_content, "")
     end
+  end
+
+  def fetch_character_data(conn, %{"character_id" => character_id, "map_id" => map_id}) do
+    render(conn, "character_data.json", Map.fetch_character_data(character_id, map_id))
   end
 
   def fetch_data(conn, %{"map_id" => map_id}) do

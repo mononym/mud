@@ -18,7 +18,8 @@ alias Mud.Engine.{Map, Area, Link}
     description: "The complete grounds of the Torinthian Royal Palace",
     map_size: 5000,
     grid_size: 50,
-    labels: [%{text: "Hello World"}]
+    labels: [%{text: "Hello World"}],
+    permanently_explored: true
   })
 
 {:ok, map2} =
@@ -49,7 +50,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "Water Fountain",
     description:
-      "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors."
+      "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors.",
+    permanently_explored: true
   })
 
 {:ok, east_room} =
@@ -60,7 +62,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "East Garden Path",
     description:
-      "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
+      "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, west_room} =
@@ -71,7 +74,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "West Garden Path",
     description:
-      "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
+      "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, north_room} =
@@ -82,7 +86,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "North Garden Path",
     description:
-      "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction."
+      "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, south_room} =
@@ -93,7 +98,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "South Garden Path",
     description:
-      "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle."
+      "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle.",
+    permanently_explored: true
   })
 
 {:ok, northeast_room} =
@@ -104,7 +110,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "NorthEast Garden Path",
     description:
-      "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
+      "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, southeast_room} =
@@ -115,7 +122,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "SouthEast Garden Path",
     description:
-      "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
+      "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, northwest_room} =
@@ -126,7 +134,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "NorthWest Garden Path",
     description:
-      "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
+      "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 {:ok, southwest_room} =
@@ -137,7 +146,8 @@ alias Mud.Engine.{Map, Area, Link}
     map_id: map.id,
     name: "SouthWest Garden Path",
     description:
-      "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction."
+      "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
+    permanently_explored: true
   })
 
 # Maze
