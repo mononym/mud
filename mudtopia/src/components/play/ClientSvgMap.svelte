@@ -256,6 +256,7 @@
   function buildExistingUnexploredIntraMapLinks() {
     console.log("buildExistingIntraMapLinks");
     console.log(exploredAreas);
+
     return links
       .filter((link) => {
         return (
@@ -275,6 +276,38 @@
           areasMap[link.fromId].mapY,
           areasMap[link.toId].mapX,
           areasMap[link.toId].mapY
+        );
+      });
+  }
+
+  $: existingUnexploredInterMapLinks =
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
+      ? buildExistingUnexploredInterMapLinks()
+      : [];
+
+  function buildExistingUnexploredInterMapLinks() {
+    return links
+      .filter((link) => {
+        return (
+          link.id != "" &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
+          areasMap[link.fromId].mapId == chosenMap.id &&
+          !exploredAreas.includes(link.toId) &&
+          exploredAreas.includes(link.fromId)
+        );
+      })
+      .map((link) => {
+        return buildUnexploredPathFromLink(
+          link,
+          areasMap[link.fromId].mapX,
+          areasMap[link.fromId].mapY,
+          link.localToX,
+          link.localToY
         );
       });
   }
@@ -343,13 +376,31 @@
 
   function buildInterMapLink(link) {
     console.log("buildInterMapLink");
-    const modifiedLink = { ...link };
+    const modifiedLink = buildModifiedLocalLink(link);
     let toX;
     let toY;
     let fromX;
     let fromY;
 
     // incoming
+    if (areasMap[link.toId].mapId == chosenMap.id) {
+      fromX = link.localFromX;
+      fromY = link.localFromY;
+      toX = areasMap[link.toId].mapX;
+      toY = areasMap[link.toId].mapY;
+    } else {
+      toX = link.localToX;
+      toY = link.localToY;
+      fromX = areasMap[link.fromId].mapX;
+      fromY = areasMap[link.fromId].mapY;
+    }
+
+    return buildPathFromLink(link, fromX, fromY, toX, toY);
+  }
+
+  function buildModifiedLocalLink(link) {
+    const modifiedLink = { ...link };
+
     if (areasMap[link.toId].mapId == chosenMap.id) {
       modifiedLink.label = link.localFromLabel;
       modifiedLink.labelFontSize = link.localFromLabelFontSize;
@@ -360,10 +411,6 @@
       modifiedLink.lineColor = link.localFromLineColor;
       modifiedLink.lineDash = link.localFromLineDash;
       modifiedLink.lineWidth = link.localFromLineWidth;
-      fromX = link.localFromX;
-      fromY = link.localFromY;
-      toX = areasMap[link.toId].mapX;
-      toY = areasMap[link.toId].mapY;
     } else {
       modifiedLink.label = link.localToLabel;
       modifiedLink.labelFontSize = link.localToLabelFontSize;
@@ -374,13 +421,9 @@
       modifiedLink.lineColor = link.localToLineColor;
       modifiedLink.lineDash = link.localToLineDash;
       modifiedLink.lineWidth = link.localToLineWidth;
-      toX = link.localToX;
-      toY = link.localToY;
-      fromX = areasMap[link.fromId].mapX;
-      fromY = areasMap[link.fromId].mapY;
     }
 
-    return buildPathFromLink(link, fromX, fromY, toX, toY);
+    return modifiedLink;
   }
 
   $: highlightsForExistingIntraMapLinks =
@@ -727,6 +770,7 @@
       ...existingIntraMapLinks,
       ...existingInterMapLinks,
       ...existingUnexploredIntraMapLinks,
+      ...existingUnexploredInterMapLinks,
       ...existingIntraMapAreas,
       ...existingInterMapAreas,
       ...existingIntraMapLinkText,
