@@ -18,7 +18,7 @@
   // export let mapsMap = {};
 
   // All of the areas that the character knows about
-  export let exploredAreas = new Set();
+  export let exploredAreas = [];
 
   // All of the areas that need to be drawn on the map
   export let areas = [];
@@ -113,7 +113,10 @@
   }
 
   $: existingIntraMapLinkText =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
       ? buildExistingIntraMapLinkText()
       : [];
 
@@ -129,8 +132,8 @@
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
           areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
-          exploredAreas.has(link.toId) &&
-          exploredAreas.has(link.fromId)
+          exploredAreas.includes(link.toId) &&
+          exploredAreas.includes(link.fromId)
         );
       })
       .map((link) => {
@@ -145,7 +148,10 @@
   }
 
   $: existingInterMapLinkText =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
       ? buildExistingInterMapLinkText()
       : [];
 
@@ -164,8 +170,8 @@
             link.localToLabel != "") ||
             (areasMap[link.toId].mapId == chosenMap.id &&
               link.localFromLabel != "")) &&
-          exploredAreas.has(link.toId) &&
-          exploredAreas.has(link.fromId)
+          exploredAreas.includes(link.toId) &&
+          exploredAreas.includes(link.fromId)
         );
       })
       .map((link) => {
@@ -239,13 +245,17 @@
   }
 
   $: existingUnexploredIntraMapLinks =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
       ? buildExistingUnexploredIntraMapLinks()
       : [];
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildExistingUnexploredIntraMapLinks() {
     console.log("buildExistingIntraMapLinks");
+    console.log(exploredAreas);
     return links
       .filter((link) => {
         return (
@@ -254,8 +264,8 @@
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
           areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
-          exploredAreas.has(link.fromId) &&
-          !exploredAreas.has(link.toId)
+          exploredAreas.includes(link.fromId) &&
+          !exploredAreas.includes(link.toId)
         );
       })
       .map((link) => {
@@ -270,7 +280,10 @@
   }
 
   $: existingIntraMapLinks =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
       ? buildExistingIntraMapLinks()
       : [];
 
@@ -285,8 +298,8 @@
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
           areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
-          exploredAreas.has(link.toId) &&
-          exploredAreas.has(link.fromId)
+          exploredAreas.includes(link.toId) &&
+          exploredAreas.includes(link.fromId)
         );
       })
       .map((link) => {
@@ -301,7 +314,10 @@
   }
 
   $: existingInterMapLinks =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    exploredAreas != undefined
       ? buildExistingInterMapLinks()
       : [];
 
@@ -316,8 +332,8 @@
           areasMap[link.fromId].mapId != areasMap[link.toId].mapId &&
           (areasMap[link.fromId].mapId == chosenMap.id ||
             areasMap[link.toId].mapId == chosenMap.id) &&
-          exploredAreas.has(link.toId) &&
-          exploredAreas.has(link.fromId)
+          exploredAreas.includes(link.toId) &&
+          exploredAreas.includes(link.fromId)
         );
       })
       .map((link) => {
@@ -462,8 +478,6 @@
     const gridSize = chosenMap.gridSize;
     const viewSize = chosenMap.viewSize;
 
-    // (x1,y1)+λ⋅(x2−x1,y2−y1)
-
     let x1 = fromX * gridSize + viewSize / 2;
     let y1 = -fromY * gridSize + viewSize / 2;
     let x2 = toX * gridSize + viewSize / 2;
@@ -475,22 +489,6 @@
 
     let x3 = x1 + (desiredDistance / distanceBetweenEndPoints) * (x2 - x1);
     let y3 = y1 + (desiredDistance / distanceBetweenEndPoints) * (y2 - y1);
-
-    // let delta = 0.33 * gridSize
-    // var startVec = new Victor(x1, y1);
-    // var endVec = new Victor(x2, y2);
-
-    // const unexploredVec = startVec.clone().mix(endVec, 0.5).normalize();
-
-    console.log("buildUnexploredPathFromLink");
-    console.log(x1);
-    console.log(y1);
-    console.log(x2);
-    console.log(y2);
-    console.log(distanceBetweenEndPoints);
-    console.log(desiredDistance);
-    console.log({ x: x3, y: y3 });
-    console.log(mapSettings);
 
     return {
       id: link.id,
@@ -541,18 +539,25 @@
     areas != undefined &&
     areasMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
-    svgMapAllowInterMapAreaSelection != undefined
+    svgMapAllowInterMapAreaSelection != undefined &&
+    exploredAreas != undefined
       ? buildExistingIntraMapAreas()
       : [];
 
   function buildExistingIntraMapAreas() {
+    console.log("buildExistingIntraMapAreas");
+    console.log(exploredAreas);
     return areas
       .filter((area) => {
+        console.log({
+          area: area.id,
+          explored: exploredAreas.includes(area.id),
+        });
         return (
           area.id != "" &&
           areasMap[area.id] != undefined &&
           area.mapId == chosenMap.id &&
-          exploredAreas.has(area.id)
+          exploredAreas.includes(area.id)
         );
       })
       .map((area) => {
@@ -561,7 +566,10 @@
   }
 
   $: highlightsForExistingIntraMapAreas =
-    mapSelected && areasMap != undefined && highlightedAreaIds.length > 0
+    mapSelected &&
+    areasMap != undefined &&
+    highlightedAreaIds.length > 0 &&
+    exploredAreas != undefined
       ? buildHighlightsForExistingIntraMapAreas()
       : [];
 
@@ -570,7 +578,8 @@
       .filter((areaId) => {
         return (
           areasMap[areaId] != undefined &&
-          areasMap[areaId].mapId == chosenMap.id
+            areasMap[areaId].mapId == chosenMap.id,
+          exploredAreas.includes(areaId)
         );
       })
       .map((areaId) => {
@@ -622,7 +631,8 @@
     chosenMap != undefined &&
     mapsMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
-    svgMapAllowInterMapAreaSelection != undefined
+    svgMapAllowInterMapAreaSelection != undefined &&
+    exploredAreas != undefined
       ? buildExistingInterMapAreas()
       : [];
 
@@ -634,7 +644,7 @@
           area.id != "" &&
           areasMap[area.id] != undefined &&
           area.mapId != chosenMap.id &&
-          exploredAreas.has(area.id)
+          exploredAreas.includes(area.id)
         );
       })
       .map((area) => {

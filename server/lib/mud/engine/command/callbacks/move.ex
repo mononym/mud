@@ -21,7 +21,7 @@ defmodule Mud.Engine.Command.Move do
   """
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Area, Link, Item}
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateExploredArea}
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Message
@@ -176,6 +176,46 @@ defmodule Mud.Engine.Command.Move do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
     area = Area.get!(link.to_id)
+
+    # check if area has already been explored. If it has do nothing. If not insert a record to say there was a visit
+    # and add an event to the front end to send the updated area
+    context =
+      if not Area.has_been_explored?(area.id, context.character.id) do
+        # TODO: grab unexplored areas and links that are connected to this new area and send them along
+        # Only grab links and areas for places that are unexplored
+        # explored areas with links between them, not including this new one, will already have been loaded into the front end
+
+        # So...get unexplored links and areas which come from one spot and belong to a character
+        # make this call before the newly explored area has been updated so proper detection can be done of what links/areas need to be loaded
+        # up and sent to the front end
+
+        unexplored_areas =
+          Area.list_unexplored_areas_linked_to_area(area.id, context.character.id)
+
+        IO.inspect(unexplored_areas, label: :unexplored_areas)
+
+        unexplored_area_ids = Enum.map(unexplored_areas, & &1.id)
+
+        IO.inspect(unexplored_area_ids, label: :unexplored_area_ids)
+        unexplored_links = Link.list_links_between_areas(area.id, unexplored_area_ids)
+
+        IO.inspect(unexplored_links, label: :unexplored_links)
+
+        Area.mark_as_explored(area.id, context.character.id)
+
+        Context.append_event(
+          context,
+          context.character.id,
+          UpdateExploredArea.new(%{
+            action: :add,
+            areas: unexplored_areas,
+            links: unexplored_links,
+            explored: [area.id]
+          })
+        )
+      else
+        context
+      end
 
     items_are_scenery =
       Item.list_in_area(area.id)

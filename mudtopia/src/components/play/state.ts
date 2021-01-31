@@ -135,7 +135,7 @@ export function createState() {
 
   // explored areas set
   //    A set of ids of the areas known to the character in the current map.
-  const exploredAreas = writable(<Set<string>>new Set());
+  const exploredAreas = writable(<string[]>[]);
 
   // This is where all of the setup should occur for a character logging in.
   // This means getting data for the map where the character is, getting inventory data, getting room data
@@ -150,7 +150,7 @@ export function createState() {
     console.log("initializeCharacter");
     console.log(res);
 
-    exploredAreas.set(new Set(res.mapData.exploredAreas));
+    exploredAreas.set(res.mapData.exploredAreas);
 
     console.log("knownMapsList");
     console.log(res.maps);
@@ -576,9 +576,61 @@ export function createState() {
       }
     });
 
+    newChannel.on("update:explored_areas", async function (msg) {
+      console.log("received an update for updating known areas");
+      console.log(msg);
+
+      if (msg.action == "add") {
+        addExploredAreas(msg);
+      }
+    });
+
     newChannel.join();
 
     channel.set(newChannel);
+  }
+
+  function addExploredAreas(msg) {
+    const ids = msg.areas.map((area) => area.id);
+
+    console.log("addExploredAreas:knownAreasForCharacterMap");
+    console.log(ids);
+    console.log(get(exploredAreas));
+    console.log([...get(exploredAreas), ...msg.explored]);
+    console.log(get(exploredAreas));
+
+    console.log("addExploredAreas:knownAreasForCharacterMap");
+    console.log(get(knownAreasForCharacterMap));
+    knownAreasForCharacterMap.set(
+      [...msg.areas, ...get(knownAreasForCharacterMap)].filter(
+        (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+      )
+    );
+    console.log(get(knownAreasForCharacterMap));
+
+    knownAreasForCharacterMapIndex.update(function (index) {
+      msg.areas.forEach((area) => {
+        index[area.id] = area;
+      });
+      return index;
+    });
+
+    knownLinksForCharacterMap.set(
+      [...msg.links, ...get(knownLinksForCharacterMap)].filter(
+        (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+      )
+    );
+
+    knownLinksForCharacterIndex.update(function (index) {
+      msg.links.forEach((link) => {
+        index[link.id] = link;
+      });
+      return index;
+    });
+
+    console.log("addExploredAreas");
+    console.log(get(knownAreasForCharacterMapIndex));
+    exploredAreas.set([...get(exploredAreas), ...msg.explored]);
   }
 
   const endingGameSession = writable(false);

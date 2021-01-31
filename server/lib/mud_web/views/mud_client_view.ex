@@ -37,6 +37,17 @@ defmodule MudWeb.MudClientView do
     }
   end
 
+  def render("update_explored_area.json", %{
+        event: event = %Mud.Engine.Event.Client.UpdateExploredArea{}
+      }) do
+    %{
+      action: event.action,
+      areas: render_many(event.areas, MudWeb.AreaView, "area.json"),
+      links: render_many(event.links, MudWeb.LinkView, "link.json"),
+      explored: event.explored
+    }
+  end
+
   def render("update_inventory.json", %{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
     %{
       action: event.action,

@@ -468,6 +468,11 @@ defmodule Mud.Engine.Session do
      Phoenix.View.render_one(event, MudWeb.MudClientView, "update_area.json", as: :event)}
   end
 
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredArea{}}) do
+    {:update_explored_area,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_area.json", as: :event)}
+  end
+
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
     {:update_character, event.character}
   end

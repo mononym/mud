@@ -2,7 +2,7 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, Link, Item, Map, Message}
+  alias Mud.Engine.{Character, CharactersAreas, Link, Item, Map, Message}
   alias Mud.Engine.Message.StoryOutput
   import Ecto.Query
   require Logger
@@ -204,6 +204,66 @@ defmodule Mud.Engine.Area do
     Repo.delete(area)
   end
 
+  @doc """
+  Determine whether or not an area has been visited before by a character
+  """
+  def has_been_explored?(new_area_id, character_id) do
+    Mud.Repo.one(
+      from(area in Mud.Engine.Area,
+        left_join: character_area in Mud.Engine.CharactersAreas,
+        on: character_area.area_id == area.id,
+        where:
+          area.id == ^new_area_id and
+            (character_area.character_id == ^character_id or area.permanently_explored),
+        select: count(area.id)
+      )
+    ) == 1
+  end
+
+  def mark_as_explored(area_id, character_id) do
+    change(%Mud.Engine.CharactersAreas{}, %{
+      character_id: character_id,
+      area_id: area_id
+    })
+    |> Repo.insert()
+  end
+
+  @doc """
+  Given a specific area id, find and list all of the areas linked to it which a character has not explored yet.
+  """
+  def list_unexplored_areas_linked_to_area(area_id, character_id) do
+    # from area
+    # find all links
+    # find all areas on other side of links
+    # return only areas which are not explored
+
+    # area by id
+    # links from area where from area is area.id select to.id
+    # areas on other side of link subquery where unexplored
+    to_area_ids_query = Link.link_to_area_ids_from_area_ids([area_id])
+
+    explored_ids =
+      CharactersAreas.explored_ids_from_area_ids_subquery(to_area_ids_query, character_id)
+
+    from(area in base_area_query(),
+      where:
+        area.id in subquery(to_area_ids_query) and area.permanently_explored == false and
+          area.id not in subquery(explored_ids)
+    )
+    |> Repo.all()
+
+    # Mud.Repo.one(
+    #   from(area in Mud.Engine.Area,
+    #     left_join: character_area in Mud.Engine.CharactersAreas,
+    #     on: character_area.area_id == area.id,
+    #     where:
+    #       area.id == ^new_area_id and
+    #         (character_area.character_id == ^character_id or area.permanently_explored),
+    #     select: count(area.id)
+    #   )
+    # ) == 1
+  end
+
   #
   # Private Functions
   #
@@ -271,6 +331,61 @@ defmodule Mud.Engine.Area do
     area = get!(area_id)
     long_description_to_story_output(area, character)
   end
+
+  #
+  #
+  # Area Queries for use internally and externally
+  #
+  #
+
+  @doc """
+  Basic query for finding areas. Nothing fancy, no preloads.
+  """
+  def base_area_query do
+    from(area in __MODULE__)
+  end
+
+  @doc """
+  Extends `base_area_query` by filtering out areas which don't exactly match an id
+  """
+  def area_by_id_query(id) do
+    from(area in base_area_query(),
+      where: area.id == ^id
+    )
+  end
+
+  @doc """
+  Extends `base_area_query` by filtering out areas which don't exactly match a name
+  """
+  def area_by_exact_name_query(name) do
+    from(area in base_area_query(),
+      where: area.name == ^name
+    )
+  end
+
+  @doc """
+  Extends `base_area_query` by filtering out areas which don't match a like query for the name
+  """
+  def area_by_like_name_query(name) do
+    from(area in base_area_query(),
+      where: like(area.name, ^name)
+    )
+  end
+
+  @doc """
+  Extends `base_area_query` by only returning areas which are unexplored
+  """
+  def area_unexplored_query() do
+    from(area in base_area_query(),
+      where: area
+    )
+  end
+
+  #
+  #
+  # Private/Helper functions
+  #
+  #
 
   defp build_area_name(story_output, area) do
     Message.append_text(story_output, "[#{area.name}]\n", "area_name")

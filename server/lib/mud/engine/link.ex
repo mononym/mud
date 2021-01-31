@@ -190,6 +190,30 @@ defmodule Mud.Engine.Link do
 
   ## Examples
 
+      iex> list_links_between_areas("valid room id")
+      [%__MODULE__{}, ...]
+
+  """
+  @spec list_links_between_areas(
+          from_area_ids :: String.t() | [String.t()],
+          to_area_ids :: String.t() | [String.t()]
+        ) :: [%__MODULE__{}] | []
+  def list_links_between_areas(from_area_ids, to_area_ids) do
+    from_area_ids = List.wrap(from_area_ids)
+    to_area_ids = List.wrap(to_area_ids)
+
+    Repo.all(
+      from(link in __MODULE__,
+        where: link.from_id in ^from_area_ids and link.to_id in ^to_area_ids
+      )
+    )
+  end
+
+  @doc """
+  Returns the list of links "from" a room where the type of the link is "obvious".
+
+  ## Examples
+
       iex> list_obvious_exits_in_area("valid room id")
       [%__MODULE__{}, ...]
 
@@ -343,5 +367,40 @@ defmodule Mud.Engine.Link do
 
   def long_description(link) do
     link.long_description
+  end
+
+  #
+  #
+  # Link Queries for use internally and externally
+  #
+  #
+
+  @doc """
+  Basic query for finding links. Nothing fancy, no preloads.
+  """
+  def base_link_query do
+    from(link in __MODULE__)
+  end
+
+  @doc """
+  Takes in a list of ids which returns area ids and returns a query which returns all area id's that links from that
+  area lead to.
+  """
+  def link_to_area_ids_from_area_ids(area_ids) do
+    from(link in base_link_query(),
+      where: link.from_id in ^area_ids,
+      select: link.to_id
+    )
+  end
+
+  @doc """
+  Takes in a subquery which returns area ids and returns a query which returns all area id's that links from that
+  area lead to.
+  """
+  def link_to_area_ids_from_area_subquery(area_subquery) do
+    from(link in base_link_query(),
+      where: link.from_id in subquery(area_subquery),
+      select: link.to_id
+    )
   end
 end
