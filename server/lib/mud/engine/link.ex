@@ -301,7 +301,6 @@ defmodule Mud.Engine.Link do
     link
     |> __MODULE__.changeset(attrs)
     |> Repo.update()
-    |> IO.inspect()
   end
 
   @doc """

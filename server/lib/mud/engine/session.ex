@@ -473,6 +473,16 @@ defmodule Mud.Engine.Session do
      Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_area.json", as: :event)}
   end
 
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredMap{}}) do
+    {:update_explored_map,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_map.json", as: :event)}
+  end
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateMap{}}) do
+    {:update_map,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_map.json", as: :event)}
+  end
+
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
     {:update_character, event.character}
   end

@@ -165,7 +165,9 @@ defmodule Mud.Engine.Command.Executor do
   end
 
   defp process_events(context) do
-    Enum.each(context.events, fn event ->
+    context.events
+    |> Enum.reverse()
+    |> Enum.each(fn event ->
       Mud.Engine.Session.cast_message_or_event(event)
     end)
 
@@ -173,7 +175,9 @@ defmodule Mud.Engine.Command.Executor do
   end
 
   defp process_messages(context) do
-    Enum.each(context.messages, fn message ->
+    context.messages
+    |> Enum.reverse()
+    |> Enum.each(fn message ->
       Mud.Engine.Session.cast_message_or_event(message)
     end)
 

@@ -197,7 +197,6 @@ defmodule Mud.Engine.Command.Open do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        IO.inspect(area_matches, label: :area_matches)
         handle_search_results(context, {:ok, CallbackUtil.sort_items(area_matches)})
 
       _ ->

@@ -163,19 +163,7 @@ export function createState() {
 
     console.log("knownAreasForCharacterMap");
     console.log(res.mapData.areas);
-    knownAreasForCharacterMap.set(res.mapData.areas);
-    const newAreasIndex = res.mapData.areas.reduce(
-      (obj, area) => ((obj[area.id] = area), obj),
-      {}
-    );
-    knownAreasForCharacterMapIndex.set(newAreasIndex);
-
-    knownLinksForCharacterMap.set(res.mapData.links);
-    const newLinksIndex = res.mapData.links.reduce(
-      (obj, area) => ((obj[area.id] = area), obj),
-      {}
-    );
-    knownLinksForCharacterIndex.set(newLinksIndex);
+    resetMapData(res.mapData);
 
     setupInventory(res.inventory);
 
@@ -395,12 +383,11 @@ export function createState() {
   async function zoomMapOut() {
     if (get(mapZoomMultiplierIndex) < get(mapZoomMultipliers).length - 1) {
       mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) + 1);
-      console.log(get(mapZoomMultiplierIndex));
 
       let areaId = get(selectedCharacter).areaId;
       let area = get(knownAreasForCharacterMapIndex)[areaId];
       let map = get(knownMapsIndex)[area.mapId];
-      console.log(map);
+      
       if (map.maximumZoomIndex == get(mapZoomMultiplierIndex)) {
         mapAtMaxZoom.set(true);
       } else {
@@ -412,12 +399,11 @@ export function createState() {
   async function zoomMapIn() {
     if (get(mapZoomMultiplierIndex) > 0) {
       mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) - 1);
-      console.log(get(mapZoomMultiplierIndex));
 
       let areaId = get(selectedCharacter).areaId;
       let area = get(knownAreasForCharacterMapIndex)[areaId];
       let map = get(knownMapsIndex)[area.mapId];
-      console.log(map);
+      
       if (map.minimumZoomIndex == get(mapZoomMultiplierIndex)) {
         mapAtMinZoom.set(true);
       } else {
@@ -576,6 +562,15 @@ export function createState() {
       }
     });
 
+    newChannel.on("update:map", async function (msg) {
+      console.log("received an update for map");
+      console.log(msg);
+
+      if (msg.action == "move") {
+        resetMapData(msg);
+      }
+    });
+
     newChannel.on("update:explored_areas", async function (msg) {
       console.log("received an update for updating known areas");
       console.log(msg);
@@ -585,28 +580,58 @@ export function createState() {
       }
     });
 
+    newChannel.on("update:explored_maps", async function (msg) {
+      console.log("received an update for updating known maps");
+      console.log(msg);
+
+      if (msg.action == "add") {
+        addExploredMaps(msg);
+      }
+    });
+
     newChannel.join();
 
     channel.set(newChannel);
   }
 
+  function resetMapData(mapData) {
+    knownAreasForCharacterMap.set(mapData.areas);
+    const newAreasIndex = mapData.areas.reduce(
+      (obj, area) => ((obj[area.id] = area), obj),
+      {}
+    );
+    knownAreasForCharacterMapIndex.set(newAreasIndex);
+
+    knownLinksForCharacterMap.set(mapData.links);
+    const newLinksIndex = mapData.links.reduce(
+      (obj, area) => ((obj[area.id] = area), obj),
+      {}
+    );
+    knownLinksForCharacterIndex.set(newLinksIndex);
+  }
+
+  function addExploredMaps(msg) {
+    knownMapsIndex.update(function (index) {
+      msg.maps.forEach((map) => {
+        index[map.id] = map;
+      });
+      return index;
+    });
+
+    knownMapsList.set(
+      [...msg.maps, ...get(knownMapsList)].filter(
+        (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+      )
+    );
+  }
+
   function addExploredAreas(msg) {
     const ids = msg.areas.map((area) => area.id);
-
-    console.log("addExploredAreas:knownAreasForCharacterMap");
-    console.log(ids);
-    console.log(get(exploredAreas));
-    console.log([...get(exploredAreas), ...msg.explored]);
-    console.log(get(exploredAreas));
-
-    console.log("addExploredAreas:knownAreasForCharacterMap");
-    console.log(get(knownAreasForCharacterMap));
     knownAreasForCharacterMap.set(
       [...msg.areas, ...get(knownAreasForCharacterMap)].filter(
         (v, i, a) => a.findIndex((it) => it.id == v.id) === i
       )
     );
-    console.log(get(knownAreasForCharacterMap));
 
     knownAreasForCharacterMapIndex.update(function (index) {
       msg.areas.forEach((area) => {
@@ -628,8 +653,6 @@ export function createState() {
       return index;
     });
 
-    console.log("addExploredAreas");
-    console.log(get(knownAreasForCharacterMapIndex));
     exploredAreas.set([...get(exploredAreas), ...msg.explored]);
   }
 
@@ -709,7 +732,6 @@ export function createState() {
   }
 
   async function toggleHistoryWindow() {
-    console.log(get(storyWindowView));
     if (get(storyWindowView) == "history") {
       await storyWindowView.set("current");
     } else {

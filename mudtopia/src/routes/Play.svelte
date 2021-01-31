@@ -207,11 +207,6 @@
   let startingAreaY;
 
   onMount(async () => {
-    console.log(wrapper.offsetHeight);
-    console.log(wrapper.offsetWidth);
-    console.log(wrapper.clientHeight);
-    console.log(wrapper.clientWidth);
-
     startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
       (wrapper.offsetHeight - 64) * 0.5

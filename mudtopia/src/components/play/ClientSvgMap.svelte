@@ -114,6 +114,7 @@
 
   $: existingIntraMapLinkText =
     mapSelected &&
+    chosenMap != undefined &&
     links != undefined &&
     areasMap != undefined &&
     exploredAreas != undefined
@@ -151,6 +152,7 @@
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     exploredAreas != undefined
       ? buildExistingInterMapLinkText()
       : [];
@@ -248,6 +250,7 @@
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     exploredAreas != undefined
       ? buildExistingUnexploredIntraMapLinks()
       : [];
@@ -284,6 +287,7 @@
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     exploredAreas != undefined
       ? buildExistingUnexploredInterMapLinks()
       : [];
@@ -316,6 +320,7 @@
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     exploredAreas != undefined
       ? buildExistingIntraMapLinks()
       : [];
@@ -350,6 +355,7 @@
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     exploredAreas != undefined
       ? buildExistingInterMapLinks()
       : [];
@@ -427,7 +433,10 @@
   }
 
   $: highlightsForExistingIntraMapLinks =
-    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+    mapSelected &&
+    areasMap != undefined &&
+    chosenMap != undefined &&
+    highlightedLinkIds.length > 0
       ? buildHighlightsForExistingIntraMapLinks()
       : [];
 
@@ -464,7 +473,10 @@
   }
 
   $: highlightsForExistingInterMapLinks =
-    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+    mapSelected &&
+    areasMap != undefined &&
+    chosenMap != undefined &&
+    highlightedLinkIds.length > 0
       ? buildHighlightsForExistingInterMapLinks()
       : [];
 
@@ -581,6 +593,7 @@
     mapSelected &&
     areas != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
     svgMapAllowInterMapAreaSelection != undefined &&
     exploredAreas != undefined
@@ -611,6 +624,7 @@
   $: highlightsForExistingIntraMapAreas =
     mapSelected &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     highlightedAreaIds.length > 0 &&
     exploredAreas != undefined
       ? buildHighlightsForExistingIntraMapAreas()

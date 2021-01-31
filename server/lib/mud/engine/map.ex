@@ -68,6 +68,33 @@ defmodule Mud.Engine.Map do
   end
 
   @doc """
+  Determine whether or not a map has been visited before by a character
+  """
+  def has_been_explored?(new_map_id, character_id) do
+    Mud.Repo.one(
+      from(map in Mud.Engine.Map,
+        left_join: character_map in Mud.Engine.CharactersMaps,
+        on: character_map.map_id == map.id,
+        where:
+          map.id == ^new_map_id and
+            (character_map.character_id == ^character_id or map.permanently_explored),
+        select: count(map.id)
+      )
+    ) == 1
+  end
+
+  @doc """
+  Mark a map as having been visited by a character
+  """
+  def mark_as_explored(map_id, character_id) do
+    change(%Mud.Engine.CharactersMaps{}, %{
+      character_id: character_id,
+      map_id: map_id
+    })
+    |> Repo.insert()
+  end
+
+  @doc """
   Gets a single map.
 
   Raises `Ecto.NoResultsError` if the Map does not exist.

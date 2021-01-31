@@ -43,7 +43,6 @@ defmodule MudWeb.CharacterController do
         if Mud.Util.changeset_has_error?(changeset, :player_id, "does not exist") do
           resp(conn, 401, "invalid session")
         else
-          IO.inspect(changeset)
           resp(conn, 400, "error")
         end
     end
@@ -94,8 +93,6 @@ defmodule MudWeb.CharacterController do
            Recase.Enumerable.convert_keys(character_settings, &Recase.to_snake/1)
          ) do
       {:ok, settings} ->
-        IO.inspect("updated settings")
-
         conn
         |> put_view(MudWeb.CharacterSettingsView)
         |> render("character_settings.json", character_settings: settings)

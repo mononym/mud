@@ -19,9 +19,18 @@ defmodule Mud.Engine.Command.Move do
     - west
     - ne
   """
+  alias Mud.Engine
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Area, Link, Item}
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateExploredArea}
+
+  alias Mud.Engine.Event.Client.{
+    UpdateArea,
+    UpdateMap,
+    UpdateCharacter,
+    UpdateExploredArea,
+    UpdateExploredMap
+  }
+
   alias Mud.Engine.Search
   alias Mud.Engine.Util
   alias Mud.Engine.Message
@@ -175,6 +184,7 @@ defmodule Mud.Engine.Command.Move do
   defp move(context, link, other_matches) do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
+    old_area = Area.get!(link.from_id)
     area = Area.get!(link.to_id)
 
     # check if area has already been explored. If it has do nothing. If not insert a record to say there was a visit
@@ -192,26 +202,50 @@ defmodule Mud.Engine.Command.Move do
         unexplored_areas =
           Area.list_unexplored_areas_linked_to_area(area.id, context.character.id)
 
-        IO.inspect(unexplored_areas, label: :unexplored_areas)
-
         unexplored_area_ids = Enum.map(unexplored_areas, & &1.id)
-
-        IO.inspect(unexplored_area_ids, label: :unexplored_area_ids)
         unexplored_links = Link.list_links_between_areas(area.id, unexplored_area_ids)
-
-        IO.inspect(unexplored_links, label: :unexplored_links)
 
         Area.mark_as_explored(area.id, context.character.id)
 
+        context =
+          Context.append_event(
+            context,
+            context.character.id,
+            UpdateExploredArea.new(%{
+              action: :add,
+              areas: unexplored_areas,
+              links: unexplored_links,
+              explored: [area.id]
+            })
+          )
+
+        if old_area.map_id != area.map_id and
+             not Engine.Map.has_been_explored?(area.map_id, character.id) do
+          Engine.Map.mark_as_explored(area.map_id, character.id)
+
+          new_map = Engine.Map.get!(area.map_id)
+
+          Context.append_event(
+            context,
+            context.character.id,
+            UpdateExploredMap.new(%{
+              action: :add,
+              maps: [new_map]
+            })
+          )
+        else
+          context
+        end
+      else
+        context
+      end
+
+    context =
+      if old_area.map_id != area.map_id do
         Context.append_event(
           context,
           context.character.id,
-          UpdateExploredArea.new(%{
-            action: :add,
-            areas: unexplored_areas,
-            links: unexplored_links,
-            explored: [area.id]
-          })
+          UpdateMap.new(Engine.Map.fetch_character_data(character.id, area.map_id))
         )
       else
         context
@@ -280,10 +314,6 @@ defmodule Mud.Engine.Command.Move do
     )
     |> Context.append_event(
       character.id,
-      UpdateCharacter.new(character)
-    )
-    |> Context.append_event(
-      character.id,
       UpdateArea.new(%{
         action: :look,
         area: area,
@@ -292,6 +322,10 @@ defmodule Mud.Engine.Command.Move do
         toi: scenery || [],
         exits: links
       })
+    )
+    |> Context.append_event(
+      character.id,
+      UpdateCharacter.new(character)
     )
 
     # area
