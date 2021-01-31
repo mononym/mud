@@ -2,6 +2,7 @@ defmodule MudWeb.CharacterView do
   use MudWeb, :view
   alias MudWeb.CharacterView
   alias MudWeb.CharacterSettingsView
+  alias MudWeb.CharacterWealthView
   alias MudWeb.RaceView
 
   def render("character-creation-data.json", %{races: races}) do
@@ -33,6 +34,14 @@ defmodule MudWeb.CharacterView do
         character.settings,
         CharacterSettingsView,
         "character_settings.json"
+      )
+    )
+    |> Map.put(
+      :wealth,
+      render_one(
+        character.wealth,
+        CharacterWealthView,
+        "character_wealth.json"
       )
     )
     |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)

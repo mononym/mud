@@ -8,6 +8,6 @@ defmodule Mud.Repo.Migrations.CreateCharacterSettings do
       add(:character_id, references(:characters, on_delete: :delete_all, type: :binary_id))
     end
 
-    create(index(:character_settings, [:character_id]))
+    create(unique_index(:character_settings, [:character_id]))
   end
 end

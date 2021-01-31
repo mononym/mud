@@ -77,6 +77,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_swap_command(),
       define_travel_command(),
       define_unlock_command(),
+      define_wealth_command(),
       define_wear_command()
     ])
   end
@@ -540,6 +541,19 @@ defmodule Mud.Engine.Rules.Commands do
           matches: [~r/.*/],
           key: :thing,
           transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_wealth_command do
+    %Definition{
+      callback_module: Command.Wealth,
+      parts: [
+        %Part{
+          matches: ["wealth"],
+          key: :wealth,
+          transformer: &Enum.join/1
         }
       ]
     }

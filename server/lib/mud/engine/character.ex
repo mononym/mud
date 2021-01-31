@@ -6,7 +6,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item}
   alias Mud.Engine.Util
-  alias Mud.Engine.Character.{Settings, Skill}
+  alias Mud.Engine.Character.{Settings, Skill, Wealth}
   alias Mud.DataType.NameSlug
 
   require Logger
@@ -21,9 +21,7 @@ defmodule Mud.Engine.Character do
   schema "characters" do
     @derive Jason.Encoder
     has_one(:settings, Settings)
-
-    has_many(:worn_items, Item, foreign_key: :wearable_worn_by_id)
-    has_many(:held_items, Item, foreign_key: :holdable_held_by_id)
+    has_one(:wealth, Wealth)
 
     timestamps()
     # Naming and Titles
@@ -217,8 +215,9 @@ defmodule Mud.Engine.Character do
 
         # Set up settings and make sure they are loaded
         :ok = Settings.create(%{character_id: character.id})
+        :ok = Wealth.create(%{character_id: character.id})
 
-        character = Repo.preload(character, [:settings])
+        character = Repo.preload(character, [:settings, :wealth])
 
         setup_default_items(character)
 
@@ -526,7 +525,7 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
-      iex> list_all()
+      iex> list()
       [%Character{}, ...]
 
   """
@@ -565,11 +564,8 @@ defmodule Mud.Engine.Character do
   """
   @spec list_by_player_id(String.t()) :: [%__MODULE__{}]
   def list_by_player_id(player_id) do
-    from(character in __MODULE__,
-      join: settings in assoc(character, :settings),
-      on: settings.character_id == character.id,
-      where: character.player_id == ^player_id,
-      preload: [settings: settings]
+    from(character in base_query_with_preload(),
+      where: character.player_id == ^player_id
     )
     |> Repo.all()
   end
@@ -854,8 +850,8 @@ defmodule Mud.Engine.Character do
     from(
       character in __MODULE__,
       join: settings in assoc(character, :settings),
-      # join: skills in assoc(character, :skills),
-      preload: [settings: settings]
+      join: wealth in assoc(character, :wealth),
+      preload: [settings: settings, wealth: wealth]
     )
   end
 
@@ -863,7 +859,7 @@ defmodule Mud.Engine.Character do
     from(
       character in __MODULE__,
       join: skills in assoc(character, :skills),
-      where: character.id == skills.character_id and character.id == ^character_id,
+      where: character.id == ^character_id,
       preload: [skills: skills]
     )
   end
