@@ -2,6 +2,10 @@ import CharacterSettingsState, {
   CharacterSettingsInterface,
 } from "./characterSettings";
 
+import CharacterWealthState, {
+  CharacterWealthInterface,
+} from "./characterWealth";
+
 export interface CharacterInterface {
   id: string;
   slug: string;
@@ -35,6 +39,7 @@ export interface CharacterInterface {
   areaId: string;
 
   settings: CharacterSettingsInterface;
+  wealth: CharacterWealthInterface;
   moved_at: string;
 }
 
@@ -71,6 +76,7 @@ const state: CharacterInterface = {
   areaId: "",
 
   settings: { ...CharacterSettingsState },
+  wealth: { ...CharacterWealthState },
   moved_at: "",
 };
 

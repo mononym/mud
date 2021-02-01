@@ -58,7 +58,7 @@ defmodule Mud.Engine.Command.Stand do
       )
       |> Context.append_event(
         context.character.id,
-        UpdateCharacter.new(:update, char)
+        UpdateCharacter.new(char)
       )
     else
       error_msg = "You are already standing!"

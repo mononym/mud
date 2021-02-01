@@ -1713,6 +1713,18 @@ Mud.Engine.CharacterRace.create(%{
 
 #####
 #####
+# Coins
+#####
+#####
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.SilverCoin,
+  100,
+  center_room.id
+)
+
+#####
+#####
 # Racial Features Stuff
 #####
 #####

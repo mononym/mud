@@ -9,6 +9,7 @@ defmodule Mud.Engine.Command.Wealth do
 
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
+  alias Mud.Engine.Command.CallbackUtil
 
   require Logger
 
@@ -22,29 +23,25 @@ defmodule Mud.Engine.Command.Wealth do
       []
       |> maybe_add_coin_string(
         context.character.wealth.copper,
-        context.character.wealth.copper,
         "copper"
       )
       |> maybe_add_coin_string(
         context.character.wealth.bronze,
-        context.character.wealth.bronze * 10,
         "bronze"
       )
       |> maybe_add_coin_string(
         context.character.wealth.silver,
-        context.character.wealth.silver * 100,
         "silver"
       )
       |> maybe_add_coin_string(
         context.character.wealth.gold,
-        context.character.wealth.gold * 1000,
         "gold"
       )
-      |> maybe_add_coin_string(
-        context.character.wealth.plat,
-        context.character.wealth.plat * 10000,
-        "platinum"
-      )
+
+    wealth = context.character.wealth
+
+    wealth_total =
+      wealth.copper + wealth.bronze * 100 + wealth.silver * 10_000 + wealth.gold * 1_000_000
 
     case coin_messages do
       [] ->
@@ -60,11 +57,16 @@ defmodule Mud.Engine.Command.Wealth do
       coin_strings ->
         wealth_message =
           Message.new_story_output(context.character.id)
-          |> Message.append_text("Wealth:\n", "base")
+          |> Message.append_text(
+            "Wealth: #{CallbackUtil.num_coppers_to_max_denomination(wealth_total)}\n",
+            "base"
+          )
 
         wealth_message =
           Enum.reduce(coin_strings, wealth_message, fn string, message ->
-            Message.append_text(message, "    #{string}\n", "base")
+            message
+            |> Message.append_text("    #{string}", "base")
+            |> Message.append_text("\n", "base")
           end)
 
         wealth_message = Message.drop_last_text(wealth_message)
@@ -73,11 +75,11 @@ defmodule Mud.Engine.Command.Wealth do
     end
   end
 
-  defp maybe_add_coin_string(list, 0, _base_coins, _coin_type) do
+  defp maybe_add_coin_string(list, 0, _coin_type) do
     list
   end
 
-  defp maybe_add_coin_string(list, num_coins, base_coins, coin_type) do
+  defp maybe_add_coin_string(list, num_coins, coin_type) do
     coin_text =
       if num_coins > 1 do
         "coins"
@@ -87,10 +89,6 @@ defmodule Mud.Engine.Command.Wealth do
 
     base_wealth_string = "#{num_coins} #{coin_type} #{coin_text}"
 
-    if num_coins == base_coins do
-      [base_wealth_string | list]
-    else
-      ["#{base_wealth_string} (#{base_coins} copper)" | list]
-    end
+    [base_wealth_string | list]
   end
 end

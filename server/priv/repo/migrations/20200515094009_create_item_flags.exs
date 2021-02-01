@@ -7,6 +7,7 @@ defmodule Mud.Repo.Migrations.CreateItemFlags do
       add(:item_id, references(:items, on_delete: :delete_all, type: :binary_id))
 
       add(:close, :boolean, default: false)
+      add(:coin, :boolean, default: false)
       add(:drop, :boolean, default: false)
       add(:hidden, :boolean, default: false)
       add(:hold, :boolean, default: false)
@@ -30,6 +31,7 @@ defmodule Mud.Repo.Migrations.CreateItemFlags do
     end
 
     create(index(:item_flags, [:close]))
+    create(index(:item_flags, [:coin]))
     create(index(:item_flags, [:drop]))
     create(index(:item_flags, [:hidden]))
     create(index(:item_flags, [:hold]))

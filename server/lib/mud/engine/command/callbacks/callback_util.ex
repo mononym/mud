@@ -8,6 +8,142 @@ defmodule Mud.Engine.Command.CallbackUtil do
   alias Mud.Engine
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
+  alias Mud.Engine.Item
+
+  def coin_to_wealth_update_attrs(coin, wealth) do
+    cond do
+      coin.copper ->
+        %{copper: wealth.copper + coin.count}
+
+      coin.bronze ->
+        %{bronze: wealth.bronze + coin.count}
+
+      coin.silver ->
+        %{silver: wealth.silver + coin.count}
+
+      coin.gold ->
+        %{gold: wealth.gold + coin.count}
+    end
+  end
+
+  def num_coppers_to_max_denomination(number) do
+    gold_worth = 1_000_000
+    silver_worth = 10_000
+    bronze_worth = 100
+
+    cond do
+      number >= gold_worth ->
+        num_gold = Float.round(number / gold_worth, 1)
+
+        # Drop everything after the decimal if it is a 0
+        num_gold =
+          if trunc(num_gold) == num_gold do
+            trunc(num_gold)
+          else
+            num_gold
+          end
+
+        "#{num_gold} gold"
+
+      number >= silver_worth ->
+        num_coins = Float.round(number / silver_worth, 1)
+
+        # Drop everything after the decimal if it is a 0
+        num_coins =
+          if trunc(num_coins) == num_coins do
+            trunc(num_coins)
+          else
+            num_coins
+          end
+
+        "#{num_coins} silver"
+
+      number >= bronze_worth ->
+        num_coins = Float.round(number / bronze_worth, 1)
+
+        # Drop everything after the decimal if it is a 0
+        num_coins =
+          if trunc(num_coins) == num_coins do
+            trunc(num_coins)
+          else
+            num_coins
+          end
+
+        "#{num_coins} bronze"
+
+      true ->
+        "#{number} copper"
+    end
+
+    # digits = Integer.digits(number)
+
+    # postfixes = ["K", "M", "B", "T"]
+
+    # if length(digits) > 3 do
+    #   {[first, second, third], rest} = Enum.split(digits, 3)
+
+    #   "#{first}#{second}#{
+    #     if third != 0 do
+    #       if Integer.mod(length(rest), 3) != 0 do
+    #         ".#{third}"
+    #       else
+    #         third
+    #       end
+    #     else
+    #       ""
+    #     end
+    #   }#{Enum.at(postfixes, floor(length(rest) / 3))}"
+    # else
+    #   "#{number}"
+    # end
+  end
+
+  def number_to_approximate_string(number) do
+    digits = Integer.digits(number)
+
+    postfixes = ["K", "M", "B", "T"]
+
+    if length(digits) > 3 do
+      {[first, second, third], rest} = Enum.split(digits, 3)
+
+      "#{first}#{second}#{
+        if third != 0 do
+          if Integer.mod(length(rest), 3) != 0 do
+            ".#{third}"
+          else
+            third
+          end
+        else
+          ""
+        end
+      }#{Enum.at(postfixes, floor(length(rest) / 3))}"
+    else
+      "#{number}"
+    end
+  end
+
+  def coin_to_count_string(coin) do
+    postfix =
+      case coin.count do
+        0 -> "s"
+        1 -> ""
+        _ -> "s"
+      end
+
+    cond do
+      coin.copper ->
+        "#{coin.count} copper coin#{postfix}"
+
+      coin.bronze ->
+        "#{coin.count} bronze coin#{postfix}"
+
+      coin.silver ->
+        "#{coin.count} silver coin#{postfix}"
+
+      coin.gold ->
+        "#{coin.count} gold coin#{postfix}"
+    end
+  end
 
   def parent_containers_closed_error(context, item, parents) do
     msg =
@@ -63,7 +199,8 @@ defmodule Mud.Engine.Command.CallbackUtil do
     Engine.Util.upcase_first(Item.items_to_short_desc_with_nested_location(item))
   end
 
-  def sort_items(items) do
+  def sort_matches(matches) do
+    items = Enum.map(matches, & &1.match)
     ancestors = Item.list_all_parents(items)
 
     # create ancestor tree index
@@ -153,6 +290,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
           false
       end
     end)
+    |> Mud.Engine.Search.things_to_match()
   end
 
   defp count_layers(_parent_id, _parent_index, _current_layer \\ 0)

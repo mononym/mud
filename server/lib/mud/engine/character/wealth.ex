@@ -7,7 +7,7 @@ defmodule Mud.Engine.Character.Wealth do
 
   @type id :: String.t()
 
-  @derive {Jason.Encoder, only: [:id, :copper, :bronze, :silver, :gold, :plat, :character_id]}
+  @derive {Jason.Encoder, only: [:id, :copper, :bronze, :silver, :gold, :character_id]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "character_wealth" do
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
@@ -16,7 +16,6 @@ defmodule Mud.Engine.Character.Wealth do
     field(:bronze, :integer, default: 0)
     field(:silver, :integer, default: 0)
     field(:gold, :integer, default: 0)
-    field(:plat, :integer, default: 0)
   end
 
   @doc false
@@ -28,15 +27,13 @@ defmodule Mud.Engine.Character.Wealth do
       :copper,
       :bronze,
       :silver,
-      :gold,
-      :plat
+      :gold
     ])
-    |> validate_required([:character_id, :copper, :bronze, :silver, :gold, :plat])
+    |> validate_required([:character_id, :copper, :bronze, :silver, :gold])
     |> validate_number(:copper, greater_than_or_equal_to: 0)
     |> validate_number(:bronze, greater_than_or_equal_to: 0)
     |> validate_number(:silver, greater_than_or_equal_to: 0)
     |> validate_number(:gold, greater_than_or_equal_to: 0)
-    |> validate_number(:plat, greater_than_or_equal_to: 0)
     |> foreign_key_constraint(:character_id)
   end
 

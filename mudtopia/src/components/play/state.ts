@@ -387,7 +387,7 @@ export function createState() {
       let areaId = get(selectedCharacter).areaId;
       let area = get(knownAreasForCharacterMapIndex)[areaId];
       let map = get(knownMapsIndex)[area.mapId];
-      
+
       if (map.maximumZoomIndex == get(mapZoomMultiplierIndex)) {
         mapAtMaxZoom.set(true);
       } else {
@@ -403,7 +403,7 @@ export function createState() {
       let areaId = get(selectedCharacter).areaId;
       let area = get(knownAreasForCharacterMapIndex)[areaId];
       let map = get(knownMapsIndex)[area.mapId];
-      
+
       if (map.minimumZoomIndex == get(mapZoomMultiplierIndex)) {
         mapAtMinZoom.set(true);
       } else {
@@ -489,12 +489,19 @@ export function createState() {
       console.log("received an update for character");
       console.log(msg);
 
-      // double check that this update is for the selected character, as it should be
-      if (get(selectedCharacter).id == msg.character.id) {
-        console.log("character matches as expected");
-        selectedCharacter.set(msg.character);
-      } else {
-        console.log("characters do not match");
+      if (msg.action == "character") {
+        // double check that this update is for the selected character, as it should be
+        if (get(selectedCharacter).id == msg.character.id) {
+          console.log("character matches as expected");
+          selectedCharacter.set(msg.character);
+        } else {
+          console.log("characters do not match");
+        }
+      } else if (msg.action == "wealth") {
+        selectedCharacter.update(function (char) {
+          char.wealth = msg.wealth;
+          return char;
+        });
       }
     });
 
@@ -521,30 +528,28 @@ export function createState() {
       } else if (msg.action == "remove") {
         const removeCharacterIds = msg.otherCharacters.map((char) => char.id);
         otherCharactersInArea.update(function (otherCharacters) {
-          otherCharacters.filter(
+          return otherCharacters.filter(
             (character, i, a) => !removeCharacterIds.includes(character.id)
           );
-          return otherCharacters;
         });
 
         const removeOnGroundIds = msg.onGround.map((item) => item.id);
+        console.log(get(onGroundInArea));
+        console.log(removeOnGroundIds);
         onGroundInArea.update(function (itemsOnGround) {
-          itemsOnGround.filter(
+          return itemsOnGround.filter(
             (item, i, a) => !removeOnGroundIds.includes(item.id)
           );
-          return itemsOnGround;
         });
 
         const removeToiIds = msg.toi.map((item) => item.id);
         toiInArea.update(function (toi) {
-          toi.filter((item, i, a) => !removeToiIds.includes(item.id));
-          return toi;
+          return toi.filter((item, i, a) => !removeToiIds.includes(item.id));
         });
 
         const removeExitIds = msg.exits.map((exit) => exit.id);
         exitsInArea.update(function (exit) {
-          exit.filter((exit, i, a) => !removeExitIds.includes(exit.id));
-          return exit;
+          return exit.filter((exit, i, a) => !removeExitIds.includes(exit.id));
         });
       }
     });

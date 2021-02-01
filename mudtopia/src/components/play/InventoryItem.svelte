@@ -1,5 +1,5 @@
 <script language="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, beforeUpdate } from "svelte";
   const dispatch = createEventDispatcher();
   import { getContext } from "svelte";
   import { key } from "./state";
@@ -22,6 +22,11 @@
   function dispatchContextMenuEvent(event) {
     dispatch("showContextMenu", { event: event, item: item });
   }
+
+  beforeUpdate(() => {
+    console.log("onMount");
+    console.log(item);
+  });
 </script>
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>
@@ -57,7 +62,7 @@
       </div>
     {/if}
   </div>
-  {#if item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
+  {#if item.flags.container && item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
     <div class="flex flex-col ml-2">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
         <div class="flex">

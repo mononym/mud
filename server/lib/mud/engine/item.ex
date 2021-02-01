@@ -9,7 +9,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Query
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Search}
-  alias Mud.Engine.Item.{Flags, Location, Physics, Description, Container}
+  alias Mud.Engine.Item.{Coin, Flags, Location, Physics, Description, Container}
   require Logger
 
   @type id :: String.t()
@@ -17,16 +17,12 @@ defmodule Mud.Engine.Item do
   @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
-    ##
-    #
-    # Common Fields
-    #
-    ##
     has_one(:location, Location)
     has_one(:flags, Flags)
     has_one(:description, Description)
     has_one(:container, Container)
     has_one(:physics, Physics)
+    has_one(:coin, Coin)
 
     timestamps()
   end
@@ -58,42 +54,37 @@ defmodule Mud.Engine.Item do
     {:ok, :subscribed}
   end
 
+  def create_from_template_for_area(template, args, area_id) do
+    create(Mud.Engine.ItemTemplate.build_template_for_area(template, args, area_id))
+  end
+
   def create(attrs \\ %{}) do
+    IO.inspect(attrs, label: :create)
+
     Repo.transaction(fn ->
-      item = insert_new()
-      # result =
-      #   %__MODULE__{}
-
-      # case result do
-      # {:ok, item} ->
-      # Set up flags
-      flags = Flags.create(Map.put(Map.get(attrs, :flags, %{}), :item_id, item.id))
-      # Set up description
-      description =
-        Description.create(Map.put(Map.get(attrs, :description, %{}), :item_id, item.id))
-
-      # Set up container
-      container = Container.create(Map.put(Map.get(attrs, :container, %{}), :item_id, item.id))
-      # Set up physics
-      physics = Physics.create(Map.put(Map.get(attrs, :physics, %{}), :item_id, item.id))
-      # Set up location
-      location = Location.create(Map.put(Map.get(attrs, :location, %{}), :item_id, item.id))
-
-      %{
-        item
-        | flags: flags,
-          description: description,
-          container: container,
-          physics: physics,
-          location: location
-      }
+      insert_new()
+      |> setup_required_component(attrs, :flags, Flags)
+      |> setup_required_component(attrs, :location, Location)
+      |> maybe_setup_optional_component(attrs, :description, Description)
+      |> maybe_setup_optional_component(attrs, :container, Container)
+      |> maybe_setup_optional_component(attrs, :physics, Physics)
+      |> maybe_setup_optional_component(attrs, :coin, Coin)
     end)
+  end
 
-    # {:ok, item}
+  defp setup_required_component(item, attrs, key, callback) do
+    thing = callback.create(Map.put(Map.get(attrs, key, %{}), :item_id, item.id))
 
-    # error ->
-    #   error
-    # end
+    %{item | key => thing}
+  end
+
+  defp maybe_setup_optional_component(item, attrs, key, callback) do
+    if Map.has_key?(attrs, key) do
+      thing = callback.create(Map.put(Map.get(attrs, key, %{}), :item_id, item.id))
+      %{item | key => thing}
+    else
+      item
+    end
   end
 
   @spec update!(String.t(), map()) :: %__MODULE__{}
@@ -156,6 +147,23 @@ defmodule Mud.Engine.Item do
       item ->
         {:ok, item}
     end
+  end
+
+  @doc """
+  Deletes an item.
+
+  ## Examples
+
+      iex> delete(item)
+      {:ok, %__MODULE__{}}
+
+      iex> delete(item)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  @spec delete(item :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  def delete(item) do
+    Repo.delete(item)
   end
 
   def get_primary_container(character_id) when is_binary(character_id) do
@@ -337,6 +345,15 @@ defmodule Mud.Engine.Item do
   @spec search_inventory(String.t(), String.t()) :: [%__MODULE__{}]
   def search_inventory(character_id, search_string) do
     search_inventory_query(character_id, search_string)
+    |> Repo.all()
+  end
+
+  @doc """
+  All inventory items are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_inside_inventory(String.t(), String.t()) :: [%__MODULE__{}]
+  def search_inside_inventory(character_id, search_string) do
+    search_inside_inventory_query(character_id, search_string)
     |> Repo.all()
   end
 
@@ -699,7 +716,9 @@ defmodule Mud.Engine.Item do
       left_join: flags in assoc(item, :flags),
       as: :flags,
       left_join: physics in assoc(item, :physics),
-      as: :physics
+      as: :physics,
+      left_join: coin in assoc(item, :coin),
+      as: :coin
     )
   end
 
@@ -716,12 +735,15 @@ defmodule Mud.Engine.Item do
       as: :flags,
       left_join: physics in assoc(item, :physics),
       as: :physics,
+      left_join: coin in assoc(item, :coin),
+      as: :coin,
       preload: [
         container: container,
         description: description,
         flags: flags,
         location: location,
-        physics: physics
+        physics: physics,
+        coin: coin
       ]
     )
   end
@@ -763,22 +785,6 @@ defmodule Mud.Engine.Item do
 
   def recursive_child_ids_query(ids, include_self \\ false) do
     from(location in recursive_child_query(ids, include_self), select: location.item_id)
-  end
-
-  defp specific_nested_item_held_ground_worn_initial_query(
-         character_id,
-         area_id,
-         search_string
-       ) do
-    from(
-      [item, description: description, location: location] in base_query_without_preload(),
-      where:
-        (((location.held_in_hand or location.worn_on_character) and
-            location.character_id == ^character_id) or
-           (location.on_ground and location.area_id == ^area_id)) and
-          like(description.short, ^search_string),
-      select: item.id
-    )
   end
 
   def specific_nested_item_area_initial_query(
@@ -977,6 +983,17 @@ defmodule Mud.Engine.Item do
       where:
         (location.held_in_hand or location.worn_on_character) and
           location.character_id == ^character_id
+    )
+  end
+
+  def search_inside_inventory_query(character_id, search_string) do
+    from(
+      [description: description, location: location] in base_query_with_preload(),
+      where:
+        description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
+          like(description.short, ^search_string) and not location.held_in_hand and
+          not location.worn_on_character,
+      order_by: [desc: location.moved_at]
     )
   end
 

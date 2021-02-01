@@ -12,6 +12,7 @@ defmodule Mud.Engine.Item.Flags do
              :id,
              :item_id,
              :close,
+             :coin,
              :drop,
              :hidden,
              :hold,
@@ -66,6 +67,7 @@ defmodule Mud.Engine.Item.Flags do
     #
     field(:armor, :boolean, default: false)
     field(:clothing, :boolean, default: false)
+    field(:coin, :boolean, default: false)
     field(:container, :boolean, default: false)
     field(:furniture, :boolean, default: false)
     field(:instrument, :boolean, default: false)
@@ -101,6 +103,7 @@ defmodule Mud.Engine.Item.Flags do
       #
       :armor,
       :clothing,
+      :coin,
       :container,
       :furniture,
       :instrument,

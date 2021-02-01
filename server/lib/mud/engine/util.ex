@@ -412,6 +412,18 @@ defmodule Mud.Engine.Util do
     end
   end
 
+  @doc """
+  Turn an integer like 1234556 into a string like "1,234,556
+  """
+  def format_integer_with_commas(integer) do
+    integer
+    |> Integer.to_charlist()
+    |> Enum.reverse()
+    |> Stream.chunk_every(3)
+    |> Enum.join(",")
+    |> String.reverse()
+  end
+
   def via(registry, key), do: {:via, Registry, {registry, key}}
 
   @doc """
@@ -434,10 +446,44 @@ defmodule Mud.Engine.Util do
       item.flags.scenery ->
         "scenery"
 
+      item.flags.coin ->
+        "coin"
+
       true ->
         "base"
     end
   end
 
   def upcase_first(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest
+
+  def describe_coin(coin_type, count) do
+    cond do
+      count == 1 ->
+        "a #{coin_type} coin"
+
+      count == 2 ->
+        "a pair of #{coin_type} coins"
+
+      count <= 4 ->
+        "a few #{coin_type} coins"
+
+      count <= 9 ->
+        "several #{coin_type} coins"
+
+      count <= 50 ->
+        "a tiny pile of #{coin_type} coins"
+
+      count <= 100 ->
+        "a small pile of #{coin_type} coins"
+
+      count <= 250 ->
+        "a pile of #{coin_type} coins"
+
+      count <= 500 ->
+        "a large pile of #{coin_type} coins"
+
+      count > 500 ->
+        "a huge pile of #{coin_type} coins"
+    end
+  end
 end

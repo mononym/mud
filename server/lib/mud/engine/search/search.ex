@@ -44,7 +44,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_worn_containers(character_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -65,7 +65,28 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_inventory(character_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in inventory not at the root level
+  """
+  @spec find_matches_inside_inventory(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_inside_inventory(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_inside_inventory(character_id, search_string)
+
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -88,7 +109,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     links = Link.search_exits(area_id, search_string)
 
-    case things_to_match(links, input) do
+    case things_to_match(links) do
       [] ->
         {:error, :no_match}
 
@@ -109,7 +130,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_area(area_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -130,7 +151,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_worn_items(character_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -151,7 +172,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_on_ground(area_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -173,7 +194,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_on_ground_or_worn_items(area_id, character_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -195,7 +216,7 @@ defmodule Mud.Engine.Search do
     search_string = input_to_wildcard_string(input, mode)
     items = Item.search_on_ground_or_worn_or_held_items(area_id, character_id, search_string)
 
-    case things_to_match(items, input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -238,7 +259,7 @@ defmodule Mud.Engine.Search do
         mode
       )
 
-    case things_to_match(items, thing.input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -273,7 +294,7 @@ defmodule Mud.Engine.Search do
         mode
       )
 
-    case things_to_match(items, thing.input) do
+    case things_to_match(items) do
       [] ->
         {:error, :no_match}
 
@@ -282,93 +303,44 @@ defmodule Mud.Engine.Search do
     end
   end
 
-  def things_to_match(things, input \\ "")
-
   @spec things_to_match(any) :: [%Match{}]
-  def things_to_match(things, input) when not is_list(things),
-    do: things_to_match(List.wrap(things), input)
+  def things_to_match(things) when not is_list(things),
+    do: things_to_match(List.wrap(things))
 
-  def things_to_match(links = [%Link{} | _], input) do
-    case Enum.find(
-           links,
-           nil,
-           &(String.downcase(&1.short_description) === String.downcase(input))
-         ) do
-      nil ->
-        Enum.map(links, fn link ->
-          %Match{
-            match_string: String.downcase(link.short_description),
-            short_description: link.short_description,
-            long_description: link.long_description,
-            match: link
-          }
-        end)
-
-      exact_match ->
-        [
-          %Match{
-            match_string: String.downcase(exact_match.short_description),
-            short_description: exact_match.short_description,
-            long_description: exact_match.long_description,
-            match: exact_match
-          }
-        ]
-    end
+  def things_to_match(links = [%Link{} | _]) do
+    Enum.map(links, fn link ->
+      %Match{
+        match_string: String.downcase(link.short_description),
+        short_description: link.short_description,
+        long_description: link.long_description,
+        match: link
+      }
+    end)
   end
 
-  def things_to_match(characters = [%Character{} | _], input) do
-    case Enum.find(characters, nil, &(String.downcase(&1.name) === String.downcase(input))) do
-      nil ->
-        Enum.map(characters, fn character ->
-          %Match{
-            match_string: String.downcase(character.name),
-            short_description: Character.short_description(character),
-            long_description: Character.long_description(character),
-            match: character
-          }
-        end)
-
-      exact_match ->
-        [
-          %Match{
-            match_string: String.downcase(exact_match.name),
-            short_description: Character.short_description(exact_match),
-            long_description: Character.long_description(exact_match),
-            match: exact_match
-          }
-        ]
-    end
+  def things_to_match(characters = [%Character{} | _]) do
+    Enum.map(characters, fn character ->
+      %Match{
+        match_string: String.downcase(character.name),
+        short_description: Character.short_description(character),
+        long_description: Character.long_description(character),
+        match: character
+      }
+    end)
   end
 
-  def things_to_match(items = [%Item{} | _], input) do
-    case Enum.find(
-           items,
-           nil,
-           &(String.downcase(&1.description.short) === String.downcase(input))
-         ) do
-      nil ->
-        Enum.map(items, fn item ->
-          %Match{
-            match_string: String.downcase(item.description.short),
-            short_description: item.description.short,
-            long_description: item.description.long,
-            match: item
-          }
-        end)
-
-      exact_match ->
-        [
-          %Match{
-            match_string: String.downcase(exact_match.description.short),
-            short_description: exact_match.description.short,
-            long_description: exact_match.description.long,
-            match: exact_match
-          }
-        ]
-    end
+  def things_to_match(items = [%Item{} | _]) do
+    Enum.map(items, fn item ->
+      %Match{
+        match_string: String.downcase(item.description.short),
+        short_description: item.description.short,
+        long_description: item.description.long,
+        match: item
+      }
+    end)
   end
 
-  def things_to_match([], _), do: []
+  def things_to_match([]), do: []
 
   @doc """
   Given an input, convert it to a wildcard string to be used in querying Postgres

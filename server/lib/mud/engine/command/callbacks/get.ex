@@ -1,38 +1,30 @@
 defmodule Mud.Engine.Command.Get do
   @moduledoc """
-  The GET command allows a character to pick things up, whether from the ground or on/in something.
+  The GET command allows the Character to get something from the ground or relative to other items.
 
   Syntax:
-    - get <thing> <on|in> <place>
+    - get <target>
 
   Examples:
     - get backpack
-    - get quiver on shelf
-    - get shirt in drawer
+    - get door
+    - get pouch in backpack
   """
-  use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
-  alias Mud.Engine.Item
-  alias Mud.Engine.Character
-  alias Mud.Engine.Command.Context
-  alias Mud.Engine.Util
+  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateInventory}
   alias Mud.Engine.Search
-  alias Mud.Repo
+  alias Mud.Engine.Message
+  alias Mud.Engine.Util
+  alias Mud.Engine.Command.CallbackUtil
+  alias Mud.Engine.Command.Context
+  alias Mud.Engine.{Character, Item}
+  alias Item.{Container}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
 
   require Logger
 
-  defmodule ContinuationData do
-    use TypedStruct
-
-    typedstruct do
-      field(:type, atom(), required: true)
-      field(:thing, Mud.Engine.Search.Match.t(), required: true)
-      field(:place, Mud.Engine.Search.Match.t(), required: true)
-    end
-  end
+  use Mud.Engine.Command.Callback
 
   @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
           Mud.Engine.Command.AstNode.ThingAndPlace.t()
@@ -42,536 +34,353 @@ defmodule Mud.Engine.Command.Get do
 
   @impl true
   def execute(context) do
+    Logger.debug("Executing Get command")
     Logger.debug(inspect(context))
-    # Make sure command was given with additional input, if not give help docs
-    if context.command.ast.thing != nil do
-      character = Repo.preload(context.character, :held_items)
-      context = %{context | character: character}
+    ast = context.command.ast
 
-      # No reason to go further if hands are full. Check them first.
-      if length(character.held_items) == 2 do
-        context
-        |> Context.append_error("Your hands are full. Empty them first.")
-      else
-        case context.command.ast do
-          # get thing from any container on character
-          %TAP{place: nil, thing: %Thing{personal: true}} ->
-            get_item_in_worn_container(context)
+    if is_nil(ast.thing) do
+      Logger.debug("Get command entered without input. Returning error with command docs.")
 
-          # get thing on ground, fallback to worn container
-          %TAP{place: nil, thing: %Thing{personal: false}} ->
-            if Util.is_uuid4(context.command.ast.thing.input) do
-              get_item_by_uuid(context)
-            else
-              get_item_from_ground_or_worn_container(context)
-            end
-
-          # get thing from container on ground, fallback to worn containers
-          %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
-            get_item_in_area_container_or_worn_container(context)
-
-          # get thing from container on character
-          %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
-            get_item_in_worn_container(context)
-        end
-      end
-    else
-      # get help docs if get command was entered without additional input
       Context.append_output(
         context,
         context.character.id,
         Util.get_module_docs(__MODULE__),
-        "docs"
+        "error"
       )
-    end
-  end
-
-  # primarily triggered by actions on the client
-  defp get_item_by_uuid(context) do
-    ast = context.command.ast
-    item = Item.get!(ast.thing.input)
-
-    # if the item selected is in the area/on the ground
-    if not is_nil(item.area_id) do
-      # make sure it's in the same area as the character
-      if item.area_id == context.character.area_id do
-        [match] = Search.things_to_match([item])
-
-        do_get_item_from_ground(context, match)
-      else
-        Util.dave_error(context)
-      end
     else
-      # the item is assumed to be inside a container
-      items = Item.list_all_parents(ast.thing.input)
-      char = context.character
+      # A UUID was passed in which means the get command is being attempted on a specific item.
+      # This sort of command should only be triggered by the UI.
+      if Util.is_uuid4(context.command.ast.thing.input) do
+        Logger.debug("Get command provided with uuid: #{context.command.ast.thing.input}")
 
-      # is item inside containers either on character or in character's area or in character's hand
-      parent =
-        Enum.find(items, fn item ->
-          item.wearable_worn_by_id == char.id or item.area_id == char.area_id or
-            item.holdable_held_by_id == char.id
-        end)
+        case Item.get(context.command.ast.thing.input) do
+          {:ok, item} ->
+            get_item(context, List.first(Search.things_to_match(item)))
 
-      if parent do
-        [thing, place] = Search.things_to_match([item, parent])
-
-        private = is_nil(parent.area_id)
-        get_thing_in_place(context, thing, place, private)
+          _ ->
+            Util.dave_error_v2(context)
+        end
       else
-        Util.dave_error(context)
+        Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
+
+        # If there is input but that input is not a UUID, that means the player typed text in. Go searching for the item.
+        find_thing_to_get(context)
       end
     end
   end
 
-  defp get_item_in_area_container_or_worn_container(context) do
-    case get_item_in_area_container(context) do
-      {:error, _} ->
-        get_item_in_worn_container(context)
+  defp find_thing_to_get(context = %Mud.Engine.Command.Context{}) do
+    case context.command.ast do
+      # Get thing on character
+      # If nothing is found worn on the character do not look further
+      %TAP{place: nil, thing: %Thing{personal: true}} ->
+        Logger.debug("Item to Get should be on character")
 
-      result ->
-        result
+        get_item_in_inventory(context)
+
+      # Thing being geted did not have 'my' specified, but also no place either
+      %TAP{place: nil, thing: %Thing{personal: false}} ->
+        get_item_in_area_or_inventory(context)
+
+      # This thing will be in a place, but that place might not be on the character
+      %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
+        get_item_with_place(context)
+
+      # get thing in container on character
+      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
+        get_item_with_personal_place(context)
     end
   end
 
-  defp get_item_from_ground_or_worn_container(context) do
-    case get_item_from_ground(context) do
-      {:error, _} ->
-        get_item_in_worn_container(context)
-
-      result ->
-        result
-    end
-  end
-
-  defp get_item_from_ground(context) do
-    ast = context.command.ast
-    which_target = ast.thing.which
-    input = ast.thing.input
-
-    result =
-      Search.find_matches_in_area_v2(
-        [:item],
-        context.character.area_id,
-        input,
-        which_target
-      )
-
-    case result do
-      {:ok, [thing]} ->
-        do_get_item_from_ground(context, thing)
-
-      {:ok, _things} ->
-        context
-        |> Context.append_error("Multiple potential items found, please be more specific.")
-
-      error ->
-        error
-    end
-  end
-
-  defp do_get_item_from_ground(context, thing) do
-    if thing.match.is_holdable do
-      hand = which_hand(context.character)
-
-      item =
-        Item.update!(thing.match, %{
-          area_id: nil,
-          holdable_held_by_id: context.character.id,
-          holdable_is_held: true,
-          holdable_hand: hand
-        })
-
-      others =
-        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
-
-      all_items = Item.list_all_recursive(item)
-
-      context
-      |> Context.append_output(
-        others,
-        "{{character}}#{context.character.name}{{/character}} picked up {{item}}#{
-          thing.description.short
-        }{{/item}} from the ground.",
-        "info"
-      )
-      |> Context.append_output(
+  defp get_item_in_inventory(context) do
+    results =
+      Search.find_matches_inside_inventory(
         context.character.id,
-        "You pick up {{item}}#{thing.description.short}{{/item}}.",
-        "info"
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
       )
-      |> Context.append_event(
-        context.character_id,
-        UpdateInventory.new(:add, all_items)
-      )
-      |> Context.append_event(
-        [context.character_id | others],
-        UpdateArea.new(%{action: :remove, on_ground: [item]})
-      )
-    else
-      context
-      |> Context.append_error("You cannot pick up {{item}}#{thing.description.short}{{/item}}.")
+
+    case results do
+      {:ok, matches} ->
+        sorted_results = CallbackUtil.sort_matches(matches)
+
+        # then just handle results as normal
+        handle_search_results(context, {:ok, sorted_results})
+
+      _ ->
+        handle_search_results(context, results)
     end
   end
 
-  defp which_hand(character) do
-    held_items =
-      if Ecto.assoc_loaded?(character.held_items) do
-        character.held_items
-      else
-        character = Repo.preload(character, :held_items)
-        character.held_items
-      end
+  defp handle_search_results(context, results) do
+    case results do
+      {:ok, [match]} ->
+        get_item(context, match)
 
-    case held_items do
-      [item] ->
-        if item.holdable_hand == "left" do
-          "right"
-        else
-          "left"
+      {:ok, all_matches = [match | matches]} ->
+        case context.command.ast do
+          # If which is greater than 0, then more than one match was anticipated.
+          # Make sure provided selection is not more than the number of items that were found
+          %TAP{thing: %Thing{which: which}}
+          when is_integer(which) and which > 0 and which <= length(all_matches) ->
+            get_item(context, Enum.at(matches, which - 1))
+
+          # If the user provided a number but it is greater than the number of items found,
+          %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
+            Util.not_found_error(context)
+
+          _ ->
+            case context.character.settings.commands.multiple_matches_mode do
+              "silent" ->
+                get_item(context, match, [])
+
+              "alert" ->
+                get_item(context, match, matches)
+
+              "choose" ->
+                Context.append_message(
+                  context,
+                  Message.new_story_output(
+                    context.character.id,
+                    "Multiple items were found, please be more specific.",
+                    "system_alert"
+                  )
+                )
+            end
         end
 
-      _items ->
-        character.handedness
+      _ ->
+        Util.not_found_error(context)
     end
   end
 
-  defp held_containers(items) do
-    Enum.filter(items, & &1.is_container)
-  end
-
-  defp get_item_in_worn_container(context) do
-    worn_containers = Character.list_worn_containers(context.character)
-    all_containers = held_containers(context.character.held_items) ++ worn_containers
-    ast = context.command.ast
-
-    cond do
-      # character is wearing at least one container and the container has been specified
-      not is_nil(ast.place) and length(all_containers) > 0 ->
-        case Search.generate_matches(
-               all_containers,
-               ast.place.input,
-               ast.place.which
-             ) do
-          # single worn container matched
-          {:ok, [match]} ->
-            check_worn_container(context, match.match)
-
-          # multiple worn containers matched
-          {:ok, _matches} ->
-            context
-            |> Context.append_error(
-              "Multiple potential containers found, please be more specific."
-            )
-
-          # no worn containers matches
-          {:error, :no_match} ->
-            context
-            |> Context.append_error("Could not find that container.")
-        end
-
-      # character is wearing exactly one container and the container has not been specified
-      is_nil(ast.place) and length(all_containers) == 1 ->
-        check_worn_container(context, List.first(all_containers))
-
-      # character is wearing multiple containers and the container has not been specified
-      # just check first one for now, all this logic will need to change at some point
-      is_nil(ast.place) and length(all_containers) > 1 ->
-        check_worn_container(context, List.first(all_containers))
-
-      # character is not wearing any containers and no container has been specified
-      not is_nil(ast.place) and length(all_containers) == 0 ->
-        context
-        |> Context.append_error("Could not find that item.")
-
-      # character is not wearing any containers and container has been specified
-      is_nil(ast.place) and length(all_containers) == 0 ->
-        context
-        |> Context.append_error("Could not find where you wanted to get the item from.")
-    end
-  end
-
-  @spec check_worn_container(Context.t(), Item.t()) :: Context.t()
-  defp check_worn_container(context, item) do
-    character = context.character
-
-    cond do
-      item.container_open or
-        (not item.container_open and not item.container_locked and character.auto_open_containers) or
-          (item.container_locked and character.auto_unlock_containers) ->
-        match = %Search.Match{
-          match_string: "",
-          match: item,
-          short_description: item.description.short,
-          long_description: item.long_description
-        }
-
-        find_thing(context, match, true)
-
-      item.container_locked and not character.auto_unlock_containers and
-          not character.auto_open_containers ->
-        context
-        |> Context.append_error(
-          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be unlocked and open first."
-        )
-
-      item.container_locked and not character.auto_unlock_containers ->
-        context
-        |> Context.append_error(
-          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be unlocked first."
-        )
-
-      not item.container_open and not character.auto_open_containers ->
-        context
-        |> Context.append_error(
-          "{{item}}#{String.capitalize(item.description.short)}{{/item}} must be open first."
-        )
-    end
-  end
-
-  defp get_item_in_area_container(context) do
-    character = context.character
-    ast = context.command.ast
-
-    Logger.debug(inspect(ast))
-
-    result =
-      Search.find_matches_in_area_v2(
-        target_types(),
-        character.area_id,
-        ast.place.input,
-        0
+  defp get_item_with_place(context) do
+    # look for place on ground on in hands or worn
+    area_results =
+      Search.find_matches_relative_to_place_in_area(
+        context.character.area_id,
+        context.command.ast.thing,
+        context.command.ast.place,
+        context.character.settings.commands.search_mode
       )
 
-    # look for container in area
-    case result do
-      # single match
-      {:ok, [place]} ->
-        item = place.match
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
 
+      _ ->
+        get_item_with_personal_place(context)
+    end
+  end
+
+  defp get_item_with_personal_place(context) do
+    # look for place on ground on in hands or worn
+    results =
+      Search.find_matches_relative_to_place_in_inventory(
+        context.character.id,
+        context.command.ast.thing,
+        context.command.ast.place,
+        context.character.settings.commands.search_mode
+      )
+
+    handle_search_results(context, results)
+  end
+
+  defp get_item_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_in_area(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+
+      _ ->
+        get_item_in_inventory(context)
+    end
+  end
+
+  defp get_item(context, thing = %Search.Match{}, _other_matches \\ []) do
+    in_area = Item.in_area?(thing.match.id, context.character.area_id)
+    in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
+    parent_containers_open = Item.parent_containers_open?(thing.match)
+
+    cond do
+      parent_containers_open and (in_area or in_inventory) ->
         cond do
-          (item.is_container and item.container_open) or
-            (item.is_container and character.auto_unlock_containers) or
-              (item.is_container and not item.container_locked and character.auto_open_containers) ->
-            find_thing(context, place, false)
+          thing.match.flags.coin ->
+            wealth_attrs =
+              CallbackUtil.coin_to_wealth_update_attrs(thing.match.coin, context.character.wealth)
 
-          (item.is_container and item.container_locked and not character.auto_unlock_containers) or
-              (item.is_container and not item.container_open and
-                 not character.auto_open_containers) ->
-            Context.append_output(
-              context,
-              context.character.id,
-              "{{item}}#{place.description.short}{{/item}} must be open first.",
-              "error"
+            updated_wealth =
+              Mud.Engine.Character.Wealth.update!(context.character.wealth, wealth_attrs)
+
+            Item.delete(thing.match)
+
+            character = Map.put(context.character, :wealth, updated_wealth)
+
+            others =
+              Character.list_others_active_in_areas(
+                context.character.id,
+                context.character.area_id
+              )
+
+            other_msg =
+              others
+              |> Message.new_story_output()
+              |> Message.append_text("[#{context.character.name}]", "character")
+              |> Message.append_text(" picks up ", "base")
+              |> Message.append_text(
+                thing.match.description.short,
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(".", "base")
+
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text("You", "character")
+              |> Message.append_text(" pick up ", "base")
+              |> Message.append_text(
+                CallbackUtil.coin_to_count_string(thing.match.coin),
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(".", "base")
+
+            context
+            |> Context.append_event(
+              character.id,
+              UpdateCharacter.new(%{action: "wealth", wealth: updated_wealth})
             )
-
-          not place.match.is_container ->
-            Context.append_output(
-              context,
-              context.character.id,
-              "{{item}}#{place.description.short}{{/item}} is not a container.",
-              "error"
+            |> Context.append_event(
+              [context.character_id | others],
+              UpdateArea.new(%{action: :remove, on_ground: [thing.match]})
             )
-        end
+            |> Context.append_message(other_msg)
+            |> Context.append_message(self_msg)
 
-      {:ok, _matches} ->
-        Context.append_output(
-          context,
-          context.character.id,
-          "Multiple potential containers found, please be more specific.",
-          "error"
-        )
+          # Is container and container is closed, meaning it can be geted
+          # thing.match.flags.container and not thing.match.container.get ->
+          #   container =
+          #     Container.update!(thing.match.container, %{
+          #       get: true
+          #     })
 
-      error ->
-        error
-    end
-  end
+          #   item = Map.put(thing.match, :container, container)
 
-  @spec find_thing(Context.t(), Search.Match.t(), boolean()) :: Context.t()
-  defp find_thing(context, place, private) do
-    ast = context.command.ast
+          #   others =
+          #     Character.list_others_active_in_areas(
+          #       context.character.id,
+          #       context.character.area_id
+          #     )
 
-    case find_thing_in_place(place, ast.thing.input) do
-      {:ok, thing} ->
-        get_thing_in_place(context, thing, place, private)
+          #   other_msg =
+          #     others
+          #     |> Message.new_story_output()
+          #     |> Message.append_text("[#{context.character.name}]", "character")
+          #     |> Message.append_text(" gets ", "base")
+          #     |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+          #     |> Message.append_text(".", "base")
 
-      {:multiple, _matches} ->
-        Context.append_output(
-          context,
-          context.character.id,
-          "Multiple potential matches found inside {{item}}#{place.description.short}{{/item}}, please be more specific.",
-          "error"
-        )
+          #   self_msg =
+          #     context.character.id
+          #     |> Message.new_story_output()
+          #     |> Message.append_text("You", "character")
+          #     |> Message.append_text(" get ", "base")
+          #     |> Message.append_text(
+          #       Item.items_to_short_desc_with_nested_location(item),
+          #       Mud.Engine.Util.get_item_type(item)
+          #     )
+          #     |> Message.append_text(".", "base")
 
-      {:error, :no_match} ->
-        Context.append_output(
-          context,
-          context.character.id,
-          "Could not find any matching item to get from {{item}}#{place.description.short}{{/item}}.",
-          "help_docs"
-        )
-    end
-  end
+          #   self_msg =
+          #     if other_matches != [] do
+          #       other_items = Enum.map(other_matches, & &1.match)
 
-  @spec find_thing_in_place(Search.Match.t(), String.t()) ::
-          {:ok, Search.Match.t()}
-          | {:multiple, [Search.Match.t()]}
-          | {:error, :no_match | :out_of_range}
-  defp find_thing_in_place(place, input) do
-    place = Repo.preload(place.match, :container_items)
-    items = place.container_items
+          #       Util.append_assumption_text(self_msg, item, other_items)
+          #     else
+          #       self_msg
+          #     end
 
-    case Search.generate_matches(items, input) do
-      {:ok, [result]} ->
-        {:ok, result}
+          #   # for items that are not root items, check to see whether the update needs to go to inventory or the area
+          #   context =
+          #     cond do
+          #       item.location.worn_on_character or item.location.held_in_hand or
+          #           in_inventory ->
+          #         Context.append_event(
+          #           context,
+          #           context.character_id,
+          #           UpdateInventory.new(:update, item)
+          #         )
 
-      {:ok, multiple} ->
-        {:multiple, multiple}
+          #       item.location.on_ground ->
+          #         Context.append_event(
+          #           context,
+          #           [context.character_id | others],
+          #           UpdateArea.new(%{action: :update, on_ground: [item]})
+          #         )
+          #     end
 
-      error ->
-        error
-    end
-  end
+          #   context
+          #   |> Context.append_message(other_msg)
+          #   |> Context.append_message(self_msg)
 
-  @spec get_thing_in_place(
-          Mud.Engine.Command.Context.t(),
-          Mud.Engine.Search.Match.t(),
-          Mud.Engine.Search.Match.t(),
-          boolean()
-        ) :: Mud.Engine.Command.Context.t()
-  defp get_thing_in_place(context, thing, place, private) do
-    character = context.character
+          # It is a container but the container is get,
+          # thing.match.flags.container and thing.match.container.get ->
+          #   self_msg =
+          #     context.character.id
+          #     |> Message.new_story_output()
+          #     |> Message.append_text(
+          #       CallbackUtil.upcase_item_with_location(thing.match),
+          #       Mud.Engine.Util.get_item_type(thing.match)
+          #     )
+          #     |> Message.append_text(" is already get.", "system_warning")
 
-    {self_msg, others_msg, items} = do_get_thing_in_place(thing, place, character)
+          #   self_msg =
+          #     if other_matches != [] do
+          #       other_items = Enum.map(other_matches, & &1.match)
 
-    others =
-      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+          #       Util.append_assumption_text(self_msg, thing.match, other_items)
+          #     else
+          #       self_msg
+          #     end
 
-    all_items = Item.list_all_recursive(items)
+          #   Context.append_message(context, self_msg)
 
-    context =
-      if private do
-        Context.append_event(
-          context,
-          context.character_id,
-          UpdateInventory.new(:update, [thing.match | all_items])
-        )
-      else
-        context
-        |> Context.append_event(
-          context.character_id,
-          UpdateInventory.new(:add, [thing.match | all_items])
-        )
-        |> Context.append_event(
-          [context.character_id | others],
-          UpdateArea.new(:remove, [thing.match | all_items])
-        )
-      end
-
-    context
-    |> Context.append_output(
-      others,
-      others_msg,
-      "info"
-    )
-    |> Context.append_output(
-      context.character.id,
-      self_msg,
-      "info"
-    )
-  end
-
-  defp do_get_thing_in_place(thing, place, character) do
-    item = thing.match
-    container = place.match
-
-    item =
-      Item.update!(item, %{
-        hand: which_hand(character),
-        holdable_is_held: true,
-        holdable_held_by_id: character.id,
-        container_id: nil
-      })
-
-    cond do
-      container.container_open ->
-        {"You get {{item}}#{thing.description.short}{{/item}} from inside {{item}}#{
-           place.description.short
-         }{{/item}}.",
-         "{{character}}#{character.name}{{/character}} gets {{item}}#{thing.description.short}{{/item}} from inside {{item}}#{
-           place.description.short
-         }{{/item}}.", [item]}
-
-      not container.container_open and not container.container_locked and
-          character.auto_open_containers ->
-        if character.auto_close_containers do
-          {"You open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
-             thing.description.short
-           }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
-             thing.description.short
-           }{{/item}} from inside.", [item]}
-        else
-          container =
-            Item.update!(container, %{
-              container_open: true
-            })
-
-          {"You open {{item}}#{place.description.short}{{/item}} and get {{item}}#{
-             thing.description.short
-           }{{/item}} from inside.",
-           "{{character}}#{character.name}{{/character}} opens {{item}}#{place.description.short}{{/item}} and gets {{item}}#{
-             thing.description.short
-           }{{/item}} from inside.", [item, container]}
-        end
-
-      container.container_locked and character.auto_unlock_containers ->
-        close = character.auto_close_containers
-        lock = character.auto_lock_containers
-
-        cond do
-          close and lock ->
-            {"You unlock and open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
-               thing.description.short
-             }{{/item}} from inside it, securing it once more.",
-             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.description.short
-             }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.description.short
-             }{{/item}} from inside, fiddling with it again once it is closed."}
-
-          close ->
-            container =
-              Item.update!(container, %{
-                container_locked: false
-              })
-
-            {"You unlock and open {{item}}#{place.description.short}{{/item}} just long enough to get {{item}}#{
-               thing.description.short
-             }{{/item}} from inside it.",
-             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.description.short
-             }{{/item}} a moment before opening it just long enough to get {{item}}#{
-               thing.description.short
-             }{{/item}} from inside.", [item, container]}
-
+          # Assume the thing is not a container
           true ->
-            container =
-              Item.update!(container, %{
-                container_locked: false,
-                container_open: true
-              })
+            context
+            # self_msg =
+            #   context.character.id
+            #   |> Message.new_story_output()
+            #   |> Message.append_text(
+            #     CallbackUtil.upcase_item_with_location(thing.match),
+            #     Mud.Engine.Util.get_item_type(thing.match)
+            #   )
+            #   |> Message.append_text(" cannot be geted.", "system_alert")
 
-            {"You unlock and open {{item}}#{place.description.short}{{/item}}, getting {{item}}#{
-               thing.description.short
-             }{{/item}} from inside it.",
-             "{{character}}#{character.name}{{/character}} fiddles with {{item}}#{
-               place.description.short
-             }{{/item}} a moment before opening it to get {{item}}#{thing.description.short}{{/item}} from inside.",
-             [item, container]}
+            # self_msg =
+            #   if other_matches != [] do
+            #     other_items = Enum.map(other_matches, & &1.match)
+
+            #     Util.append_assumption_text(self_msg, thing.match, other_items)
+            #   else
+            #     self_msg
+            #   end
+
+            # Context.append_message(context, self_msg)
         end
+
+      not parent_containers_open and (in_area or in_inventory) ->
+        parent_containers = Item.list_sorted_parent_containers(thing.match)
+        # If a parent is closed, warn the player
+        CallbackUtil.parent_containers_closed_error(context, thing.match, parent_containers)
+
+      not in_area and not in_inventory ->
+        Util.dave_error_v2(context)
     end
   end
-
-  defp target_types(), do: [:item]
 end

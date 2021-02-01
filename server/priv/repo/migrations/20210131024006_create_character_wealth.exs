@@ -7,11 +7,10 @@ defmodule Mud.Repo.Migrations.CreateCharacterWealth do
 
       add(:character_id, references(:characters, on_delete: :delete_all, type: :binary_id))
 
-      add(:copper, :integer, default: 0)
-      add(:bronze, :integer, default: 0)
-      add(:silver, :integer, default: 0)
-      add(:gold, :integer, default: 0)
-      add(:plat, :integer, default: 0)
+      add(:copper, :bigint, default: 0)
+      add(:bronze, :bigint, default: 0)
+      add(:silver, :bigint, default: 0)
+      add(:gold, :bigint, default: 0)
     end
 
     create(unique_index(:character_wealth, [:character_id]))
@@ -19,6 +18,5 @@ defmodule Mud.Repo.Migrations.CreateCharacterWealth do
     create(index(:character_wealth, [:bronze]))
     create(index(:character_wealth, [:silver]))
     create(index(:character_wealth, [:gold]))
-    create(index(:character_wealth, [:plat]))
   end
 end

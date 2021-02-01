@@ -456,9 +456,9 @@ defmodule Mud.Engine.Area do
     also_present =
       Mud.Engine.Character.list_active_in_areas(area.id)
       # filter out self
-      # |> Enum.filter(fn char ->
-      #   char.id != character.id
-      # end)
+      |> Enum.filter(fn char ->
+        char.id != character.id
+      end)
       |> Enum.sort(&(&1.name <= &2.name))
 
     if also_present == [] do
