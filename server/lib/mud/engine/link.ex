@@ -12,9 +12,13 @@ defmodule Mud.Engine.Link do
   import Ecto.Query
   alias Mud.Repo
   alias Mud.Engine.{Area}
+  alias Mud.Engine.Link.{Closable, Flags}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "links" do
+    has_one(:closable, Closable)
+    has_one(:flags, Flags)
+
     # Base values
     field(:arrival_text, :string)
     field(:departure_text, :string)
@@ -27,7 +31,7 @@ defmodule Mud.Engine.Link do
     field(:label_vertical_offset, :integer, default: 0)
     field(:long_description, :string)
     field(:short_description, :string)
-    field(:type, :string, default: "Direction")
+    field(:type, :string, default: "direction")
     field(:line_width, :integer, default: 2)
     field(:line_color, :string, default: "#FFFFFF")
     field(:line_dash, :integer, default: 0)
@@ -159,24 +163,10 @@ defmodule Mud.Engine.Link do
     |> unique_constraint([:type, :from_id, :to_id])
   end
 
-  @doc """
-  Returns the list of links.
-
-  ## Examples
-
-      iex> lists()
-      [%__MODULE__{}, ...]
-
-  """
-  @spec lists() :: [%__MODULE__{}]
-  def lists do
-    Repo.all(__MODULE__)
-  end
-
   def list_map_links(map_id) do
     Repo.all(
       from(
-        link in __MODULE__,
+        link in base_query_with_preload(),
         join: area in Area,
         on: area.id == link.to_id or area.id == link.from_id,
         where: area.map_id == ^map_id,
@@ -203,7 +193,7 @@ defmodule Mud.Engine.Link do
     to_area_ids = List.wrap(to_area_ids)
 
     Repo.all(
-      from(link in __MODULE__,
+      from(link in base_query_with_preload(),
         where: link.from_id in ^from_area_ids and link.to_id in ^to_area_ids
       )
     )
@@ -221,24 +211,10 @@ defmodule Mud.Engine.Link do
   @spec list_obvious_exits_in_area(area_id :: String.t()) :: [%__MODULE__{}] | []
   def list_obvious_exits_in_area(area_id) do
     Repo.all(
-      from(link in __MODULE__,
-        where: link.from_id == ^area_id and link.type in ^["Direction", "Object"]
+      from([link, flags: flags] in base_query_with_preload(),
+        where: link.from_id == ^area_id and (flags.direction or flags.portal or flags.object)
       )
     )
-  end
-
-  @spec list_obvious_exits_in_area(Ecto.Multi.t(), atom(), String.t() | [String.t()]) ::
-          Ecto.Multi.t()
-  def list_obvious_exits_in_area(multi, name, area_ids) do
-    Ecto.Multi.run(multi, name, fn repo, _changes ->
-      area_ids = List.wrap(area_ids)
-
-      from(link in __MODULE__,
-        where: link.from_id in ^area_ids and link.type in ^["Direction", "Object"]
-      )
-      |> repo.all()
-      |> (&{:ok, &1}).()
-    end)
   end
 
   @doc """
@@ -258,7 +234,7 @@ defmodule Mud.Engine.Link do
         ]
   def list_in_area(area_id) do
     Repo.all(
-      from(link in __MODULE__,
+      from(link in base_query_with_preload(),
         where: link.from_id == ^area_id
       )
     )
@@ -278,9 +254,28 @@ defmodule Mud.Engine.Link do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    %__MODULE__{}
-    |> __MODULE__.changeset(attrs)
-    |> Repo.insert()
+    Repo.transaction(fn ->
+      %__MODULE__{}
+      |> __MODULE__.changeset(attrs)
+      |> Repo.insert!()
+      |> setup_required_component(attrs, :flags, Flags)
+      |> maybe_setup_optional_component(attrs, :closable, Closable)
+    end)
+  end
+
+  defp setup_required_component(link, attrs, key, callback) do
+    thing = callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
+
+    %{link | key => thing}
+  end
+
+  defp maybe_setup_optional_component(link, attrs, key, callback) do
+    if Map.has_key?(attrs, key) do
+      thing = callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
+      %{link | key => thing}
+    else
+      link
+    end
   end
 
   @doc """
@@ -295,12 +290,11 @@ defmodule Mud.Engine.Link do
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update(area :: %__MODULE__{}, attributes :: map()) ::
-          {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(%__MODULE__{} = link, attrs) do
     link
     |> __MODULE__.changeset(attrs)
     |> Repo.update()
+    |> Repo.preload([:closable, :flags])
   end
 
   @doc """
@@ -310,6 +304,7 @@ defmodule Mud.Engine.Link do
   def search_exits(area_id, search_string) do
     search_exits_query(area_id, search_string)
     |> Repo.all()
+    |> Repo.preload([:closable, :flags])
   end
 
   defp search_exits_query(area_id, search_string) do
@@ -349,7 +344,11 @@ defmodule Mud.Engine.Link do
   """
   @spec get!(link_id :: String.t()) :: %__MODULE__{} | Ecto.NoResultsError.t()
   def get!(link_id) do
-    Repo.get!(__MODULE__, link_id)
+    Repo.one!(
+      from(link in base_query_with_preload(),
+        where: link.id == ^link_id
+      )
+    )
   end
 
   def get!(from_id, to_id) do
@@ -386,7 +385,7 @@ defmodule Mud.Engine.Link do
   area lead to.
   """
   def link_to_area_ids_from_area_ids(area_ids) do
-    from(link in base_link_query(),
+    from(link in base_query_with_preload(),
       where: link.from_id in ^area_ids,
       select: link.to_id
     )
@@ -397,9 +396,33 @@ defmodule Mud.Engine.Link do
   area lead to.
   """
   def link_to_area_ids_from_area_subquery(area_subquery) do
-    from(link in base_link_query(),
+    from(link in base_query_with_preload(),
       where: link.from_id in subquery(area_subquery),
       select: link.to_id
+    )
+  end
+
+  def base_query_without_preload() do
+    from(
+      link in __MODULE__,
+      join: flags in assoc(link, :flags),
+      as: :flags,
+      left_join: closable in assoc(link, :closable),
+      as: :closable
+    )
+  end
+
+  def base_query_with_preload() do
+    from(
+      link in __MODULE__,
+      join: flags in assoc(link, :flags),
+      as: :flags,
+      left_join: closable in assoc(link, :closable),
+      as: :closable,
+      preload: [
+        closable: closable,
+        flags: flags
+      ]
     )
   end
 end

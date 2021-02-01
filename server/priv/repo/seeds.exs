@@ -9,11 +9,12 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-alias Mud.Engine.{Map, Area, Link}
+alias Mud.Engine.{Area, Link}
+alias Mud.Engine
 
 # Map insertions
 {:ok, map} =
-  Map.create(%{
+  Mud.Engine.Map.create(%{
     name: "Torinthian Royal Palace Exterior",
     description: "The complete grounds of the Torinthian Royal Palace",
     view_size: 250,
@@ -23,7 +24,7 @@ alias Mud.Engine.{Map, Area, Link}
   })
 
 {:ok, map2} =
-  Map.create(%{
+  Mud.Engine.Map.create(%{
     name: "Torinthian Royal Castle",
     description: "The interior of the Royal Castle",
     view_size: 250,
@@ -163,17 +164,24 @@ alias Mud.Engine.{Map, Area, Link}
       "The openness of the gardens to the west are in contrast to the confinement of the maze to the east."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: east_room.id,
-  to_id: maze_1.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass",
-  has_marker: true
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: east_room.id,
+        to_id: maze_1.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass",
+        has_marker: true,
+        line_color: "#ff0000"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_2} =
   Area.create(%{
@@ -185,27 +193,39 @@ Mud.Repo.insert!(%Link{
     description: "The entrance from the west is the only break in the otherwise endless hegerows."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_1.id,
-  to_id: maze_2.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_1.id,
+        to_id: maze_2.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_2.id,
-  to_id: maze_1.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_2.id,
+        to_id: maze_1.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_3} =
   Area.create(%{
@@ -217,27 +237,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_2.id,
-  to_id: maze_3.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_2.id,
+        to_id: maze_3.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_3.id,
-  to_id: maze_2.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_3.id,
+        to_id: maze_2.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_4} =
   Area.create(%{
@@ -249,27 +281,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_3.id,
-  to_id: maze_4.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_3.id,
+        to_id: maze_4.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_4.id,
-  to_id: maze_3.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_4.id,
+        to_id: maze_3.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_5} =
   Area.create(%{
@@ -281,27 +325,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_4.id,
-  to_id: maze_5.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_4.id,
+        to_id: maze_5.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_5.id,
-  to_id: maze_4.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_5.id,
+        to_id: maze_4.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_6} =
   Area.create(%{
@@ -313,27 +369,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_5.id,
-  to_id: maze_6.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_5.id,
+        to_id: maze_6.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_6.id,
-  to_id: maze_5.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_6.id,
+        to_id: maze_5.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_7} =
   Area.create(%{
@@ -345,27 +413,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_6.id,
-  to_id: maze_7.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_6.id,
+        to_id: maze_7.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
-  to_id: maze_6.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_7.id,
+        to_id: maze_6.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_8} =
   Area.create(%{
@@ -377,27 +457,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
-  to_id: maze_8.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_7.id,
+        to_id: maze_8.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_8.id,
-  to_id: maze_7.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_8.id,
+        to_id: maze_7.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_9} =
   Area.create(%{
@@ -409,27 +501,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_9.id,
-  to_id: maze_8.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_9.id,
+        to_id: maze_8.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_8.id,
-  to_id: maze_9.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_8.id,
+        to_id: maze_9.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_10} =
   Area.create(%{
@@ -441,27 +545,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_7.id,
-  to_id: maze_10.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_7.id,
+        to_id: maze_10.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_10.id,
-  to_id: maze_7.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_10.id,
+        to_id: maze_7.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_11} =
   Area.create(%{
@@ -473,27 +589,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_10.id,
-  to_id: maze_11.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_10.id,
+        to_id: maze_11.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_11.id,
-  to_id: maze_10.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_11.id,
+        to_id: maze_10.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_12} =
   Area.create(%{
@@ -505,27 +633,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_11.id,
-  to_id: maze_12.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_11.id,
+        to_id: maze_12.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_12.id,
-  to_id: maze_11.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_12.id,
+        to_id: maze_11.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_13} =
   Area.create(%{
@@ -537,27 +677,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_13.id,
-  to_id: maze_12.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_13.id,
+        to_id: maze_12.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_12.id,
-  to_id: maze_13.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_12.id,
+        to_id: maze_13.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_14} =
   Area.create(%{
@@ -569,27 +721,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_14.id,
-  to_id: maze_13.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_14.id,
+        to_id: maze_13.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_13.id,
-  to_id: maze_14.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_13.id,
+        to_id: maze_14.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_15} =
   Area.create(%{
@@ -601,27 +765,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_15.id,
-  to_id: maze_14.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_15.id,
+        to_id: maze_14.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_14.id,
-  to_id: maze_15.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_14.id,
+        to_id: maze_15.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_16} =
   Area.create(%{
@@ -633,27 +809,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_16.id,
-  to_id: maze_15.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_16.id,
+        to_id: maze_15.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_15.id,
-  to_id: maze_16.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_15.id,
+        to_id: maze_16.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_17} =
   Area.create(%{
@@ -665,27 +853,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_17.id,
-  to_id: maze_16.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_17.id,
+        to_id: maze_16.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_16.id,
-  to_id: maze_17.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_16.id,
+        to_id: maze_17.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_18} =
   Area.create(%{
@@ -697,27 +897,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_18.id,
-  to_id: maze_17.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_18.id,
+        to_id: maze_17.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_17.id,
-  to_id: maze_18.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_17.id,
+        to_id: maze_18.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_19} =
   Area.create(%{
@@ -729,27 +941,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_19.id,
-  to_id: maze_18.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_19.id,
+        to_id: maze_18.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_18.id,
-  to_id: maze_19.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_18.id,
+        to_id: maze_19.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_20} =
   Area.create(%{
@@ -761,27 +985,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_20.id,
-  to_id: maze_19.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_20.id,
+        to_id: maze_19.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_19.id,
-  to_id: maze_20.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_19.id,
+        to_id: maze_20.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_21} =
   Area.create(%{
@@ -793,27 +1029,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_21.id,
-  to_id: maze_20.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_21.id,
+        to_id: maze_20.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_20.id,
-  to_id: maze_21.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_20.id,
+        to_id: maze_21.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_22} =
   Area.create(%{
@@ -825,27 +1073,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_22.id,
-  to_id: maze_21.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_22.id,
+        to_id: maze_21.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_21.id,
-  to_id: maze_22.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_21.id,
+        to_id: maze_22.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_23} =
   Area.create(%{
@@ -857,27 +1117,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_22.id,
-  to_id: maze_23.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_22.id,
+        to_id: maze_23.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_23.id,
-  to_id: maze_22.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_23.id,
+        to_id: maze_22.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_24} =
   Area.create(%{
@@ -889,27 +1161,39 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_23.id,
-  to_id: maze_24.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_23.id,
+        to_id: maze_24.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_24.id,
-  to_id: maze_23.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_24.id,
+        to_id: maze_23.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 {:ok, maze_25} =
   Area.create(%{
@@ -921,508 +1205,737 @@ Mud.Repo.insert!(%Link{
     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
   })
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_24.id,
-  to_id: maze_25.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_24.id,
+        to_id: maze_25.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_25.id,
-  to_id: maze_24.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_25.id,
+        to_id: maze_24.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_25.id,
-  to_id: south_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass",
-  has_marker: true
-})
-
-# maze_26 =
-#   Area.create(%{
-#     map_x: 1,
-#     map_y: 2,
-#     map_size: 20,
-# # map_id: map.id,
-#     name: "Maze",
-#     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
-#   })
-
-# maze_27 =
-#   Area.create(%{
-#     map_x: 3,
-#     map_y: 2,
-#     map_size: 20,
-# # map_id: map.id,
-#     name: "Maze",
-#     description: "Endless hegerows tower above, providing no clue as to entrance or exit."
-#   })
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_25.id,
+        to_id: south_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass",
+        has_marker: true,
+        line_color: "#ff0000"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # Link insertions
 
 # center room east room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: east_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
 
-Mud.Repo.insert!(%Link{
-  from_id: east_room.id,
-  to_id: center_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: east_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: east_room.id,
+        to_id: center_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room west room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: west_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
 
-Mud.Repo.insert!(%Link{
-  from_id: west_room.id,
-  to_id: center_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: west_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: west_room.id,
+        to_id: center_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room north room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: north_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: north_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: north_room.id,
-  to_id: center_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: north_room.id,
+        to_id: center_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room south room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: south_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: south_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: south_room.id,
-  to_id: center_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: south_room.id,
+        to_id: center_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room southeast room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: southeast_room.id,
-  departure_text: "southeast",
-  arrival_text: "the northwest",
-  type: "Direction",
-  short_description: "southeast",
-  long_description: "southeast",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: southeast_room.id,
+        departure_text: "southeast",
+        arrival_text: "the northwest",
+        type: "direction",
+        short_description: "southeast",
+        long_description: "southeast",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southeast_room.id,
-  to_id: center_room.id,
-  departure_text: "northwest",
-  arrival_text: "the southeast",
-  type: "Direction",
-  short_description: "northwest",
-  long_description: "northwest",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southeast_room.id,
+        to_id: center_room.id,
+        departure_text: "northwest",
+        arrival_text: "the southeast",
+        type: "direction",
+        short_description: "northwest",
+        long_description: "northwest",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room southwest room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: southwest_room.id,
-  departure_text: "southwest",
-  arrival_text: "the northeast",
-  type: "Direction",
-  short_description: "southwest",
-  long_description: "southwest",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: southwest_room.id,
+        departure_text: "southwest",
+        arrival_text: "the northeast",
+        type: "direction",
+        short_description: "southwest",
+        long_description: "southwest",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southwest_room.id,
-  to_id: center_room.id,
-  departure_text: "northeast",
-  arrival_text: "the southwest",
-  type: "Direction",
-  short_description: "northeast",
-  long_description: "northeast",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southwest_room.id,
+        to_id: center_room.id,
+        departure_text: "northeast",
+        arrival_text: "the southwest",
+        type: "direction",
+        short_description: "northeast",
+        long_description: "northeast",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room northwest room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: northwest_room.id,
-  departure_text: "northwest",
-  arrival_text: "the southeast",
-  type: "Direction",
-  short_description: "northwest",
-  long_description: "northwest",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: northwest_room.id,
+        departure_text: "northwest",
+        arrival_text: "the southeast",
+        type: "direction",
+        short_description: "northwest",
+        long_description: "northwest",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northwest_room.id,
-  to_id: center_room.id,
-  departure_text: "southeast",
-  arrival_text: "the northwest",
-  type: "Direction",
-  short_description: "southeast",
-  long_description: "southeast",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northwest_room.id,
+        to_id: center_room.id,
+        departure_text: "southeast",
+        arrival_text: "the northwest",
+        type: "direction",
+        short_description: "southeast",
+        long_description: "southeast",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # center room northeast room links
-Mud.Repo.insert!(%Link{
-  from_id: center_room.id,
-  to_id: northeast_room.id,
-  departure_text: "northeast",
-  arrival_text: "the southwest",
-  type: "Direction",
-  short_description: "northeast",
-  long_description: "northeast",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room.id,
+        to_id: northeast_room.id,
+        departure_text: "northeast",
+        arrival_text: "the southwest",
+        type: "direction",
+        short_description: "northeast",
+        long_description: "northeast",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northeast_room.id,
-  to_id: center_room.id,
-  departure_text: "southwest",
-  arrival_text: "the northeast",
-  type: "Direction",
-  short_description: "southwest",
-  long_description: "southwest",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northeast_room.id,
+        to_id: center_room.id,
+        departure_text: "southwest",
+        arrival_text: "the northeast",
+        type: "direction",
+        short_description: "southwest",
+        long_description: "southwest",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # north room northeast room links
-Mud.Repo.insert!(%Link{
-  from_id: north_room.id,
-  to_id: northeast_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: north_room.id,
+        to_id: northeast_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northeast_room.id,
-  to_id: north_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northeast_room.id,
+        to_id: north_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # north room northwest room links
-Mud.Repo.insert!(%Link{
-  from_id: north_room.id,
-  to_id: northwest_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: north_room.id,
+        to_id: northwest_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northwest_room.id,
-  to_id: north_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northwest_room.id,
+        to_id: north_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # south room southeast room links
-Mud.Repo.insert!(%Link{
-  from_id: south_room.id,
-  to_id: southeast_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: south_room.id,
+        to_id: southeast_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southeast_room.id,
-  to_id: south_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southeast_room.id,
+        to_id: south_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # south room southwest room links
-Mud.Repo.insert!(%Link{
-  from_id: south_room.id,
-  to_id: southwest_room.id,
-  departure_text: "west",
-  arrival_text: "the east",
-  type: "Direction",
-  short_description: "west",
-  long_description: "west",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: south_room.id,
+        to_id: southwest_room.id,
+        departure_text: "west",
+        arrival_text: "the east",
+        type: "direction",
+        short_description: "west",
+        long_description: "west",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southwest_room.id,
-  to_id: south_room.id,
-  departure_text: "east",
-  arrival_text: "the west",
-  type: "Direction",
-  short_description: "east",
-  long_description: "east",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southwest_room.id,
+        to_id: south_room.id,
+        departure_text: "east",
+        arrival_text: "the west",
+        type: "direction",
+        short_description: "east",
+        long_description: "east",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # east room northeast room links
-Mud.Repo.insert!(%Link{
-  from_id: east_room.id,
-  to_id: northeast_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: east_room.id,
+        to_id: northeast_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northeast_room.id,
-  to_id: east_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northeast_room.id,
+        to_id: east_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # east room southeast room links
-Mud.Repo.insert!(%Link{
-  from_id: east_room.id,
-  to_id: southeast_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: east_room.id,
+        to_id: southeast_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southeast_room.id,
-  to_id: east_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southeast_room.id,
+        to_id: east_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # west room northwest room links
-Mud.Repo.insert!(%Link{
-  from_id: west_room.id,
-  to_id: northwest_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: west_room.id,
+        to_id: northwest_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northwest_room.id,
-  to_id: west_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northwest_room.id,
+        to_id: west_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # west room southwest room links
-Mud.Repo.insert!(%Link{
-  from_id: west_room.id,
-  to_id: southwest_room.id,
-  departure_text: "south",
-  arrival_text: "the north",
-  type: "Direction",
-  short_description: "south",
-  long_description: "south",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: west_room.id,
+        to_id: southwest_room.id,
+        departure_text: "south",
+        arrival_text: "the north",
+        type: "direction",
+        short_description: "south",
+        long_description: "south",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southwest_room.id,
-  to_id: west_room.id,
-  departure_text: "north",
-  arrival_text: "the south",
-  type: "Direction",
-  short_description: "north",
-  long_description: "north",
-  icon: "fas fa-compass"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southwest_room.id,
+        to_id: west_room.id,
+        departure_text: "north",
+        arrival_text: "the south",
+        type: "direction",
+        short_description: "north",
+        long_description: "north",
+        icon: "fas fa-compass"
+      },
+      Mud.Engine.LinkTemplate.Direction.template()
+    )
+  )
 
 # Portals
-Mud.Repo.insert!(%Link{
-  from_id: southwest_room.id,
-  to_id: northeast_room.id,
-  departure_text: "into",
-  arrival_text: "through",
-  type: "Object",
-  short_description: "a shimmering portal",
-  long_description:
-    "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
-  icon: "fas fa-circle"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southwest_room.id,
+        to_id: northeast_room.id,
+        departure_text: "into",
+        arrival_text: "through",
+        type: "portal",
+        short_description: "a shimmering portal",
+        long_description:
+          "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
+        icon: "fas fa-circle"
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: southwest_room.id,
-  to_id: northwest_room.id,
-  departure_text: "into",
-  arrival_text: "through",
-  type: "Object",
-  short_description: "a glimmering portal",
-  long_description:
-    "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
-  icon: "fas fa-circle"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: southwest_room.id,
+        to_id: northwest_room.id,
+        departure_text: "into",
+        arrival_text: "through",
+        type: "portal",
+        short_description: "a glimmering portal",
+        long_description:
+          "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
+        icon: "fas fa-circle"
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northwest_room.id,
-  to_id: southwest_room.id,
-  departure_text: "into",
-  arrival_text: "through",
-  type: "Object",
-  short_description: "a glimmering portal",
-  long_description:
-    "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
-  icon: "fas fa-circle"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northwest_room.id,
+        to_id: southwest_room.id,
+        departure_text: "into",
+        arrival_text: "through",
+        type: "portal",
+        short_description: "a glimmering portal",
+        long_description:
+          "The glimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
+        icon: "fas fa-circle"
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: northeast_room.id,
-  to_id: southwest_room.id,
-  departure_text: "into",
-  arrival_text: "through",
-  type: "Object",
-  short_description: "a shimmering portal",
-  long_description:
-    "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
-  icon: "fas fa-circle"
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northeast_room.id,
+        to_id: southwest_room.id,
+        departure_text: "into",
+        arrival_text: "through",
+        type: "portal",
+        short_description: "a shimmering portal",
+        long_description:
+          "The shimmering portal crackles with arcane energy, sparks and arcane lightning twisting around the edges of the tear in reality.",
+        icon: "fas fa-circle"
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: center_room2.id,
-  to_id: maze_23.id,
-  departure_text: "northeast",
-  arrival_text: "the southwest",
-  type: "Direction",
-  short_description: "northeast",
-  long_description: "northeast",
-  icon: "fas fa-compass",
-  local_to_x: 1,
-  local_to_y: 1,
-  local_from_x: -1,
-  local_from_y: -6
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: center_room2.id,
+        to_id: maze_23.id,
+        departure_text: "northeast",
+        arrival_text: "the southwest",
+        type: "direction",
+        short_description: "northeast",
+        long_description: "northeast",
+        icon: "fas fa-compass",
+        local_to_x: 1,
+        local_to_y: 1,
+        local_from_x: -1,
+        local_from_y: -6
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
-Mud.Repo.insert!(%Link{
-  from_id: maze_23.id,
-  to_id: center_room2.id,
-  departure_text: "southwest",
-  arrival_text: "the northeast",
-  type: "Direction",
-  short_description: "southwest",
-  long_description: "southwest",
-  icon: "fas fa-compass",
-  local_to_x: -1,
-  local_to_y: -6,
-  local_from_x: 1,
-  local_from_y: 1
-})
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: maze_23.id,
+        to_id: center_room2.id,
+        departure_text: "southwest",
+        arrival_text: "the northeast",
+        type: "direction",
+        short_description: "southwest",
+        long_description: "southwest",
+        icon: "fas fa-compass",
+        local_to_x: -1,
+        local_to_y: -6,
+        local_from_x: 1,
+        local_from_y: 1
+      },
+      Mud.Engine.LinkTemplate.Portal.template()
+    )
+  )
 
 # Object insertions
 

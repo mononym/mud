@@ -1,3 +1,9 @@
+import type { LinkFlagsInterface } from "./linkFlags";
+import LinkFlagsState from "./linkFlags";
+
+import type { LinkClosableInterface } from "./linkClosable";
+import LinkClosableState from "./linkClosable";
+
 export interface LinkInterface {
   id: string;
   arrivalText: string;
@@ -55,7 +61,9 @@ export interface LinkInterface {
   labelFontSize: number;
   localToLineWidth: number;
   localToLineDash: number;
-  localToLineColor: string
+  localToLineColor: string;
+  flags: LinkFlagsInterface;
+  closable: LinkClosableInterface;
 }
 
 const state: LinkInterface = {
@@ -65,7 +73,7 @@ const state: LinkInterface = {
   shortDescription: "",
   longDescription: "",
   icon: "fas-fa-compass",
-  type: "Direction",
+  type: "direction",
   toId: "",
   fromId: "",
   hasMarker: false,
@@ -116,6 +124,8 @@ const state: LinkInterface = {
   lineEndVerticalOffsetWidth: 0,
   lineStartHorizontalOffsetWidth: 0,
   lineStartVerticalOffsetWidth: 0,
+  flags: { ...LinkFlagsState },
+  closable: { ...LinkClosableState },
 };
 
 export default state;

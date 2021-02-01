@@ -32,7 +32,7 @@
     cancelLinkArea();
   }
   function handleShortDescriptionChange() {
-    if ($linkUnderConstruction.type == "Direction") {
+    if ($linkUnderConstruction.type == "direction") {
       $linkUnderConstruction.departureText =
         $linkUnderConstruction.shortDescription;
       $linkUnderConstruction.longDescription =
@@ -654,11 +654,12 @@
             bind:value={$linkUnderConstruction.type}
             name="type"
             class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            <option>Direction</option>
-            <option>Object</option>
+            <option>direction</option>
+            <option>door</option>
+            <option>portal</option>
           </select>
         </div>
-        {#if $linkUnderConstruction.type == 'Object'}
+        {#if $linkUnderConstruction.type != 'direction'}
           <div class="col-span-1 flex flex-col place-content-center">
             <i
               class="{$linkUnderConstruction.icon} text-center text-4xl text-gray-200" />

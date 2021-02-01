@@ -362,7 +362,7 @@ defmodule Mud.Engine.Map do
     areas_ids_query = from(area in areas_query, select: area.id)
 
     from(
-      link in Link,
+      link in Link.base_query_with_preload(),
       where: link.to_id in subquery(areas_ids_query) or link.from_id in subquery(areas_ids_query)
     )
   end

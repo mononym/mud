@@ -74,28 +74,6 @@ defmodule Mud.Engine.Command.CallbackUtil do
       true ->
         "#{number} copper"
     end
-
-    # digits = Integer.digits(number)
-
-    # postfixes = ["K", "M", "B", "T"]
-
-    # if length(digits) > 3 do
-    #   {[first, second, third], rest} = Enum.split(digits, 3)
-
-    #   "#{first}#{second}#{
-    #     if third != 0 do
-    #       if Integer.mod(length(rest), 3) != 0 do
-    #         ".#{third}"
-    #       else
-    #         third
-    #       end
-    #     else
-    #       ""
-    #     end
-    #   }#{Enum.at(postfixes, floor(length(rest) / 3))}"
-    # else
-    #   "#{number}"
-    # end
   end
 
   def number_to_approximate_string(number) do
