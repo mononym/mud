@@ -70,13 +70,11 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
-  def handle_cast({:update_character, character}, socket) do
-    Logger.info("character_channel:#{socket.assigns.character_id}:update")
-    Logger.debug("update_character: #{inspect(character)}")
+  def handle_cast({:update_character, updated_data}, socket) do
+    Logger.info("character_channel:#{socket.assigns.character_id}:updated_data")
+    Logger.debug("update_character: #{inspect(updated_data)}")
 
-    Phoenix.Channel.push(socket, "update:character", %{
-      character: Phoenix.View.render_one(character, MudWeb.CharacterView, "character.json")
-    })
+    Phoenix.Channel.push(socket, "update:character", updated_data)
 
     {:noreply, socket}
   end

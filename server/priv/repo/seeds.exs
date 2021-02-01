@@ -16,7 +16,7 @@ alias Mud.Engine.{Map, Area, Link}
   Map.create(%{
     name: "Torinthian Royal Palace Exterior",
     description: "The complete grounds of the Torinthian Royal Palace",
-    map_size: 5000,
+    view_size: 250,
     grid_size: 50,
     labels: [%{text: "Hello World"}],
     permanently_explored: true
@@ -26,7 +26,7 @@ alias Mud.Engine.{Map, Area, Link}
   Map.create(%{
     name: "Torinthian Royal Castle",
     description: "The interior of the Royal Castle",
-    view_size: 5000,
+    view_size: 250,
     grid_size: 50,
     labels: []
   })
@@ -1721,6 +1721,24 @@ Mud.Engine.Item.create_from_template_for_area(
   Mud.Engine.ItemTemplate.SilverCoin,
   100,
   center_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.GoldCoin,
+  3,
+  northwest_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.BronzeCoin,
+  300,
+  northeast_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.CopperCoin,
+  3432,
+  east_room.id
 )
 
 #####

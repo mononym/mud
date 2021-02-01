@@ -616,6 +616,7 @@ export function createState() {
   }
 
   function addExploredMaps(msg) {
+    console.log("updating known maps");
     knownMapsIndex.update(function (index) {
       msg.maps.forEach((map) => {
         index[map.id] = map;
@@ -628,6 +629,10 @@ export function createState() {
         (v, i, a) => a.findIndex((it) => it.id == v.id) === i
       )
     );
+
+    console.log("updated known maps");
+    console.log(get(knownMapsIndex));
+    console.log(get(knownMapsList));
   }
 
   function addExploredAreas(msg) {

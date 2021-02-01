@@ -507,6 +507,20 @@
       </div>
       <div class="col-span-2">
         <label
+          for="coinTextColor"
+          style="color:{$characterSettings.colors.coin}"
+          class="block text-sm font-medium">Coin Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.coin}
+          type="color"
+          name="coinTextColor"
+          id="coinTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
           for="onGroundLabelTextColor"
           style="color:{$characterSettings.colors.on_ground_label}"
           class="block text-sm font-medium">'On Ground' Label Text Color</label

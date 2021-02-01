@@ -705,6 +705,7 @@
         );
       })
       .map((area) => {
+        console.log(areas);
         const modifiedArea = { ...area };
 
         // find a link which points to this other area in this other map
@@ -719,6 +720,7 @@
           return [];
         }
 
+        console.log(link);
         // Outgoing to other area.
         // Use local 'to'
         if (link.toId == area.id) {
@@ -731,6 +733,12 @@
 
           modifiedArea.mapX = link.localToX;
           modifiedArea.mapY = link.localToY;
+
+          let id = areasMap[link.toId].mapId;
+
+          if (mapsMap[id] == undefined) {
+            return;
+          }
 
           modifiedArea.name = `${mapsMap[areasMap[link.toId].mapId].name}, ${
             areasMap[link.toId].name
@@ -746,13 +754,20 @@
           modifiedArea.mapX = link.localFromX;
           modifiedArea.mapY = link.localFromY;
 
+          let id = areasMap[link.toId].mapId;
+
+          if (mapsMap[id] == undefined) {
+            return;
+          }
+
           modifiedArea.name = `${mapsMap[areasMap[link.fromId].mapId].name}, ${
             areasMap[link.fromId].name
           }`;
         }
 
         return buildRectFromArea(modifiedArea);
-      });
+      })
+      .filter((thing) => thing != undefined);
   }
 
   function handleSelectArea(event) {

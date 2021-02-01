@@ -112,6 +112,8 @@ defmodule Mud.Engine.Command.Move do
         context.character.settings.commands.search_mode
       )
 
+    IO.inspect(result, label: :attempt_move_direction)
+
     case result do
       {:ok, [match | matches]}
       when is_integer(which) and which > 0 and which <= length(matches) ->
@@ -325,14 +327,8 @@ defmodule Mud.Engine.Command.Move do
     )
     |> Context.append_event(
       character.id,
-      UpdateCharacter.new(character)
+      UpdateCharacter.new("character", character)
     )
-
-    # area
-    # other characters
-    # items on ground
-    # denizens
-    # scenery/TOI
   end
 
   defp maybe_add_assumption_message(context, _, []) do

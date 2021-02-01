@@ -45,7 +45,7 @@
       } else if (event.key == "ArrowUp") {
         event.preventDefault();
 
-        if (commandHistoryIndex == -1) {
+        if (commandHistory.length - 1 > commandHistoryIndex) {
           commandHistoryIndex++;
         }
 
@@ -58,23 +58,20 @@
 
         if (commandHistory.length - 1 >= commandHistoryIndex) {
           actualInput = commandHistory[commandHistoryIndex];
-
-          if (commandHistory.length - 1 > commandHistoryIndex) {
-            commandHistoryIndex++;
-          }
         }
       } else if (event.key == "ArrowDown") {
         prevent_default(event);
 
         if (commandHistory.length == 0 || commandHistoryIndex == -1) {
           return;
-        } else if (commandHistoryIndex == 0) {
-          actualInput = workingInput;
-          workingInput = "";
-
-          commandHistoryIndex--;
         } else {
           commandHistoryIndex--;
+        }
+
+        if (commandHistoryIndex == -1) {
+          actualInput = workingInput;
+          workingInput = "";
+        } else {
           actualInput = commandHistory[commandHistoryIndex];
         }
       } else {
@@ -157,7 +154,8 @@
     on:click={toggleInputMode}
     class="CommandLineWindowInputTypeButton hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 outline-none focus:outline-none border-r"
     type="button"
-    style="width:50px">
+    style="width:50px"
+  >
     <i class="fas fa-{inputMode == 'command' ? 'terminal' : 'comment-alt'}" />
   </button>
   <form class="flex-1 flex">

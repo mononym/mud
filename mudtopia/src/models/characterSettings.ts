@@ -235,7 +235,7 @@ const state: CharacterSettingsInterface = {
     weapon: "#ffffff",
     armor: "#ffffff",
     gem: "#ffffff",
-    coin: "#ffffff",
+    coin: "#FFD700",
     ammunition: "#ffffff",
     shield: "#ffffff",
     clothing: "#ffffff",

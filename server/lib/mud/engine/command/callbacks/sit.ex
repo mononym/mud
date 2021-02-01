@@ -137,7 +137,7 @@ defmodule Mud.Engine.Command.Sit do
         )
         |> Context.append_event(
           context.character.id,
-          UpdateCharacter.new(char)
+          UpdateCharacter.new(%{character: char})
         )
 
       furniture_object != nil and furniture_object.is_furniture and
@@ -174,7 +174,7 @@ defmodule Mud.Engine.Command.Sit do
         )
         |> Context.append_event(
           context.character.id,
-          UpdateCharacter.new(char)
+          UpdateCharacter.new(%{character: char})
         )
 
       true ->

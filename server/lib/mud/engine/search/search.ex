@@ -98,7 +98,7 @@ defmodule Mud.Engine.Search do
   @spec find_exits_in_area(String.t(), String.t(), String.t()) ::
           {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
   @doc """
-  Find matches on the ground or in the area.
+  Find exits from an area.
   """
   @spec find_exits_in_area(
           String.t(),
@@ -108,6 +108,15 @@ defmodule Mud.Engine.Search do
   def find_exits_in_area(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
     links = Link.search_exits(area_id, search_string)
+
+    links =
+      case Enum.find(links, &(&1.short_description === input)) do
+        nil ->
+          links
+
+        link ->
+          [link]
+      end
 
     case things_to_match(links) do
       [] ->

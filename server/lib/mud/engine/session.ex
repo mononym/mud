@@ -484,7 +484,8 @@ defmodule Mud.Engine.Session do
   end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
-    {:update_character, event.character}
+    {:update_character,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_character.json", as: :event)}
   end
 
   defp convert_output(output = %Mud.Engine.Message.Output{}) do

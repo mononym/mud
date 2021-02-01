@@ -4,6 +4,7 @@ defmodule Mud.Engine.Area do
   alias Mud.Repo
   alias Mud.Engine.{Character, CharactersAreas, Link, Item, Map, Message}
   alias Mud.Engine.Message.StoryOutput
+  alias Mud.Engine
   import Ecto.Query
   require Logger
 
@@ -421,7 +422,7 @@ defmodule Mud.Engine.Area do
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.description.short, get_item_type(item))
+          |> Message.append_text(item.description.short, Engine.Util.get_item_type(item))
           |> Message.append_text(", ", "base")
         end
       )
@@ -443,7 +444,7 @@ defmodule Mud.Engine.Area do
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.description.short, get_item_type(item))
+          |> Message.append_text(item.description.short, Engine.Util.get_item_type(item))
           |> Message.append_text(", ", "base")
         end
       )
@@ -482,7 +483,6 @@ defmodule Mud.Engine.Area do
 
   defp maybe_build_exits(story_output, area) do
     links = Mud.Engine.Link.list_obvious_exits_in_area(area.id)
-    Logger.debug(links)
 
     if links == [] do
       story_output
@@ -513,17 +513,5 @@ defmodule Mud.Engine.Area do
     |> Enum.sort(&(&1.name <= &2.name))
     |> Enum.map(&Character.describe_room_glance/1)
     |> Enum.join(", ")
-  end
-
-  defp get_item_type(item) do
-    cond do
-      item.flags.container && item.flags.wearable -> "worn_container"
-      item.flags.container -> "container"
-      item.flags.furniture -> "furniture"
-      # item.is_weapon -> "weapon"
-      # item.is_clothing -> "clothing"
-      item.flags.scenery -> "scenery"
-      true -> "base"
-    end
   end
 end

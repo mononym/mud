@@ -71,4 +71,12 @@ defmodule MudWeb.MudClientView do
       links: render_many(event.links, MudWeb.LinkView, "link.json")
     }
   end
+
+  def render("update_character.json", %{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
+    %{
+      action: event.action,
+      character: render_one(event.character, MudWeb.CharacterView, "character.json"),
+      wealth: render_one(event.wealth, MudWeb.CharacterWealthView, "character_wealth.json")
+    }
+  end
 end

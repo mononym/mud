@@ -224,6 +224,7 @@ defmodule Mud.Engine.Character.Settings do
       :shield,
       :clothing,
       :scenery,
+      :coin,
       # Command Input window colors
       :input,
       :input_background,
@@ -403,6 +404,7 @@ defmodule Mud.Engine.Character.Settings do
       shield: "#ffffff",
       clothing: "#ffffff",
       scenery: "#9BD2EE",
+      coin: "#FFD700",
 
       # Command Input window colors
       input: "#ffffff",
