@@ -40,6 +40,23 @@
     tippy("[data-tippy-content]");
   });
 
+  function getExitColor(link) {
+    let type;
+    if (link.flags.portal) {
+      type = "portal";
+    } else if (link.flags.closable) {
+      type = "closable";
+    } else if (link.flags.direction) {
+      type = "direction";
+    } else if (link.flags.object) {
+      type = "object";
+    } else {
+      type = "base";
+    }
+
+    return $selectedCharacter.settings.colors[type];
+  }
+
   let lastAreaId;
   $: $currentArea, maybeHandleToggles();
   async function maybeHandleToggles() {
@@ -397,10 +414,7 @@
     </div>
     {#if showExits}
       {#each $exitsInArea as link}
-        <div
-          class="flex"
-          style="color:{$selectedCharacter.settings.colors['exit']}"
-        >
+        <div class="flex" style="color:{getExitColor(link)}">
           &nbsp; &nbsp;
           {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
             <QuickAction

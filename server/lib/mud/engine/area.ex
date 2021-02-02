@@ -44,7 +44,6 @@ defmodule Mud.Engine.Area do
     belongs_to(:map, Map, type: :binary_id)
 
     has_many(:characters, Character)
-    has_many(:items, Item)
     has_many(:to_links, Link, foreign_key: :to_id)
     has_many(:from_links, Link, foreign_key: :from_id)
 
@@ -507,24 +506,12 @@ defmodule Mud.Engine.Area do
             end
 
           message
-          |> Message.append_text(desc, "exit")
+          |> Message.append_text(desc, Engine.Util.get_link_type(link))
           |> Message.append_text(", ", "base")
         end
       )
       |> Message.drop_last_text()
       |> Message.append_text("\n", "base")
     end
-  end
-
-  # Character list should not contain the character the look is being performed for
-  defp build_player_characters_string(area_id, looking_character) do
-    Mud.Engine.Character.list_active_in_areas(area_id)
-    # filter out self
-    |> Enum.filter(fn char ->
-      char.id != looking_character.id
-    end)
-    |> Enum.sort(&(&1.name <= &2.name))
-    |> Enum.map(&Character.describe_room_glance/1)
-    |> Enum.join(", ")
   end
 end

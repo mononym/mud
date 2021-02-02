@@ -116,6 +116,12 @@ defmodule Mud.Engine.Character.Settings do
       field(:clothing, :string, default: "#ffffff")
       field(:scenery, :string, default: "#ffffff")
 
+      # Link Types
+      field(:portal, :string, default: "#ffffff")
+      field(:closable, :string, default: "#ffffff")
+      field(:direction, :string, default: "#ffffff")
+      field(:object, :string, default: "#ffffff")
+
       # Command Input window colors
       field(:input, :string, default: "#ffffff")
       field(:input_background, :string, default: "#374151")
@@ -225,6 +231,11 @@ defmodule Mud.Engine.Character.Settings do
       :clothing,
       :scenery,
       :coin,
+      # Link types
+      :portal,
+      :closable,
+      :direction,
+      :object,
       # Command Input window colors
       :input,
       :input_background,
@@ -405,6 +416,12 @@ defmodule Mud.Engine.Character.Settings do
       clothing: "#ffffff",
       scenery: "#9BD2EE",
       coin: "#FFD700",
+
+      # Link Types
+      portal: "#73A6E8",
+      closable: "#E8B773",
+      direction: "#9BD2EE",
+      object: "#FFD700",
 
       # Command Input window colors
       input: "#ffffff",

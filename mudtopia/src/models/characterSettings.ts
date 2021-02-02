@@ -32,6 +32,13 @@ export interface CharacterSettingsInterface {
     shield: string;
     clothing: string;
     scenery: string;
+
+    // Link Types
+    portal: string;
+    closable: string;
+    direction: string;
+    object: string;
+
     // Command Input window colors
     input: string;
     input_background: string;
@@ -240,6 +247,11 @@ const state: CharacterSettingsInterface = {
     shield: "#ffffff",
     clothing: "#ffffff",
     scenery: "#ffffff",
+    // Link Types
+    portal: "#73A6E8",
+    closable: "#E8B773",
+    direction: "#9BD2EE",
+    object: "#FFD700",
     // Command Input window colors
     input: "#000000",
     input_background: "#ffffff",

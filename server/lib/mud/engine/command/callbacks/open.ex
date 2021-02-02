@@ -80,39 +80,6 @@ defmodule Mud.Engine.Command.Open do
     end
   end
 
-  defp maybe_open_opposite_link(context, link) do
-    # search for link going opposite way that is also closable and in the same state
-    # if one exists,
-    case Link.get(link.to_id, link.from_id) do
-      nil ->
-        context
-
-      opposite_link ->
-        if opposite_link.flags.closable and not opposite_link.closable.open do
-          Closable.update!(opposite_link.closable, %{open: true})
-
-          others =
-            Character.list_others_active_in_areas(
-              context.character.id,
-              opposite_link.from_id
-            )
-
-          upcased_desc = Mud.Engine.Util.upcase_first(opposite_link.short_description)
-
-          # Create message to self
-          other_room_msg =
-            Message.new_story_output(
-              others,
-              "#{upcased_desc} opens.",
-              "base"
-            )
-
-          context
-          |> Context.append_message(other_room_msg)
-        end
-    end
-  end
-
   defp open_link(context, thing = %Search.Match{}, other_matches \\ []) do
     link = thing.match
     # The link is coming from the correct room so we can continue
@@ -125,7 +92,7 @@ defmodule Mud.Engine.Command.Open do
           closable = Closable.update!(link.closable, %{open: true})
           link = %{link | closable: closable}
 
-          context = maybe_open_opposite_link(context, link)
+          context = CallbackUtil.maybe_open_opposite_link(context, link)
 
           # get other characters for messaging
           others =

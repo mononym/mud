@@ -519,6 +519,64 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
+
+      <div class="col-span-2">
+        <label
+          for="portalTextColor"
+          style="color:{$characterSettings.colors.portal}"
+          class="block text-sm font-medium">Portal Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.portal}
+          type="color"
+          name="portalTextColor"
+          id="portalTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="closableTextColor"
+          style="color:{$characterSettings.colors.closable}"
+          class="block text-sm font-medium">Closable Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.closable}
+          type="color"
+          name="closableTextColor"
+          id="closableTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="directionTextColor"
+          style="color:{$characterSettings.colors.direction}"
+          class="block text-sm font-medium">Direction Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.direction}
+          type="color"
+          name="directionTextColor"
+          id="directionTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-2">
+        <label
+          for="objectExitTextColor"
+          style="color:{$characterSettings.colors.object}"
+          class="block text-sm font-medium">Object Exit Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.object}
+          type="color"
+          name="objectExitTextColor"
+          id="objectExitTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+
       <div class="col-span-2">
         <label
           for="onGroundLabelTextColor"
