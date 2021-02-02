@@ -1258,6 +1258,54 @@ alias Mud.Engine
     )
   )
 
+#
+#
+# Areas and links for testing out doors
+#
+#
+
+{:ok, ne_bathhouse} =
+  Area.create(%{
+    border_color: "#63462D",
+    color: "#0077be",
+    map_x: 1,
+    map_y: 2,
+    map_size: 10,
+    map_id: map.id,
+    name: "Bathhouse",
+    description: "It's a bathhouse. It's got a bath. And nudity. So. Much. Nudity."
+  })
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: northeast_room.id,
+        to_id: ne_bathhouse.id,
+        departure_text: "a knotty pine door",
+        arrival_text: "a knotty pine door",
+        short_description: "a knotty pine door",
+        long_description: "The heavy door is smooth and unbroken except for the handle used to open it, ensuring the privacy of all inside.",
+      },
+      Mud.Engine.LinkTemplate.Closable.template()
+    )
+  )
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: ne_bathhouse.id,
+        to_id: northeast_room.id,
+        departure_text: "a knotty pine door",
+        arrival_text: "a knotty pine door",
+        short_description: "a knotty pine door",
+        long_description: "The heavy door is smooth and unbroken. A small sign hangs on the door that reads \"Close immediately upon leaving!\"",
+      },
+      Mud.Engine.LinkTemplate.Closable.template()
+    )
+  )
+
 # Link insertions
 
 # center room east room links

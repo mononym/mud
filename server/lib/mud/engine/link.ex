@@ -212,7 +212,9 @@ defmodule Mud.Engine.Link do
   def list_obvious_exits_in_area(area_id) do
     Repo.all(
       from([link, flags: flags] in base_query_with_preload(),
-        where: link.from_id == ^area_id and (flags.direction or flags.portal or flags.object)
+        where:
+          link.from_id == ^area_id and
+            (flags.direction or flags.portal or flags.object or flags.closable)
       )
     )
   end
@@ -335,6 +337,34 @@ defmodule Mud.Engine.Link do
 
   ## Examples
 
+      iex> get(link)
+      {:ok, %__MODULE__{}}
+
+      iex> get(link)
+      {:error, :not_found}
+
+  """
+  @spec get(link_id :: String.t()) :: {:ok, %__MODULE__{}} | {:error, :not_found}
+  def get(link_id) do
+    Repo.one(
+      from(link in base_query_with_preload(),
+        where: link.id == ^link_id
+      )
+    )
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      link ->
+        {:ok, link}
+    end
+  end
+
+  @doc """
+  Gets a link.
+
+  ## Examples
+
       iex> get!(link)
       %__MODULE__{}
 
@@ -347,6 +377,14 @@ defmodule Mud.Engine.Link do
     Repo.one!(
       from(link in base_query_with_preload(),
         where: link.id == ^link_id
+      )
+    )
+  end
+
+  def get(from_id, to_id) do
+    Repo.one(
+      from(link in base_query_with_preload(),
+        where: link.from_id == ^from_id and link.to_id == ^to_id
       )
     )
   end
@@ -383,9 +421,11 @@ defmodule Mud.Engine.Link do
   @doc """
   Takes in a list of ids which returns area ids and returns a query which returns all area id's that links from that
   area lead to.
+
+  without preload
   """
   def link_to_area_ids_from_area_ids(area_ids) do
-    from(link in base_query_with_preload(),
+    from(link in base_query_without_preload(),
       where: link.from_id in ^area_ids,
       select: link.to_id
     )

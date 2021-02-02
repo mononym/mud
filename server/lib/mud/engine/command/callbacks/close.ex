@@ -17,10 +17,11 @@ defmodule Mud.Engine.Command.Close do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.{Character, Item, Link}
   alias Item.{Container}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
+  alias Mud.Engine.Link.Closable
 
   require Logger
 
@@ -53,6 +54,22 @@ defmodule Mud.Engine.Command.Close do
       if Util.is_uuid4(context.command.ast.thing.input) do
         Logger.debug("Close command provided with uuid: #{context.command.ast.thing.input}")
 
+        close_link_or_item_by_uuid(context)
+      else
+        Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
+
+        # If there is input but that input is not a UUID, that means the player typed text in. Go searching for the item.
+        find_thing_to_close(context)
+      end
+    end
+  end
+
+  defp close_link_or_item_by_uuid(context) do
+    case Link.get(context.command.ast.thing.input) do
+      {:ok, link} ->
+        close_link(context, List.first(Search.things_to_match(link)))
+
+      _ ->
         case Item.get(context.command.ast.thing.input) do
           {:ok, item} ->
             close_item(context, List.first(Search.things_to_match(item)))
@@ -60,12 +77,6 @@ defmodule Mud.Engine.Command.Close do
           _ ->
             Util.dave_error_v2(context)
         end
-      else
-        Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
-
-        # If there is input but that input is not a UUID, that means the player typed text in. Go searching for the item.
-        find_thing_to_close(context)
-      end
     end
   end
 
@@ -188,19 +199,177 @@ defmodule Mud.Engine.Command.Close do
   end
 
   defp close_item_in_area_or_inventory(context) do
-    area_results =
-      Search.find_matches_in_area(
-        context.character.area_id,
-        context.command.ast.thing.input,
-        context.character.settings.commands.search_mode
-      )
-
-    case area_results do
-      {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+    case Search.find_exits_in_area(context.character.area_id, context.command.ast.thing.input) do
+      {:ok, [link | rest]} ->
+        close_link(context, link, rest)
 
       _ ->
-        close_item_in_inventory(context)
+        area_results =
+          Search.find_matches_in_area(
+            context.character.area_id,
+            context.command.ast.thing.input,
+            context.character.settings.commands.search_mode
+          )
+
+        case area_results do
+          {:ok, area_matches} when area_matches != [] ->
+            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+
+          _ ->
+            close_item_in_inventory(context)
+        end
+    end
+  end
+
+  defp maybe_close_opposite_link(context, link) do
+    # search for link going opposite way that is also closable and in the same state
+    # if one exists,
+    case Link.get(link.to_id, link.from_id) do
+      nil ->
+        context
+
+      opposite_link ->
+        if opposite_link.flags.closable and opposite_link.closable.open do
+          Closable.update!(opposite_link.closable, %{open: false})
+
+          others =
+            Character.list_others_active_in_areas(
+              context.character.id,
+              opposite_link.from_id
+            )
+
+          upcased_desc = Mud.Engine.Util.upcase_first(opposite_link.short_description)
+
+          # Create message to self
+          other_room_msg =
+            Message.new_story_output(
+              others,
+              "#{upcased_desc} closes.",
+              "base"
+            )
+
+          Context.append_message(context, other_room_msg)
+        end
+    end
+  end
+
+  defp close_link(context, thing = %Search.Match{}, other_matches \\ []) do
+    link = thing.match
+    # The link is coming from the correct room so we can continue
+    if link.from_id == context.character.area_id do
+      # It is possible to open/close this link and it is open
+      cond do
+        link.flags.closable and link.closable.open ->
+          # actually close it
+          closable = Closable.update!(link.closable, %{open: false})
+          link = %{link | closable: closable}
+
+          context = maybe_close_opposite_link(context, link)
+
+          # get other characters for messaging
+          others =
+            Character.list_others_active_in_areas(
+              context.character.id,
+              context.character.area_id
+            )
+
+          # create message to others
+          other_msg =
+            others
+            |> Message.new_story_output()
+            |> Message.append_text("[#{context.character.name}]", "character")
+            |> Message.append_text(" closed ", "base")
+            |> Message.append_text(
+              link.short_description,
+              Mud.Engine.Util.get_link_type(link)
+            )
+            |> Message.append_text(".", "base")
+
+          # Create message to self
+          self_msg =
+            context.character.id
+            |> Message.new_story_output()
+            |> Message.append_text("You", "character")
+            |> Message.append_text(" close ", "base")
+            |> Message.append_text(
+              link.short_description,
+              Mud.Engine.Util.get_link_type(link)
+            )
+            |> Message.append_text(".", "base")
+
+          # Append assumption message if there were other links found
+          self_msg =
+            if other_matches != [] do
+              other_links = Enum.map(other_matches, & &1.match)
+
+              Util.append_assumption_text(self_msg, link, other_links)
+            else
+              self_msg
+            end
+
+          context
+          |> Context.append_message(other_msg)
+          |> Context.append_message(self_msg)
+          |> Context.append_event(
+            [context.character_id | others],
+            UpdateArea.new(%{action: :update, exits: [link]})
+          )
+
+        link.flags.closable and not link.closable.open ->
+          upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
+
+          # Create message to self
+          self_msg =
+            Message.new_story_output(
+              context.character.id,
+              "#{upcased_desc} is already closed.",
+              "system_alert"
+            )
+
+          # Append assumption message if there were other links found
+          self_msg =
+            if other_matches != [] do
+              other_links = Enum.map(other_matches, & &1.match)
+
+              Util.append_assumption_text(self_msg, link, other_links)
+            else
+              self_msg
+            end
+
+          Context.append_message(
+            context,
+            self_msg
+          )
+
+        not link.flags.closable ->
+          upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
+
+          # Create message to self
+          self_msg =
+            Message.new_story_output(
+              context.character.id,
+              "#{upcased_desc} cannot be closed.",
+              "system_alert"
+            )
+
+          # Append assumption message if there were other links found
+          self_msg =
+            if other_matches != [] do
+              other_links = Enum.map(other_matches, & &1.match)
+
+              Util.append_assumption_text(self_msg, link, other_links)
+            else
+              self_msg
+            end
+
+          Context.append_message(
+            context,
+            self_msg
+          )
+      end
+    else
+      # Link is not coming from the correct room, where the player is, so give an error
+      Util.dave_error_v2(context)
     end
   end
 

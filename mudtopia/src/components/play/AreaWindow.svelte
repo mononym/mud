@@ -358,20 +358,6 @@
                   "disabled_quick_action_color"
                 ]}
               />
-              <QuickAction
-                icon="fas fa-backpack"
-                active={!$leftHandHasItem || !$rightHandHasItem}
-                activeTooltip="stow"
-                inactiveTooltip="Hands are full"
-                cliInput="stow {item.id}"
-                storyOutput="stow {item.description.short}"
-                activeIconColor={$selectedCharacter.settings.areaWindow[
-                  "enabled_quick_action_color"
-                ]}
-                inactiveIconColor={$selectedCharacter.settings.areaWindow[
-                  "disabled_quick_action_color"
-                ]}
-              />
             </div>
           </InventoryItem>
         {/each}
@@ -435,7 +421,7 @@
             />
             &nbsp; &nbsp;
           {/if}
-          <pre>{link.shortDescription}</pre>
+          <pre>{link.shortDescription} {#if link.flags.closable}({#if link.closable.open}open{:else}closed{/if}){/if}</pre>
         </div>
       {/each}
     {/if}

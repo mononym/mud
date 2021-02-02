@@ -42,6 +42,7 @@
         event.preventDefault();
         // Submit command
         submitPlayerInput();
+        commandHistoryIndex = -1;
       } else if (event.key == "ArrowUp") {
         event.preventDefault();
 

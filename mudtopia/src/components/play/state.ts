@@ -515,6 +515,30 @@ export function createState() {
         onGroundInArea.set(msg.onGround);
         toiInArea.set(msg.toi);
         exitsInArea.set(msg.exits);
+      } else if (msg.action == "update") {
+        exitsInArea.set(
+          [...msg.exits, ...get(exitsInArea)].filter(
+            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+          )
+        );
+
+        toiInArea.set(
+          [...msg.toi, ...get(toiInArea)].filter(
+            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+          )
+        );
+
+        onGroundInArea.set(
+          [...msg.onGround, ...get(onGroundInArea)].filter(
+            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+          )
+        );
+
+        otherCharactersInArea.set(
+          [...msg.otherCharacters, ...get(otherCharactersInArea)].filter(
+            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+          )
+        );
       } else if (msg.action == "add") {
         otherCharactersInArea.set([
           ...get(otherCharactersInArea),

@@ -765,6 +765,65 @@
             <option>portal</option>
           </select>
         </div>
+
+        <div class="col-span-1">
+          <label
+            for="isDirection"
+            class="block text-sm font-medium text-gray-300">Is Direction</label
+          >
+          <input
+            bind={$linkUnderConstruction.flags.direction}
+            type="radio"
+            group="linkType"
+            name="isDirection"
+            id="isDirection"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div class="col-span-1">
+          <label
+            for="isClosable"
+            class="block text-sm font-medium text-gray-300">Is Closable</label
+          >
+          <input
+            bind={$linkUnderConstruction.flags.closable}
+            type="radio"
+            group="linkType"
+            name="isClosable"
+            id="isClosable"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div class="col-span-1">
+          <label for="isPortal" class="block text-sm font-medium text-gray-300"
+            >Is Portal</label
+          >
+          <input
+            bind={$linkUnderConstruction.flags.portal}
+            type="radio"
+            group="linkType"
+            name="isPortal"
+            id="isPortal"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div class="col-span-1">
+          <label for="isObject" class="block text-sm font-medium text-gray-300"
+            >Is Object</label
+          >
+          <input
+            bind={$linkUnderConstruction.flags.object}
+            type="radio"
+            group="linkType"
+            name="isObject"
+            id="isObject"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
         {#if $linkUnderConstruction.type != "direction"}
           <div class="col-span-1 flex flex-col place-content-center">
             <i

@@ -493,8 +493,21 @@ defmodule Mud.Engine.Area do
       |> Enum.reduce(
         story_output,
         fn link, message ->
+          desc =
+            if link.flags.closable do
+              "#{link.short_description} (#{
+                if link.closable.open do
+                  "open"
+                else
+                  "closed"
+                end
+              })"
+            else
+              link.short_description
+            end
+
           message
-          |> Message.append_text(link.short_description, "exit")
+          |> Message.append_text(desc, "exit")
           |> Message.append_text(", ", "base")
         end
       )

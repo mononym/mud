@@ -47,7 +47,7 @@ defmodule Mud.Engine.Command.Move do
 
   # @impl true
   # def continue(%Context{} = context) do
-  #   attempt_move(context.input.match, context)
+  #   attempt_maybe_move(context.input.match, context)
   # end
 
   @impl true
@@ -170,7 +170,7 @@ defmodule Mud.Engine.Command.Move do
     char = context.character
 
     if char.position == Character.standing() do
-      move(context, link, other_links)
+      maybe_move(context, link, other_links)
     else
       Context.append_message(
         context,
@@ -178,6 +178,23 @@ defmodule Mud.Engine.Command.Move do
           context.character.id,
           "You must be standing before you can move.",
           "system_warning"
+        )
+      )
+    end
+  end
+
+  defp maybe_move(context, link, other_matches) do
+    if not link.flags.closable or (link.flags.closable and link.closable.open) do
+      move(context, link, other_matches)
+    else
+      upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
+
+      Context.append_message(
+        context,
+        Message.new_story_output(
+          context.character.id,
+          "#{upcased_desc} is closed.",
+          "system_alert"
         )
       )
     end

@@ -427,6 +427,28 @@ defmodule Mud.Engine.Util do
   def via(registry, key), do: {:via, Registry, {registry, key}}
 
   @doc """
+  Given a link, examine it and return an atom that represents its type such as 'portal' or 'closable'
+  """
+  def get_link_type(link) do
+    cond do
+      link.flags.portal ->
+        "portal"
+
+      link.flags.closable ->
+        "closable"
+
+      link.flags.direction ->
+        "direction"
+
+      link.flags.object ->
+        "object"
+
+      true ->
+        "base"
+    end
+  end
+
+  @doc """
   Given an item, examine it and return an atom that represents its type such as 'worn_container' or 'weapon'
   """
   def get_item_type(item) do
