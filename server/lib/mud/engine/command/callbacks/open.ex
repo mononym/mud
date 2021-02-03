@@ -42,11 +42,13 @@ defmodule Mud.Engine.Command.Open do
     if is_nil(ast.thing) do
       Logger.debug("Open command entered without input. Returning error with command docs.")
 
-      Context.append_output(
+      Context.append_message(
         context,
-        context.character.id,
-        Util.get_module_docs(__MODULE__),
-        "error"
+        Message.new_story_output(
+          context.character.id,
+          Util.get_module_docs(__MODULE__),
+          "system_info"
+        )
       )
     else
       # A UUID was passed in which means the open command is being attempted on a specific item.
@@ -379,7 +381,7 @@ defmodule Mud.Engine.Command.Open do
               |> Message.append_text("You", "character")
               |> Message.append_text(" open ", "base")
               |> Message.append_text(
-                Item.items_to_short_desc_with_nested_location(item),
+                Item.items_to_short_desc_with_nested_location_without_item(item),
                 Mud.Engine.Util.get_item_type(item)
               )
               |> Message.append_text(".", "base")

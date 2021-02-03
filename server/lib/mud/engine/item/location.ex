@@ -43,6 +43,7 @@ defmodule Mud.Engine.Item.Location do
     |> change()
     |> cast(attrs, [
       :item_id,
+      :hand,
       :held_in_hand,
       :area_id,
       :character_id,

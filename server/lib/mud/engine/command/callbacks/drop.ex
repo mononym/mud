@@ -88,48 +88,59 @@ defmodule Mud.Engine.Command.Drop do
   defp find_thing_to_drop(context = %Mud.Engine.Command.Context{}) do
     input = context.command.ast.thing.input
 
-    results =
-      case input do
-        "left" ->
-          get_item_from_hand_as_matches_list(context.character.id, "left")
+    IO.inspect(input, label: :find_thing_to_drop)
 
-        "right" ->
-          get_item_from_hand_as_matches_list(context.character.id, "right")
+    case input do
+      "left" ->
+        matches = get_item_from_hand_as_matches_list(context.character.id, "left")
 
-        "all" ->
-          # get_item_from_hand_as_matches_list(context.character.id, "right")
+        if length(matches) == 1 do
+          drop_item(context, List.first(matches))
+        else
+          Util.hand_already_empty(context, input)
+        end
 
-          case get_items_from_hands_as_matches_list(context.character.id) do
-            [] ->
-              Util.not_found_error(context)
+      "right" ->
+        matches = get_item_from_hand_as_matches_list(context.character.id, "right")
 
-            matches ->
-              [first | second] =
-                CallbackUtil.sort_held_matches(matches, context.character.handedness)
+        if length(matches) == 1 do
+          drop_item(context, List.first(matches))
+        else
+          Util.hand_already_empty(context, input)
+        end
 
-              # then just handle results as normal
-              context
-              |> drop_item(first, [])
-              |> drop_item(second, [])
-          end
+      "all" ->
+        case get_items_from_hands_as_matches_list(context.character.id) do
+          [] ->
+            Util.hands_already_empty(context)
 
-        _ ->
+          matches ->
+            matches = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+
+            # then just handle results as normal
+            Enum.reduce(matches, context, fn match, context ->
+              drop_item(context, match)
+            end)
+        end
+
+      _ ->
+        results =
           Search.find_matches_in_held_items(
             context.character.id,
             input,
             context.character.settings.commands.search_mode
           )
-      end
 
-    case results do
-      {:ok, matches} ->
-        [first | rest] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+        case results do
+          {:ok, matches} ->
+            [first | last] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
 
-        # then just handle results as normal
-        drop_item(context, first, rest)
+            # then just handle results as normal
+            drop_item(context, first, List.wrap(last))
 
-      _ ->
-        Util.not_found_error(context)
+          _ ->
+            Util.not_found_error(context)
+        end
     end
   end
 

@@ -215,11 +215,11 @@ defmodule Mud.Engine.Command.CallbackUtil do
   Given an item, return a string with the first letter capitalized and the full path of the item to the root.
   """
   def upcase_item_with_location(item) do
-    Engine.Util.upcase_first(Item.items_to_short_desc_with_nested_location(item))
+    Engine.Util.upcase_first(Item.items_to_short_desc_with_nested_location_without_item(item))
   end
 
-  def sort_held_matches(matches = [match1 | match2], handedness) do
-    if match1.match.location.hand == handedness do
+  def sort_held_matches(matches, handedness) do
+    if List.first(matches).match.location.hand == handedness do
       matches
     else
       Enum.reverse(matches)

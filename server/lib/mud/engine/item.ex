@@ -151,9 +151,9 @@ defmodule Mud.Engine.Item do
 
   def get_item_in_hand_as_list(character_id, hand) do
     from(
-      [item, wearable: wearable] in base_query_with_preload(),
+      [item, location: location] in base_query_with_preload(),
       where:
-        wearable.hand == ^hand and
+        location.hand == ^hand and
           item.id in subquery(base_query_for_held_item_ids(character_id))
     )
     |> Repo.all()
@@ -226,6 +226,7 @@ defmodule Mud.Engine.Item do
 
   def list_all_parents(items) do
     ids = items_to_ids(items)
+    IO.inspect(ids, label: :list_all_parents)
 
     Repo.all(list_all_recursive_parent_query(ids, true))
   end
@@ -304,24 +305,33 @@ defmodule Mud.Engine.Item do
   @doc """
   Turn a list of items strings like: [{item, "a wooden spoon on a ovaled silver plate on a tall wooden counter"}, {item2, "a silver fork on the ground"}]
   """
-  def items_to_short_desc_with_nested_location(items) do
+  def items_to_short_desc_with_nested_location_with_item(items) do
     items = List.wrap(items)
     parents = list_all_parents(items)
     parent_index = build_item_index(parents)
 
-    result =
-      Enum.map(items, fn item ->
-        {item, build_parent_string(item, parent_index)}
-      end)
+    Enum.map(items, fn item ->
+      {item, build_parent_string(item, parent_index)}
+    end)
+  end
 
-    if length(result) == 1 do
-      elem(List.first(result), 1)
-    else
-      result
-    end
+  @doc """
+  Turn a list of items strings like: [{item, "a wooden spoon on a ovaled silver plate on a tall wooden counter"}, {item2, "a silver fork on the ground"}]
+  """
+  def items_to_short_desc_with_nested_location_without_item(items) do
+    items = List.wrap(items)
+    parents = list_all_parents(items)
+    parent_index = build_item_index(parents)
+
+    Enum.map(items, fn item ->
+      build_parent_string(item, parent_index)
+    end)
   end
 
   defp build_parent_string(item, parent_index) do
+    IO.inspect(item, label: :build_parent_string)
+    IO.inspect(parent_index, label: :build_parent_string)
+
     cond do
       item.location.relative_to_item ->
         "#{item.description.short} #{item.location.relation} #{

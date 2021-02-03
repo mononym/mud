@@ -21,6 +21,8 @@ defmodule Mud.Engine.Command.Get do
   alias Item.{Container}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
+  alias Mud.Repo
+  alias Mud.Engine.Item.Location
 
   require Logger
 
@@ -41,13 +43,16 @@ defmodule Mud.Engine.Command.Get do
     if is_nil(ast.thing) do
       Logger.debug("Get command entered without input. Returning error with command docs.")
 
-      Context.append_output(
+      Context.append_message(
         context,
-        context.character.id,
-        Util.get_module_docs(__MODULE__),
-        "error"
+        Message.new_story_output(
+          context.character.id,
+          Util.get_module_docs(__MODULE__),
+          "system_info"
+        )
       )
     else
+      # get_item_if_empty_hand(context)
       # A UUID was passed in which means the get command is being attempted on a specific item.
       # This sort of command should only be triggered by the UI.
       if Util.is_uuid4(context.command.ast.thing.input) do
@@ -174,7 +179,7 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp get_item_with_personal_place(context) do
-    # look for place on ground on in hands or worn
+    # look for item in place in inventory, but do not return items worn or held
     results =
       Search.find_matches_relative_to_place_in_inventory(
         context.character.id,
@@ -203,184 +208,249 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
-  defp get_item(context, thing = %Search.Match{}, _other_matches \\ []) do
-    in_area = Item.in_area?(thing.match.id, context.character.area_id)
-    in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
-    parent_containers_open = Item.parent_containers_open?(thing.match)
+  defp get_item(context, thing = %Search.Match{}, other_matches \\ []) do
+    items_in_hands = Item.list_items_in_hands(context.character.id)
 
-    cond do
-      parent_containers_open and (in_area or in_inventory) ->
-        cond do
-          thing.match.flags.coin ->
-            wealth_attrs =
-              CallbackUtil.coin_to_wealth_update_attrs(thing.match.coin, context.character.wealth)
+    IO.inspect(items_in_hands, label: :get_item_items_in_hands)
 
-            updated_wealth =
-              Mud.Engine.Character.Wealth.update!(context.character.wealth, wealth_attrs)
+    if length(items_in_hands) == 2 do
+      Util.hands_full_error(context)
+    else
+      original_item = thing.match
+      in_area = Item.in_area?(original_item.id, context.character.area_id)
+      in_inventory = Item.in_inventory?(original_item.id, context.character.id)
+      parent_containers_open = Item.parent_containers_open?(original_item)
 
-            Item.delete(thing.match)
+      IO.inspect(
+        original_item,
+        label: :get_item
+      )
 
-            character = Map.put(context.character, :wealth, updated_wealth)
+      IO.inspect(
+        {in_area, in_inventory, parent_containers_open, original_item.location.held_in_hand,
+         original_item.location.worn_on_character,
+         parent_containers_open and
+           (in_area or
+              (in_inventory and
+                 not (original_item.location.held_in_hand or
+                        original_item.location.worn_on_character)))},
+        label: :get_item
+      )
 
-            others =
-              Character.list_others_active_in_areas(
-                context.character.id,
-                context.character.area_id
+      cond do
+        parent_containers_open and
+            (in_area or
+               (in_inventory and
+                  not (original_item.location.held_in_hand or
+                           original_item.location.worn_on_character))) ->
+          cond do
+            original_item.flags.coin ->
+              # update character wealth
+              wealth_attrs =
+                CallbackUtil.coin_to_wealth_update_attrs(
+                  original_item.coin,
+                  context.character.wealth
+                )
+
+              updated_wealth =
+                Mud.Engine.Character.Wealth.update!(context.character.wealth, wealth_attrs)
+
+              character = Map.put(context.character, :wealth, updated_wealth)
+
+              # Delete coins since they don't really exist and don't need to be moved
+              Item.delete(original_item)
+
+              others =
+                Character.list_others_active_in_areas(
+                  context.character.id,
+                  context.character.area_id
+                )
+
+              other_msg =
+                others
+                |> Message.new_story_output()
+                |> Message.append_text("[#{context.character.name}]", "character")
+                |> Message.append_text(" picks up ", "base")
+                |> Message.append_text(
+                  CallbackUtil.coin_to_count_string(original_item.coin),
+                  Mud.Engine.Util.get_item_type(original_item)
+                )
+                |> Message.append_text(".", "base")
+
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text("You", "character")
+                |> Message.append_text(" pick up ", "base")
+                |> Message.append_text(
+                  CallbackUtil.coin_to_count_string(original_item.coin),
+                  Mud.Engine.Util.get_item_type(original_item)
+                )
+                |> Message.append_text(".", "base")
+
+              context
+              |> Context.append_event(
+                character.id,
+                UpdateCharacter.new(%{action: "wealth", wealth: updated_wealth})
               )
-
-            other_msg =
-              others
-              |> Message.new_story_output()
-              |> Message.append_text("[#{context.character.name}]", "character")
-              |> Message.append_text(" picks up ", "base")
-              |> Message.append_text(
-                thing.match.description.short,
-                Mud.Engine.Util.get_item_type(thing.match)
+              |> Context.append_event(
+                [context.character_id | others],
+                UpdateArea.new(%{action: :remove, on_ground: [original_item]})
               )
-              |> Message.append_text(".", "base")
+              |> Context.append_message(other_msg)
+              |> Context.append_message(self_msg)
 
-            self_msg =
-              context.character.id
-              |> Message.new_story_output()
-              |> Message.append_text("You", "character")
-              |> Message.append_text(" pick up ", "base")
-              |> Message.append_text(
-                CallbackUtil.coin_to_count_string(thing.match.coin),
-                Mud.Engine.Util.get_item_type(thing.match)
-              )
-              |> Message.append_text(".", "base")
+            # Item can be held which means it can be picked up
+            original_item.flags.hold ->
+              IO.inspect(original_item, label: "getting held item")
 
-            context
-            |> Context.append_event(
-              character.id,
-              UpdateCharacter.new(%{action: "wealth", wealth: updated_wealth})
+              hand =
+                cond do
+                  length(items_in_hands) == 0 ->
+                    context.character.handedness
+
+                  true ->
+                    if List.first(items_in_hands).location.hand == "right" do
+                      "left"
+                    else
+                      "right"
+                    end
+                end
+
+              location =
+                Location.update!(original_item.location, %{
+                  on_ground: false,
+                  relative_to_container: false,
+                  area_id: nil,
+                  relative_item_id: nil,
+                  held_in_hand: true,
+                  character_id: context.character.id,
+                  hand: hand
+                })
+
+              item = Map.put(original_item, :location, location)
+
+              others =
+                Character.list_others_active_in_areas(
+                  context.character.id,
+                  context.character.area_id
+                )
+
+              # TODO: Figure out only displaying the outermost container for the item, or the item itself it is the outermost container
+              other_msg =
+                others
+                |> Message.new_story_output()
+                |> Message.append_text("[#{context.character.name}]", "character")
+                |> Message.append_text(" gets ", "base")
+                |> Message.append_text(
+                  Item.items_to_short_desc_with_nested_location_without_item(original_item),
+                  Mud.Engine.Util.get_item_type(item)
+                )
+                |> Message.append_text(".", "base")
+
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text("You", "character")
+                |> Message.append_text(" get ", "base")
+                |> Message.append_text(
+                  Item.items_to_short_desc_with_nested_location_without_item(original_item),
+                  Mud.Engine.Util.get_item_type(item)
+                )
+                |> Message.append_text(".", "base")
+
+              self_msg =
+                if other_matches != [] do
+                  other_items = Enum.map(other_matches, & &1.match)
+
+                  IO.inspect(self_msg, label: :other_matches)
+                  IO.inspect(item, label: :other_matches)
+                  IO.inspect(other_items, label: :other_matches)
+
+                  Util.append_assumption_text(self_msg, original_item, other_items)
+                else
+                  self_msg
+                end
+
+              # check to see whether the update needs to go to only inventory or the area too
+              context =
+                if original_item.location.on_ground do
+                  context
+                  |> Context.append_event(
+                    [context.character_id | others],
+                    UpdateArea.new(%{action: :remove, on_ground: [original_item]})
+                  )
+                  |> Context.append_event(
+                    context.character_id,
+                    UpdateInventory.new(:add, item)
+                  )
+                else
+                  Context.append_event(
+                    context,
+                    context.character_id,
+                    UpdateInventory.new(:update, item)
+                  )
+                end
+
+              context
+              |> Context.append_message(other_msg)
+              |> Context.append_message(self_msg)
+
+            not original_item.flags.hold ->
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text(
+                  Util.upcase_first(
+                    Item.items_to_short_desc_with_nested_location_without_item(original_item)
+                  ),
+                  Mud.Engine.Util.get_item_type(original_item)
+                )
+                |> Message.append_text(" cannot be picked up.", "system_alert")
+
+              Context.append_message(context, self_msg)
+          end
+
+        not parent_containers_open and
+            (in_area or
+               (in_inventory and
+                  not (original_item.location.held_in_hand or
+                           original_item.location.worn_on_character))) ->
+          parent_containers = Item.list_sorted_parent_containers(original_item)
+          # If a parent is closed, warn the player
+          CallbackUtil.parent_containers_closed_error(context, original_item, parent_containers)
+
+        in_inventory and original_item.location.held_in_hand ->
+          self_msg =
+            context.character.id
+            |> Message.new_story_output()
+            |> Message.append_text("You", "character")
+            |> Message.append_text(" are already holding ", "base")
+            |> Message.append_text(
+              original_item.description.short,
+              Mud.Engine.Util.get_item_type(original_item)
             )
-            |> Context.append_event(
-              [context.character_id | others],
-              UpdateArea.new(%{action: :remove, on_ground: [thing.match]})
+            |> Message.append_text(".", "base")
+
+          Context.append_message(context, self_msg)
+
+        in_inventory and original_item.location.worn_on_character ->
+          self_msg =
+            context.character.id
+            |> Message.new_story_output()
+            |> Message.append_text("You", "character")
+            |> Message.append_text(" are wearing ", "base")
+            |> Message.append_text(
+              original_item.description.short,
+              Mud.Engine.Util.get_item_type(original_item)
             )
-            |> Context.append_message(other_msg)
-            |> Context.append_message(self_msg)
+            |> Message.append_text(". If you wish, you may REMOVE it instead.", "base")
 
-          # Is container and container is closed, meaning it can be geted
-          # thing.match.flags.container and not thing.match.container.get ->
-          #   container =
-          #     Container.update!(thing.match.container, %{
-          #       get: true
-          #     })
+          Context.append_message(context, self_msg)
 
-          #   item = Map.put(thing.match, :container, container)
-
-          #   others =
-          #     Character.list_others_active_in_areas(
-          #       context.character.id,
-          #       context.character.area_id
-          #     )
-
-          #   other_msg =
-          #     others
-          #     |> Message.new_story_output()
-          #     |> Message.append_text("[#{context.character.name}]", "character")
-          #     |> Message.append_text(" gets ", "base")
-          #     |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-          #     |> Message.append_text(".", "base")
-
-          #   self_msg =
-          #     context.character.id
-          #     |> Message.new_story_output()
-          #     |> Message.append_text("You", "character")
-          #     |> Message.append_text(" get ", "base")
-          #     |> Message.append_text(
-          #       Item.items_to_short_desc_with_nested_location(item),
-          #       Mud.Engine.Util.get_item_type(item)
-          #     )
-          #     |> Message.append_text(".", "base")
-
-          #   self_msg =
-          #     if other_matches != [] do
-          #       other_items = Enum.map(other_matches, & &1.match)
-
-          #       Util.append_assumption_text(self_msg, item, other_items)
-          #     else
-          #       self_msg
-          #     end
-
-          #   # for items that are not root items, check to see whether the update needs to go to inventory or the area
-          #   context =
-          #     cond do
-          #       item.location.worn_on_character or item.location.held_in_hand or
-          #           in_inventory ->
-          #         Context.append_event(
-          #           context,
-          #           context.character_id,
-          #           UpdateInventory.new(:update, item)
-          #         )
-
-          #       item.location.on_ground ->
-          #         Context.append_event(
-          #           context,
-          #           [context.character_id | others],
-          #           UpdateArea.new(%{action: :update, on_ground: [item]})
-          #         )
-          #     end
-
-          #   context
-          #   |> Context.append_message(other_msg)
-          #   |> Context.append_message(self_msg)
-
-          # It is a container but the container is get,
-          # thing.match.flags.container and thing.match.container.get ->
-          #   self_msg =
-          #     context.character.id
-          #     |> Message.new_story_output()
-          #     |> Message.append_text(
-          #       CallbackUtil.upcase_item_with_location(thing.match),
-          #       Mud.Engine.Util.get_item_type(thing.match)
-          #     )
-          #     |> Message.append_text(" is already get.", "system_warning")
-
-          #   self_msg =
-          #     if other_matches != [] do
-          #       other_items = Enum.map(other_matches, & &1.match)
-
-          #       Util.append_assumption_text(self_msg, thing.match, other_items)
-          #     else
-          #       self_msg
-          #     end
-
-          #   Context.append_message(context, self_msg)
-
-          # Assume the thing is not a container
-          true ->
-            context
-            # self_msg =
-            #   context.character.id
-            #   |> Message.new_story_output()
-            #   |> Message.append_text(
-            #     CallbackUtil.upcase_item_with_location(thing.match),
-            #     Mud.Engine.Util.get_item_type(thing.match)
-            #   )
-            #   |> Message.append_text(" cannot be geted.", "system_alert")
-
-            # self_msg =
-            #   if other_matches != [] do
-            #     other_items = Enum.map(other_matches, & &1.match)
-
-            #     Util.append_assumption_text(self_msg, thing.match, other_items)
-            #   else
-            #     self_msg
-            #   end
-
-            # Context.append_message(context, self_msg)
-        end
-
-      not parent_containers_open and (in_area or in_inventory) ->
-        parent_containers = Item.list_sorted_parent_containers(thing.match)
-        # If a parent is closed, warn the player
-        CallbackUtil.parent_containers_closed_error(context, thing.match, parent_containers)
-
-      not in_area and not in_inventory ->
-        Util.dave_error_v2(context)
+        not in_area and not in_inventory ->
+          Util.dave_error_v2(context)
+      end
     end
   end
 end

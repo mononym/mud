@@ -243,7 +243,7 @@ defmodule Mud.Engine.Util do
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
       |> Message.append_text(
-        elem(List.first(Item.items_to_short_desc_with_nested_location(item)), 1),
+        Item.items_to_short_desc_with_nested_location_without_item(item),
         get_item_type(item)
       )
       |> Message.append_text(
@@ -251,7 +251,12 @@ defmodule Mud.Engine.Util do
         "system_info"
       )
 
-    item_strings = Item.items_to_short_desc_with_nested_location(other_items)
+    # fix the fact that this returns two entirely different things based on number of items and I need it to pick one thing and stick with it and compensate elsewhere
+    # do with item
+    # do without item
+    # have without item call with item and strip
+    # or have with item call without and then build up list
+    item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
 
     Enum.reduce(item_strings, message, fn {item, string}, msg ->
       msg
@@ -318,6 +323,33 @@ defmodule Mud.Engine.Util do
       context.character.id
       |> Message.new_story_output()
       |> Message.append_text("That is in a closed container.", "system_alert")
+
+    Context.append_message(context, message)
+  end
+
+  def hands_full_error(context) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("Your hands are full.", "system_alert")
+
+    Context.append_message(context, message)
+  end
+
+  def hands_already_empty(context) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("Your hands are already empty.", "system_info")
+
+    Context.append_message(context, message)
+  end
+
+  def hand_already_empty(context, hand) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("Your #{hand} hand is already empty.", "system_info")
 
     Context.append_message(context, message)
   end
