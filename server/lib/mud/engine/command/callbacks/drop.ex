@@ -2,15 +2,15 @@ defmodule Mud.Engine.Command.Drop do
   @moduledoc """
   The DROP command allows a character to drop a held item onto the ground.
 
-  An optional number, which selects which item in case of a multiple match conflict, may be provided.
+  Aliases for dropping items in the 'left', 'right', and 'all' hands have been provided.
 
   Syntax:
-    - drop <which> <item>
+    - drop all | left | right | <item>
 
   Examples:
     - drop sword
-    - drop pink uni
-    - drop 2 appl
+    - drop left
+    - drop all
   """
 
   use Mud.Engine.Command.Callback
@@ -20,6 +20,9 @@ defmodule Mud.Engine.Command.Drop do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.Item.Location
+  alias Mud.Engine.Message
+  alias Mud.Engine.Command.CallbackUtil
 
   require Logger
 
@@ -31,96 +34,176 @@ defmodule Mud.Engine.Command.Drop do
 
   @impl true
   def execute(context) do
+    Logger.debug("Executing Drop command")
+    Logger.debug(inspect(context))
     ast = context.command.ast
 
     if is_nil(ast.thing) do
-      Context.append_output(
+      Logger.debug("Drop command entered without input. Returning error with command docs.")
+
+      Context.append_message(
         context,
-        context.character.id,
-        Util.get_module_docs(__MODULE__),
-        "error"
+        Message.new_story_output(
+          context.character.id,
+          Util.get_module_docs(__MODULE__),
+          "system_info"
+        )
       )
     else
+      # A UUID was passed in which means the drop command is being attempted on a specific item.
+      # This sort of command should only be triggered by the UI.
       if Util.is_uuid4(context.command.ast.thing.input) do
-        item = Item.get!(context.command.ast.thing.input)
+        Logger.debug("Drop command provided with uuid: #{context.command.ast.thing.input}")
 
-        if Util.is_item_on_character?(item, context.character) do
-          drop_thing(context, item)
-        else
-          Util.dave_error(context)
-        end
+        drop_item_by_uuid(context)
       else
+        Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
+
+        # If there is input but that input is not a UUID, that means the player typed text in. Go searching for the item.
         find_thing_to_drop(context)
       end
     end
   end
 
-  defp find_thing_to_drop(context) do
-    held_items = Character.list_held_items(context.character)
+  defp drop_item_by_uuid(context) do
+    case Item.get(context.command.ast.thing.input) do
+      {:ok, item} ->
+        drop_item(context, List.first(Search.things_to_match(item)))
 
-    if length(held_items) == 0 do
-      context
-      |> Context.append_error("You aren't holding anything.")
-    else
-      ast = context.command.ast
-
-      matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
-
-      case matches do
-        {:ok, [match]} ->
-          drop_thing(context, match.match)
-
-        {:ok, matches} when length(matches) > 1 ->
-          Util.multiple_error(context)
-
-        _ ->
-          context
-          |> Context.append_error("Could not find what you were attempting to drop.")
-      end
+      _ ->
+        Util.dave_error_v2(context)
     end
   end
 
-  defp drop_thing(context, item) do
-    item =
-      Item.update!(item, %{
-        container_id: nil,
-        holdable_is_held: false,
-        holdable_held_by_id: nil,
-        holdable_hand: nil,
-        area_id: context.character.area_id
-      })
+  defp get_item_from_hand_as_matches_list(character_id, hand) do
+    Item.get_item_in_hand_as_list(character_id, hand)
+    |> Search.things_to_match()
+  end
 
-    all_items = Item.list_all_recursive(item)
+  defp get_items_from_hands_as_matches_list(character_id) do
+    Item.list_items_in_hands(character_id)
+    |> Search.things_to_match()
+  end
 
-    other_msg =
-      "{{character}}#{context.character.name}{{/character}} drops {{item}}#{
-        item.description.short
-      }{{/item}} on the ground."
+  defp find_thing_to_drop(context = %Mud.Engine.Command.Context{}) do
+    input = context.command.ast.thing.input
 
-    self_msg = "You drop {{item}}#{item.description.short}{{/item}} on the ground."
+    results =
+      case input do
+        "left" ->
+          get_item_from_hand_as_matches_list(context.character.id, "left")
 
-    others =
-      Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+        "right" ->
+          get_item_from_hand_as_matches_list(context.character.id, "right")
 
-    context
-    |> Context.append_output(
-      others,
-      other_msg,
-      "info"
-    )
-    |> Context.append_output(
-      context.character.id,
-      self_msg,
-      "info"
-    )
-    |> Context.append_event(
-      [context.character_id | others],
-      UpdateArea.new(%{action: :add, on_ground: all_items})
-    )
+        "all" ->
+          # get_item_from_hand_as_matches_list(context.character.id, "right")
 
-    # |> Context.append_event(
-    #   context.character_id,
-    #   UpdateInventory.new(:remove, all_items)
-    # )
+          case get_items_from_hands_as_matches_list(context.character.id) do
+            [] ->
+              Util.not_found_error(context)
+
+            matches ->
+              [first | second] =
+                CallbackUtil.sort_held_matches(matches, context.character.handedness)
+
+              # then just handle results as normal
+              context
+              |> drop_item(first, [])
+              |> drop_item(second, [])
+          end
+
+        _ ->
+          Search.find_matches_in_held_items(
+            context.character.id,
+            input,
+            context.character.settings.commands.search_mode
+          )
+      end
+
+    case results do
+      {:ok, matches} ->
+        [first | rest] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+
+        # then just handle results as normal
+        drop_item(context, first, rest)
+
+      _ ->
+        Util.not_found_error(context)
+    end
+  end
+
+  defp drop_item(context, thing = %Search.Match{}, other_matches \\ []) do
+    original_item = thing.match
+    # double check that the thing is held in the hand
+    # if thing is held in hand, drop it and send out messages
+    # if thing is not held in hand of character, send out dave message
+    if original_item.location.held_in_hand and
+         original_item.location.character_id == context.character.id do
+      location =
+        Location.update!(original_item.location, %{
+          held_in_hand: false,
+          on_ground: true,
+          character_id: nil,
+          area_id: context.character.area_id
+        })
+
+      item = %{original_item | location: location}
+
+      # get other characters for messaging
+      others =
+        Character.list_others_active_in_areas(
+          context.character.id,
+          context.character.area_id
+        )
+
+      # create message to others
+      other_msg =
+        others
+        |> Message.new_story_output()
+        |> Message.append_text("[#{context.character.name}]", "character")
+        |> Message.append_text(" dropped ", "base")
+        |> Message.append_text(
+          item.description.short,
+          Mud.Engine.Util.get_item_type(item)
+        )
+        |> Message.append_text(".", "base")
+
+      # Create message to self
+      self_msg =
+        context.character.id
+        |> Message.new_story_output()
+        |> Message.append_text("You", "character")
+        |> Message.append_text(" drop ", "base")
+        |> Message.append_text(
+          item.description.short,
+          Mud.Engine.Util.get_item_type(item)
+        )
+        |> Message.append_text(".", "base")
+
+      # Append assumption message if there were other links found
+      self_msg =
+        if other_matches != [] do
+          other_items = Enum.map(other_matches, & &1.match)
+
+          Util.append_assumption_text(self_msg, item, other_items)
+        else
+          self_msg
+        end
+
+      context
+      |> Context.append_message(other_msg)
+      |> Context.append_message(self_msg)
+      |> Context.append_event(
+        context.character_id,
+        UpdateInventory.new(%{action: :remove, items: [original_item]})
+      )
+      |> Context.append_event(
+        [context.character_id | others],
+        UpdateArea.new(%{action: :add, on_ground: [item]})
+      )
+    else
+      Util.dave_error_v2(context)
+    end
   end
 end

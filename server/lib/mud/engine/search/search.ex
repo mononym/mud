@@ -54,6 +54,27 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
+  Find matches in held items only.
+  """
+  @spec find_matches_in_held_items(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_in_held_items(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_held(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
   Find matches in worn or held items.
   """
   @spec find_matches_in_inventory(

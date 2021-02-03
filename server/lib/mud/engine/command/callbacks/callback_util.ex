@@ -218,6 +218,14 @@ defmodule Mud.Engine.Command.CallbackUtil do
     Engine.Util.upcase_first(Item.items_to_short_desc_with_nested_location(item))
   end
 
+  def sort_held_matches(matches = [match1 | match2], handedness) do
+    if match1.match.location.hand == handedness do
+      matches
+    else
+      Enum.reverse(matches)
+    end
+  end
+
   def sort_matches(matches) do
     items = Enum.map(matches, & &1.match)
     ancestors = Item.list_all_parents(items)

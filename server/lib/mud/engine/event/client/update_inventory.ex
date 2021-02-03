@@ -14,4 +14,8 @@ defmodule Mud.Engine.Event.Client.UpdateInventory do
       items: List.wrap(items)
     }
   end
+
+  def new(params) do
+    struct!(__MODULE__, params)
+  end
 end

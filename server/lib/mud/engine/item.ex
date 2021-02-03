@@ -149,6 +149,24 @@ defmodule Mud.Engine.Item do
     end
   end
 
+  def get_item_in_hand_as_list(character_id, hand) do
+    from(
+      [item, wearable: wearable] in base_query_with_preload(),
+      where:
+        wearable.hand == ^hand and
+          item.id in subquery(base_query_for_held_item_ids(character_id))
+    )
+    |> Repo.all()
+  end
+
+  def list_items_in_hands(character_id) do
+    from(
+      item in base_query_with_preload(),
+      where: item.id in subquery(base_query_for_held_item_ids(character_id))
+    )
+    |> Repo.all()
+  end
+
   @doc """
   Deletes an item.
 
@@ -336,6 +354,15 @@ defmodule Mud.Engine.Item do
           like(description.short, ^search_string),
       order_by: location.moved_at
     )
+    |> Repo.all()
+  end
+
+  @doc """
+  Only held items are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_held(String.t(), String.t()) :: [%__MODULE__{}]
+  def search_held(character_id, search_string) do
+    search_held_query(character_id, search_string)
     |> Repo.all()
   end
 
@@ -977,6 +1004,18 @@ defmodule Mud.Engine.Item do
     )
   end
 
+  def base_query_for_held_item_ids(character_id) do
+    base_query_for_held_items(character_id)
+    |> modify_query_select_id()
+  end
+
+  def base_query_for_held_items(character_id) do
+    from(
+      [location: location] in base_query_without_preload(),
+      where: location.held_in_hand and location.character_id == ^character_id
+    )
+  end
+
   def base_query_for_root_inventory(character_id) do
     from(
       [location: location] in base_query_without_preload(),
@@ -1002,6 +1041,16 @@ defmodule Mud.Engine.Item do
       [description: description, location: location] in base_query_with_preload(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
+          like(description.short, ^search_string),
+      order_by: [desc: location.moved_at]
+    )
+  end
+
+  def search_held_query(character_id, search_string) do
+    from(
+      [description: description, location: location] in base_query_with_preload(),
+      where:
+        description.item_id in subquery(base_query_for_held_item_ids(character_id)) and
           like(description.short, ^search_string),
       order_by: [desc: location.moved_at]
     )
