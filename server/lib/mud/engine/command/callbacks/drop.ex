@@ -88,8 +88,6 @@ defmodule Mud.Engine.Command.Drop do
   defp find_thing_to_drop(context = %Mud.Engine.Command.Context{}) do
     input = context.command.ast.thing.input
 
-    IO.inspect(input, label: :find_thing_to_drop)
-
     case input do
       "left" ->
         matches = get_item_from_hand_as_matches_list(context.character.id, "left")

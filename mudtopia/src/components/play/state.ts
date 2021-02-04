@@ -187,9 +187,22 @@ export function createState() {
   }
 
   function setupInventory(items) {
-    const newWornContainers = [];
     const newAllItemsIndex = {};
-    const newParentChildIndex = {};
+
+    items.forEach((item) => {
+      newAllItemsIndex[item.id] = item;
+    });
+
+    allInventoryItemsIndex.set(newAllItemsIndex);
+
+    resetHeldItems(items);
+    resetWornContainers(items);
+    resetParentChildIndex(items);
+  }
+
+  function resetHeldItems(items) {
+    itemInLeftHand.set({ ...ItemState });
+    leftHandHasItem.set(false);
 
     items.forEach((item) => {
       if (item.location.held_in_hand) {
@@ -200,16 +213,30 @@ export function createState() {
           itemInRightHand.set(item);
           rightHandHasItem.set(true);
         }
-      } else if (
+      }
+    });
+  }
+
+  function resetWornContainers(items) {
+    const newWornContainers = [];
+
+    items.forEach((item) => {
+      if (
         item.location.worn_on_character &&
         item.flags.container &&
         item.flags.wearable
       ) {
         newWornContainers.push(item);
       }
+    });
 
-      newAllItemsIndex[item.id] = item;
+    wornContainers.set(newWornContainers);
+  }
 
+  function resetParentChildIndex(items) {
+    const newParentChildIndex = {};
+
+    items.forEach((item) => {
       if (item.location.relative_to_item) {
         const existingChildren =
           newParentChildIndex[item.location.relative_item_id] || [];
@@ -218,57 +245,60 @@ export function createState() {
       }
     });
 
-    wornContainers.set(newWornContainers);
-    allInventoryItemsIndex.set(newAllItemsIndex);
     inventoryItemsParentChildIndex.set(newParentChildIndex);
   }
 
   function updateInventory(items) {
     items.forEach((item) => {
-      if (item.location.held_in_hand) {
-        if (item.location.hand == "left") {
-          itemInLeftHand.set(item);
-          leftHandHasItem.set(true);
-        } else if (item.location.hand == "right") {
-          itemInRightHand.set(item);
-          rightHandHasItem.set(true);
-        }
-      } else if (
-        item.location.worn_on_character &&
-        item.flags.container &&
-        item.flags.wearable
-      ) {
-        wornContainers.update(function (containers) {
-          var foundIndex = containers.findIndex(
-            (container) => container.id == item.id
-          );
-          containers[foundIndex] = item;
-          return containers;
-        });
-      }
-
       allInventoryItemsIndex.update(function (index) {
         index[item.id] = item;
         return index;
       });
 
-      if (item.location.relative_to_item) {
-        inventoryItemsParentChildIndex.update(function (index) {
-          const existingChildren = index[item.location.relative_item_id] || [];
-          const newChildren = existingChildren.map((child) => {
-            if (child.id == item.id) {
-              return item;
-            } else {
-              return child;
-            }
-          });
+      // console.log("updating parent child index");
+      // inventoryItemsParentChildIndex.update(function (index) {
+      //   console.log("update");
+      //   console.log(index);
+      //   const i = Object.values(index).findIndex(function (children) {
+      //     console.log("findIndex");
+      //     console.log(children);
+      //     return children.findIndex((child) => child.id == item.id) >= 0;
+      //   });
+      //   const key = Object.keys[i];
+      //   console.log("before");
+      //   console.log(key);
+      //   console.log(index[key]);
 
-          index[item.location.relative_item_id] = newChildren;
+      //   if (i >= 0) {
+      //     console.log("found object");
+      //     const existingChildren = index[key] || [];
+      //     const newChildren = existingChildren.filter((child) => {
+      //       child.id != item.id;
+      //     });
 
-          return index;
-        });
-      }
+      //     index[key] = newChildren;
+      //   }
+      //   console.log("after");
+      //   console.log(index[key]);
+
+      //   if (item.location.relative_to_item) {
+      //     console.log("item is a child");
+      //     console.log(item.id);
+      //     const existingChildren = index[item.location.relative_item_id] || [];
+      //     existingChildren.push(item.id);
+      //     index[item.location.relative_item_id] = existingChildren;
+      //     console.log(index[item.location.relative_item_id]);
+
+      //     return index;
+      //   } else {
+      //     return index;
+      //   }
+      // });
     });
+
+    resetHeldItems(Object.values(get(allInventoryItemsIndex)));
+    resetWornContainers(Object.values(get(allInventoryItemsIndex)));
+    resetParentChildIndex(Object.values(get(allInventoryItemsIndex)));
   }
 
   function addInventory(items) {
@@ -338,8 +368,10 @@ export function createState() {
       if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
           const existingChildren = index[item.location.relative_item_id] || [];
-          existingChildren.filter((child) => child.id != item.id);
-          index[item.location.relative_item_id] = existingChildren;
+          const newChildren = existingChildren.filter(
+            (child) => child.id != item.id
+          );
+          index[item.location.relative_item_id] = newChildren;
 
           return index;
         });

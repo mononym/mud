@@ -99,11 +99,13 @@ defmodule Mud.Engine.Command.Get do
 
   defp get_item_in_inventory(context) do
     results =
-      Search.find_matches_inside_inventory(
+      Search.find_matches_in_inventory(
         context.character.id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
       )
+
+    IO.inspect(results, label: :get_item_in_inventory)
 
     case results do
       {:ok, matches} ->
@@ -317,10 +319,14 @@ defmodule Mud.Engine.Command.Get do
                     end
                 end
 
+              desc =
+                Item.items_to_short_desc_with_nested_location_without_item(original_item)
+                |> List.first()
+
               location =
                 Location.update!(original_item.location, %{
                   on_ground: false,
-                  relative_to_container: false,
+                  relative_to_item: false,
                   area_id: nil,
                   relative_item_id: nil,
                   held_in_hand: true,
@@ -343,7 +349,7 @@ defmodule Mud.Engine.Command.Get do
                 |> Message.append_text("[#{context.character.name}]", "character")
                 |> Message.append_text(" gets ", "base")
                 |> Message.append_text(
-                  Item.items_to_short_desc_with_nested_location_without_item(original_item),
+                  desc,
                   Mud.Engine.Util.get_item_type(item)
                 )
                 |> Message.append_text(".", "base")
@@ -354,7 +360,7 @@ defmodule Mud.Engine.Command.Get do
                 |> Message.append_text("You", "character")
                 |> Message.append_text(" get ", "base")
                 |> Message.append_text(
-                  Item.items_to_short_desc_with_nested_location_without_item(original_item),
+                  desc,
                   Mud.Engine.Util.get_item_type(item)
                 )
                 |> Message.append_text(".", "base")
@@ -403,6 +409,7 @@ defmodule Mud.Engine.Command.Get do
                 |> Message.append_text(
                   Util.upcase_first(
                     Item.items_to_short_desc_with_nested_location_without_item(original_item)
+                    |> List.first()
                   ),
                   Mud.Engine.Util.get_item_type(original_item)
                 )

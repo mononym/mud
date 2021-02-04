@@ -19,6 +19,7 @@
     selectedCharacter,
     characterSettings,
     saveCharacterSettings,
+    inventoryItemsParentChildIndex,
   } = state;
 
   let menuItem;
@@ -29,8 +30,6 @@
 
   afterUpdate(() => {
     tippy("[data-tippy-content]");
-    console.log("$wornContainers");
-    console.log($wornContainers);
   });
 
   async function showRightClickMenu(customEvent) {
@@ -73,6 +72,8 @@
     $characterSettings.inventoryWindow.show_worn_armor,
     $characterSettings.inventoryWindow.show_worn_weapons,
     $characterSettings.inventoryWindow.show_worn_jewelry,
+    $wornContainers,
+    $inventoryItemsParentChildIndex,
     buildWornItems();
 
   function buildWornItems() {

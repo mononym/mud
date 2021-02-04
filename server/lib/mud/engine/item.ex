@@ -322,6 +322,8 @@ defmodule Mud.Engine.Item do
     items = List.wrap(items)
     parents = list_all_parents(items)
     parent_index = build_item_index(parents)
+    IO.inspect(items, label: :build_parent_string_itemx)
+    IO.inspect(parents, label: :build_parent_string_parents)
 
     Enum.map(items, fn item ->
       build_parent_string(item, parent_index)
@@ -329,8 +331,8 @@ defmodule Mud.Engine.Item do
   end
 
   defp build_parent_string(item, parent_index) do
-    IO.inspect(item, label: :build_parent_string)
-    IO.inspect(parent_index, label: :build_parent_string)
+    IO.inspect(item, label: :build_parent_string_item)
+    IO.inspect(parent_index, label: :build_parent_string_parent_index)
 
     cond do
       item.location.relative_to_item ->

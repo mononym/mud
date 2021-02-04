@@ -215,7 +215,9 @@ defmodule Mud.Engine.Command.CallbackUtil do
   Given an item, return a string with the first letter capitalized and the full path of the item to the root.
   """
   def upcase_item_with_location(item) do
-    Engine.Util.upcase_first(Item.items_to_short_desc_with_nested_location_without_item(item))
+    Engine.Util.upcase_first(
+      List.first(Item.items_to_short_desc_with_nested_location_without_item(item))
+    )
   end
 
   def sort_held_matches(matches, handedness) do
