@@ -254,46 +254,6 @@ export function createState() {
         index[item.id] = item;
         return index;
       });
-
-      // console.log("updating parent child index");
-      // inventoryItemsParentChildIndex.update(function (index) {
-      //   console.log("update");
-      //   console.log(index);
-      //   const i = Object.values(index).findIndex(function (children) {
-      //     console.log("findIndex");
-      //     console.log(children);
-      //     return children.findIndex((child) => child.id == item.id) >= 0;
-      //   });
-      //   const key = Object.keys[i];
-      //   console.log("before");
-      //   console.log(key);
-      //   console.log(index[key]);
-
-      //   if (i >= 0) {
-      //     console.log("found object");
-      //     const existingChildren = index[key] || [];
-      //     const newChildren = existingChildren.filter((child) => {
-      //       child.id != item.id;
-      //     });
-
-      //     index[key] = newChildren;
-      //   }
-      //   console.log("after");
-      //   console.log(index[key]);
-
-      //   if (item.location.relative_to_item) {
-      //     console.log("item is a child");
-      //     console.log(item.id);
-      //     const existingChildren = index[item.location.relative_item_id] || [];
-      //     existingChildren.push(item.id);
-      //     index[item.location.relative_item_id] = existingChildren;
-      //     console.log(index[item.location.relative_item_id]);
-
-      //     return index;
-      //   } else {
-      //     return index;
-      //   }
-      // });
     });
 
     resetHeldItems(Object.values(get(allInventoryItemsIndex)));
