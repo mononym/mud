@@ -31,21 +31,19 @@
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>
   <div
-    class="cursor-pointer grid gap-1 grid-cols-12 items-center"
+    class="cursor-pointer flex items-center"
     style="color:{getItemColor($selectedCharacter.settings.colors, item)}"
     bind:this={itemDiv}
     on:contextmenu={dispatchContextMenuEvent}
   >
     {#if showQuickActions}
-      <div class="col-span-1 mr-2">
+      <div class="flex-shrink mr-2">
         <slot name="quickActions" />
       </div>
     {/if}
     <pre
       on:click|preventDefault={toggleItemExpanded}
-      class="ml-2 col-span-{showQuickActions && $$slots.quickActions
-        ? 11
-        : 12}">{item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}</pre>
+      class="ml-2 flex-1">{item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}</pre>
     {#if itemExpanded}
       <div
         on:click|preventDefault={toggleItemExpanded}

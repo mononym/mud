@@ -243,11 +243,15 @@ defmodule Mud.Engine.Util do
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
       |> Message.append_text(
-        Item.items_to_short_desc_with_nested_location_without_item(item),
+        List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
         get_item_type(item)
       )
       |> Message.append_text(
-        ". #{length(other_items)} other potential matches: ",
+        ". #{length(other_items)} other potential match#{
+          if length(other_items) > 1 do
+            "es"
+          end
+        }: ",
         "system_info"
       )
 
@@ -480,10 +484,12 @@ defmodule Mud.Engine.Util do
     end
   end
 
+  def get_item_type(_item, default \\ "base")
+
   @doc """
   Given an item, examine it and return an atom that represents its type such as 'worn_container' or 'weapon'
   """
-  def get_item_type(item) do
+  def get_item_type(item, default) when is_struct(item) do
     cond do
       item.flags.container and item.flags.wearable ->
         "worn_container"
@@ -504,8 +510,12 @@ defmodule Mud.Engine.Util do
         "coin"
 
       true ->
-        "base"
+        default
     end
+  end
+
+  def get_item_type(_item, default) do
+    default
   end
 
   def upcase_first(<<first::utf8, rest::binary>>), do: String.upcase(<<first::utf8>>) <> rest

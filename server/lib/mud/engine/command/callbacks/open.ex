@@ -381,7 +381,7 @@ defmodule Mud.Engine.Command.Open do
               |> Message.append_text("You", "character")
               |> Message.append_text(" open ", "base")
               |> Message.append_text(
-                Item.items_to_short_desc_with_nested_location_without_item(item),
+                List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
                 Mud.Engine.Util.get_item_type(item)
               )
               |> Message.append_text(".", "base")

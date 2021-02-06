@@ -73,6 +73,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_say_command(),
       define_sit_command(),
       define_stand_command(),
+      define_store_command(),
       define_stow_command(),
       define_swap_command(),
       define_travel_command(),
@@ -490,13 +491,65 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
+  defp define_store_command do
+    %Definition{
+      callback_module: Command.Store,
+      parts: [
+        %Part{
+          matches: ["store"],
+          key: :store,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:store],
+          matches: [
+            "default",
+            "list",
+            "clear",
+            "weapon",
+            "weapons",
+            "armor",
+            "shield",
+            "shields",
+            "clothing",
+            "clothes",
+            "ammunition",
+            "ammo",
+            "gem",
+            "gems"
+          ],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        },
+        %Part{
+          must_follow: [:thing],
+          matches: ["in"],
+          key: :path,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:path, :thing],
+          matches: [~r/^\d$/],
+          key: :place_number,
+          transformer: &string_to_int/1
+        },
+        %Part{
+          must_follow: [:path, :thing, :place_number],
+          matches: [~r/.*/],
+          key: :place,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
   defp define_stow_command do
     %Definition{
       callback_module: Command.Stow,
       parts: [
         %Part{
           matches: ["stow"],
-          key: :put,
+          key: :stow,
           transformer: &Enum.join/1
         },
         %Part{

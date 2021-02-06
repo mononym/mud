@@ -126,6 +126,16 @@ defmodule Mud.Engine.Item do
     end
   end
 
+  @spec list(ids :: [binary]) :: [%__MODULE__{}]
+  def list(ids) do
+    ids = List.wrap(ids)
+
+    from([item] in base_query_with_preload(),
+      where: item.id in ^ids
+    )
+    |> Repo.all()
+  end
+
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from([item] in base_query_with_preload(),
@@ -384,6 +394,15 @@ defmodule Mud.Engine.Item do
   @spec search_inventory(String.t(), String.t()) :: [%__MODULE__{}]
   def search_inventory(character_id, search_string) do
     search_inventory_query(character_id, search_string)
+    |> Repo.all()
+  end
+
+  @doc """
+  All inventory items are searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  @spec search_inventory_for_containers(String.t(), String.t()) :: [%__MODULE__{}]
+  def search_inventory_for_containers(character_id, search_string) do
+    search_inventory_for_containers_query(character_id, search_string)
     |> Repo.all()
   end
 
@@ -1054,6 +1073,16 @@ defmodule Mud.Engine.Item do
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
           like(description.short, ^search_string),
+      order_by: [desc: location.moved_at]
+    )
+  end
+
+  def search_inventory_for_containers_query(character_id, search_string) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
+          like(description.short, ^search_string) and flags.container,
       order_by: [desc: location.moved_at]
     )
   end

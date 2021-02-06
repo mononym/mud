@@ -410,7 +410,6 @@ defmodule Mud.Engine.Character.Settings do
       weapon: "#ffffff",
       armor: "#ffffff",
       gem: "#ffffff",
-      coin: "#ffffff",
       ammunition: "#ffffff",
       shield: "#ffffff",
       clothing: "#ffffff",

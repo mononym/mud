@@ -12,6 +12,7 @@
   import MapWindow from "../components/play/MapWindow.svelte";
   import InventoryWindow from "../components/play/InventoryWindow.svelte";
   import AreaWindow from "../components/play/AreaWindow.svelte";
+  import CompassWindow from "../components/play/CompassWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -206,6 +207,11 @@
   let startingAreaX;
   let startingAreaY;
 
+  let startingCompassWidth;
+  let startingCompassHeight;
+  let startingCompassX;
+  let startingCompassY;
+
   onMount(async () => {
     startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
@@ -237,6 +243,11 @@
     startingAreaHeight = wrapper.offsetHeight - 64;
     startingAreaX = Math.floor(wrapper.offsetWidth * 0.7).toString();
     startingAreaY = "0";
+
+    startingCompassWidth = "200";
+    startingCompassHeight = "200";
+    startingCompassX = "0";
+    startingCompassY = "0";
 
     const character = $characters.filter(
       (character) => character.id == params.characterId
@@ -324,6 +335,16 @@
         bind:initialY={startingAreaY}
       >
         <AreaWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="compassWindow"
+        label="Directions"
+        bind:initialHeight={startingCompassWidth}
+        bind:initialWidth={startingCompassHeight}
+        bind:initialX={startingCompassX}
+        bind:initialY={startingCompassY}
+      >
+        <CompassWindow />
       </LayoutItemWrapper>
     </div>
     {#if $view == "settings"}

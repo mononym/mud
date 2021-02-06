@@ -96,6 +96,27 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
+  Find matches in worn or held items.
+  """
+  @spec find_matching_containers_in_inventory(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matching_containers_in_inventory(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_inventory_for_containers(character_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
   Find matches in inventory not at the root level
   """
   @spec find_matches_inside_inventory(

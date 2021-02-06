@@ -11,7 +11,7 @@ defmodule Mud.Repo.Migrations.CreateCharacterWealth do
       add(:bronze, :bigint, default: 0)
       add(:silver, :bigint, default: 0)
       add(:gold, :bigint, default: 0)
-    end
+    endmix 
 
     create(unique_index(:character_wealth, [:character_id]))
     create(index(:character_wealth, [:copper]))

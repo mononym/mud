@@ -19,6 +19,7 @@ defmodule Mud.Engine.Message do
   #
   #
 
+  @spec new_story_output(list) :: Mud.Engine.Message.StoryOutput.t()
   @doc """
   Create a new Text Output message for one or more characters given their id's.
 

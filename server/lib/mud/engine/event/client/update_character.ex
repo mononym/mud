@@ -6,6 +6,8 @@ defmodule Mud.Engine.Event.Client.UpdateCharacter do
     field(:action, String.t(), default: "character")
     # the item being updated
     field(:character, Mud.Engine.Character.t())
+    # the containers settings being updated on a character
+    field(:containers, Mud.Engine.Character.Containers.t())
     # the wealth being updated on a character
     field(:wealth, Mud.Engine.Character.Wealth.t())
   end
