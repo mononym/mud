@@ -447,7 +447,7 @@ defmodule Mud.Engine.Session do
   end
 
   def terminate(reason, _state, state) when reason != :normal do
-    Mud.Engine.Command.Quit.do_ingame_stuff(state)
+    Mud.Engine.Command.Quit.update_character(state.character_id)
 
     persist_state(state)
   end

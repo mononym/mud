@@ -75,8 +75,8 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp find_thing_to_get(context = %Mud.Engine.Command.Context{}) do
-    IO.inspect("find_thing_to_get")
-    IO.inspect(context.command.ast)
+    # IO.inspect("find_thing_to_get")
+    # IO.inspect(context.command.ast)
 
     case context.command.ast do
       # Get thing from in character
@@ -98,7 +98,7 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp get_item_in_inventory(context) do
-    IO.inspect("get_item_in_inventory")
+    # IO.inspect("get_item_in_inventory")
 
     results =
       Search.find_matches_in_inventory(
@@ -107,7 +107,7 @@ defmodule Mud.Engine.Command.Get do
         context.character.settings.commands.search_mode
       )
 
-    IO.inspect(results)
+    # IO.inspect(results)
 
     case results do
       {:ok, matches} ->
@@ -215,7 +215,7 @@ defmodule Mud.Engine.Command.Get do
   defp get_item(context, thing = %Search.Match{}, other_matches \\ []) do
     items_in_hands = Item.list_items_in_hands(context.character.id)
 
-    IO.inspect(items_in_hands, label: :get_item_items_in_hands)
+    # IO.inspect(items_in_hands, label: :get_item_items_in_hands)
 
     if length(items_in_hands) == 2 do
       Util.hands_full_error(context)
@@ -225,21 +225,21 @@ defmodule Mud.Engine.Command.Get do
       in_inventory = Item.in_inventory?(original_item.id, context.character.id)
       parent_containers_open = Item.parent_containers_open?(original_item)
 
-      IO.inspect(
-        original_item,
-        label: :get_item
-      )
+      # IO.inspect(
+      #   original_item,
+      #   label: :get_item
+      # )
 
-      IO.inspect(
-        {in_area, in_inventory, parent_containers_open, original_item.location.held_in_hand,
-         original_item.location.worn_on_character,
-         parent_containers_open and
-           (in_area or
-              (in_inventory and
-                 not (original_item.location.held_in_hand or
-                        original_item.location.worn_on_character)))},
-        label: :get_item
-      )
+      # IO.inspect(
+      #   {in_area, in_inventory, parent_containers_open, original_item.location.held_in_hand,
+      #    original_item.location.worn_on_character,
+      #    parent_containers_open and
+      #      (in_area or
+      #         (in_inventory and
+      #            not (original_item.location.held_in_hand or
+      #                   original_item.location.worn_on_character)))},
+      #   label: :get_item
+      # )
 
       cond do
         parent_containers_open and
@@ -306,7 +306,7 @@ defmodule Mud.Engine.Command.Get do
 
             # Item can be held which means it can be picked up
             original_item.flags.hold ->
-              IO.inspect(original_item, label: "getting held item")
+              # IO.inspect(original_item, label: "getting held item")
 
               hand =
                 cond do
@@ -352,9 +352,9 @@ defmodule Mud.Engine.Command.Get do
                 if other_matches != [] do
                   other_items = Enum.map(other_matches, & &1.match)
 
-                  IO.inspect(self_msg, label: :self_msg)
-                  IO.inspect(original_item, label: :original_item)
-                  IO.inspect(other_items, label: :other_items)
+                  # IO.inspect(self_msg, label: :self_msg)
+                  # IO.inspect(original_item, label: :original_item)
+                  # IO.inspect(other_items, label: :other_items)
 
                   Util.append_assumption_text(self_msg, original_item, other_items)
                 else

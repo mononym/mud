@@ -1961,7 +1961,7 @@ alias Mud.Engine
         local_from_x: -1,
         local_from_y: -6
       },
-      Mud.Engine.LinkTemplate.Portal.template()
+      Mud.Engine.LinkTemplate.Direction.template()
     )
   )
 
@@ -1982,7 +1982,7 @@ alias Mud.Engine
         local_from_x: 1,
         local_from_y: 1
       },
-      Mud.Engine.LinkTemplate.Portal.template()
+      Mud.Engine.LinkTemplate.Direction.template()
     )
   )
 

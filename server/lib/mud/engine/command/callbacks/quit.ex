@@ -16,10 +16,7 @@ defmodule Mud.Engine.Command.Quit do
 
   @spec do_ingame_stuff(Mud.Engine.Command.Context.t()) :: none
   def do_ingame_stuff(context) do
-    {:ok, character} =
-      context.character_id
-      |> Mud.Engine.Character.get_by_id!()
-      |> Mud.Engine.Character.update(%{active: false})
+    character = update_character(context.character.id)
 
     characters = Mud.Engine.Character.list_others_active_in_areas(character.id, character.area_id)
 
@@ -38,5 +35,11 @@ defmodule Mud.Engine.Command.Quit do
         "info"
       )
     )
+  end
+
+  def update_character(character_id) do
+    character_id
+    |> Mud.Engine.Character.get_by_id!()
+    |> Mud.Engine.Character.update!(%{active: false})
   end
 end

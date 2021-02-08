@@ -374,6 +374,8 @@ defmodule Mud.Engine.Command.Move do
       character.id
       |> Message.new_story_output()
 
+    IO.inspect(link, label: :link)
+
     cond do
       # Heading through the closed thing, so craft message about it being opened as character goes through
       link.flags.closable and not link.closable.open ->
