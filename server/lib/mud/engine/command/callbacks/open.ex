@@ -1,6 +1,6 @@
 defmodule Mud.Engine.Command.Open do
   @moduledoc """
-  The CLOSE command allows the Character to open something such as a door or a chest.
+  The OPEN command allows the Character to open something such as a door or a chest.
 
   Syntax:
     - open <target>

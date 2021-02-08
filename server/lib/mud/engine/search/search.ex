@@ -117,7 +117,9 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in inventory not at the root level
+  Find matches in inventory not at the root level.
+
+  So it won't find the backpack on your back, but it will find the sack in the backpack.
   """
   @spec find_matches_inside_inventory(
           String.t(),
@@ -287,6 +289,52 @@ defmodule Mud.Engine.Search do
   @doc """
   Find matches in items in unspecified location
   """
+  @spec find_matches_relative_to_place_in_hands(
+          String.t(),
+          Mud.Engine.Command.AstNode.Thing.t(),
+          Mud.Engine.Command.AstNode.Place.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_relative_to_place_in_hands(
+        character_id,
+        thing,
+        place,
+        mode \\ "simple"
+      ) do
+    path = unnest_place_path(place, [])
+
+    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
+    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
+    path =
+      if length(path) >= 2 and Enum.at(path, 1).where == "in" do
+        [_ | path] = path
+
+        path
+      else
+        path
+      end
+
+    items =
+      Item.search_relative_to_hands(
+        character_id,
+        path,
+        thing,
+        mode
+      )
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in items in unspecified location
+  """
   @spec find_matches_relative_to_place_in_inventory(
           String.t(),
           Mud.Engine.Command.AstNode.Thing.t(),
@@ -301,6 +349,17 @@ defmodule Mud.Engine.Search do
         mode \\ "simple"
       ) do
     path = unnest_place_path(place, [])
+
+    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
+    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
+    path =
+      if length(path) >= 2 and Enum.at(path, 1).where == "in" do
+        [_ | path] = path
+
+        path
+      else
+        path
+      end
 
     items =
       Item.search_relative_to_inventory(
@@ -336,6 +395,17 @@ defmodule Mud.Engine.Search do
         mode \\ "simple"
       ) do
     path = unnest_place_path(place, [])
+
+    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
+    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
+    path =
+      if length(path) >= 2 and Enum.at(path, 1).where == "in" do
+        [_ | path] = path
+
+        path
+      else
+        path
+      end
 
     items =
       Item.search_relative_to_item_in_area(

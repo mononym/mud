@@ -96,4 +96,39 @@ defmodule Mud.Engine.Item.Location do
     )
     |> Repo.one()
   end
+
+  def update_relative_to_item!(location, item_id, relation \\ "in") do
+    update!(location, %{
+      held_in_hand: false,
+      on_ground: false,
+      area_id: nil,
+      character_id: nil,
+      relative_item_id: item_id,
+      relative_to_item: true,
+      relation: relation
+    })
+  end
+
+  def update_held_item!(location, character_id, hand \\ "right") do
+    update!(location, %{
+      held_in_hand: true,
+      hand: hand,
+      on_ground: false,
+      area_id: nil,
+      character_id: character_id,
+      relative_item_id: nil,
+      relative_to_item: false
+    })
+  end
+
+  def update_on_ground_item!(location, area_id) do
+    update!(location, %{
+      held_in_hand: false,
+      on_ground: true,
+      area_id: area_id,
+      character_id: nil,
+      relative_item_id: nil,
+      relative_to_item: false
+    })
+  end
 end

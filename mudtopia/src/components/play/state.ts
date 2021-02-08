@@ -203,6 +203,8 @@ export function createState() {
   function resetHeldItems(items) {
     itemInLeftHand.set({ ...ItemState });
     leftHandHasItem.set(false);
+    itemInRightHand.set({ ...ItemState });
+    rightHandHasItem.set(false);
 
     items.forEach((item) => {
       if (item.location.held_in_hand) {
@@ -262,7 +264,14 @@ export function createState() {
   }
 
   function addInventory(items) {
+    console.log("addInventory");
+    console.log(items);
     items.forEach((item) => {
+      allInventoryItemsIndex.update(function (index) {
+        index[item.id] = item;
+        return index;
+      });
+
       if (item.location.held_in_hand) {
         if (item.location.hand == "left") {
           itemInLeftHand.set(item);
@@ -280,22 +289,17 @@ export function createState() {
           containers.push(item);
           return containers;
         });
-      }
-
-      allInventoryItemsIndex.update(function (index) {
-        index[item.id] = item;
-        return index;
-      });
-
-      if (item.location.relative_to_item) {
+      } else if (item.location.relative_to_item) {
         inventoryItemsParentChildIndex.update(function (index) {
           const existingChildren = index[item.location.relative_item_id] || [];
-          existingChildren.push(item.id);
+          existingChildren.push(item);
           index[item.location.relative_item_id] = existingChildren;
 
           return index;
         });
       }
+
+      console.log(get(inventoryItemsParentChildIndex));
     });
   }
 

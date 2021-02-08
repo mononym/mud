@@ -502,8 +502,12 @@ defmodule Mud.Engine.Character do
     |> Repo.all()
   end
 
-  def list_worn_containers(character) do
+  def list_worn_containers(character) when is_struct(character) do
     Item.list_worn_containers(character.id)
+  end
+
+  def list_worn_containers(character_id) when is_binary(character_id) do
+    Item.list_worn_containers(character_id)
   end
 
   def list_held_items(character) when is_struct(character) do

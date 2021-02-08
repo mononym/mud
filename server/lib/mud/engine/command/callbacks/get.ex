@@ -2,13 +2,16 @@ defmodule Mud.Engine.Command.Get do
   @moduledoc """
   The GET command allows the Character to get something from the ground or relative to other items.
 
+  In the case that an item is `in` or `on` another item, such as a sword on a counter or a gem in a box, it is not necessary to specify the exact relationship between the items. The engine will automatically detect the relationship, meaning you can simply use `from` without having to think about it.
+
   Syntax:
-    - get <target>
+    - get <item> [from <place>]
 
   Examples:
     - get backpack
-    - get door
-    - get pouch in backpack
+    - get my sword
+    - get pouch from my backpack
+    - get truffle from tray
   """
 
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateInventory}
@@ -18,10 +21,8 @@ defmodule Mud.Engine.Command.Get do
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item}
-  alias Item.{Container}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
-  alias Mud.Repo
   alias Mud.Engine.Item.Location
 
   require Logger
@@ -52,7 +53,6 @@ defmodule Mud.Engine.Command.Get do
         )
       )
     else
-      # get_item_if_empty_hand(context)
       # A UUID was passed in which means the get command is being attempted on a specific item.
       # This sort of command should only be triggered by the UI.
       if Util.is_uuid4(context.command.ast.thing.input) do
@@ -75,15 +75,15 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp find_thing_to_get(context = %Mud.Engine.Command.Context{}) do
-    case context.command.ast do
-      # Get thing on character
-      # If nothing is found worn on the character do not look further
-      %TAP{place: nil, thing: %Thing{personal: true}} ->
-        Logger.debug("Item to Get should be on character")
+    IO.inspect("find_thing_to_get")
+    IO.inspect(context.command.ast)
 
+    case context.command.ast do
+      # Get thing from in character
+      %TAP{place: nil, thing: %Thing{personal: true}} ->
         get_item_in_inventory(context)
 
-      # Thing being geted did not have 'my' specified, but also no place either
+      # Thing being got did not have 'my' specified, but also no place either
       %TAP{place: nil, thing: %Thing{personal: false}} ->
         get_item_in_area_or_inventory(context)
 
@@ -98,6 +98,8 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp get_item_in_inventory(context) do
+    IO.inspect("get_item_in_inventory")
+
     results =
       Search.find_matches_in_inventory(
         context.character.id,
@@ -105,7 +107,7 @@ defmodule Mud.Engine.Command.Get do
         context.character.settings.commands.search_mode
       )
 
-    IO.inspect(results, label: :get_item_in_inventory)
+    IO.inspect(results)
 
     case results do
       {:ok, matches} ->
@@ -319,22 +321,7 @@ defmodule Mud.Engine.Command.Get do
                     end
                 end
 
-              desc =
-                Item.items_to_short_desc_with_nested_location_without_item(original_item)
-                |> List.first()
-
-              location =
-                Location.update!(original_item.location, %{
-                  on_ground: false,
-                  relative_to_item: false,
-                  area_id: nil,
-                  relative_item_id: nil,
-                  held_in_hand: true,
-                  character_id: context.character.id,
-                  hand: hand
-                })
-
-              item = Map.put(original_item, :location, location)
+              items_in_path = Item.list_full_path(original_item)
 
               others =
                 Character.list_others_active_in_areas(
@@ -344,39 +331,40 @@ defmodule Mud.Engine.Command.Get do
 
               # TODO: Figure out only displaying the outermost container for the item, or the item itself it is the outermost container
               other_msg =
-                others
-                |> Message.new_story_output()
-                |> Message.append_text("[#{context.character.name}]", "character")
-                |> Message.append_text(" gets ", "base")
-                |> Message.append_text(
-                  desc,
-                  Mud.Engine.Util.get_item_type(item)
+                Util.construct_nested_item_location_message_for_others(
+                  context,
+                  others,
+                  original_item,
+                  items_in_path,
+                  in_area
                 )
-                |> Message.append_text(".", "base")
 
               self_msg =
                 context.character.id
                 |> Message.new_story_output()
                 |> Message.append_text("You", "character")
                 |> Message.append_text(" get ", "base")
-                |> Message.append_text(
-                  desc,
-                  Mud.Engine.Util.get_item_type(item)
-                )
-                |> Message.append_text(".", "base")
+
+              self_msg =
+                Util.construct_nested_item_location_message_for_self(self_msg, original_item)
 
               self_msg =
                 if other_matches != [] do
                   other_items = Enum.map(other_matches, & &1.match)
 
-                  IO.inspect(self_msg, label: :other_matches)
-                  IO.inspect(item, label: :other_matches)
-                  IO.inspect(other_items, label: :other_matches)
+                  IO.inspect(self_msg, label: :self_msg)
+                  IO.inspect(original_item, label: :original_item)
+                  IO.inspect(other_items, label: :other_items)
 
                   Util.append_assumption_text(self_msg, original_item, other_items)
                 else
                   self_msg
                 end
+
+              location =
+                Location.update_held_item!(original_item.location, context.character.id, hand)
+
+              item = Map.put(original_item, :location, location)
 
               # check to see whether the update needs to go to only inventory or the area too
               context =

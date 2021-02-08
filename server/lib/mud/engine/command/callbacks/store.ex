@@ -12,10 +12,10 @@ defmodule Mud.Engine.Command.Store do
   DEFAULT - Used when no container has been set for an item type, or a fallback is required.
   AMMUNITION/AMMO - Rocks, arrows, bolts, and other items recognized as ammunition.
   ARMOR - Any items that count as armor.
-  CLOTHING - Any items that count as clothing.
-  GEM - If no container has been set, a worn gem pouch will be searched for by default, and only if one of those is not found will the DEFAULT container be fallen back to.
-  SHIELD - Any items that count as a shield.
-  WEAPON - Any items that count as a weapon.
+  CLOTHING/CLOTHES - Any items that count as clothing.
+  GEM/GEMS - If no container has been set, a worn gem pouch will be searched for by default, and only if one of those is not found will the DEFAULT container be fallen back to.
+  SHIELD/SHIELDS - Any items that count as a shield.
+  WEAPON/WEAPONS - Any items that count as a weapon.
 
   Syntax:
     - STORE LIST

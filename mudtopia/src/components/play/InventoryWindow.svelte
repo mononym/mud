@@ -321,23 +321,6 @@
           <div class="flex space-x-2 pl-2" slot="quickActions">
             {#if wornContainer.container.open}
               <QuickAction
-                icon="{$selectedCharacter.containers.default == wornContainer
-                  ? 'fas'
-                  : 'far'} fa-star"
-                activeTooltip="Make default container"
-                inactiveTooltip="Already set as default container"
-                cliInput="store default {wornContainer.id}"
-                storyOutput="store default {wornContainer.description.short}"
-                activeIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "enabled_quick_action_color"
-                ]}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
-              />
-            {/if}
-            {#if wornContainer.container.open}
-              <QuickAction
                 icon="fas fa-box-open"
                 activeTooltip="close"
                 cliInput="close {wornContainer.id}"

@@ -550,4 +550,165 @@ defmodule Mud.Engine.Util do
         "a huge pile of #{coin_type} coins"
     end
   end
+
+  def him_her_them(%{gender_pronoun: "neutral"}), do: "them"
+  def him_her_them(%{gender_pronoun: "female"}), do: "her"
+  def him_her_them(%{gender_pronoun: "male"}), do: "him"
+
+  def his_her_their(%{gender_pronoun: "neutral"}), do: "their"
+  def his_her_their(%{gender_pronoun: "female"}), do: "her"
+  def his_her_their(%{gender_pronoun: "male"}), do: "his"
+
+  def his_hers_theirs(%{gender_pronoun: "neutral"}), do: "theirs"
+  def his_hers_theirs(%{gender_pronoun: "female"}), do: "hers"
+  def his_hers_theirs(%{gender_pronoun: "male"}), do: "his"
+
+  def he_she_they(%{gender_pronoun: "neutral"}), do: "they"
+  def he_she_they(%{gender_pronoun: "female"}), do: "she"
+  def he_she_they(%{gender_pronoun: "male"}), do: "he"
+
+  def construct_nested_item_location_message_for_self(message, item) do
+    items = List.wrap(item)
+    parents = Item.list_all_parents(items)
+    parent_index = build_item_index(parents)
+
+    build_self_parent_string(message, item, parent_index)
+  end
+
+  def build_item_index(items) do
+    Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
+  end
+
+  def construct_nested_item_location_message_for_others(context, others, item, path, item_in_area) do
+    message =
+      [context.character.id | others]
+      |> Message.new_story_output()
+      |> Message.append_text("#{context.character.name}", "character")
+      |> Message.append_text(" gets ", "base")
+      |> Message.append_text(
+        item.description.short,
+        get_item_type(item)
+      )
+
+    cond do
+      item.location.on_ground ->
+        Message.append_text(message, " from the ground.", "base")
+
+      # if item isn't on ground but in area, it means the container it is in is somewhere in the area, adjust message
+      item_in_area ->
+        # outermost item can't be the object itself, since the object is not on the ground.
+        # the outermost item is the outer container. The container itself might be on the ground or on something else that isn't a container.
+        # print out this thing that the container is on as well, to differentiate.
+        outermost_item =
+          Enum.find(path, fn possible_parent ->
+            possible_parent.flags.container or possible_parent.id == item.id
+          end)
+
+        if outermost_item.location.on_ground do
+          Message.append_text(message, " from ", "base")
+          |> Message.append_text(
+            outermost_item.description.short,
+            get_item_type(outermost_item)
+          )
+          |> Message.append_text(".", "base")
+        else
+          outermost_object = Item.get!(outermost_item.location.relative_item_id)
+
+          Message.append_text(message, " from ", "base")
+          |> Message.append_text(
+            outermost_item.description.short,
+            get_item_type(outermost_item)
+          )
+          |> Message.append_text(" #{outermost_item.location.relation} ", "base")
+          |> Message.append_text(
+            outermost_object.description.short,
+            get_item_type(outermost_object)
+          )
+          |> Message.append_text(".", "base")
+        end
+
+      item.location.relative_to_item and not item_in_area ->
+        outermost_item =
+          Enum.find(path, fn possible_parent ->
+            possible_parent.flags.container or possible_parent.id == item.id
+          end)
+
+        message =
+          Message.append_text(message, " from ", "base")
+          |> Message.append_text(
+            outermost_item.description.short,
+            get_item_type(outermost_item)
+          )
+
+        are_or_is =
+          if context.character.gender_pronoun == "neutral" do
+            "are"
+          else
+            "is"
+          end
+
+        if outermost_item.location.held_in_hand do
+          Message.append_text(
+            message,
+            " #{he_she_they(context.character)} #{are_or_is} holding.",
+            "base"
+          )
+        else
+          Message.append_text(
+            message,
+            " #{he_she_they(context.character)} #{are_or_is} wearing.",
+            "base"
+          )
+        end
+    end
+  end
+
+  defp build_self_parent_string(message, item, parent_index) do
+    cond do
+      item.location.relative_to_item ->
+        message
+        |> Message.append_text(
+          item.description.short,
+          get_item_type(item)
+        )
+        |> Message.append_text(
+          " from ",
+          "base"
+        )
+        |> build_self_parent_string(parent_index[item.location.relative_item_id], parent_index)
+
+      item.location.on_ground ->
+        message
+        |> Message.append_text(
+          item.description.short,
+          get_item_type(item)
+        )
+        |> Message.append_text(
+          " from the ground.",
+          "base"
+        )
+
+      item.location.worn_on_character ->
+        message
+        |> Message.append_text(
+          item.description.short,
+          get_item_type(item)
+        )
+        |> Message.append_text(
+          " which you are wearing.",
+          "base"
+        )
+
+      item.location.held_in_hand ->
+        message
+        |> Message.append_text(
+          item.description.short,
+          get_item_type(item)
+        )
+        |> Message.append_text(
+          " which you are holding.",
+          "base"
+        )
+    end
+  end
 end

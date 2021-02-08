@@ -59,7 +59,7 @@ defmodule Mud.Engine.Item do
   end
 
   def create(attrs \\ %{}) do
-    IO.inspect(attrs, label: :create)
+    # IO.inspect(attrs, label: :create)
 
     Repo.transaction(fn ->
       insert_new()
@@ -236,7 +236,7 @@ defmodule Mud.Engine.Item do
 
   def list_all_parents(items) do
     ids = items_to_ids(items)
-    IO.inspect(ids, label: :list_all_parents)
+    # IO.inspect(ids, label: :list_all_parents)
 
     Repo.all(list_all_recursive_parent_query(ids, true))
   end
@@ -328,12 +328,37 @@ defmodule Mud.Engine.Item do
   @doc """
   Turn a list of items strings like: [{item, "a wooden spoon on a ovaled silver plate on a tall wooden counter"}, {item2, "a silver fork on the ground"}]
   """
+  def list_full_path(item) do
+    wrapped_item = List.wrap(item)
+    parents = list_all_parents(wrapped_item)
+    parent_index = build_item_index(parents)
+    IO.inspect(wrapped_item, label: :build_parent_string_itemx)
+    IO.inspect(parents, label: :build_parent_string_parents)
+
+    build_parent_list(item, parent_index, [])
+  end
+
+  defp build_parent_list(item, parent_index, parents) do
+    cond do
+      item.location.relative_to_item ->
+        build_parent_list(parent_index[item.location.relative_item_id], parent_index, [
+          item | parents
+        ])
+
+      true ->
+        [item | parents]
+    end
+  end
+
+  @doc """
+  Turn a list of items strings like: [{item, "a wooden spoon on a ovaled silver plate on a tall wooden counter"}, {item2, "a silver fork on the ground"}]
+  """
   def items_to_short_desc_with_nested_location_without_item(items) do
     items = List.wrap(items)
     parents = list_all_parents(items)
     parent_index = build_item_index(parents)
-    IO.inspect(items, label: :build_parent_string_itemx)
-    IO.inspect(parents, label: :build_parent_string_parents)
+    # IO.inspect(items, label: :build_parent_string_itemx)
+    # IO.inspect(parents, label: :build_parent_string_parents)
 
     Enum.map(items, fn item ->
       build_parent_string(item, parent_index)
@@ -341,12 +366,12 @@ defmodule Mud.Engine.Item do
   end
 
   defp build_parent_string(item, parent_index) do
-    IO.inspect(item, label: :build_parent_string_item)
-    IO.inspect(parent_index, label: :build_parent_string_parent_index)
+    # IO.inspect(item, label: :build_parent_string_item)
+    # IO.inspect(parent_index, label: :build_parent_string_parent_index)
 
     cond do
       item.location.relative_to_item ->
-        "#{item.description.short} #{item.location.relation} #{
+        "#{item.description.short} from #{
           build_parent_string(parent_index[item.location.relative_item_id], parent_index)
         }"
 
@@ -452,7 +477,24 @@ defmodule Mud.Engine.Item do
         Search.input_to_wildcard_string(initial_path.input, mode)
       )
 
-    IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+    # IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+
+    build_and_execute_relative_query(initial_query, path, thing)
+  end
+
+  @doc """
+  """
+  def search_relative_to_hands(
+        character_id,
+        [initial_path | path],
+        thing,
+        mode
+      ) do
+    initial_query =
+      specific_nested_item_in_hands_initial_query(
+        character_id,
+        Search.input_to_wildcard_string(initial_path.input, mode)
+      )
 
     build_and_execute_relative_query(initial_query, path, thing)
   end
@@ -477,18 +519,17 @@ defmodule Mud.Engine.Item do
   defp build_and_execute_relative_query(initial_query, path, thing) do
     mostly_constructed_query = build_nested_relative_query(initial_query, path)
 
-    IO.inspect(mostly_constructed_query,
-      label: "build_and_execute_relative_query mostly_constructed_query"
-    )
+    # IO.inspect(mostly_constructed_query,
+    #   label: "build_and_execute_relative_query mostly_constructed_query"
+    # )
 
     final_query =
       specific_nested_item_top_level_query(
         mostly_constructed_query,
-        Search.input_to_wildcard_string(thing.input),
-        thing.where
+        Search.input_to_wildcard_string(thing.input)
       )
 
-    IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
+    # IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
 
     Repo.all(final_query)
   end
@@ -501,8 +542,7 @@ defmodule Mud.Engine.Item do
     current_query =
       specific_nested_item_mid_level_query(
         previous_query,
-        Search.input_to_wildcard_string(current_path.input),
-        current_path.where
+        Search.input_to_wildcard_string(current_path.input)
       )
 
     build_nested_relative_query(current_query, path)
@@ -632,11 +672,12 @@ defmodule Mud.Engine.Item do
         from([flags: flags, location: location] in base_query_without_preload(),
           where:
             location.item_id in subquery(recursive_parent_ids_query([item_id], true)) and
-              location.on_ground and location.area_id == ^area_id
+              location.on_ground and location.area_id == ^area_id,
+          select: count(location.id)
         )
       )
 
-    res != nil
+    res != 0
   end
 
   @doc """
@@ -841,6 +882,17 @@ defmodule Mud.Engine.Item do
     from(location in recursive_parent_query(ids, include_self), select: location.item_id)
   end
 
+  def child_ids_query(ids) do
+    from([location: location] in child_query(ids), select: location.item_id)
+  end
+
+  def child_query(ids) do
+    from(
+      [location: location] in base_query_without_preload(),
+      where: location.relative_to_item and location.relative_item_id in subquery(ids)
+    )
+  end
+
   def recursive_child_ids_query(ids, include_self \\ false) do
     from(location in recursive_child_query(ids, include_self), select: location.item_id)
   end
@@ -871,17 +923,28 @@ defmodule Mud.Engine.Item do
     )
   end
 
+  def specific_nested_item_in_hands_initial_query(
+        character_id,
+        search_string
+      ) do
+    from(
+      [description: description, location: location] in base_query_without_preload(),
+      where:
+        description.item_id in subquery(base_query_for_held_item_ids(character_id)) and
+          like(description.short, ^search_string),
+      select: description.item_id
+    )
+  end
+
   def specific_nested_item_mid_level_query(
         previous_query,
-        search_string,
-        relation
+        search_string
       ) do
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
         location.relative_to_item and
           location.item_id in subquery(recursive_child_ids_query(previous_query, true)) and
-          location.relation == ^relation and
           like(description.short, ^search_string),
       select: description.item_id
     )
@@ -889,15 +952,13 @@ defmodule Mud.Engine.Item do
 
   def specific_nested_item_top_level_query(
         previous_query,
-        search_string,
-        relation
+        search_string
       ) do
     from(
       [description: description, location: location] in base_query_with_preload(),
       where:
         location.relative_to_item and
-          location.item_id in subquery(recursive_child_ids_query(previous_query, true)) and
-          location.relation == ^relation and
+          location.item_id in subquery(child_ids_query(previous_query)) and
           like(description.short, ^search_string)
     )
   end
