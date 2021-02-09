@@ -5,12 +5,12 @@ defmodule Mud.Engine.Command.Drop do
   Aliases for dropping items in the 'left', 'right', and 'all' hands have been provided.
 
   Syntax:
-    - drop all | left | right | <item>
+    - drop BOTH | LEFT | RIGHT | <item>
 
   Examples:
     - drop sword
     - drop left
-    - drop all
+    - drop both
   """
 
   use Mud.Engine.Command.Callback
@@ -107,7 +107,7 @@ defmodule Mud.Engine.Command.Drop do
           Util.hand_already_empty(context, input)
         end
 
-      "all" ->
+      "both" ->
         case get_items_from_hands_as_matches_list(context.character.id) do
           [] ->
             Util.hands_already_empty(context)

@@ -567,24 +567,28 @@ defmodule Mud.Engine.Util do
   def he_she_they(%{gender_pronoun: "female"}), do: "she"
   def he_she_they(%{gender_pronoun: "male"}), do: "he"
 
-  def construct_nested_item_location_message_for_self(message, item) do
+  def construct_nested_item_location_message_for_self(message, item, location) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
 
-    build_self_parent_string(message, item, parent_index)
+    build_self_parent_string(message, item, parent_index, location)
   end
 
   def build_item_index(items) do
     Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
   end
 
-  def construct_nested_item_location_message_for_others(context, others, item, path, item_in_area) do
+  def construct_nested_item_location_message_for_others(
+        character,
+        message,
+        item,
+        path,
+        item_in_area,
+        location
+      ) do
     message =
-      [context.character.id | others]
-      |> Message.new_story_output()
-      |> Message.append_text("#{context.character.name}", "character")
-      |> Message.append_text(" gets ", "base")
+      message
       |> Message.append_text(
         item.description.short,
         get_item_type(item)
@@ -596,16 +600,13 @@ defmodule Mud.Engine.Util do
 
       # if item isn't on ground but in area, it means the container it is in is somewhere in the area, adjust message
       item_in_area ->
-        # outermost item can't be the object itself, since the object is not on the ground.
-        # the outermost item is the outer container. The container itself might be on the ground or on something else that isn't a container.
-        # print out this thing that the container is on as well, to differentiate.
         outermost_item =
           Enum.find(path, fn possible_parent ->
             possible_parent.flags.container or possible_parent.id == item.id
           end)
 
         if outermost_item.location.on_ground do
-          Message.append_text(message, " from ", "base")
+          Message.append_text(message, " #{location} ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
@@ -614,7 +615,7 @@ defmodule Mud.Engine.Util do
         else
           outermost_object = Item.get!(outermost_item.location.relative_item_id)
 
-          Message.append_text(message, " from ", "base")
+          Message.append_text(message, " #{location} ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
@@ -634,14 +635,14 @@ defmodule Mud.Engine.Util do
           end)
 
         message =
-          Message.append_text(message, " from ", "base")
+          Message.append_text(message, " #{location} ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
           )
 
         are_or_is =
-          if context.character.gender_pronoun == "neutral" do
+          if character.gender_pronoun == "neutral" do
             "are"
           else
             "is"
@@ -650,20 +651,20 @@ defmodule Mud.Engine.Util do
         if outermost_item.location.held_in_hand do
           Message.append_text(
             message,
-            " #{he_she_they(context.character)} #{are_or_is} holding.",
+            " #{he_she_they(character)} #{are_or_is} holding.",
             "base"
           )
         else
           Message.append_text(
             message,
-            " #{he_she_they(context.character)} #{are_or_is} wearing.",
+            " #{he_she_they(character)} #{are_or_is} wearing.",
             "base"
           )
         end
     end
   end
 
-  defp build_self_parent_string(message, item, parent_index) do
+  defp build_self_parent_string(message, item, parent_index, location) do
     cond do
       item.location.relative_to_item ->
         message
@@ -672,10 +673,14 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " from ",
+          " #{location} ",
           "base"
         )
-        |> build_self_parent_string(parent_index[item.location.relative_item_id], parent_index)
+        |> build_self_parent_string(
+          parent_index[item.location.relative_item_id],
+          parent_index,
+          location
+        )
 
       item.location.on_ground ->
         message

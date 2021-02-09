@@ -329,14 +329,21 @@ defmodule Mud.Engine.Command.Get do
                   context.character.area_id
                 )
 
+              other_msg =
+                [context.character.id | others]
+                |> Message.new_story_output()
+                |> Message.append_text("#{context.character.name}", "character")
+                |> Message.append_text(" gets ", "base")
+
               # TODO: Figure out only displaying the outermost container for the item, or the item itself it is the outermost container
               other_msg =
                 Util.construct_nested_item_location_message_for_others(
-                  context,
-                  others,
+                  context.character,
+                  other_msg,
                   original_item,
                   items_in_path,
-                  in_area
+                  in_area,
+                  "from"
                 )
 
               self_msg =
@@ -346,7 +353,11 @@ defmodule Mud.Engine.Command.Get do
                 |> Message.append_text(" get ", "base")
 
               self_msg =
-                Util.construct_nested_item_location_message_for_self(self_msg, original_item)
+                Util.construct_nested_item_location_message_for_self(
+                  self_msg,
+                  original_item,
+                  "from"
+                )
 
               self_msg =
                 if other_matches != [] do

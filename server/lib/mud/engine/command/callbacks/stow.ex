@@ -21,15 +21,15 @@ defmodule Mud.Engine.Command.Stow do
   Options:
     - LEFT: STOW an item from your left hand.
     - RIGHT: STOW an item from your right hand.
-    - ALL: STOW any items from your hands.
+    - BOTH: STOW any items from your hands.
 
   Syntax:
-    - STOW {LEFT | RIGHT | ALL |[my] [<number>] <object>} [from [my] [<number>] <place>] [in]
+    - STOW {LEFT | RIGHT | BOTH |[my] [<number>] <object>} [from [my] [<number>] <place>] [in]
 
   Examples:
     - stow topaz in lootsack
     - stow rock
-    - stow all
+    - stow both
   """
   use Mud.Engine.Command.Callback
 
@@ -100,16 +100,56 @@ defmodule Mud.Engine.Command.Stow do
     end
   end
 
+  defp stow_thing_in_left_hand(context) do
+    case Item.get_item_in_hand_as_list(context.character.id, "left") do
+      [] ->
+        handle_search_results(context, {:error, :not_found})
+
+      item ->
+        handle_search_results(context, {:ok, Search.things_to_match(item)})
+    end
+  end
+
+  defp stow_thing_in_right_hand(context) do
+    case Item.get_item_in_hand_as_list(context.character.id, "right") do
+      [] ->
+        handle_search_results(context, {:error, :not_found})
+
+      item ->
+        handle_search_results(context, {:ok, Search.things_to_match(item)})
+    end
+  end
+
   defp find_thing_to_stow(context = %Mud.Engine.Command.Context{}) do
     Logger.debug("find_thing_to_stow")
+    Logger.debug(context.command.ast)
 
     case context.command.ast do
       # If my was specific with no place, stow something from hands
       %TAP{place: nil, thing: %Thing{personal: true}} ->
         Logger.debug("Item to Stow should be in character hands")
 
-        # stow_worn_or_held_item_in_inventory(context)
         stow_item_in_hands(context)
+
+      # Thing being stowed did not have 'my' specified, but also no place either
+      %TAP{place: nil, thing: %Thing{personal: false, input: "left"}} ->
+        stow_thing_in_left_hand(context)
+
+      # Thing being stowed did not have 'my' specified, but also no place either
+      %TAP{place: nil, thing: %Thing{personal: false, input: "right"}} ->
+        stow_thing_in_right_hand(context)
+
+      # Thing being stowed did not have 'my' specified, but also no place either
+      %TAP{place: nil, thing: %Thing{personal: false, input: "both"}} ->
+        if context.character.handedness == "right" do
+          context
+          |> stow_thing_in_right_hand()
+          |> stow_thing_in_left_hand()
+        else
+          context
+          |> stow_thing_in_left_hand()
+          |> stow_thing_in_right_hand()
+        end
 
       # Thing being stowed did not have 'my' specified, but also no place either
       %TAP{place: nil, thing: %Thing{personal: false}} ->
@@ -327,6 +367,8 @@ defmodule Mud.Engine.Command.Stow do
               # change item location
               # create messaging
               location = Location.update_relative_to_item!(thing.match.location, container.id)
+              items_in_path = Item.list_full_path(container)
+              IO.inspect(items_in_path, label: :items_in_path)
 
               IO.inspect("updated location")
               IO.inspect(location)
@@ -344,17 +386,22 @@ defmodule Mud.Engine.Command.Stow do
 
               IO.inspect("got others")
 
+              other_msg =
+                [context.character.id | others]
+                |> Message.new_story_output()
+                |> Message.append_text("#{context.character.name}", "character")
+                |> Message.append_text(" stows ", "base")
+
               # TODO: Figure out only displaying the outermost container for the item, or the item itself it is the outermost container
               other_msg =
-                others
-                |> Message.new_story_output()
-                |> Message.append_text("[#{context.character.name}]", "character")
-                |> Message.append_text(" stow ", "base")
-                |> Message.append_text(
-                  thing.match.description.short,
-                  Mud.Engine.Util.get_item_type(thing.match)
+                Util.construct_nested_item_location_message_for_others(
+                  context.character,
+                  other_msg,
+                  item,
+                  items_in_path,
+                  false,
+                  "in"
                 )
-                |> Message.append_text(".", "base")
 
               IO.inspect("other msg")
 
@@ -363,11 +410,20 @@ defmodule Mud.Engine.Command.Stow do
                 |> Message.new_story_output()
                 |> Message.append_text("You", "character")
                 |> Message.append_text(" stow ", "base")
-                |> Message.append_text(
-                  thing.match.description.short,
-                  Mud.Engine.Util.get_item_type(item)
-                )
-                |> Message.append_text(".", "base")
+
+              self_msg =
+                Util.construct_nested_item_location_message_for_self(self_msg, item, "in")
+
+              # self_msg =
+              #   context.character.id
+              #   |> Message.new_story_output()
+              #   |> Message.append_text("You", "character")
+              #   |> Message.append_text(" stow ", "base")
+              #   |> Message.append_text(
+              #     thing.match.description.short,
+              #     Mud.Engine.Util.get_item_type(item)
+              #   )
+              #   |> Message.append_text(".", "base")
 
               IO.inspect("self msg")
 
