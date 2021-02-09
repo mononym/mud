@@ -242,10 +242,11 @@ defmodule Mud.Engine.Util do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> Message.append_text(
-        List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
-        get_item_type(item)
-      )
+      |> construct_nested_item_location_message_for_self(item, "in")
+      # |> Message.append_text(
+      #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
+      #   get_item_type(item)
+      # )
       |> Message.append_text(
         ". #{length(other_items)} other potential match#{
           if length(other_items) > 1 do
@@ -260,14 +261,11 @@ defmodule Mud.Engine.Util do
     # do without item
     # have without item call with item and strip
     # or have with item call without and then build up list
-    item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
+    # item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
 
-    Enum.reduce(item_strings, message, fn {item, string}, msg ->
+    Enum.reduce(other_items, message, fn item, msg ->
       msg
-      |> Message.append_text(
-        string,
-        get_item_type(item)
-      )
+      |> construct_nested_item_location_message_for_self(item, "in")
       |> Message.append_text(
         ", ",
         "system_info"
@@ -596,7 +594,7 @@ defmodule Mud.Engine.Util do
 
     cond do
       item.location.on_ground ->
-        Message.append_text(message, " from the ground.", "base")
+        Message.append_text(message, " from the ground", "base")
 
       # if item isn't on ground but in area, it means the container it is in is somewhere in the area, adjust message
       item_in_area ->
@@ -651,13 +649,13 @@ defmodule Mud.Engine.Util do
         if outermost_item.location.held_in_hand do
           Message.append_text(
             message,
-            " #{he_she_they(character)} #{are_or_is} holding.",
+            " #{he_she_they(character)} #{are_or_is} holding",
             "base"
           )
         else
           Message.append_text(
             message,
-            " #{he_she_they(character)} #{are_or_is} wearing.",
+            " #{he_she_they(character)} #{are_or_is} wearing",
             "base"
           )
         end
@@ -689,7 +687,7 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " from the ground.",
+          " from the ground",
           "base"
         )
 
@@ -700,7 +698,7 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you are wearing.",
+          " which you are wearing",
           "base"
         )
 
@@ -711,7 +709,7 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you are holding.",
+          " which you are holding",
           "base"
         )
     end
