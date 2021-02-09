@@ -11,6 +11,7 @@ export interface ItemLocationInterface {
   relative_to_item: boolean;
   worn_on_character: boolean;
   moved_at: string;
+  stow_home_id: string;
 }
 
 const state: ItemLocationInterface = {
@@ -26,6 +27,7 @@ const state: ItemLocationInterface = {
   relative_item_id: "",
   worn_on_character: false,
   moved_at: "",
+  stow_home_id: "",
 };
 
 export default state;

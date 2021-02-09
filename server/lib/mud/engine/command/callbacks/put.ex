@@ -231,7 +231,7 @@ defmodule Mud.Engine.Command.Put do
 
     # if item.location.held_in_hand and item.location.character_id == context.character.id do
     #   # NEED TO KNOW WHERE THE HELL TO PUT IT
-    location = Location.update_relative_to_item!(item.location, destination.id)
+    location = Location.update_relative_to_item!(item.location, destination.id, "in")
 
       item = Map.put(thing.match, :location, location)
 

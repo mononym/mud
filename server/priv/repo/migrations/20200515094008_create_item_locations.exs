@@ -16,6 +16,7 @@ defmodule Mud.Repo.Migrations.CreateItemLocations do
       add(:relation, :string, default: "in")
       add(:relative_to_item, :boolean, default: false)
       add(:worn_on_character, :boolean, default: false)
+      add(:stow_home_id, references(:items, on_delete: :nilify_all, type: :binary_id))
     end
 
     create(index(:item_locations, [:hand]))
@@ -29,5 +30,6 @@ defmodule Mud.Repo.Migrations.CreateItemLocations do
     create(index(:item_locations, [:relative_to_item]))
     create(index(:item_locations, [:worn_on_character]))
     create(index(:item_locations, [:item_id]))
+    create(index(:item_locations, [:stow_home_id]))
   end
 end

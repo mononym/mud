@@ -236,21 +236,32 @@ defmodule Mud.Engine.Command.Stow do
 
   defp stow_item_with_place(context) do
     Logger.debug("stow_item_with_place")
-    # look for place on ground on in hands or worn
-    area_results =
-      Search.find_matches_relative_to_place_in_area(
-        context.character.area_id,
-        context.command.ast.thing,
-        context.command.ast.place,
-        context.character.settings.commands.search_mode
-      )
+    Logger.debug(context.command.ast.thing, label: :stow_item_with_place_thing)
+    Logger.debug(context.command.ast.place, label: :stow_item_with_place_place)
 
-    case area_results do
-      {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+    cond do
+      context.command.ast.thing.where == "in" ->
+        # this means the place is actually where I need to update to actually put the thing
+        # so this is not actually stowing an item with a place, but stowing an item and setting the place
+        stow_thing_in_area_or_hands(context)
 
-      _ ->
-        stow_item_with_personal_place(context)
+      true ->
+        area_results =
+          Search.find_matches_relative_to_place_in_area(
+            context.character.area_id,
+            context.command.ast.thing,
+            context.command.ast.place,
+            context.character.settings.commands.search_mode
+          )
+
+        case area_results do
+          {:ok, area_matches} when area_matches != [] ->
+            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+
+          _ ->
+            # look for place on ground on in hands or worn
+            stow_item_with_personal_place(context)
+        end
     end
   end
 
@@ -290,10 +301,13 @@ defmodule Mud.Engine.Command.Stow do
   defp stow_item(context, thing = %Search.Match{}, other_matches \\ []) do
     Logger.debug("stow_item")
     Logger.debug(thing.match)
+    Logger.debug(context.command.ast.place)
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
     in_hands = thing.match.location.held_in_hand
     parent_containers_open = Item.parent_containers_open?(thing.match)
     original_item = thing.match
+
+    place = context.command.ast.place
 
     cond do
       parent_containers_open and (in_area or in_hands) ->
@@ -353,6 +367,44 @@ defmodule Mud.Engine.Command.Stow do
           |> Context.append_message(other_msg)
           |> Context.append_message(self_msg)
         else
+          # check and see if the place is populated. The only way it should be at this point is if it was injected to reflect that the place is the new default destination
+          # for this specific item that is being stowed
+
+          {context, original_item} =
+            if not is_nil(place) do
+              case Search.find_matching_containers_in_inventory(context.character.id, place.input) do
+                {:ok, [match | matches]} ->
+                  IO.inspect("found matches")
+                  IO.inspect([match | matches])
+                  location = Location.update_stow_home!(original_item.location, match.match.id)
+
+                  item = %{original_item | location: location}
+
+                  self_msg =
+                    context.character.id
+                    |> Message.new_story_output()
+                    |> Message.append_text("Saved default container for item: ", "base")
+
+                  self_msg =
+                    Util.construct_nested_item_location_message_for_self(self_msg, item, "in")
+
+                  self_msg =
+                    if matches != [] do
+                      other_items = Enum.map(other_matches, & &1.match)
+
+                      Util.append_assumption_text(self_msg, match.match, other_items)
+                    else
+                      self_msg
+                    end
+
+                  {Context.append_message(context, self_msg), item}
+              end
+            else
+              {context, original_item}
+            end
+
+          IO.inspect(original_item, label: :original_item)
+
           # have item that needs to be stowed.
           # check the type of item and get the container that it should go into
           # make sure container it should go into is still somewhere in inventory, even if that means somewhere held in the hands
@@ -360,13 +412,35 @@ defmodule Mud.Engine.Command.Stow do
           # if container is not in inventory fallback to default container and repeat check
           # if default container is not in inventory, get all worn containers and grab the largest one
           # if there are no worn containers, flip the fuck out, orhterwise return the container that the item should be put into (for later checks on capacity etc...)
-          case get_stow_target_container(context.character.containers, thing.match) do
+          case get_stow_target_container(context.character.containers, original_item) do
             container when is_struct(container) ->
-              # have an item to stow
-              # have a container to stow the item into
-              # change item location
-              # create messaging
-              location = Location.update_relative_to_item!(thing.match.location, container.id)
+              IO.inspect(container, label: :container)
+
+              # if a home container for the item has been set and it does not match the container that was retrieved to stow the item into, warn
+              context =
+                if not is_nil(original_item.location.stow_home_id) and
+                     original_item.location.stow_home_id != container.id do
+                  self_msg =
+                    context.character.id
+                    |> Message.new_story_output()
+                    |> Message.append_text("The default container for ", "base")
+                    |> Message.append_text(
+                      original_item.description.short,
+                      Mud.Engine.Util.get_item_type(original_item)
+                    )
+                    |> Message.append_text(
+                      " is no longer in your inventory. Falling back to defaults.",
+                      "base"
+                    )
+
+                  Context.append_message(context, self_msg)
+                else
+                  context
+                end
+
+              location =
+                Location.update_relative_to_item!(original_item.location, container.id, "in")
+
               items_in_path = Item.list_full_path(container)
               IO.inspect(items_in_path, label: :items_in_path)
 
@@ -374,7 +448,7 @@ defmodule Mud.Engine.Command.Stow do
               IO.inspect(location)
               IO.inspect(container)
 
-              item = Map.put(thing.match, :location, location)
+              item = Map.put(original_item, :location, location)
               IO.inspect("item")
               IO.inspect(item)
 
@@ -435,18 +509,18 @@ defmodule Mud.Engine.Command.Stow do
                   IO.inspect(item, label: :other_matches)
                   IO.inspect(other_items, label: :other_matches)
 
-                  Util.append_assumption_text(self_msg, thing.match, other_items)
+                  Util.append_assumption_text(self_msg, original_item, other_items)
                 else
                   self_msg
                 end
 
               # check to see whether the update needs to go to only inventory or the area too
               context =
-                if thing.match.location.on_ground do
+                if original_item.location.on_ground do
                   context
                   |> Context.append_event(
                     [context.character_id | others],
-                    UpdateArea.new(%{action: :remove, on_ground: [thing.match]})
+                    UpdateArea.new(%{action: :remove, on_ground: [original_item]})
                   )
                   |> Context.append_event(
                     context.character_id,
@@ -487,34 +561,51 @@ defmodule Mud.Engine.Command.Stow do
     end
   end
 
-  defp get_stow_target_container(containers, %{flags: %{armor: true}}) do
-    get_container_or_default(containers, containers.armor_id)
+  defp get_stow_target_container(containers, item = %{location: %{stow_home_id: stow_home_id}})
+       when not is_nil(stow_home_id) do
+    # find home for that item
+    # if that does not work fall back to that type of container or the default
+
+    if Item.in_inventory?(stow_home_id, containers.character_id) do
+      item = Item.get!(stow_home_id)
+      IO.inspect(item, label: :get_stow_target_container)
+      item
+    else
+      # search for all worn containers on character and grab the largest one to use
+      get_stow_target_container(containers, %{
+        item
+        | location: %{item.location | stow_home_id: nil}
+      })
+    end
   end
 
-  defp get_stow_target_container(containers, %{flags: %{coin: true}}) do
-    # TODO: Shove coin into wealth rather than trying to actually take the item. Do the same thing that 'get' does when encountering a coin
-    get_container_or_default(containers, containers.armor_id)
-  end
+  defp get_stow_target_container(containers, %{flags: flags}) do
+    dest_id =
+      case flags do
+        %{armor: true} ->
+          containers.armor_id
 
-  defp get_stow_target_container(containers, %{flags: %{clothing: true}}) do
-    get_container_or_default(containers, containers.clothing_id)
-  end
+        %{clothing: true} ->
+          containers.clothing_id
 
-  defp get_stow_target_container(containers, %{flags: %{gem: true}}) do
-    # TODO: This needs special logic to check for a gem pouch, not just any worn pouch.
-    get_container_or_default(containers, containers.gem_id)
-  end
+        %{gem: true} ->
+          containers.gem_id
 
-  defp get_stow_target_container(containers, %{flags: %{shield: true}}) do
-    get_container_or_default(containers, containers.shield_id)
-  end
+        %{shield: true} ->
+          containers.shield_id
 
-  defp get_stow_target_container(containers, %{flags: %{weapon: true}}) do
-    get_container_or_default(containers, containers.weapon_id)
-  end
+        %{weapon: true} ->
+          containers.weapon_id
 
-  defp get_stow_target_container(containers, _) do
-    get_default_stow_target_container(containers)
+        _ ->
+          nil
+      end
+
+    if is_nil(dest_id) do
+      get_default_stow_target_container(containers)
+    else
+      get_container_or_default(containers, dest_id)
+    end
   end
 
   defp get_default_stow_target_container(containers) do

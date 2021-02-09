@@ -20,7 +20,8 @@ defmodule Mud.Engine.Item.Location do
              :relative_item_id,
              :worn_on_character,
              :character_id,
-             :moved_at
+             :moved_at,
+             :stow_home_id
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_locations" do
@@ -35,6 +36,7 @@ defmodule Mud.Engine.Item.Location do
     field(:worn_on_character, :boolean, default: false)
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
     field(:moved_at, :utc_datetime_usec, required: true)
+    belongs_to(:stow_home, Mud.Engine.Item, type: :binary_id)
   end
 
   @doc false
@@ -52,7 +54,8 @@ defmodule Mud.Engine.Item.Location do
       :on_ground,
       :relation,
       :relative_to_item,
-      :worn_on_character
+      :worn_on_character,
+      :stow_home_id
     ])
     |> foreign_key_constraint(:item_id)
     |> foreign_key_constraint(:area_id)
@@ -97,7 +100,7 @@ defmodule Mud.Engine.Item.Location do
     |> Repo.one()
   end
 
-  def update_relative_to_item!(location, item_id, relation \\ "in") do
+  def update_relative_to_item!(location, item_id, relation) do
     update!(location, %{
       held_in_hand: false,
       on_ground: false,
@@ -129,6 +132,12 @@ defmodule Mud.Engine.Item.Location do
       character_id: nil,
       relative_item_id: nil,
       relative_to_item: false
+    })
+  end
+
+  def update_stow_home!(location, stow_home_id) do
+    update!(location, %{
+      stow_home_id: stow_home_id
     })
   end
 end
