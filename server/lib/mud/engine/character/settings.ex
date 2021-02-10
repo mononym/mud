@@ -107,6 +107,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:furniture, :string, default: "#ffffff")
       field(:container, :string, default: "#ffffff")
       field(:worn_container, :string, default: "#A098DD")
+      field(:gem_pouch, :string, default: "#A098DD")
       field(:weapon, :string, default: "#ffffff")
       field(:armor, :string, default: "#ffffff")
       field(:gem, :string, default: "#ffffff")
@@ -222,6 +223,7 @@ defmodule Mud.Engine.Character.Settings do
       :furniture,
       :container,
       :worn_container,
+      :gem_pouch,
       :weapon,
       :armor,
       :gem,
@@ -407,6 +409,7 @@ defmodule Mud.Engine.Character.Settings do
       furniture: "#E8B773",
       container: "#73A6E8",
       worn_container: "#A098DD",
+      gem_pouch: "#A098DD",
       weapon: "#ffffff",
       armor: "#ffffff",
       gem: "#ffffff",

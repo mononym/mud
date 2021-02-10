@@ -3,6 +3,8 @@ export interface ItemFlagsInterface {
   item_id: string;
   close: boolean;
   drop: boolean;
+  gem: boolean;
+  gem_pouch: boolean;
   hidden: boolean;
   hold: boolean;
   look: boolean;
@@ -30,6 +32,8 @@ const state: ItemFlagsInterface = {
   close: false,
   drop: false,
   hidden: false,
+  gem: false,
+  gem_pouch: false,
   hold: false,
   look: false,
   open: false,

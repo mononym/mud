@@ -358,6 +358,43 @@ defmodule Mud.Engine.Character do
 
     Mud.Engine.Item.create(%{
       description: %{
+        key: "pouch",
+        short: "a black spidersilk gem pouch",
+        long:
+          "The black spidersilk gem pouch is clasped at the neck with the long legs of a grasping black window spider."
+      },
+      flags: %{
+        gem_pouch: true,
+        look: true,
+        open: true,
+        close: true,
+        wear: true,
+        remove: true,
+        trash: true,
+        drop: true,
+        hold: true,
+        stow: true,
+        worn_container: true,
+        container: true,
+        wearable: true
+      },
+      location: %{character_id: character.id, worn_on_character: true},
+      container: %{
+        capacity: 100,
+        length: 5,
+        width: 5,
+        height: 5
+      },
+      physics: %{
+        length: 5,
+        width: 5,
+        height: 5,
+        weight: 5
+      }
+    })
+
+    Mud.Engine.Item.create(%{
+      description: %{
         key: "rock",
         short: "a flat rounded rock",
         long: "This rock has been worn down over time by water into a smooth, flat round shape."

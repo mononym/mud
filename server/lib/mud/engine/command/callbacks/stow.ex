@@ -464,7 +464,7 @@ defmodule Mud.Engine.Command.Stow do
                 [context.character.id | others]
                 |> Message.new_story_output()
                 |> Message.append_text("#{context.character.name}", "character")
-                |> Message.append_text(" stows ", "base")
+                |> Message.append_text(" stowed ", "base")
 
               # TODO: Figure out only displaying the outermost container for the item, or the item itself it is the outermost container
               other_msg =
@@ -602,7 +602,19 @@ defmodule Mud.Engine.Command.Stow do
       end
 
     if is_nil(dest_id) do
-      get_default_stow_target_container(containers)
+      if flags.gem do
+        # since there is no default, search on worn self for a gem pouch
+        # if there is a gem pouch worn, put gem in there, otherwise fallback to default
+        case Item.list_worn_gem_pouches(containers.character_id) do
+          [] ->
+            get_default_stow_target_container(containers)
+
+          pouches ->
+            List.first(pouches)
+        end
+      else
+        get_default_stow_target_container(containers)
+      end
     else
       get_container_or_default(containers, dest_id)
     end

@@ -2305,6 +2305,31 @@ Mud.Engine.Item.create_from_template_for_area(
 
 #####
 #####
+# Gems
+#####
+#####
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.Gem, %{type: "amethyst", carat: 6, clarity: 10, hue: "violet", saturation: 5, tone: 8, cut_type: "emerald", cut_quality: 10}, west_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.Gem, %{type: "emerald", carat: 4, clarity: 5, hue: "green", saturation: 8, tone: 4, cut_type: "emerald", cut_quality: 8},
+  northwest_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.Gem, %{type: "spinel", carat: 2, clarity: 6, hue: "red", saturation: 8, tone: 3, cut_type: "uncut", cut_quality: 4},
+  northeast_room.id
+)
+
+Mud.Engine.Item.create_from_template_for_area(
+  Mud.Engine.ItemTemplate.Gem, %{type: "topaz", carat: 0.75, clarity: 3, hue: "blue", saturation: 1, tone: 9, cut_type: "uncut", cut_quality: 3},
+  east_room.id
+)
+
+#####
+#####
 # Racial Features Stuff
 #####
 #####

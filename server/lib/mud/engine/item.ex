@@ -9,7 +9,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Query
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Search}
-  alias Mud.Engine.Item.{Coin, Flags, Location, Physics, Description, Container}
+  alias Mud.Engine.Item.{Coin, Flags, Gem, Location, Physics, Description, Container}
   require Logger
 
   @type id :: String.t()
@@ -23,6 +23,7 @@ defmodule Mud.Engine.Item do
     has_one(:container, Container)
     has_one(:physics, Physics)
     has_one(:coin, Coin)
+    has_one(:gem, Gem)
 
     timestamps()
   end
@@ -65,10 +66,11 @@ defmodule Mud.Engine.Item do
       insert_new()
       |> setup_required_component(attrs, :flags, Flags)
       |> setup_required_component(attrs, :location, Location)
-      |> maybe_setup_optional_component(attrs, :description, Description)
       |> maybe_setup_optional_component(attrs, :container, Container)
       |> maybe_setup_optional_component(attrs, :physics, Physics)
       |> maybe_setup_optional_component(attrs, :coin, Coin)
+      |> maybe_setup_optional_component(attrs, :gem, Gem)
+      |> maybe_setup_optional_component(attrs, :description, Description)
     end)
   end
 
@@ -76,6 +78,29 @@ defmodule Mud.Engine.Item do
     thing = callback.create(Map.put(Map.get(attrs, key, %{}), :item_id, item.id))
 
     %{item | key => thing}
+  end
+
+  defp maybe_setup_optional_component(item, attrs, :description, Description) do
+    if item.flags.gem do
+      short = Gem.generate_short_description(item.gem)
+      desc = Map.get(attrs, :description, %{})
+
+      description =
+        desc
+        |> Map.put(:item_id, item.id)
+        |> Map.put(:short, short)
+        |> Map.put(:long, short)
+        |> Description.create()
+
+      %{item | :description => description}
+    else
+      if Map.has_key?(attrs, :description) do
+        thing = Description.create(Map.put(Map.get(attrs, :description, %{}), :item_id, item.id))
+        %{item | :description => thing}
+      else
+        item
+      end
+    end
   end
 
   defp maybe_setup_optional_component(item, attrs, key, callback) do
@@ -619,6 +644,17 @@ defmodule Mud.Engine.Item do
     |> Repo.all()
   end
 
+  def list_worn_gem_pouches(character_id) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        location.character_id == ^character_id and location.worn_on_character and
+          flags.container == true and flags.wearable and flags.gem_pouch,
+      order_by: location.moved_at
+    )
+    |> Repo.all()
+  end
+
   def list_worn_containers(character_id) do
     from(
       [description: description, location: location, flags: flags] in base_query_with_preload(),
@@ -817,7 +853,9 @@ defmodule Mud.Engine.Item do
       left_join: physics in assoc(item, :physics),
       as: :physics,
       left_join: coin in assoc(item, :coin),
-      as: :coin
+      as: :coin,
+      left_join: gem in assoc(item, :gem),
+      as: :gem
     )
   end
 
@@ -836,13 +874,16 @@ defmodule Mud.Engine.Item do
       as: :physics,
       left_join: coin in assoc(item, :coin),
       as: :coin,
+      left_join: gem in assoc(item, :gem),
+      as: :gem,
       preload: [
         container: container,
         description: description,
         flags: flags,
         location: location,
         physics: physics,
-        coin: coin
+        coin: coin,
+        gem: gem
       ]
     )
   end

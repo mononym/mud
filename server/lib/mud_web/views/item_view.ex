@@ -5,6 +5,7 @@ defmodule MudWeb.ItemView do
     ItemView,
     ItemLocationView,
     ItemFlagsView,
+    ItemGemView,
     ItemPhysicsView,
     ItemContainerView,
     ItemDescriptionView,
@@ -32,7 +33,8 @@ defmodule MudWeb.ItemView do
         description: render_one(item.description, ItemDescriptionView, "item_description.json"),
         container: render_one(item.container, ItemContainerView, "item_container.json"),
         physics: render_one(item.physics, ItemPhysicsView, "item_physics.json"),
-        coin: render_one(item.coin, ItemCoinView, "item_coin.json")
+        coin: render_one(item.coin, ItemCoinView, "item_coin.json"),
+        gem: render_one(item.gem, ItemGemView, "item_gem.json")
       }
     end
   end
