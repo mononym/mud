@@ -306,7 +306,12 @@ defmodule Mud.Engine.Command.Move do
 
     personal_departure_message =
       if length(other_matches) > 0 do
-        Util.append_assumption_text(personal_departure_message, link, other_matches)
+        Util.append_assumption_text(
+          personal_departure_message,
+          link,
+          other_matches,
+          context.character.settings.commands.multiple_matches_mode
+        )
       else
         personal_departure_message
       end
@@ -501,7 +506,8 @@ defmodule Mud.Engine.Command.Move do
       Util.append_assumption_text(
         Message.new_story_output(context.character.id),
         link,
-        other_links
+        other_links,
+        context.character.settings.commands.multiple_matches_mode
       )
     )
   end

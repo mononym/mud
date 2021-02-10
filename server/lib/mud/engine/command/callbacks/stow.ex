@@ -214,7 +214,7 @@ defmodule Mud.Engine.Command.Stow do
               "silent" ->
                 stow_item(context, match, [])
 
-              "alert" ->
+              "full path" ->
                 stow_item(context, match, matches)
 
               "choose" ->
@@ -392,7 +392,12 @@ defmodule Mud.Engine.Command.Stow do
                     if matches != [] do
                       other_items = Enum.map(other_matches, & &1.match)
 
-                      Util.append_assumption_text(self_msg, match.match, other_items)
+                      Util.append_assumption_text(
+                        self_msg,
+                        match.match,
+                        other_items,
+                        context.character.settings.commands.multiple_matches_mode
+                      )
                     else
                       self_msg
                     end
@@ -509,7 +514,12 @@ defmodule Mud.Engine.Command.Stow do
                   IO.inspect(item, label: :other_matches)
                   IO.inspect(other_items, label: :other_matches)
 
-                  Util.append_assumption_text(self_msg, original_item, other_items)
+                  Util.append_assumption_text(
+                    self_msg,
+                    original_item,
+                    other_items,
+                    context.character.settings.commands.multiple_matches_mode
+                  )
                 else
                   self_msg
                 end

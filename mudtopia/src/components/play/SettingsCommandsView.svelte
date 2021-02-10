@@ -32,7 +32,8 @@
             id="searchMode"
             bind:value={$characterSettings.commands.search_mode}
             name="searchMode"
-            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
             <option>simple</option>
             <option>advanced</option>
           </select>
@@ -47,12 +48,29 @@
             id="multipleMatchMode"
             bind:value={$characterSettings.commands.multiple_matches_mode}
             name="multipleMatchMode"
-            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            <option>alert</option>
-            <option>choose</option>
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option>full path</option>
+            <option>item only</option>
+            <!-- <option>choose item</option> -->
             <option>silent</option>
           </select>
         </div>
+      </div>
+      <div class="col-span-4 text-right sm:px-6">
+        <button
+          disabled={!settingsChanged}
+          type="submit"
+          class="{!settingsChanged
+            ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
+            : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Save
+        </button>
+        <button
+          on:click|preventDefault={resetCharacterSettings}
+          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Reset
+        </button>
       </div>
     </div>
   </form>

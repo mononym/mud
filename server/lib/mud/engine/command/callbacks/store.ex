@@ -323,7 +323,7 @@ defmodule Mud.Engine.Command.Store do
               "silent" ->
                 save_setting(context, input, match, [])
 
-              "alert" ->
+              "full path" ->
                 save_setting(context, input, match, matches)
 
               "choose" ->
@@ -370,7 +370,7 @@ defmodule Mud.Engine.Command.Store do
         if other_matches != [] do
           other_items = Enum.map(other_matches, & &1.match)
 
-          Util.append_assumption_text(self_msg, place.match, other_items)
+          Util.append_assumption_text(self_msg, place.match, other_items, context.character.settings.commands.multiple_matches_mode)
         else
           self_msg
         end

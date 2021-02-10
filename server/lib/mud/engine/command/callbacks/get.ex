@@ -139,23 +139,7 @@ defmodule Mud.Engine.Command.Get do
             Util.not_found_error(context)
 
           _ ->
-            case context.character.settings.commands.multiple_matches_mode do
-              "silent" ->
-                get_item(context, match, [])
-
-              "alert" ->
-                get_item(context, match, matches)
-
-              "choose" ->
-                Context.append_message(
-                  context,
-                  Message.new_story_output(
-                    context.character.id,
-                    "Multiple items were found, please be more specific.",
-                    "system_alert"
-                  )
-                )
-            end
+            get_item(context, match, matches)
         end
 
       _ ->
@@ -224,22 +208,6 @@ defmodule Mud.Engine.Command.Get do
       in_area = Item.in_area?(original_item.id, context.character.area_id)
       in_inventory = Item.in_inventory?(original_item.id, context.character.id)
       parent_containers_open = Item.parent_containers_open?(original_item)
-
-      # IO.inspect(
-      #   original_item,
-      #   label: :get_item
-      # )
-
-      # IO.inspect(
-      #   {in_area, in_inventory, parent_containers_open, original_item.location.held_in_hand,
-      #    original_item.location.worn_on_character,
-      #    parent_containers_open and
-      #      (in_area or
-      #         (in_inventory and
-      #            not (original_item.location.held_in_hand or
-      #                   original_item.location.worn_on_character)))},
-      #   label: :get_item
-      # )
 
       cond do
         parent_containers_open and
@@ -367,7 +335,12 @@ defmodule Mud.Engine.Command.Get do
                   # IO.inspect(original_item, label: :original_item)
                   # IO.inspect(other_items, label: :other_items)
 
-                  Util.append_assumption_text(self_msg, original_item, other_items)
+                  Util.append_assumption_text(
+                    self_msg,
+                    original_item,
+                    other_items,
+                    context.character.settings.commands.multiple_matches_mode
+                  )
                 else
                   self_msg
                 end

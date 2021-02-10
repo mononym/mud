@@ -236,9 +236,15 @@ defmodule Mud.Engine.Util do
   @spec append_assumption_text(
           Mud.Engine.Message.StoryOutput.t(),
           Mud.Engine.Item.t() | Mud.Engine.Link.t(),
-          [Mud.Engine.Item.t() | Mud.Engine.Link.t()]
+          [Mud.Engine.Item.t() | Mud.Engine.Link.t()],
+          String.t()
         ) :: Mud.Engine.Message.StoryOutput.t()
-  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items) do
+
+  def append_assumption_text(message, _item = %Mud.Engine.Item{}, _other_items, "silent") do
+    message
+  end
+
+  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items, mode) do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
@@ -264,9 +270,21 @@ defmodule Mud.Engine.Util do
     # item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
 
     Enum.reduce(other_items, message, fn item, msg ->
-      msg
-      |> construct_nested_item_location_message_for_self(item, "in")
-      |> Message.append_text(
+      msg =
+        case mode do
+          "full path" ->
+            construct_nested_item_location_message_for_self(msg, item, "in")
+
+          "item only" ->
+            Message.append_text(
+              msg,
+              item.description.short,
+              get_item_type(item)
+            )
+        end
+
+      Message.append_text(
+        msg,
         ", ",
         "system_info"
       )

@@ -154,7 +154,7 @@ defmodule Mud.Engine.Command.Put do
 
             find_place_to_put_thing(context, match, other_thing_matches)
 
-          "alert" ->
+          "full path" ->
             [match | other_thing_matches] = CallbackUtil.sort_matches(matches)
 
             find_place_to_put_thing(context, match, other_thing_matches)
@@ -199,7 +199,7 @@ defmodule Mud.Engine.Command.Put do
               "silent" ->
                 put_item(context, thing, other_thing_matches, match, [])
 
-              "alert" ->
+              "full path" ->
                 put_item(context, thing, other_thing_matches, match, matches)
 
               "choose" ->
@@ -233,21 +233,21 @@ defmodule Mud.Engine.Command.Put do
     #   # NEED TO KNOW WHERE THE HELL TO PUT IT
     location = Location.update_relative_to_item!(item.location, destination.id, "in")
 
-      item = Map.put(thing.match, :location, location)
+    item = Map.put(thing.match, :location, location)
 
-      others =
-        Character.list_others_active_in_areas(
-          context.character.id,
-          context.character.area_id
-        )
+    others =
+      Character.list_others_active_in_areas(
+        context.character.id,
+        context.character.area_id
+      )
 
-      other_msg =
-        others
-        |> Message.new_story_output()
-        |> Message.append_text("[#{context.character.name}]", "character")
-        |> Message.append_text(" puts ", "base")
-        |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-        |> Message.append_text(".", "base")
+    other_msg =
+      others
+      |> Message.new_story_output()
+      |> Message.append_text("[#{context.character.name}]", "character")
+      |> Message.append_text(" puts ", "base")
+      |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+      |> Message.append_text(".", "base")
 
     #   self_msg =
     #     context.character.id

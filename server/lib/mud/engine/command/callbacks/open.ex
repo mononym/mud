@@ -132,7 +132,7 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links)
+              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
             else
               self_msg
             end
@@ -161,7 +161,7 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links)
+              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
             else
               self_msg
             end
@@ -187,7 +187,7 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links)
+              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
             else
               self_msg
             end
@@ -269,7 +269,7 @@ defmodule Mud.Engine.Command.Open do
               "silent" ->
                 open_item(context, match, [])
 
-              "alert" ->
+              "full path" ->
                 open_item(context, match, matches)
 
               "choose" ->
@@ -390,7 +390,7 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, item, other_items)
+                Util.append_assumption_text(self_msg, item, other_items, context.character.settings.commands.multiple_matches_mode)
               else
                 self_msg
               end
@@ -433,7 +433,7 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, thing.match, other_items)
+                Util.append_assumption_text(self_msg, thing.match, other_items, context.character.settings.commands.multiple_matches_mode)
               else
                 self_msg
               end
@@ -455,7 +455,7 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, thing.match, other_items)
+                Util.append_assumption_text(self_msg, thing.match, other_items, context.character.settings.commands.multiple_matches_mode)
               else
                 self_msg
               end

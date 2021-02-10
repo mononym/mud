@@ -15,7 +15,7 @@ defmodule Mud.Engine.Character.Settings do
     embeds_one :commands, Commands, on_replace: :delete do
       @derive Jason.Encoder
       field(:search_mode, :string, default: "simple")
-      field(:multiple_matches_mode, :string, default: "alert")
+      field(:multiple_matches_mode, :string, default: "full path")
     end
 
     embeds_one :map_window, MapWindow, on_replace: :delete do
@@ -689,7 +689,7 @@ defmodule Mud.Engine.Character.Settings do
   defp insert_default_commands_settings(attrs) do
     Map.put(attrs, :commands, %{
       search_mode: "simple",
-      multiple_matches_mode: "alert"
+      multiple_matches_mode: "full path"
     })
   end
 end
