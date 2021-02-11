@@ -463,6 +463,9 @@ export function createState() {
     }
   }
 
+  const worldHourOfDay = writable(0.0);
+  const worldTimeString = writable("");
+
   function connectChannel(characterId) {
     let sock = get(socket);
     const newChannel = sock.channel(`character:${characterId}`);
@@ -612,6 +615,14 @@ export function createState() {
       if (msg.action == "add") {
         addExploredMaps(msg);
       }
+    });
+
+    newChannel.on("update:time", async function (msg) {
+      console.log("received an update for time");
+      console.log(msg);
+
+      worldHourOfDay.set(msg.hour);
+      worldTimeString.set(msg.time_string);
     });
 
     newChannel.join();
@@ -822,6 +833,11 @@ export function createState() {
     exploredAreas,
     zoomMapIn,
     zoomMapOut,
+    //
+    // Environment stuff
+    //
+    worldHourOfDay,
+    worldTimeString,
     //
     // Character Stuff
     //

@@ -13,6 +13,7 @@
   import InventoryWindow from "../components/play/InventoryWindow.svelte";
   import AreaWindow from "../components/play/AreaWindow.svelte";
   import CompassWindow from "../components/play/CompassWindow.svelte";
+  import EnvironmentInfoWindow from "../components/play/EnvironmentInfoWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -212,6 +213,11 @@
   let startingCompassX;
   let startingCompassY;
 
+  let startingEnvironmentInfoWidth;
+  let startingEnvironmentInfoHeight;
+  let startingEnvironmentInfoX;
+  let startingEnvironmentInfoY;
+
   onMount(async () => {
     startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
@@ -248,6 +254,11 @@
     startingCompassHeight = "200";
     startingCompassX = "0";
     startingCompassY = "0";
+
+    startingEnvironmentInfoWidth = "200";
+    startingEnvironmentInfoHeight = "150";
+    startingEnvironmentInfoX = "0";
+    startingEnvironmentInfoY = "200";
 
     const character = $characters.filter(
       (character) => character.id == params.characterId
@@ -339,12 +350,22 @@
       <LayoutItemWrapper
         id="compassWindow"
         label="Directions"
-        bind:initialHeight={startingCompassWidth}
-        bind:initialWidth={startingCompassHeight}
+        bind:initialHeight={startingCompassHeight}
+        bind:initialWidth={startingCompassWidth}
         bind:initialX={startingCompassX}
         bind:initialY={startingCompassY}
       >
         <CompassWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="environmentInfoWindow"
+        label="Time"
+        bind:initialHeight={startingEnvironmentInfoHeight}
+        bind:initialWidth={startingEnvironmentInfoWidth}
+        bind:initialX={startingEnvironmentInfoX}
+        bind:initialY={startingEnvironmentInfoY}
+      >
+        <EnvironmentInfoWindow />
       </LayoutItemWrapper>
     </div>
     {#if $view == "settings"}

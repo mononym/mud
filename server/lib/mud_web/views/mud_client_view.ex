@@ -79,4 +79,12 @@ defmodule MudWeb.MudClientView do
       wealth: render_one(event.wealth, MudWeb.CharacterWealthView, "character_wealth.json")
     }
   end
+
+  def render("update_time.json", %{event: event = %Mud.Engine.Event.Client.UpdateTime{}}) do
+    %{
+      action: event.action,
+      hour: event.hour,
+      time_string: event.time_string
+    }
+  end
 end

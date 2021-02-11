@@ -92,6 +92,18 @@ defmodule Mud.Engine.Session do
   end
 
   @doc """
+  Given an event, find all active characters and forward it to them.
+  """
+  def send_event_to_all_active_characters(event) do
+    all_active_character_ids =
+      Registry.select(Mud.Engine.CharacterSessionRegistry, [{{:"$1", :_, :_}, [], [:"$1"]}])
+
+    IO.inspect(event)
+
+    cast_message_or_event(%{event | to: all_active_character_ids})
+  end
+
+  @doc """
   Get the text history of the character.
   """
   def get_history(character_id) do
@@ -481,6 +493,11 @@ defmodule Mud.Engine.Session do
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateMap{}}) do
     {:update_map,
      Phoenix.View.render_one(event, MudWeb.MudClientView, "update_map.json", as: :event)}
+  end
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateTime{}}) do
+    {:update_time,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_time.json", as: :event)}
   end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do

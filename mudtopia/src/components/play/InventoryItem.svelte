@@ -87,7 +87,7 @@
                     inactiveIconColor={$selectedCharacter.settings
                       .inventoryWindow["disabled_quick_action_color"]}
                   />
-                {:else}
+                {:else if childItem.flags.container && !childItem.container.open}
                   <QuickAction
                     icon="fas fa-box"
                     activeTooltip="open"
