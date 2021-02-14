@@ -502,7 +502,7 @@ defmodule Mud.Engine.Item do
         Search.input_to_wildcard_string(initial_path.input, mode)
       )
 
-    # IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+    IO.inspect(initial_query, label: "search_relative_to_item_in_area")
 
     build_and_execute_relative_query(initial_query, path, thing)
   end
@@ -530,31 +530,62 @@ defmodule Mud.Engine.Item do
         character_id,
         [initial_path | path],
         thing,
-        mode
+        mode,
+        thing_is_immediate_child \\ true
       ) do
+    IO.inspect(initial_path,
+      label: "search_relative_to_inventory initial_path"
+    )
+
+    IO.inspect(path,
+      label: "search_relative_to_inventory path"
+    )
+
+    IO.inspect(thing,
+      label: "search_relative_to_inventory thing"
+    )
+
     initial_query =
       specific_nested_item_inventory_initial_query(
         character_id,
         Search.input_to_wildcard_string(initial_path.input, mode)
       )
 
-    build_and_execute_relative_query(initial_query, path, thing)
+    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
   end
 
-  defp build_and_execute_relative_query(initial_query, path, thing) do
+  defp build_and_execute_relative_query(
+         initial_query,
+         path,
+         thing,
+         thing_is_immediate_child \\ true
+       ) do
+    IO.inspect(initial_query,
+      label: "build_and_execute_relative_query initial_query"
+    )
+
+    IO.inspect(path,
+      label: "build_and_execute_relative_query path"
+    )
+
+    IO.inspect(thing,
+      label: "build_and_execute_relative_query thing"
+    )
+
     mostly_constructed_query = build_nested_relative_query(initial_query, path)
 
-    # IO.inspect(mostly_constructed_query,
-    #   label: "build_and_execute_relative_query mostly_constructed_query"
-    # )
+    IO.inspect(mostly_constructed_query,
+      label: "build_and_execute_relative_query mostly_constructed_query"
+    )
 
     final_query =
       specific_nested_item_top_level_query(
         mostly_constructed_query,
-        Search.input_to_wildcard_string(thing.input)
+        Search.input_to_wildcard_string(thing.input),
+        thing_is_immediate_child
       )
 
-    # IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
+    IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
 
     Repo.all(final_query)
   end
@@ -564,6 +595,14 @@ defmodule Mud.Engine.Item do
   end
 
   defp build_nested_relative_query(previous_query, [current_path | path]) do
+    IO.inspect(current_path,
+      label: "build_and_execute_relative_query current_path"
+    )
+
+    IO.inspect(path,
+      label: "build_and_execute_relative_query path"
+    )
+
     current_query =
       specific_nested_item_mid_level_query(
         previous_query,
@@ -942,6 +981,8 @@ defmodule Mud.Engine.Item do
         area_id,
         search_string
       ) do
+    IO.inspect(search_string, label: :specific_nested_item_area_initial_query)
+
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -955,6 +996,8 @@ defmodule Mud.Engine.Item do
         character_id,
         search_string
       ) do
+    IO.inspect(search_string, label: :specific_nested_item_inventory_initial_query)
+
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -968,6 +1011,8 @@ defmodule Mud.Engine.Item do
         character_id,
         search_string
       ) do
+    IO.inspect(search_string, label: :specific_nested_item_in_hands_initial_query)
+
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -981,6 +1026,8 @@ defmodule Mud.Engine.Item do
         previous_query,
         search_string
       ) do
+    IO.inspect(search_string, label: :specific_nested_item_mid_level_query)
+
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -993,13 +1040,23 @@ defmodule Mud.Engine.Item do
 
   def specific_nested_item_top_level_query(
         previous_query,
-        search_string
+        search_string,
+        thing_is_immediate_child \\ true
       ) do
+    IO.inspect(search_string, label: :specific_nested_item_top_level_query)
+
+    query =
+      if thing_is_immediate_child do
+        child_ids_query(previous_query)
+      else
+        recursive_child_ids_query(previous_query)
+      end
+
     from(
       [description: description, location: location] in base_query_with_preload(),
       where:
         location.relative_to_item and
-          location.item_id in subquery(child_ids_query(previous_query)) and
+          location.item_id in subquery(query) and
           like(description.short, ^search_string)
     )
   end
@@ -1083,15 +1140,15 @@ defmodule Mud.Engine.Item do
       |> recursive_ctes(true)
       |> with_cte("location_tree", as: ^item_tree_query)
 
-    if include_self do
-      final_query
-    else
-      if is_list(maybe_subqry) do
-        from(item in final_query, where: item.item_id not in ^maybe_subqry)
-      else
-        from(item in final_query, where: item.item_id not in subquery(maybe_subqry))
-      end
-    end
+    # if include_self do
+    final_query
+    # else
+    #   if is_list(maybe_subqry) do
+    #     from(item in final_query, where: item.item_id not in ^maybe_subqry)
+    #   else
+    #     from(item in final_query, where: item.item_id not in subquery(maybe_subqry))
+    #   end
+    # end
   end
 
   defp modify_query_select_id(query) do
@@ -1116,6 +1173,7 @@ defmodule Mud.Engine.Item do
     recursive_child_query(base_query_for_root_area_item_ids(area_id), true)
   end
 
+  @spec base_query_for_all_inventory(any) :: Ecto.Query.t()
   def base_query_for_all_inventory(character_id) do
     recursive_child_query(base_query_for_root_inventory_ids(character_id), true)
   end

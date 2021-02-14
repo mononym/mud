@@ -240,7 +240,7 @@ defmodule Mud.Engine.Command.Stow do
     Logger.debug(context.command.ast.place, label: :stow_item_with_place_place)
 
     cond do
-      context.command.ast.thing.where == "in" ->
+      context.command.ast.thing.where == ">" ->
         # this means the place is actually where I need to update to actually put the thing
         # so this is not actually stowing an item with a place, but stowing an item and setting the place
         stow_thing_in_area_or_hands(context)

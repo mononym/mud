@@ -167,13 +167,16 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp get_item_with_personal_place(context) do
-    # look for item in place in inventory, but do not return items worn or held
+    IO.inspect(context.command.ast, label: :get_item_with_personal_place)
+
+    # look for the item you are trying to get, such as a rock, somewhere inside the inventory and make sure to only find something that actually has the right parents
     results =
       Search.find_matches_relative_to_place_in_inventory(
         context.character.id,
         context.command.ast.thing,
         context.command.ast.place,
-        context.character.settings.commands.search_mode
+        context.character.settings.commands.search_mode,
+        false
       )
 
     handle_search_results(context, results)

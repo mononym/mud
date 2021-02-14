@@ -349,7 +349,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place, :thing],
-          matches: ["in"],
+          matches: [">"],
           key: :place_where,
           greedy: true,
           transformer: &List.first/1
@@ -574,14 +574,14 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:thing],
-          matches: ["from", "in"],
+          matches: ["from", ">"],
           key: :thing_where,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
           must_follow: [:place],
-          matches: ["from", "in"],
+          matches: ["from", ">"],
           key: :place_where,
           greedy: true,
           transformer: &List.first/1

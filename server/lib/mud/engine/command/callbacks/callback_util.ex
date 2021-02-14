@@ -212,6 +212,19 @@ defmodule Mud.Engine.Command.CallbackUtil do
   end
 
   @doc """
+  Gets a relative location, such as "in" or "on" from an item.
+
+  Given that items can only have one "relative" place for items to be put in relation to them, this works simply.
+  """
+  def relative_location_from_item(item) do
+    IO.inspect(item, label: :relative_location_from_item)
+
+    cond do
+      item.flags.container -> "in"
+    end
+  end
+
+  @doc """
   Given an item, return a string with the first letter capitalized and the full path of the item to the root.
   """
   def upcase_item_with_location(item) do

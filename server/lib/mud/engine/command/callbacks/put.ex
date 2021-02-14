@@ -3,19 +3,20 @@ defmodule Mud.Engine.Command.Put do
   The PUT command allows you to put something in your hand somewhere such as the ground or a container.
 
   Syntax:
-    - put {left|right|all|[my] [<which>] <thing>} {down|on ground|{in|on|under|over|behind|beside} [my] [<which>] <thing>}
+    - put {left|right|all|[<which>] <thing>} > [my] [<which>] <thing>
 
   Examples:
-    - put backpack down (same as drop)
-    - put quiver on shelf
-    - put 2 shirt in 3 drawer
-    - put 2 diamond in my 5 gem pouch
-    - put my pouch in chest in bottom drawer
+    - put backpack > ground (effectively same as drop)
+    - put quiver > shelf
+    - put 2 shirt > 3 drawer
+    - put 2 diamond > my 5 gem pouch
+    - put pouch > chest > bottom drawer
   """
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
+  alias Mud.Engine.Item.Location
   alias Mud.Engine.Character
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
@@ -36,7 +37,7 @@ defmodule Mud.Engine.Command.Put do
   @impl true
   def execute(context) do
     Logger.debug("Executing Put command")
-    Logger.debug(inspect(context))
+    Logger.debug(inspect(context.command))
     ast = context.command.ast
 
     if is_nil(ast.thing) do
@@ -85,6 +86,8 @@ defmodule Mud.Engine.Command.Put do
          thing,
          other_thing_matches
        ) do
+    Logger.debug("Finding place to put thing: #{inspect(context.command.ast)}")
+
     case context.command.ast do
       # The place where the thing being put is not *necessarily* on the character. Look around area first.
       %TAP{place: %Place{personal: false}} ->
@@ -97,12 +100,29 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_area_or_inventory_to_put_thing(context, thing, other_thing_matches) do
+    IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
+
     results =
-      Search.find_matches_in_area(
-        context.character.id,
-        context.command.ast.place.input,
-        context.character.settings.commands.search_mode
-      )
+      if is_nil(context.command.ast.place.path) do
+        Search.find_matches_in_area(
+          context.character.id,
+          context.command.ast.place.input,
+          context.character.settings.commands.search_mode
+        )
+      else
+        Search.find_matches_relative_to_place_in_area(
+          context.character.area_id,
+          context.command.ast.place,
+          context.command.ast.place.path,
+          context.character.settings.commands.search_mode
+        )
+      end
+
+    IO.inspect(results, label: :find_place_in_area_or_inventory_to_put_thing)
+
+    # if place has a path, extract it and look for a place relative to a path
+    # otherwise just look for a place somewhere in the area to put the thing into
+    # double check to see if path requires sequential parent to work due to stow/get, and if so implement something else to handle put
 
     case results do
       {:ok, matches} ->
@@ -116,12 +136,33 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_inventory_to_put_thing(context, thing, other_thing_matches) do
+    IO.inspect(context.command.ast, label: :find_place_in_inventory_to_put_thing)
+
     results =
-      Search.find_matches_in_inventory(
-        context.character.id,
-        context.command.ast.thing.input,
-        context.character.settings.commands.search_mode
-      )
+      if is_nil(context.command.ast.place.path) do
+        Search.find_matches_in_inventory(
+          context.character.id,
+          context.command.ast.place.input,
+          context.character.settings.commands.search_mode
+        )
+      else
+        place = context.command.ast.place
+
+        thing = %Thing{
+          input: place.input,
+          which: place.which,
+          personal: place.personal,
+          where: place.where
+        }
+
+        Search.find_matches_relative_to_place_in_inventory(
+          context.character.id,
+          thing,
+          context.command.ast.place.path,
+          context.character.settings.commands.search_mode,
+          false
+        )
+      end
 
     case results do
       {:ok, matches} ->
@@ -222,18 +263,40 @@ defmodule Mud.Engine.Command.Put do
   defp put_item(
          context,
          thing = %Search.Match{},
-         other_thing_matches \\ [],
+         other_thing_matches,
          place,
          other_place_matches
        ) do
-    item = thing.match
+    original_item = thing.match
     destination = place.match
+
+    IO.inspect("original_item")
+    IO.inspect(original_item)
+    IO.inspect("destination")
+    IO.inspect(destination)
+
+    relative_location = CallbackUtil.relative_location_from_item(destination)
+    IO.inspect("relative_location")
+    IO.inspect(relative_location)
+
+    location =
+      Location.update_relative_to_item!(original_item.location, destination.id, relative_location)
+
+    IO.inspect("location")
+    IO.inspect(location)
+
+    item = Map.put(original_item, :location, location)
+    IO.inspect("item")
+    IO.inspect(item)
+
+    destination_in_area = Item.in_area?(destination.id, context.character.area_id)
+    IO.inspect("destination_in_area")
+    IO.inspect(destination_in_area)
 
     # if item.location.held_in_hand and item.location.character_id == context.character.id do
     #   # NEED TO KNOW WHERE THE HELL TO PUT IT
-    location = Location.update_relative_to_item!(item.location, destination.id, "in")
-
-    item = Map.put(thing.match, :location, location)
+    items_in_path = Item.list_full_path(destination)
+    IO.inspect(items_in_path, label: :items_in_path)
 
     others =
       Character.list_others_active_in_areas(
@@ -242,56 +305,86 @@ defmodule Mud.Engine.Command.Put do
       )
 
     other_msg =
-      others
+      [context.character.id | others]
       |> Message.new_story_output()
-      |> Message.append_text("[#{context.character.name}]", "character")
-      |> Message.append_text(" puts ", "base")
-      |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-      |> Message.append_text(".", "base")
+      |> Message.append_text("#{context.character.name}", "character")
+      |> Message.append_text(" put ", "base")
 
-    #   self_msg =
-    #     context.character.id
-    #     |> Message.new_story_output()
-    #     |> Message.append_text("You", "character")
-    #     |> Message.append_text(" put ", "base")
-    #     |> Message.append_text(
-    #       List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
-    #       Mud.Engine.Util.get_item_type(item)
-    #     )
-    #     |> Message.append_text(".", "base")
+    # |> Message.append_text(original_item.description.short, Util.get_item_type(original_item))
 
-    #   self_msg =
-    #     if other_matches != [] do
-    #       other_items = Enum.map(other_matches, & &1.match)
+    other_msg =
+      Util.construct_nested_item_location_message_for_others(
+        context.character,
+        other_msg,
+        item,
+        items_in_path,
+        destination_in_area,
+        relative_location
+      )
 
-    #       Util.append_assumption_text(self_msg, item, other_items)
-    #     else
-    #       self_msg
-    #     end
+    self_msg =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("You", "character")
+      |> Message.append_text(" put ", "base")
 
-    #   # for items that are not root items, check to see whether the update needs to go to inventory or the area
-    #   context =
-    #     cond do
-    #       item.location.worn_on_character or item.location.held_in_hand ->
-    #         Context.append_event(
-    #           context,
-    #           context.character_id,
-    #           UpdateInventory.new(:update, item)
-    #         )
+    self_msg =
+      Util.construct_nested_item_location_message_for_self(
+        self_msg,
+        item,
+        relative_location
+      )
 
-    #       item.location.on_ground ->
-    #         Context.append_event(
-    #           context,
-    #           [context.character_id | others],
-    #           UpdateArea.new(%{action: :update, on_ground: [item]})
-    #         )
-    #     end
+    self_msg =
+      if other_thing_matches != [] do
+        other_items = Enum.map(other_thing_matches, & &1.match)
 
-    #   context
-    #   |> Context.append_message(other_msg)
-    #   |> Context.append_message(self_msg)
-    # else
-    #   Util.dave_error_v2(context)
-    # end
+        Util.append_assumption_text(
+          self_msg,
+          original_item,
+          other_items,
+          context.character.settings.commands.multiple_matches_mode
+        )
+      else
+        self_msg
+      end
+
+    self_msg =
+      if other_place_matches != [] do
+        other_items = Enum.map(other_place_matches, & &1.match)
+
+        Util.append_assumption_text(
+          self_msg,
+          original_item,
+          other_items,
+          context.character.settings.commands.multiple_matches_mode
+        )
+      else
+        self_msg
+      end
+
+    # check to see whether the update needs to go to only inventory or the area too
+    context =
+      if destination_in_area do
+        context
+        |> Context.append_event(
+          [context.character_id | others],
+          UpdateArea.new(%{action: :add, on_ground: [item]})
+        )
+        |> Context.append_event(
+          context.character_id,
+          UpdateInventory.new(:remove, item)
+        )
+      else
+        Context.append_event(
+          context,
+          context.character_id,
+          UpdateInventory.new(:update, item)
+        )
+      end
+
+    context
+    |> Context.append_message(other_msg)
+    |> Context.append_message(self_msg)
   end
 end

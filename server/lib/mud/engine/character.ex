@@ -325,8 +325,8 @@ defmodule Mud.Engine.Character do
       Mud.Engine.Item.create(%{
         description: %{
           key: "pouch",
-          short: "a silk pouch",
-          long: "The pouch is made of fine silk."
+          short: "a silk lootsack",
+          long: "The lootsack is made of fine silk."
         },
         flags: %{
           look: true,
