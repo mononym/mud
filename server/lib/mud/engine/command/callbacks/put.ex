@@ -100,7 +100,7 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_area_or_inventory_to_put_thing(context, thing, other_thing_matches) do
-    IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
+    # IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
 
     results =
       if is_nil(context.command.ast.place.path) do
@@ -118,7 +118,7 @@ defmodule Mud.Engine.Command.Put do
         )
       end
 
-    IO.inspect(results, label: :find_place_in_area_or_inventory_to_put_thing)
+    # IO.inspect(results, label: :find_place_in_area_or_inventory_to_put_thing)
 
     # if place has a path, extract it and look for a place relative to a path
     # otherwise just look for a place somewhere in the area to put the thing into
@@ -136,7 +136,7 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_inventory_to_put_thing(context, thing, other_thing_matches) do
-    IO.inspect(context.command.ast, label: :find_place_in_inventory_to_put_thing)
+    # IO.inspect(context.command.ast, label: :find_place_in_inventory_to_put_thing)
 
     results =
       if is_nil(context.command.ast.place.path) do

@@ -167,7 +167,7 @@ defmodule Mud.Engine.Command.Get do
   end
 
   defp get_item_with_personal_place(context) do
-    IO.inspect(context.command.ast, label: :get_item_with_personal_place)
+    # IO.inspect(context.command.ast, label: :get_item_with_personal_place)
 
     # look for the item you are trying to get, such as a rock, somewhere inside the inventory and make sure to only find something that actually has the right parents
     results =

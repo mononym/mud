@@ -73,7 +73,7 @@ defmodule Mud.Engine.Command do
     %__MODULE__{}
     |> __MODULE__.changeset(attrs)
     |> Repo.insert()
-    |> IO.inspect(label: :inserted)
+    # |> IO.inspect(label: :inserted)
   end
 
   @doc """

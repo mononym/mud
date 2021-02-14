@@ -595,7 +595,7 @@ defmodule Mud.Engine.Command.Stow do
 
     if Item.in_inventory?(stow_home_id, containers.character_id) do
       item = Item.get!(stow_home_id)
-      IO.inspect(item, label: :get_stow_target_container)
+      # IO.inspect(item, label: :get_stow_target_container)
       item
     else
       # search for all worn containers on character and grab the largest one to use

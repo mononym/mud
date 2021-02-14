@@ -217,7 +217,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
   Given that items can only have one "relative" place for items to be put in relation to them, this works simply.
   """
   def relative_location_from_item(item) do
-    IO.inspect(item, label: :relative_location_from_item)
+    # IO.inspect(item, label: :relative_location_from_item)
 
     cond do
       item.flags.container -> "in"

@@ -150,14 +150,14 @@ defmodule Mud.Engine.Command.Store do
   end
 
   defp print_set_container_for_option(context, option) do
-    IO.inspect(option, label: :print_set_container_for_option)
-    IO.inspect(context.character.containers, label: :print_set_container_for_option)
+    # IO.inspect(option, label: :print_set_container_for_option)
+    # IO.inspect(context.character.containers, label: :print_set_container_for_option)
     containers = context.character.containers
 
     case option do
       "list" ->
         container_ids = Map.values(context.character.containers) |> Enum.filter(&is_binary(&1))
-        IO.inspect(container_ids, label: :container_ids)
+        # IO.inspect(container_ids, label: :container_ids)
 
         {locations_index, item_index} =
           case container_ids do

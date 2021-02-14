@@ -114,7 +114,7 @@ defmodule Mud.Engine.Command.Move do
         context.character.settings.commands.search_mode
       )
 
-    IO.inspect(result, label: :attempt_move_direction)
+    # IO.inspect(result, label: :attempt_move_direction)
 
     case result do
       {:ok, [match | matches]}
@@ -379,7 +379,7 @@ defmodule Mud.Engine.Command.Move do
       character.id
       |> Message.new_story_output()
 
-    IO.inspect(link, label: :link)
+    # IO.inspect(link, label: :link)
 
     cond do
       # Heading through the closed thing, so craft message about it being opened as character goes through
