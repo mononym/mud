@@ -381,9 +381,11 @@ defmodule Mud.Engine.Command.Stow do
           {context, original_item} =
             if not is_nil(place) do
               case Search.find_matching_containers_in_inventory(context.character.id, place.input) do
-                {:ok, [match | matches]} ->
-                  # IO.inspect("found matches")
-                  # IO.inspect([match | matches])
+                {:ok, matches} ->
+                  IO.inspect("found matches")
+                  IO.inspect(matches)
+                  [match | matches] = CallbackUtil.sort_matches(matches)
+                  IO.inspect([match | matches])
                   location = Location.update_stow_home!(original_item.location, match.match.id)
 
                   item = %{original_item | location: location}
