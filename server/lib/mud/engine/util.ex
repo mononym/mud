@@ -248,7 +248,7 @@ defmodule Mud.Engine.Util do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> construct_nested_item_location_message_for_self(item, "in")
+      |> construct_nested_item_location_message_for_self(item, "in", true)
       # |> Message.append_text(
       #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
       #   get_item_type(item)
@@ -273,7 +273,7 @@ defmodule Mud.Engine.Util do
       msg =
         case mode do
           "full path" ->
-            construct_nested_item_location_message_for_self(msg, item, "in")
+            construct_nested_item_location_message_for_self(msg, item, "in", false)
 
           "item only" ->
             Message.append_text(
@@ -583,22 +583,12 @@ defmodule Mud.Engine.Util do
   def he_she_they(%{gender_pronoun: "female"}), do: "she"
   def he_she_they(%{gender_pronoun: "male"}), do: "he"
 
-  @spec construct_nested_item_location_message_for_self(
-          Mud.Engine.Message.StoryOutput.t(),
-          atom
-          | %{
-              :description => atom | %{:short => binary, optional(any) => any},
-              :location => atom | %{:relative_to_item => any, optional(any) => any},
-              optional(any) => any
-            },
-          any
-        ) :: Mud.Engine.Message.StoryOutput.t()
-  def construct_nested_item_location_message_for_self(message, item, location) do
+  def construct_nested_item_location_message_for_self(message, item, location, target_item) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
 
-    build_self_parent_string(message, item, parent_index, location)
+    build_self_parent_string(message, item, parent_index, location, target_item)
   end
 
   def build_item_index(items) do
@@ -622,7 +612,11 @@ defmodule Mud.Engine.Util do
 
     cond do
       item.location.on_ground ->
-        Message.append_text(message, " from the ground", "base")
+        Message.append_text(
+          message,
+          " which was on the ground",
+          "base"
+        )
 
       # if item isn't on ground but in area, it means the container it is in is somewhere in the area, adjust message
       item_in_area ->
@@ -637,7 +631,10 @@ defmodule Mud.Engine.Util do
             outermost_item.description.short,
             get_item_type(outermost_item)
           )
-          |> Message.append_text(".", "base")
+          |> Message.append_text(
+            " which is on the ground",
+            "base"
+          )
         else
           outermost_object = Item.get!(outermost_item.location.relative_item_id)
 
@@ -651,7 +648,6 @@ defmodule Mud.Engine.Util do
             outermost_object.description.short,
             get_item_type(outermost_object)
           )
-          |> Message.append_text(".", "base")
         end
 
       item.location.relative_to_item and not item_in_area ->
@@ -690,7 +686,13 @@ defmodule Mud.Engine.Util do
     end
   end
 
-  defp build_self_parent_string(message, item, parent_index, location) do
+  defp build_self_parent_string(
+         message,
+         item,
+         parent_index,
+         location,
+         target_item
+       ) do
     cond do
       item.location.relative_to_item ->
         message
@@ -705,7 +707,8 @@ defmodule Mud.Engine.Util do
         |> build_self_parent_string(
           parent_index[item.location.relative_item_id],
           parent_index,
-          location
+          location,
+          false
         )
 
       item.location.on_ground ->
@@ -715,7 +718,13 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " on the ground",
+          " which #{
+            if target_item do
+              "was"
+            else
+              "is"
+            end
+          } on the ground",
           "base"
         )
 
@@ -726,7 +735,13 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you are wearing",
+          " which you #{
+            if target_item do
+              "were"
+            else
+              "are"
+            end
+          } wearing",
           "base"
         )
 
@@ -737,7 +752,13 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you are holding",
+          " which you #{
+            if target_item do
+              "were"
+            else
+              "are"
+            end
+          } holding",
           "base"
         )
     end

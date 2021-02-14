@@ -333,7 +333,8 @@ defmodule Mud.Engine.Command.Put do
       Util.construct_nested_item_location_message_for_self(
         self_msg,
         item,
-        relative_location
+        relative_location,
+        true
       )
       |> Message.append_text(".", "base")
 
@@ -375,7 +376,7 @@ defmodule Mud.Engine.Command.Put do
         )
         |> Context.append_event(
           context.character_id,
-          UpdateInventory.new(:remove, item)
+          UpdateInventory.new(:remove, original_item)
         )
       else
         Context.append_event(

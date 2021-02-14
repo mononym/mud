@@ -396,7 +396,12 @@ defmodule Mud.Engine.Command.Stow do
                     |> Message.append_text("Saved default container for item: ", "base")
 
                   self_msg =
-                    Util.construct_nested_item_location_message_for_self(self_msg, item, "in")
+                    Util.construct_nested_item_location_message_for_self(
+                      self_msg,
+                      item,
+                      "in",
+                      true
+                    )
 
                   self_msg =
                     if matches != [] do
@@ -502,7 +507,7 @@ defmodule Mud.Engine.Command.Stow do
                 |> Message.append_text(" stow ", "base")
 
               self_msg =
-                Util.construct_nested_item_location_message_for_self(self_msg, item, "in")
+                Util.construct_nested_item_location_message_for_self(self_msg, item, "in", true)
                 |> Message.append_text(".", "base")
 
               # self_msg =

@@ -3,7 +3,12 @@ defmodule Mud.Engine.ItemTemplate.Gem do
     %{
       gem: attrs,
       flags: %{
-        gem: true
+        drop: true,
+        gem: true,
+        hold: true,
+        look: true,
+        stow: true,
+        trash: true
       }
     }
   end

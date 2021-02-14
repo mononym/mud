@@ -328,7 +328,8 @@ defmodule Mud.Engine.Command.Get do
                 Util.construct_nested_item_location_message_for_self(
                   self_msg,
                   original_item,
-                  "from"
+                  "from",
+                  true
                 )
                 |> Message.append_text(".", "base")
 
