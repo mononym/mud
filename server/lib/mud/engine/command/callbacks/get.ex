@@ -316,6 +316,7 @@ defmodule Mud.Engine.Command.Get do
                   in_area,
                   "from"
                 )
+                |> Message.append_text(".", "base")
 
               self_msg =
                 context.character.id
@@ -329,6 +330,7 @@ defmodule Mud.Engine.Command.Get do
                   original_item,
                   "from"
                 )
+                |> Message.append_text(".", "base")
 
               self_msg =
                 if other_matches != [] do

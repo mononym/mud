@@ -5,7 +5,7 @@ defmodule Mud.Engine.Command.Drop do
   Aliases for dropping items in the 'left', 'right', and 'all' hands have been provided.
 
   Syntax:
-    - drop BOTH | LEFT | RIGHT | <item>
+    - drop BOTH | ALL| LEFT | RIGHT | <item>
 
   Examples:
     - drop sword
@@ -121,6 +121,20 @@ defmodule Mud.Engine.Command.Drop do
             end)
         end
 
+      "all" ->
+        case get_items_from_hands_as_matches_list(context.character.id) do
+          [] ->
+            Util.hands_already_empty(context)
+
+          matches ->
+            matches = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+
+            # then just handle results as normal
+            Enum.reduce(matches, context, fn match, context ->
+              drop_item(context, match)
+            end)
+        end
+
       _ ->
         results =
           Search.find_matches_in_held_items(
@@ -195,7 +209,12 @@ defmodule Mud.Engine.Command.Drop do
         if other_matches != [] do
           other_items = Enum.map(other_matches, & &1.match)
 
-          Util.append_assumption_text(self_msg, item, other_items, context.character.settings.commands.multiple_matches_mode)
+          Util.append_assumption_text(
+            self_msg,
+            item,
+            other_items,
+            context.character.settings.commands.multiple_matches_mode
+          )
         else
           self_msg
         end

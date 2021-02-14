@@ -40,7 +40,7 @@ defmodule Mud.Engine.Command.Put do
     Logger.debug(inspect(context.command))
     ast = context.command.ast
 
-    if is_nil(ast.thing) do
+    if is_nil(ast.thing) or is_nil(ast.place) do
       Logger.debug("Put command entered without input. Returning error with command docs.")
 
       Context.append_message(
@@ -105,7 +105,7 @@ defmodule Mud.Engine.Command.Put do
     results =
       if is_nil(context.command.ast.place.path) do
         Search.find_matches_in_area(
-          context.character.id,
+          context.character.area_id,
           context.command.ast.place.input,
           context.character.settings.commands.search_mode
         )
@@ -270,33 +270,33 @@ defmodule Mud.Engine.Command.Put do
     original_item = thing.match
     destination = place.match
 
-    IO.inspect("original_item")
-    IO.inspect(original_item)
-    IO.inspect("destination")
-    IO.inspect(destination)
+    # IO.inspect("original_item")
+    # IO.inspect(original_item)
+    # IO.inspect("destination")
+    # IO.inspect(destination)
 
     relative_location = CallbackUtil.relative_location_from_item(destination)
-    IO.inspect("relative_location")
-    IO.inspect(relative_location)
+    # IO.inspect("relative_location")
+    # IO.inspect(relative_location)
 
     location =
       Location.update_relative_to_item!(original_item.location, destination.id, relative_location)
 
-    IO.inspect("location")
-    IO.inspect(location)
+    # IO.inspect("location")
+    # IO.inspect(location)
 
     item = Map.put(original_item, :location, location)
-    IO.inspect("item")
-    IO.inspect(item)
+    # IO.inspect("item")
+    # IO.inspect(item)
 
     destination_in_area = Item.in_area?(destination.id, context.character.area_id)
-    IO.inspect("destination_in_area")
-    IO.inspect(destination_in_area)
+    # IO.inspect("destination_in_area")
+    # IO.inspect(destination_in_area)
 
     # if item.location.held_in_hand and item.location.character_id == context.character.id do
     #   # NEED TO KNOW WHERE THE HELL TO PUT IT
     items_in_path = Item.list_full_path(destination)
-    IO.inspect(items_in_path, label: :items_in_path)
+    # IO.inspect(items_in_path, label: :items_in_path)
 
     others =
       Character.list_others_active_in_areas(
@@ -321,6 +321,7 @@ defmodule Mud.Engine.Command.Put do
         destination_in_area,
         relative_location
       )
+      |> Message.append_text(".", "base")
 
     self_msg =
       context.character.id
@@ -334,6 +335,7 @@ defmodule Mud.Engine.Command.Put do
         item,
         relative_location
       )
+      |> Message.append_text(".", "base")
 
     self_msg =
       if other_thing_matches != [] do

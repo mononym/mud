@@ -24,7 +24,7 @@ defmodule Mud.Engine.Command.Stow do
     - BOTH: STOW any items from your hands.
 
   Syntax:
-    - STOW {LEFT | RIGHT | BOTH |[my] [<number>] <object>} [from [my] [<number>] <place>] [in]
+    - STOW {LEFT | RIGHT | BOTH | ALL |[my] [<number>] <object>} [from [my] [<number>] <place>] [in]
 
   Examples:
     - stow topaz in lootsack
@@ -100,20 +100,28 @@ defmodule Mud.Engine.Command.Stow do
     end
   end
 
-  defp stow_thing_in_left_hand(context) do
+  defp stow_thing_in_left_hand(context, silent \\ false) do
     case Item.get_item_in_hand_as_list(context.character.id, "left") do
       [] ->
-        handle_search_results(context, {:error, :not_found})
+        if silent do
+          context
+        else
+          handle_search_results(context, {:error, :not_found})
+        end
 
       item ->
         handle_search_results(context, {:ok, Search.things_to_match(item)})
     end
   end
 
-  defp stow_thing_in_right_hand(context) do
+  defp stow_thing_in_right_hand(context, silent \\ false) do
     case Item.get_item_in_hand_as_list(context.character.id, "right") do
       [] ->
-        handle_search_results(context, {:error, :not_found})
+        if silent do
+          context
+        else
+          handle_search_results(context, {:error, :not_found})
+        end
 
       item ->
         handle_search_results(context, {:ok, Search.things_to_match(item)})
@@ -140,15 +148,15 @@ defmodule Mud.Engine.Command.Stow do
         stow_thing_in_right_hand(context)
 
       # Thing being stowed did not have 'my' specified, but also no place either
-      %TAP{place: nil, thing: %Thing{personal: false, input: "both"}} ->
+      %TAP{place: nil, thing: %Thing{personal: false, input: input}} when input in ["all", "both"] ->
         if context.character.handedness == "right" do
           context
-          |> stow_thing_in_right_hand()
-          |> stow_thing_in_left_hand()
+          |> stow_thing_in_right_hand(true)
+          |> stow_thing_in_left_hand(true)
         else
           context
-          |> stow_thing_in_left_hand()
-          |> stow_thing_in_right_hand()
+          |> stow_thing_in_left_hand(true)
+          |> stow_thing_in_right_hand(true)
         end
 
       # Thing being stowed did not have 'my' specified, but also no place either
@@ -374,8 +382,8 @@ defmodule Mud.Engine.Command.Stow do
             if not is_nil(place) do
               case Search.find_matching_containers_in_inventory(context.character.id, place.input) do
                 {:ok, [match | matches]} ->
-                  IO.inspect("found matches")
-                  IO.inspect([match | matches])
+                  # IO.inspect("found matches")
+                  # IO.inspect([match | matches])
                   location = Location.update_stow_home!(original_item.location, match.match.id)
 
                   item = %{original_item | location: location}
@@ -408,7 +416,7 @@ defmodule Mud.Engine.Command.Stow do
               {context, original_item}
             end
 
-          IO.inspect(original_item, label: :original_item)
+          # IO.inspect(original_item, label: :original_item)
 
           # have item that needs to be stowed.
           # check the type of item and get the container that it should go into
@@ -419,7 +427,7 @@ defmodule Mud.Engine.Command.Stow do
           # if there are no worn containers, flip the fuck out, orhterwise return the container that the item should be put into (for later checks on capacity etc...)
           case get_stow_target_container(context.character.containers, original_item) do
             container when is_struct(container) ->
-              IO.inspect(container, label: :container)
+              # IO.inspect(container, label: :container)
 
               # if a home container for the item has been set and it does not match the container that was retrieved to stow the item into, warn
               context =
@@ -447,15 +455,15 @@ defmodule Mud.Engine.Command.Stow do
                 Location.update_relative_to_item!(original_item.location, container.id, "in")
 
               items_in_path = Item.list_full_path(container)
-              IO.inspect(items_in_path, label: :items_in_path)
+              # IO.inspect(items_in_path, label: :items_in_path)
 
-              IO.inspect("updated location")
-              IO.inspect(location)
-              IO.inspect(container)
+              # IO.inspect("updated location")
+              # IO.inspect(location)
+              # IO.inspect(container)
 
               item = Map.put(original_item, :location, location)
-              IO.inspect("item")
-              IO.inspect(item)
+              # IO.inspect("item")
+              # IO.inspect(item)
 
               others =
                 Character.list_others_active_in_areas(
@@ -463,7 +471,7 @@ defmodule Mud.Engine.Command.Stow do
                   context.character.area_id
                 )
 
-              IO.inspect("got others")
+              # IO.inspect("got others")
 
               other_msg =
                 [context.character.id | others]
@@ -481,8 +489,9 @@ defmodule Mud.Engine.Command.Stow do
                   false,
                   "in"
                 )
+                |> Message.append_text(".", "base")
 
-              IO.inspect("other msg")
+              # IO.inspect("other msg")
 
               self_msg =
                 context.character.id
@@ -492,6 +501,7 @@ defmodule Mud.Engine.Command.Stow do
 
               self_msg =
                 Util.construct_nested_item_location_message_for_self(self_msg, item, "in")
+                |> Message.append_text(".", "base")
 
               # self_msg =
               #   context.character.id
@@ -504,15 +514,15 @@ defmodule Mud.Engine.Command.Stow do
               #   )
               #   |> Message.append_text(".", "base")
 
-              IO.inspect("self msg")
+              # IO.inspect("self msg")
 
               self_msg =
                 if other_matches != [] do
                   other_items = Enum.map(other_matches, & &1.match)
 
-                  IO.inspect(self_msg, label: :other_matches)
-                  IO.inspect(item, label: :other_matches)
-                  IO.inspect(other_items, label: :other_matches)
+                  # IO.inspect(self_msg, label: :other_matches)
+                  # IO.inspect(item, label: :other_matches)
+                  # IO.inspect(other_items, label: :other_matches)
 
                   Util.append_assumption_text(
                     self_msg,

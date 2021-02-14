@@ -583,6 +583,16 @@ defmodule Mud.Engine.Util do
   def he_she_they(%{gender_pronoun: "female"}), do: "she"
   def he_she_they(%{gender_pronoun: "male"}), do: "he"
 
+  @spec construct_nested_item_location_message_for_self(
+          Mud.Engine.Message.StoryOutput.t(),
+          atom
+          | %{
+              :description => atom | %{:short => binary, optional(any) => any},
+              :location => atom | %{:relative_to_item => any, optional(any) => any},
+              optional(any) => any
+            },
+          any
+        ) :: Mud.Engine.Message.StoryOutput.t()
   def construct_nested_item_location_message_for_self(message, item, location) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
@@ -705,7 +715,7 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " from the ground",
+          " on the ground",
           "base"
         )
 
