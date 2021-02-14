@@ -129,7 +129,7 @@
                   "disabled_quick_action_color"
                 ]}
               >
-                <div class="flex space-x-2" slot="quickActions">
+                <div class="h-full flex space-x-2" slot="quickActions">
                   <QuickAction
                     icon="fas fa-backpack"
                     activeTooltip="stow"
@@ -183,7 +183,7 @@
                   "disabled_quick_action_color"
                 ]}
               >
-                <div class="flex space-x-2" slot="quickActions">
+                <div class="h-full flex space-x-2" slot="quickActions">
                   <QuickAction
                     icon="fas fa-backpack"
                     activeTooltip="stow"
@@ -224,7 +224,7 @@
                   .show_quick_actions}
                 on:showContextMenu={showRightClickMenu}
               >
-                <div class="flex space-x-2" slot="quickActions">
+                <div class="h-full flex space-x-2" slot="quickActions">
                   <QuickAction
                     icon="fas fa-backpack"
                     activeTooltip="stow"
@@ -267,7 +267,7 @@
                   "disabled_quick_action_color"
                 ]}
               >
-                <div class="flex space-x-2" slot="quickActions">
+                <div class="h-full flex space-x-2" slot="quickActions">
                   <QuickAction
                     icon="fas fa-backpack"
                     activeTooltip="stow"
@@ -318,7 +318,7 @@
             .show_quick_actions}
           on:showContextMenu={showRightClickMenu}
         >
-          <div class="flex space-x-2 pl-2" slot="quickActions">
+          <div class="h-full flex space-x-2 pl-2" slot="quickActions">
             {#if wornContainer.container.open}
               <QuickAction
                 icon="fas fa-box-open"

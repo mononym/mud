@@ -31,40 +31,38 @@
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>
   <div
-    class="cursor-pointer flex items-center"
+    class="cursor-pointer flex"
     style="color:{getItemColor($selectedCharacter.settings.colors, item)}"
     bind:this={itemDiv}
     on:contextmenu={dispatchContextMenuEvent}
   >
-    {#if showQuickActions}
+    {#if showQuickActions && $$slots.quickActions}
       <div class="flex-shrink mr-2">
         <slot name="quickActions" />
       </div>
     {/if}
+    <!-- <div class="col-span-10 flex flex-col"> -->
     <pre
       on:click|preventDefault={toggleItemExpanded}
-      class="ml-2 flex-1">{item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}</pre>
-    {#if itemExpanded}
-      <div
-        on:click|preventDefault={toggleItemExpanded}
-        class={showQuickActions && $$slots.quickActions
-          ? "col-start-2 col-span-11 ml-4"
-          : "col-span-12 ml-4"}
-      >
-        <pre
-          class="whitespace-pre-wrap"
-          style="color:{getItemColor(
-            $selectedCharacter.settings.colors,
-            item
-          )}">{item.description.long}</pre>
-      </div>
-    {/if}
+      class="flex-1 whitespace-pre-wrap">
+      {item.description.short} {#if item.flags.container}({($inventoryItemsParentChildIndex[item.id] || []).length}){/if}
+    </pre>
+    <!-- </div> -->
   </div>
+  {#if itemExpanded}
+    <pre
+      on:click|preventDefault={toggleItemExpanded}
+      class="whitespace-pre-wrap"
+      style="color:{getItemColor(
+        $selectedCharacter.settings.colors,
+        item
+      )}">{item.description.long}</pre>
+  {/if}
   {#if item.flags.container && item.container.open && $inventoryItemsParentChildIndex[item.id] != undefined}
-    <div class="flex flex-col ml-2">
+    <div class="flex flex-col ml-4">
       {#each $inventoryItemsParentChildIndex[item.id] as childItem}
         <div class="flex">
-          <div class="flex-shrink mr-2 mt-1">
+          <div class="flex-shrink mr-2">
             <i
               class="fas fa-level-up fa-rotate-90 fa-fw"
               style="color:{getItemColor(
@@ -74,33 +72,37 @@
             />
           </div>
           <div class="flex-1">
-            <svelte:self item={childItem} on:showContextMenu>
-              <div class="flex space-x-2 pl-2" slot="quickActions">
-                {#if childItem.flags.container && childItem.container.open}
-                  <QuickAction
-                    icon="fas fa-box-open"
-                    activeTooltip="close"
-                    cliInput="close {childItem.id}"
-                    storyOutput="close {childItem.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                {:else if childItem.flags.container && !childItem.container.open}
-                  <QuickAction
-                    icon="fas fa-box"
-                    activeTooltip="open"
-                    cliInput="open {childItem.id}"
-                    storyOutput="open {childItem.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                {/if}
-              </div>
-            </svelte:self>
+            {#if childItem.flags.container}
+              <svelte:self item={childItem} on:showContextMenu>
+                <div class="h-full flex space-x-2 pl-2" slot="quickActions">
+                  {#if childItem.container.open}
+                    <QuickAction
+                      icon="fas fa-box-open"
+                      activeTooltip="close"
+                      cliInput="close {childItem.id}"
+                      storyOutput="close {childItem.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  {:else if !childItem.container.open}
+                    <QuickAction
+                      icon="fas fa-box"
+                      activeTooltip="open"
+                      cliInput="open {childItem.id}"
+                      storyOutput="open {childItem.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  {/if}
+                </div>
+              </svelte:self>
+            {:else}
+              <svelte:self item={childItem} on:showContextMenu />
+            {/if}
           </div>
         </div>
       {/each}
