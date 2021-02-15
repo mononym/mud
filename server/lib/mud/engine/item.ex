@@ -243,16 +243,38 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
-  Given one or more items, return them and all of their parents.
+  Given one or more items, return all of their children and optionally them
   """
-  @spec list_all_recursive(%__MODULE__{} | [%__MODULE__{}] | String.t() | [String.t()]) :: [
-          %__MODULE__{}
-        ]
-  def list_all_recursive([]) do
+  @spec list_all_recursive_children(
+          %__MODULE__{} | [%__MODULE__{}] | String.t() | [String.t()],
+          boolean()
+        ) ::
+          [
+            %__MODULE__{}
+          ]
+  def list_all_recursive_children([], _) do
     []
   end
 
-  def list_all_recursive(items) do
+  def list_all_recursive_children(items, include_items \\ false) do
+    items
+    |> items_to_ids()
+    |> list_all_recursive_child_query(include_items)
+    |> Repo.all()
+  end
+
+  @doc """
+  Given one or more items, return them and all of their parents.
+  """
+  @spec list_all_recursive_parents(%__MODULE__{} | [%__MODULE__{}] | String.t() | [String.t()]) ::
+          [
+            %__MODULE__{}
+          ]
+  def list_all_recursive_parents([]) do
+    []
+  end
+
+  def list_all_recursive_parents(items) do
     items
     |> items_to_ids()
     |> list_all_recursive_parent_query(true)
@@ -952,6 +974,16 @@ defmodule Mud.Engine.Item do
     Repo.insert!(%__MODULE__{})
   end
 
+  def list_all_recursive_child_query(ids, include_self \\ false) do
+    from(item in base_query_with_preload(),
+      where: item.id in subquery(recursive_child_ids_query(ids, include_self))
+    )
+  end
+
+  def recursive_child_ids_query(ids, include_self \\ false) do
+    from(location in recursive_child_query(ids, include_self), select: location.item_id)
+  end
+
   def list_all_recursive_parent_query(ids, include_self \\ false) do
     from(item in base_query_with_preload(),
       where: item.id in subquery(recursive_parent_ids_query(ids, include_self))
@@ -971,10 +1003,6 @@ defmodule Mud.Engine.Item do
       [location: location] in base_query_without_preload(),
       where: location.relative_to_item and location.relative_item_id in subquery(ids)
     )
-  end
-
-  def recursive_child_ids_query(ids, include_self \\ false) do
-    from(location in recursive_child_query(ids, include_self), select: location.item_id)
   end
 
   def specific_nested_item_area_initial_query(

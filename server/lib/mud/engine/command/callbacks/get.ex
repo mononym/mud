@@ -359,14 +359,16 @@ defmodule Mud.Engine.Command.Get do
               # check to see whether the update needs to go to only inventory or the area too
               context =
                 if in_area do
+                  all_items_to_update = Item.list_all_recursive_children(item)
+
                   context
                   |> Context.append_event(
                     [context.character_id | others],
-                    UpdateArea.new(%{action: :remove, items: [original_item]})
+                    UpdateArea.new(%{action: :remove, items: all_items_to_update})
                   )
                   |> Context.append_event(
                     context.character_id,
-                    UpdateInventory.new(:add, item)
+                    UpdateInventory.new(:add, all_items_to_update)
                   )
                 else
                   Context.append_event(
