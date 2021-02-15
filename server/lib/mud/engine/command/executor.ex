@@ -31,7 +31,8 @@ defmodule Mud.Engine.Command.Executor do
   @spec string_to_command(String.t()) :: {:error, :no_match} | {:ok, Mud.Engine.Command.t()}
   def string_to_command(input) do
     # Split the input and keep all the spaces for use/dropping later
-    split_input = Regex.split(~r/\s+/, input, include_captures: true)
+    [first | rest] = Regex.split(~r/\s+/, input, include_captures: true)
+    split_input = [String.downcase(first) | rest]
 
     case Commands.find_command_definition(List.first(split_input)) do
       {:ok, definition} ->

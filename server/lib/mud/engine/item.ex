@@ -243,6 +243,36 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
+  Given one or more items, return thier immediate children
+  """
+  @spec list_immediate_children(
+          %__MODULE__{} | [%__MODULE__{}] | String.t() | [String.t()],
+          boolean()
+        ) ::
+          [
+            %__MODULE__{}
+          ]
+  def list_immediate_children(items, include_items \\ false)
+
+  def list_immediate_children([], _) do
+    []
+  end
+
+  def list_immediate_children(items, include_items) do
+    results =
+      items
+      |> items_to_ids()
+      |> list_all_immediate_children_query()
+      |> Repo.all()
+
+    if include_items do
+      Enum.concat([items, results])
+    else
+      results
+    end
+  end
+
+  @doc """
   Given one or more items, return all of their children and optionally them
   """
   @spec list_all_recursive_children(
@@ -252,11 +282,13 @@ defmodule Mud.Engine.Item do
           [
             %__MODULE__{}
           ]
+  def list_all_recursive_children(items, include_items \\ false)
+
   def list_all_recursive_children([], _) do
     []
   end
 
-  def list_all_recursive_children(items, include_items \\ false) do
+  def list_all_recursive_children(items, include_items) do
     items
     |> items_to_ids()
     |> list_all_recursive_child_query(include_items)
@@ -974,6 +1006,12 @@ defmodule Mud.Engine.Item do
     Repo.insert!(%__MODULE__{})
   end
 
+  def list_all_immediate_children_query(ids) do
+    from(item in base_query_with_preload(),
+      where: item.id in subquery(child_ids_query(ids))
+    )
+  end
+
   def list_all_recursive_child_query(ids, include_self \\ false) do
     from(item in base_query_with_preload(),
       where: item.id in subquery(recursive_child_ids_query(ids, include_self))
@@ -999,10 +1037,17 @@ defmodule Mud.Engine.Item do
   end
 
   def child_query(ids) do
-    from(
+    if is_list(ids) do
+      from(
+      [location: location] in base_query_without_preload(),
+      where: location.relative_to_item and location.relative_item_id in ^ids
+    )
+    else
+      from(
       [location: location] in base_query_without_preload(),
       where: location.relative_to_item and location.relative_item_id in subquery(ids)
     )
+    end
   end
 
   def specific_nested_item_area_initial_query(
@@ -1134,7 +1179,7 @@ defmodule Mud.Engine.Item do
     end
   end
 
-  defp recursive_child_query(maybe_subqry, include_self) do
+  defp recursive_child_query(maybe_subqry, _include_self) do
     item_tree_initial_query =
       if is_list(maybe_subqry) do
         Location

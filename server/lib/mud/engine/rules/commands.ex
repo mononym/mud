@@ -22,27 +22,12 @@ defmodule Mud.Engine.Rules.Commands do
   def find_command_definition(input) do
     case Enum.find(list_all_command_definitions(), fn command ->
            command_part = List.first(command.parts)
+           IO.inspect(input, label: "find_command_definition")
+           IO.inspect(command_part.matches, label: "find_command_definition")
 
            Enum.any?(command_part.matches, fn match_string ->
              Util.check_equiv(match_string, input)
            end)
-         end) do
-      definition = %Definition{} ->
-        {:ok, definition}
-
-      nil ->
-        {:error, :no_match}
-    end
-  end
-
-  @doc """
-  Given a string as input, try to find a Command which it matches.
-  """
-  @spec find_command(String.t()) :: {:ok, Command.t()} | {:error, :no_match}
-  def find_command(input) do
-    case Enum.find(list_all_command_definitions(), fn command ->
-           command_part = List.first(command.parts)
-           Enum.any?(command_part.matches, fn string -> string == input end)
          end) do
       definition = %Definition{} ->
         {:ok, definition}
@@ -789,7 +774,7 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp define_look_command do
     %Definition{
-      callback_module: Command.Look,
+      callback_module: Command.LookV2,
       parts: [
         %Part{
           matches: ["l", "look"],
@@ -798,7 +783,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:look],
-          matches: ["at", "in"],
+          matches: ["@", "at", "in", ">"],
           key: :thing_where,
           greedy: true,
           transformer: &List.first/1
@@ -825,7 +810,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place, :thing],
-          matches: ["in"],
+          matches: [">"],
           key: :place_where,
           greedy: true,
           transformer: &List.first/1
@@ -863,7 +848,7 @@ defmodule Mud.Engine.Rules.Commands do
   end
 
   defp join_with_space_downcase(input) do
-    Logger.debug(inspect(input))
+    Logger.debug(inspect(input), label: :join_with_space_downcase)
     Enum.join(input, " ") |> String.downcase()
   end
 

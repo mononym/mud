@@ -127,6 +127,7 @@ defmodule Mud.Engine.Util do
   """
   @spec check_equiv(String.t() | Regex.t(), String.t()) :: boolean
   def check_equiv(maybe_regex, string) do
+    IO.inspect({maybe_regex, string}, label: "check_equiv")
     if Regex.regex?(maybe_regex) do
       Regex.match?(maybe_regex, string)
     else
