@@ -270,7 +270,7 @@ defmodule Mud.Engine.Command.Get do
               )
               |> Context.append_event(
                 [context.character_id | others],
-                UpdateArea.new(%{action: :remove, on_ground: [original_item]})
+                UpdateArea.new(%{action: :remove, items: [original_item]})
               )
               |> Context.append_message(other_msg)
               |> Context.append_message(self_msg)
@@ -358,11 +358,11 @@ defmodule Mud.Engine.Command.Get do
 
               # check to see whether the update needs to go to only inventory or the area too
               context =
-                if original_item.location.on_ground do
+                if in_area do
                   context
                   |> Context.append_event(
                     [context.character_id | others],
-                    UpdateArea.new(%{action: :remove, on_ground: [original_item]})
+                    UpdateArea.new(%{action: :remove, items: [original_item]})
                   )
                   |> Context.append_event(
                     context.character_id,

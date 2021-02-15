@@ -270,17 +270,11 @@ defmodule Mud.Engine.Command.Move do
       end
 
     # Split out scenery and non scenery
-    items_are_scenery =
+    items_in_area =
       Item.list_in_area(area.id)
       |> Stream.filter(fn item ->
         item.flags.hidden != true
       end)
-      |> Enum.group_by(fn item ->
-        item.flags.scenery
-      end)
-
-    scenery = items_are_scenery[true]
-    items_in_area = items_are_scenery[false]
 
     # List all the characters that need to be informed of a move
     characters_by_area =
@@ -344,8 +338,7 @@ defmodule Mud.Engine.Command.Move do
         action: :look,
         area: area,
         other_characters: others_in_new_area,
-        on_ground: items_in_area || [],
-        toi: scenery || [],
+        items: items_in_area,
         exits: links
       })
     )

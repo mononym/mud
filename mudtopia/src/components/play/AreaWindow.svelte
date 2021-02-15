@@ -1,7 +1,7 @@
 <script>
   import { getContext, tick, afterUpdate } from "svelte";
   import { key } from "./state";
-  import InventoryItem from "./InventoryItem.svelte";
+  import AreaItem from "./AreaItem.svelte";
   import InventoryItemRightClickMenu from "./InventoryItemRightClickMenu.svelte";
   import FilterButton from "./FilterButton.svelte";
   import QuickAction from "./QuickAction.svelte";
@@ -337,7 +337,7 @@
     {#if showToi}
       <div class="pl-2">
         {#each $toiInArea as item}
-          <InventoryItem {item} on:showContextMenu={showRightClickMenu} />
+          <AreaItem {item} on:showContextMenu={showRightClickMenu} />
         {/each}
       </div>
     {/if}
@@ -354,7 +354,7 @@
     {#if showOnGround}
       <div class="pl-2">
         {#each $onGroundInArea as item}
-          <InventoryItem
+          <AreaItem
             {item}
             on:showContextMenu={showRightClickMenu}
             showQuickActions={$selectedCharacter.settings.areaWindow
@@ -376,7 +376,7 @@
                 ]}
               />
             </div>
-          </InventoryItem>
+          </AreaItem>
         {/each}
       </div>
     {/if}

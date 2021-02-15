@@ -219,6 +219,34 @@ export function createState() {
     });
   }
 
+  function resetToi() {
+    const newToi = [];
+
+    Object.values(get(allAreaItemsIndex)).forEach((item) => {
+      if (item.location.on_ground && item.flags.scenery) {
+        newToi.push(item);
+      }
+    });
+
+    toiInArea.set(newToi);
+  }
+
+  function resetOtherCharacters(characters) {
+    otherCharactersInArea.set(characters);
+  }
+
+  function resetOnGround() {
+    const newOnGround = [];
+
+    Object.values(get(allAreaItemsIndex)).forEach((item) => {
+      if (item.location.on_ground && !item.flags.scenery) {
+        newOnGround.push(item);
+      }
+    });
+
+    onGroundInArea.set(newOnGround);
+  }
+
   function resetWornContainers(items) {
     const newWornContainers = [];
 
@@ -235,6 +263,24 @@ export function createState() {
     wornContainers.set(newWornContainers);
   }
 
+  function resetAreaItemsParentChildIndex() {
+    const newParentChildIndex = {};
+    console.log("resetAreaItemsParentChildIndex");
+    console.log(Object.values(get(allAreaItemsIndex)));
+
+    Object.values(get(allAreaItemsIndex)).forEach((item) => {
+      if (item.location.relative_to_item) {
+        const existingChildren =
+          newParentChildIndex[item.location.relative_item_id] || [];
+        existingChildren.push(item);
+        newParentChildIndex[item.location.relative_item_id] = existingChildren;
+      }
+    });
+
+    areaItemsParentChildIndex.set(newParentChildIndex);
+    console.log(get(areaItemsParentChildIndex));
+  }
+
   function resetParentChildIndex(items) {
     const newParentChildIndex = {};
 
@@ -248,6 +294,43 @@ export function createState() {
     });
 
     inventoryItemsParentChildIndex.set(newParentChildIndex);
+  }
+
+  function addOtherCharacters(characters) {
+    characters.forEach((character) => {
+      otherCharactersInArea.update(function (others) {
+        others.push(character);
+        return others;
+      });
+    });
+  }
+
+  function addExits(exits) {
+    exits.forEach((item) => {
+      exitsInArea.update(function (ext) {
+        ext.push(item);
+        return ext;
+      });
+    });
+  }
+
+  function updateExits(exits) {
+    exitsInArea.set(
+      [exits, ...get(exitsInArea)].filter(
+        (v, i, a) => a.findIndex((it) => it.id == v.id) === i
+      )
+    );
+  }
+
+  function updateOtherCharacters(characters) {
+    characters.forEach((character) => {
+      otherCharactersInArea.update(function (index) {
+        index[character.id] = character;
+        return index;
+      });
+    });
+
+    resetOtherCharacters(get(otherCharactersInArea));
   }
 
   function updateInventory(items) {
@@ -300,6 +383,22 @@ export function createState() {
       }
 
       console.log(get(inventoryItemsParentChildIndex));
+    });
+  }
+
+  function removeOtherCharacters(characters) {
+    characters.forEach((character) => {
+      otherCharactersInArea.update(function (others) {
+        return others.filter((other) => other.id != character.id);
+      });
+    });
+  }
+
+  function removeExits(exits) {
+    exits.forEach((exit) => {
+      exitsInArea.update(function (eia) {
+        return eia.filter((ext) => ext.id != exit.id);
+      });
     });
   }
 
@@ -509,72 +608,40 @@ export function createState() {
       console.log(msg);
 
       if (msg.action == "look") {
+        resetAreaItemsIndex(msg.items);
         currentArea.set(msg.area);
         otherCharactersInArea.set(msg.otherCharacters);
-        onGroundInArea.set(msg.onGround);
-        toiInArea.set(msg.toi);
+        resetToi();
+        resetOnGround();
         exitsInArea.set(msg.exits);
       } else if (msg.action == "update") {
-        exitsInArea.set(
-          [...msg.exits, ...get(exitsInArea)].filter(
-            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
-          )
-        );
-
-        toiInArea.set(
-          [...msg.toi, ...get(toiInArea)].filter(
-            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
-          )
-        );
-
-        onGroundInArea.set(
-          [...msg.onGround, ...get(onGroundInArea)].filter(
-            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
-          )
-        );
-
-        otherCharactersInArea.set(
-          [...msg.otherCharacters, ...get(otherCharactersInArea)].filter(
-            (v, i, a) => a.findIndex((it) => it.id == v.id) === i
-          )
-        );
+        addItemsToAreaItemsIndex(msg.items);
+        resetToi();
+        resetOnGround();
+        updateOtherCharacters(msg.otherCharacters);
+        updateExits(msg.exits);
       } else if (msg.action == "add") {
-        otherCharactersInArea.set([
-          ...get(otherCharactersInArea),
-          ...msg.otherCharacters,
-        ]);
-
-        onGroundInArea.set([...get(onGroundInArea), ...msg.onGround]);
-
-        toiInArea.set([...get(toiInArea), ...msg.toi]);
-        exitsInArea.set([...get(exitsInArea), ...msg.exits]);
+        addItemsToAreaItemsIndex(msg.items);
+        resetToi();
+        resetOnGround();
+        addExits(msg.exits);
+        addOtherCharacters(msg.otherCharacters);
       } else if (msg.action == "remove") {
-        const removeCharacterIds = msg.otherCharacters.map((char) => char.id);
-        otherCharactersInArea.update(function (otherCharacters) {
-          return otherCharacters.filter(
-            (character, i, a) => !removeCharacterIds.includes(character.id)
-          );
-        });
-
-        const removeOnGroundIds = msg.onGround.map((item) => item.id);
-        console.log(get(onGroundInArea));
-        console.log(removeOnGroundIds);
-        onGroundInArea.update(function (itemsOnGround) {
-          return itemsOnGround.filter(
-            (item, i, a) => !removeOnGroundIds.includes(item.id)
-          );
-        });
-
-        const removeToiIds = msg.toi.map((item) => item.id);
-        toiInArea.update(function (toi) {
-          return toi.filter((item, i, a) => !removeToiIds.includes(item.id));
-        });
-
-        const removeExitIds = msg.exits.map((exit) => exit.id);
-        exitsInArea.update(function (exit) {
-          return exit.filter((exit, i, a) => !removeExitIds.includes(exit.id));
-        });
+        removeItemsFromAreaItemsIndex(msg.items);
+        resetToi();
+        resetOnGround();
+        removeExits(msg.exits);
+        removeOtherCharacters(msg.items);
       }
+
+      console.log("allAreaItemsIndex");
+      console.log(get(allAreaItemsIndex));
+      console.log("areaItemsParentChildIndex");
+      console.log(get(areaItemsParentChildIndex));
+      console.log("toiInArea");
+      console.log(get(toiInArea));
+      console.log("onGroundInArea");
+      console.log(get(onGroundInArea));
     });
 
     newChannel.on("update:inventory", async function (msg) {
@@ -628,6 +695,37 @@ export function createState() {
     newChannel.join();
 
     channel.set(newChannel);
+  }
+
+  function addItemsToAreaItemsIndex(items) {
+    allAreaItemsIndex.update(function (index) {
+      items.forEach((itm) => {
+        index[itm.id] = itm;
+      });
+      return index;
+    });
+
+    resetAreaItemsParentChildIndex();
+  }
+
+  function removeItemsFromAreaItemsIndex(items) {
+    allAreaItemsIndex.update(function (index) {
+      items.forEach((itm) => {
+        delete index[itm.id];
+      });
+      return index;
+    });
+
+    resetAreaItemsParentChildIndex();
+  }
+
+  function resetAreaItemsIndex(items) {
+    const newIndex = {};
+
+    items.forEach((itm) => (newIndex[itm.id] = itm));
+
+    allAreaItemsIndex.set(newIndex);
+    resetAreaItemsParentChildIndex();
   }
 
   function resetMapData(mapData) {
@@ -716,6 +814,11 @@ export function createState() {
   //
   // Area Window stuff
   //
+  const allAreaItemsIndex = writable(<Record<string, ItemInterface>>{});
+  const areaItemsParentChildIndex = writable(
+    <Record<string, ItemInterface[]>>{}
+  );
+
   const otherCharactersInArea = writable([]);
   const onGroundInArea = writable([]);
   const exitsInArea = writable([]);
@@ -807,6 +910,7 @@ export function createState() {
     denizensInArea,
     toiInArea,
     currentArea,
+    areaItemsParentChildIndex,
     //
     // Settings stuff
     //

@@ -463,7 +463,7 @@ defmodule Mud.Engine.Command.Close do
                   Context.append_event(
                     context,
                     [context.character_id | others],
-                    UpdateArea.new(%{action: :update, on_ground: [item]})
+                    UpdateArea.new(%{action: :update, items: [item]})
                   )
               end
 

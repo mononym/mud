@@ -360,15 +360,16 @@ defmodule Mud.Engine.Session do
         character = Character.get_by_id!(state.character_id)
         area = Area.get!(character.area_id)
         # items_in_area = Item.list_in_area(area.id)
-        items_are_scenery =
+        items_in_area =
           Item.list_in_area(area.id)
           |> Stream.filter(&(&1.flags.hidden != true))
-          |> Enum.group_by(fn area ->
-            area.flags.scenery
-          end)
 
-        scenery = items_are_scenery[true]
-        items_in_area = items_are_scenery[false]
+        # |> Enum.group_by(fn area ->
+        #   area.flags.scenery
+        # end)
+
+        # scenery = items_are_scenery[true]
+        # items_in_area = items_are_scenery[false]
         characters = Character.list_others_active_in_areas(character.id, [area.id])
         links = Link.list_obvious_exits_in_area(area.id)
 
@@ -376,8 +377,7 @@ defmodule Mud.Engine.Session do
           action: :look,
           area: area,
           other_characters: characters,
-          on_ground: items_in_area || [],
-          toi: scenery || [],
+          items: items_in_area,
           exits: links
         }
       end)

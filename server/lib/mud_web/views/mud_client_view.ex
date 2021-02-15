@@ -31,8 +31,7 @@ defmodule MudWeb.MudClientView do
       area: render_one(event.area, MudWeb.AreaView, "area.json"),
       otherCharacters:
         render_many(event.other_characters, MudWeb.CharacterView, "character.json"),
-      onGround: render_many(event.on_ground, MudWeb.ItemView, "item.json"),
-      toi: render_many(event.toi, MudWeb.ItemView, "item.json"),
+      items: render_many(event.items, MudWeb.ItemView, "item.json"),
       exits: render_many(event.exits, MudWeb.LinkView, "link.json")
     }
   end

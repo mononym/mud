@@ -134,7 +134,7 @@ defmodule Mud.Engine.Command.Lock do
             Context.append_event(
               context,
               [context.character_id | others],
-              UpdateArea.new(:update, item)
+              UpdateArea.new(%{action: :update, items: item})
             )
           end
 
