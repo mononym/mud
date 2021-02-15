@@ -380,9 +380,13 @@ defmodule Mud.Engine.Command.Open do
               |> Message.new_story_output()
               |> Message.append_text("You", "character")
               |> Message.append_text(" open ", "base")
-              |> Message.append_text(
-                List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
-                Mud.Engine.Util.get_item_type(item)
+
+            self_msg =
+              Util.construct_nested_item_location_message_for_self(
+                self_msg,
+                item,
+                "in",
+                true
               )
               |> Message.append_text(".", "base")
 

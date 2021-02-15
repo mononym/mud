@@ -158,23 +158,11 @@ defmodule Mud.Engine.Item.Gem do
   colossal > 200ct
   """
   def generate_short_description(gem = %__MODULE__{}) do
-    part_1 =
-      "a #{gem_size(gem.carat)} #{gem.hue}"
-
-    # part_1 =
-    #   "a #{gem_size(gem.carat)}#{gem_color(gem.clarity, gem.hue, gem.saturation, gem.tone)}"
-
     if gem.cut_type == "uncut" do
-      "#{part_1} uncut #{gem.type}"
+      "a #{gem_size(gem.carat)} uncut #{gem.hue} #{gem.type}"
     else
-      "#{part_1} #{gem.type}"
+      "a #{gem_size(gem.carat)} #{gem.hue} #{gem.type}"
     end
-
-    # if gem.cut_type == "uncut" do
-    #   "#{part_1} uncut #{gem.type}"
-    # else
-    #   "#{part_1} #{gem.type} in a#{clarity(gem.cut_quality)} #{gem.cut_type} cut"
-    # end
   end
 
   defp gem_size(carats) when carats < 1.0, do: "tiny"

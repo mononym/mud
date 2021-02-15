@@ -219,7 +219,7 @@ defmodule Mud.Engine.Command.Drop do
           self_msg
         end
 
-      all_items_to_update = Item.list_all_recursive_children(item)
+      all_items_to_update = Item.list_all_recursive_children(item, true)
 
       context
       |> Context.append_message(other_msg)
@@ -230,7 +230,7 @@ defmodule Mud.Engine.Command.Drop do
       )
       |> Context.append_event(
         [context.character_id | others],
-        UpdateArea.new(%{action: :add, items: all_items_to_update})
+        UpdateArea.new(%{action: :add, items: [item]})
       )
     else
       Util.dave_error_v2(context)

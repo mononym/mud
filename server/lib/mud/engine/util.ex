@@ -26,32 +26,33 @@ defmodule Mud.Engine.Util do
         ) :: CommandContext.t()
   def multiple_match_error(
         context,
-        keys,
-        values,
-        error_message,
-        continuation_module,
-        continuation_type \\ :numeric
+        _keys,
+        _values,
+        _error_message,
+        _continuation_module,
+        _continuation_type \\ :numeric
       ) do
-    values =
-      if is_list(values) do
-        list_to_index_map(values)
-      else
-        values
-      end
+    # values =
+    #   if is_list(values) do
+    #     list_to_index_map(values)
+    #   else
+    #     values
+    #   end
 
+    # context
+    # |> append_message(
+    #   Message.new_output(
+    #     context.character_id,
+    #     error_message,
+    #     "error",
+    #     keys
+    #   )
+    # )
+    # |> set_is_continuation(true)
+    # |> set_continuation_data(values)
+    # |> set_continuation_module(continuation_module)
+    # |> set_continuation_type(continuation_type)
     context
-    |> append_message(
-      Message.new_output(
-        context.character_id,
-        error_message,
-        "error",
-        keys
-      )
-    )
-    |> set_is_continuation(true)
-    |> set_continuation_data(values)
-    |> set_continuation_module(continuation_module)
-    |> set_continuation_type(continuation_type)
   end
 
   @doc """
@@ -127,7 +128,8 @@ defmodule Mud.Engine.Util do
   """
   @spec check_equiv(String.t() | Regex.t(), String.t()) :: boolean
   def check_equiv(maybe_regex, string) do
-    IO.inspect({maybe_regex, string}, label: "check_equiv")
+    # IO.inspect({maybe_regex, string}, label: "check_equiv")
+
     if Regex.regex?(maybe_regex) do
       Regex.match?(maybe_regex, string)
     else
@@ -584,16 +586,197 @@ defmodule Mud.Engine.Util do
   def he_she_they(%{gender_pronoun: "female"}), do: "she"
   def he_she_they(%{gender_pronoun: "male"}), do: "he"
 
+  def build_item_index(items) do
+    Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
+  end
+
   def construct_nested_item_location_message_for_self(message, item, location, target_item) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
 
+    # IO.inspect(items, label: :construct_nested_item_location_message_for_self_items)
+    # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
+    # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
+
     build_self_parent_string(message, item, parent_index, location, target_item)
   end
 
-  def build_item_index(items) do
-    Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
+  def construct_stow_item_location_message_for_self(
+        message,
+        original_item,
+        original_path,
+        stowed_item,
+        stowed_path
+      ) do
+    # items = List.wrap(original_item)
+    # parents = Item.list_all_parents(items)
+    parent_index = build_item_index(original_path)
+
+    # IO.inspect(items, label: :construct_nested_item_location_message_for_self_items)
+    # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
+    # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
+
+    origin_message = build_self_parent_string(message, original_item, parent_index, "from", true)
+
+    origin_message =
+      Message.append_text(
+        origin_message,
+        " into ",
+        "base"
+      )
+
+    # stowed_items = List.wrap(stowed_item)
+    # stowed_parents = Item.list_all_parents(stowed_items)
+    stowed_parent_index = build_item_index(stowed_path)
+
+    outermost_item =
+      Enum.find(stowed_path, fn possible_parent ->
+        possible_parent.flags.container or possible_parent.id == stowed_item.id
+      end)
+
+    build_self_parent_string(
+      origin_message,
+      outermost_item,
+      stowed_parent_index,
+      "in",
+      false
+    )
+  end
+
+  def construct_stow_item_location_message_for_others(
+        character,
+        message,
+        original_item,
+        original_path,
+        stowed_item,
+        stowed_path
+      ) do
+    message =
+      message
+      |> Message.append_text(
+        original_item.description.short,
+        get_item_type(original_item)
+      )
+
+    # Item being stowed was originally on the ground
+    message_with_origin =
+      cond do
+        original_item.location.on_ground ->
+          message
+          |> Message.append_text(
+            " which was on the ground into ",
+            "base"
+          )
+
+        original_item.location.held_in_hand ->
+          message
+          |> Message.append_text(
+            " which was in ",
+            "base"
+          )
+          |> Message.append_text(
+            his_her_their(character),
+            "character"
+          )
+          |> Message.append_text(
+            " hand into ",
+            "base"
+          )
+
+        true ->
+          # Item being stowed was originally relative to another item
+          outermost_item =
+            Enum.find(original_path, fn possible_parent ->
+              possible_parent.flags.container or possible_parent.id == original_item.id
+            end)
+
+          cond do
+            outermost_item.location.on_ground ->
+              Message.append_text(message, " from ", "base")
+              |> Message.append_text(
+                outermost_item.description.short,
+                get_item_type(outermost_item)
+              )
+              |> Message.append_text(
+                " which is on the ground into ",
+                "base"
+              )
+
+            outermost_item.location.held_in_hand ->
+              Message.append_text(message, " from ", "base")
+              |> Message.append_text(
+                outermost_item.description.short,
+                get_item_type(outermost_item)
+              )
+              |> Message.append_text(
+                " which ",
+                "base"
+              )
+              |> Message.append_text(
+                "#{he_she_they(character)}",
+                "character"
+              )
+              |> Message.append_text(
+                " are holding into ",
+                "base"
+              )
+
+            true ->
+              outermost_object = Item.get!(outermost_item.location.relative_item_id)
+
+              Message.append_text(message, " from ", "base")
+              |> Message.append_text(
+                outermost_item.description.short,
+                get_item_type(outermost_item)
+              )
+              |> Message.append_text(" #{outermost_item.location.relation} ", "base")
+              |> Message.append_text(
+                outermost_object.description.short,
+                get_item_type(outermost_object)
+              )
+              |> Message.append_text(
+                " into ",
+                "base"
+              )
+          end
+      end
+
+    outermost_item =
+      Enum.find(stowed_path, fn possible_parent ->
+        possible_parent.flags.container or possible_parent.id == stowed_item.id
+      end)
+
+    are_or_is =
+      if character.gender_pronoun == "neutral" do
+        "are"
+      else
+        "is"
+      end
+
+    message_with_origin
+    |> Message.append_text(
+      outermost_item.description.short,
+      get_item_type(outermost_item)
+    )
+    |> Message.append_text(
+      " which ",
+      "base"
+    )
+    |> Message.append_text(
+      "#{he_she_they(character)}",
+      "character"
+    )
+    |> Message.append_text(
+      " #{are_or_is} #{
+        if outermost_item.location.held_in_hand do
+          "holding"
+        else
+          "wearing"
+        end
+      }",
+      "base"
+    )
   end
 
   def construct_nested_item_location_message_for_others(
@@ -672,15 +855,23 @@ defmodule Mud.Engine.Util do
           end
 
         if outermost_item.location.held_in_hand do
-          Message.append_text(
-            message,
-            " #{he_she_they(character)} #{are_or_is} holding",
+          message
+          |> Message.append_text(
+            " #{he_she_they(character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} holding",
             "base"
           )
         else
-          Message.append_text(
-            message,
-            " #{he_she_they(character)} #{are_or_is} wearing",
+          message
+          |> Message.append_text(
+            " #{he_she_they(character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} wearing",
             "base"
           )
         end
@@ -736,7 +927,15 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you #{
+          " which",
+          "base"
+        )
+        |> Message.append_text(
+          " you",
+          "character"
+        )
+        |> Message.append_text(
+          " #{
             if target_item do
               "were"
             else
@@ -753,7 +952,15 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " which you #{
+          " which",
+          "base"
+        )
+        |> Message.append_text(
+          " you",
+          "character"
+        )
+        |> Message.append_text(
+          " #{
             if target_item do
               "were"
             else

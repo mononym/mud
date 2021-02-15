@@ -358,14 +358,7 @@ defmodule Mud.Engine.Search do
 
     # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
     # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
-    # path =
-    #   if length(path) >= 2 and Enum.at(path, 1).where == "in" do
-    #     [_ | path] = path
 
-    #     path
-    #   else
-    #     path
-    #   end
 
     items =
       Item.search_relative_to_inventory(
@@ -394,37 +387,43 @@ defmodule Mud.Engine.Search do
           String.t(),
           Mud.Engine.Command.AstNode.Thing.t(),
           Mud.Engine.Command.AstNode.Place.t(),
-          String.t()
+          String.t(),
+          boolean()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_relative_to_place_in_area(
         area_id,
         thing,
         place,
-        mode \\ "simple"
+        mode \\ "simple",
+        thing_is_immediate_child \\ true
       ) do
-    # IO.inspect(thing, label: :find_matches_relative_to_place_in_area)
-    # IO.inspect(place, label: :find_matches_relative_to_place_in_area)
+    # IO.inspect(thing, label: :find_matches_relative_to_place_in_area_thing)
+    # IO.inspect(place, label: :find_matches_relative_to_place_in_area_place)
     path = unnest_place_path(place, [])
+    # IO.inspect(path, label: :find_matches_relative_to_place_in_area_path)
 
     # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
     # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
-    path =
-      if length(path) >= 2 and Enum.at(path, 1).where == "in" do
-        [_ | path] = path
+    # path =
+    #   if length(path) >= 2 and Enum.at(path, 1).where == "in" do
+    #     [_ | path] = path
 
-        path
-      else
-        path
-      end
+    #     path
+    #   else
+    #     path
+    #   end
 
     items =
       Item.search_relative_to_item_in_area(
         area_id,
         path,
         thing,
-        mode
+        mode,
+        thing_is_immediate_child
       )
+
+      # IO.inspect(items, label: :find_matches_relative_to_place_in_inventory_items)
 
     case things_to_match(items) do
       [] ->

@@ -184,7 +184,7 @@ defmodule Mud.Engine.Command.Get do
 
   defp get_item_in_area_or_inventory(context) do
     area_results =
-      Search.find_matches_in_area(
+      Search.find_matches_on_ground(
         context.character.area_id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode

@@ -15,7 +15,7 @@ defmodule Mud.Engine.Command.LookV2 do
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Message
-  # alias Mud.Engine.Event.Client.{UpdateArea}
+  alias Mud.Engine.Event.Client.{UpdateArea}
 
   require Logger
 
@@ -254,6 +254,10 @@ defmodule Mud.Engine.Command.LookV2 do
 
 
                   Context.append_message(context, self_msg)
+                  |> Context.append_event(
+                    context.character_id,
+                    UpdateArea.new(%{action: :add, items: items})
+                  )
               end
           end
       end

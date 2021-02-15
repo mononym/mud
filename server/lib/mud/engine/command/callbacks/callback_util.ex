@@ -241,6 +241,26 @@ defmodule Mud.Engine.Command.CallbackUtil do
     end
   end
 
+  def renest_place_path(place, path \\ [])
+
+  def renest_place_path(place, []) do
+    place
+  end
+
+  def renest_place_path(place, [path | rest]) do
+    %{place | path: renest_place_path(path, rest)}
+  end
+
+  def unnest_place_path(place, path \\ [])
+
+  def unnest_place_path(place = %{path: nil}, path) do
+    [place | path]
+  end
+
+  def unnest_place_path(place = %{path: place_path}, path) do
+    unnest_place_path(place_path, [%{place | path: nil} | path])
+  end
+
   def sort_matches(matches) do
     items = Enum.map(matches, & &1.match)
     ancestors = Item.list_all_parents(items)

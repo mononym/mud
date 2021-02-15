@@ -195,18 +195,39 @@ export function createState() {
 
     allInventoryItemsIndex.set(newAllItemsIndex);
 
-    resetHeldItems(items);
-    resetWornContainers(items);
-    resetParentChildIndex(items);
+    resetHeldItems();
+    resetWornContainers();
+    resetParentChildIndex();
   }
 
-  function resetHeldItems(items) {
+  function resetAllInventoryItemsIndex(items) {
+    const newAllItemsIndex = {};
+
+    items.forEach((item) => {
+      newAllItemsIndex[item.id] = item;
+    });
+
+    allInventoryItemsIndex.set(newAllItemsIndex);
+
+    resetParentChildIndex();
+  }
+
+  function removeItemsFromAllInventoryItemsIndex(items) {
+    const ids = items.map((item) => item.id);
+
+    allInventoryItemsIndex.update(function (index) {
+      ids.forEach((id) => delete index[id]);
+      return index;
+    });
+  }
+
+  function resetHeldItems() {
     itemInLeftHand.set({ ...ItemState });
     leftHandHasItem.set(false);
     itemInRightHand.set({ ...ItemState });
     rightHandHasItem.set(false);
 
-    items.forEach((item) => {
+    Object.values(get(allInventoryItemsIndex)).forEach((item) => {
       if (item.location.held_in_hand) {
         if (item.location.hand == "left") {
           itemInLeftHand.set(item);
@@ -247,10 +268,10 @@ export function createState() {
     onGroundInArea.set(newOnGround);
   }
 
-  function resetWornContainers(items) {
+  function resetWornContainers() {
     const newWornContainers = [];
 
-    items.forEach((item) => {
+    Object.values(get(allInventoryItemsIndex)).forEach((item) => {
       if (
         item.location.worn_on_character &&
         item.flags.container &&
@@ -281,10 +302,10 @@ export function createState() {
     console.log(get(areaItemsParentChildIndex));
   }
 
-  function resetParentChildIndex(items) {
+  function resetParentChildIndex() {
     const newParentChildIndex = {};
 
-    items.forEach((item) => {
+    Object.values(get(allInventoryItemsIndex)).forEach((item) => {
       if (item.location.relative_to_item) {
         const existingChildren =
           newParentChildIndex[item.location.relative_item_id] || [];
@@ -316,7 +337,7 @@ export function createState() {
 
   function updateExits(exits) {
     exitsInArea.set(
-      [exits, ...get(exitsInArea)].filter(
+      [...exits, ...get(exitsInArea)].filter(
         (v, i, a) => a.findIndex((it) => it.id == v.id) === i
       )
     );
@@ -341,9 +362,9 @@ export function createState() {
       });
     });
 
-    resetHeldItems(Object.values(get(allInventoryItemsIndex)));
-    resetWornContainers(Object.values(get(allInventoryItemsIndex)));
-    resetParentChildIndex(Object.values(get(allInventoryItemsIndex)));
+    resetParentChildIndex();
+    resetHeldItems();
+    resetWornContainers();
   }
 
   function addInventory(items) {
@@ -403,43 +424,9 @@ export function createState() {
   }
 
   function removeInventory(items) {
-    items.forEach((item) => {
-      if (item.location.held_in_hand) {
-        if (item.location.hand == "left") {
-          itemInLeftHand.set({ ...ItemState });
-          leftHandHasItem.set(false);
-        } else if (item.location.hand == "right") {
-          itemInRightHand.set({ ...ItemState });
-          rightHandHasItem.set(false);
-        }
-      } else if (
-        item.location.worn_on_character &&
-        item.flags.container &&
-        item.flags.wearable
-      ) {
-        wornContainers.update(function (containers) {
-          containers.filter((container) => container.id != item.id);
-          return containers;
-        });
-      }
-
-      allInventoryItemsIndex.update(function (index) {
-        delete index[item.id];
-        return index;
-      });
-
-      if (item.location.relative_to_item) {
-        inventoryItemsParentChildIndex.update(function (index) {
-          const existingChildren = index[item.location.relative_item_id] || [];
-          const newChildren = existingChildren.filter(
-            (child) => child.id != item.id
-          );
-          index[item.location.relative_item_id] = newChildren;
-
-          return index;
-        });
-      }
-    });
+    removeItemsFromAllInventoryItemsIndex(items);
+    resetHeldItems();
+    resetWornContainers();
   }
 
   //
@@ -633,15 +620,6 @@ export function createState() {
         removeExits(msg.exits);
         removeOtherCharacters(msg.items);
       }
-
-      console.log("allAreaItemsIndex");
-      console.log(get(allAreaItemsIndex));
-      console.log("areaItemsParentChildIndex");
-      console.log(get(areaItemsParentChildIndex));
-      console.log("toiInArea");
-      console.log(get(toiInArea));
-      console.log("onGroundInArea");
-      console.log(get(onGroundInArea));
     });
 
     newChannel.on("update:inventory", async function (msg) {
@@ -651,7 +629,7 @@ export function createState() {
       if (msg.action == "update") {
         updateInventory(msg.items);
       } else if (msg.action == "add") {
-        addInventory(msg.items);
+        updateInventory(msg.items);
       } else if (msg.action == "remove") {
         removeInventory(msg.items);
       }

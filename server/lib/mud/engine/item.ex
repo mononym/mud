@@ -548,7 +548,8 @@ defmodule Mud.Engine.Item do
         area_id,
         [initial_path | path],
         thing,
-        mode
+        mode,
+        thing_is_immediate_child \\ true
       ) do
     initial_query =
       specific_nested_item_area_initial_query(
@@ -556,9 +557,9 @@ defmodule Mud.Engine.Item do
         Search.input_to_wildcard_string(initial_path.input, mode)
       )
 
-    # IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+    IO.inspect(initial_query, label: "search_relative_to_item_in_area")
 
-    build_and_execute_relative_query(initial_query, path, thing)
+    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
   end
 
   @doc """
@@ -1054,7 +1055,7 @@ defmodule Mud.Engine.Item do
         area_id,
         search_string
       ) do
-    # IO.inspect(search_string, label: :specific_nested_item_area_initial_query)
+    IO.inspect(search_string, label: :specific_nested_item_area_initial_query)
 
     from(
       [description: description, location: location] in base_query_without_preload(),
