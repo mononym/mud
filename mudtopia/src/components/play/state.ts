@@ -150,6 +150,9 @@ export function createState() {
     console.log("initializeCharacter");
     console.log(res);
 
+    worldHourOfDay.set(res.time);
+    worldTimeString.set(res.time_string);
+
     exploredAreas.set(res.mapData.exploredAreas);
 
     console.log("knownMapsList");

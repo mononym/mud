@@ -12,7 +12,9 @@ defmodule MudWeb.MudClientView do
   def render("init_client_data.json", %{
         current_map_data: map_data,
         inventory: inventory,
-        maps: maps
+        maps: maps,
+        time: time,
+        time_string: time_string
       }) do
     %{
       mapData: %{
@@ -21,7 +23,9 @@ defmodule MudWeb.MudClientView do
         exploredAreas: map_data.explored_areas
       },
       inventory: render_many(inventory, MudWeb.ItemView, "item.json"),
-      maps: render_many(maps, MudWeb.MapView, "map.json")
+      maps: render_many(maps, MudWeb.MapView, "map.json"),
+      time: time,
+      time_string: time_string
     }
   end
 

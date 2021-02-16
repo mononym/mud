@@ -9,8 +9,16 @@ defmodule Mud.Engine.System.Time do
     use TypedStruct
 
     typedstruct do
-      field(:time_at_last_check, DateTime)
+      field(:time_at_last_check, :float)
     end
+  end
+
+  #
+  # API
+  #
+
+  def get_time() do
+    GenServer.call(__MODULE__, :time)
   end
 
   #
@@ -44,14 +52,19 @@ defmodule Mud.Engine.System.Time do
 
   @impl true
   def init(_) do
-    {:ok, %State{}, 60_000}
+    {:ok, %State{time_at_last_check: calculate_hours_from_now()}, 60_000}
+  end
+
+  @impl true
+  def handle_call(:time, _from, state) do
+    {:reply,
+     %{hour: state.time_at_last_check, time_string: string_from_hour(state.time_at_last_check)},
+     state}
   end
 
   @impl true
   def handle_info(:timeout, state) do
-    now = DateTime.utc_now()
-    minutes_into_day = Integer.mod(now.hour * 60 + now.minute, 288)
-    hours_into_day = minutes_into_day / 60 * 5
+    hours_into_day = calculate_hours_from_now()
 
     time_update =
       UpdateTime.new(%{
@@ -73,6 +86,12 @@ defmodule Mud.Engine.System.Time do
     end
 
     {:noreply, %{state | time_at_last_check: hours_into_day}, 60_000}
+  end
+
+  defp calculate_hours_from_now do
+    now = DateTime.utc_now()
+    minutes_into_day = Integer.mod(now.hour * 60 + now.minute, 288)
+    minutes_into_day / 60 * 5
   end
 
   defp maybe_send_messages(previous_time, now) do

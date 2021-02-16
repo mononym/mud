@@ -59,6 +59,8 @@ defmodule MudWeb.MudClientController do
     # load inventory data
     inventory = Item.list_held_or_worn_items_and_children(character_id)
 
+    %{hour: hours, time_string: time_string} = Mud.Engine.System.Time.get_time()
+
     # Logger.debug("Attempting to start game session for #{character_id}")
 
     # character = Engine.Character.get_by_id!(character_id)
@@ -90,7 +92,9 @@ defmodule MudWeb.MudClientController do
     |> render("init_client_data.json",
       maps: maps,
       current_map_data: map_data,
-      inventory: inventory
+      inventory: inventory,
+      time: hours,
+      time_string: time_string
     )
 
     # else
