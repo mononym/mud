@@ -10,6 +10,8 @@ defmodule Mud.Engine.Event.Client.UpdateCharacter do
     field(:containers, Mud.Engine.Character.Containers.t())
     # the wealth being updated on a character
     field(:wealth, Mud.Engine.Character.Wealth.t())
+    # the bank being updated on a character
+    field(:bank, Mud.Engine.Character.Bank.t())
   end
 
   def new(action, character) do

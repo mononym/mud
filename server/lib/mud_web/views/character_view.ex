@@ -2,6 +2,7 @@ defmodule MudWeb.CharacterView do
   use MudWeb, :view
   alias MudWeb.CharacterView
   alias MudWeb.CharacterSettingsView
+  alias MudWeb.CharacterBankView
   alias MudWeb.CharacterWealthView
   alias MudWeb.RaceView
 
@@ -42,6 +43,14 @@ defmodule MudWeb.CharacterView do
         character.wealth,
         CharacterWealthView,
         "character_wealth.json"
+      )
+    )
+    |> Map.put(
+      :bank,
+      render_one(
+        character.bank,
+        CharacterBankView,
+        "character_bank.json"
       )
     )
     |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)

@@ -6,7 +6,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item}
   alias Mud.Engine.Util
-  alias Mud.Engine.Character.{Containers, Settings, Skill, Wealth}
+  alias Mud.Engine.Character.{Bank, Containers, Settings, Skill, Wealth}
   alias Mud.DataType.NameSlug
 
   require Logger
@@ -21,6 +21,7 @@ defmodule Mud.Engine.Character do
   schema "characters" do
     @derive Jason.Encoder
     has_one(:settings, Settings)
+    has_one(:bank, Bank)
     has_one(:wealth, Wealth)
     has_one(:containers, Containers)
 
@@ -217,9 +218,10 @@ defmodule Mud.Engine.Character do
         # Set up settings and make sure they are loaded
         :ok = Settings.create(%{character_id: character.id})
         :ok = Wealth.create(%{character_id: character.id})
+        :ok = Bank.create(%{character_id: character.id})
         Containers.create(%{character_id: character.id})
 
-        character = Repo.preload(character, [:containers, :settings, :wealth])
+        character = Repo.preload(character, [:bank, :containers, :settings, :wealth])
 
         setup_default_items(character)
 
@@ -895,7 +897,8 @@ defmodule Mud.Engine.Character do
       join: containers in assoc(character, :containers),
       join: settings in assoc(character, :settings),
       join: wealth in assoc(character, :wealth),
-      preload: [containers: containers, settings: settings, wealth: wealth]
+      join: bank in assoc(character, :bank),
+      preload: [bank: bank, containers: containers, settings: settings, wealth: wealth]
     )
   end
 

@@ -43,7 +43,9 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp list_all_command_definitions do
     MapSet.new([
+      define_balance_command(),
       define_close_command(),
+      define_deposit_command(),
       define_drop_command(),
       define_get_command(),
       define_kick_command(),
@@ -609,6 +611,73 @@ defmodule Mud.Engine.Rules.Commands do
           matches: [~r/.*/],
           key: :thing,
           transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
+  defp define_balance_command do
+    %Definition{
+      callback_module: Command.Balance,
+      parts: [
+        %Part{
+          matches: ["balance"],
+          key: :balance,
+          transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_deposit_command do
+    %Definition{
+      callback_module: Command.Deposit,
+      parts: [
+        %Part{
+          matches: ["deposit"],
+          key: :deposit,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          key: :amount,
+          matches: ["all"],
+          must_follow: [:deposit],
+          transformer: &Enum.join/1
+        },
+        # %Part{
+        #   key: :amount,
+        #   matches: [~r/^\d$/],
+        #   must_follow: [:deposit],
+        #   transformer: &string_to_int/1
+        # },
+        %Part{
+          key: :type,
+          matches: [
+            "c",
+            "co",
+            "cop",
+            "copp",
+            "coppe",
+            "copper",
+            "g",
+            "go",
+            "gol",
+            "gold",
+            "b",
+            "br",
+            "bro",
+            "bron",
+            "bronz",
+            "bronze",
+            "s",
+            "si",
+            "sil",
+            "silv",
+            "silve",
+            "silver"
+          ],
+          must_follow: [:amount],
+          transformer: &Enum.join/1
         }
       ]
     }
