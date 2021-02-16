@@ -592,6 +592,54 @@ function createWorldBuilderStore() {
     view.set("details");
   }
 
+  const mapZoomMultipliers = writable([
+    0.00775,
+    0.015,
+    0.03,
+    0.06,
+    0.125,
+    0.25, // 4x size
+    0.5, // double size
+    1,
+    2, // half size
+    4, // quarter
+    8,
+    16,
+    32,
+    64,
+    128,
+    256,
+    512,
+  ]);
+  const mapZoomMultiplierIndex = writable(7);
+
+  const mapAtMaxZoom = writable(false);
+  const mapAtMinZoom = writable(false);
+
+  async function zoomMapOut() {
+    if (get(mapZoomMultiplierIndex) < get(mapZoomMultipliers).length - 1) {
+      mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) + 1);
+
+      if (get(selectedMap).maximumZoomIndex == get(mapZoomMultiplierIndex)) {
+        mapAtMaxZoom.set(true);
+      } else {
+        mapAtMinZoom.set(false);
+      }
+    }
+  }
+
+  async function zoomMapIn() {
+    if (get(mapZoomMultiplierIndex) > 0) {
+      mapZoomMultiplierIndex.set(get(mapZoomMultiplierIndex) - 1);
+
+      if (get(selectedMap).minimumZoomIndex == get(mapZoomMultiplierIndex)) {
+        mapAtMinZoom.set(true);
+      } else {
+        mapAtMaxZoom.set(false);
+      }
+    }
+  }
+
   return {
     // Area stuff
     buildingArea,
@@ -624,6 +672,12 @@ function createWorldBuilderStore() {
     svgMapAllowIntraMapAreaSelection,
     svgMapAllowInterMapAreaSelection,
     mapUnderConstruction,
+    mapZoomMultipliers,
+    mapZoomMultiplierIndex,
+    mapAtMinZoom,
+    mapAtMaxZoom,
+    zoomMapIn,
+    zoomMapOut,
     // UI stuff,
     mode,
     view,

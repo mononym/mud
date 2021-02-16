@@ -199,7 +199,7 @@ defmodule Mud.Engine.Map do
 
     %{
       areas: Enum.concat([external_areas, known_or_public_areas]) |> Repo.preload([:flags]),
-      links: known_links,
+      links: known_links |> Repo.preload([:closable, :flags]),
       explored_areas: all_known_character_areas
     }
   end
@@ -249,8 +249,8 @@ defmodule Mud.Engine.Map do
       )
 
     %{
-      areas: Enum.concat([external_areas, internal_areas]),
-      links: links
+      areas: Enum.concat([external_areas, internal_areas]) |> Repo.preload([:flags]),
+      links: links |> Repo.preload([:closable, :flags])
     }
   end
 

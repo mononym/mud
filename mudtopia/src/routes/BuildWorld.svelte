@@ -22,6 +22,7 @@
     buildingArea,
     buildingLink,
     selectedMap,
+    mapSelected,
     selectedArea,
     areaSelected,
     selectedLink,
@@ -38,6 +39,12 @@
     linksForLinkEditor,
     mapLabelUnderConstruction,
     createNewMap,
+    mapZoomMultiplierIndex,
+    mapZoomMultipliers,
+    zoomMapIn,
+    zoomMapOut,
+    mapAtMaxZoom,
+    mapAtMinZoom,
   } = WorldBuilderStore;
   import areaState from "../models/area.ts";
   import linkState from "../models/link.ts";
@@ -79,7 +86,7 @@
   // Map stuff
 </script>
 
-<div class="inline-flex flex-grow overflow-hidden">
+<div class="h-full w-full overflow-hidden flex">
   <slot />
   {#if $loadingMaps}
     <div class="flex-1 flex flex-col justify-center items-center">
@@ -89,29 +96,57 @@
       </h2>
     </div>
   {:else}
-    <div class="h-full max-h-full w-1/2">
+    <div class="h-full max-h-full flex-1">
       <div class="h-1/2 max-h-1/2 w-full">
-        <BuilderSvgMap
-          bind:this={primaryMap}
-          chosenMap={$selectedMap}
-          mapsMap={$mapsMap}
-          areasMap={$areasMap}
-          links={$links}
-          areas={$areas}
-          linkUnderConstruction={$linkUnderConstruction}
-          svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
-          svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
-          highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
-          highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
-          focusAreaId={$selectedArea.id}
-          areaUnderConstruction={$areaUnderConstruction}
-          buildingArea={$buildingArea}
-          buildingLink={$buildingLink}
-          areasMapForOtherMap={$areasForLinkEditorMap}
-          mapLabelUnderConstruction={$mapLabelUnderConstruction} />
+        <div style="height:calc(100% - 40px)" class="w-full">
+          <BuilderSvgMap
+            bind:this={primaryMap}
+            chosenMap={$selectedMap}
+            mapsMap={$mapsMap}
+            areasMap={$areasMap}
+            links={$links}
+            areas={$areas}
+            linkUnderConstruction={$linkUnderConstruction}
+            svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
+            svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
+            highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
+            highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
+            focusAreaId={$selectedArea.id}
+            areaUnderConstruction={$areaUnderConstruction}
+            buildingArea={$buildingArea}
+            buildingLink={$buildingLink}
+            areasMapForOtherMap={$areasForLinkEditorMap}
+            mapLabelUnderConstruction={$mapLabelUnderConstruction}
+            zoomMultiplier={$mapZoomMultipliers[$mapZoomMultiplierIndex]}
+          />
+        </div>
+        <div class="flex" style="height:40px">
+          {#if $mapSelected}
+            <button
+              on:click={zoomMapIn}
+              disabled={$mapAtMinZoom}
+              type="button"
+              class="flex-1 {$mapAtMinZoom
+                ? 'text-gray-600 bg-gray-500'
+                : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {$mapAtMinZoom
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer'}"><i class="fas fa-plus" /></button
+            >
+            <button
+              on:click={zoomMapOut}
+              disabled={$mapAtMaxZoom}
+              type="button"
+              class="flex-1 {$mapAtMaxZoom
+                ? 'text-gray-600 bg-gray-500'
+                : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {$mapAtMaxZoom
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer'}"><i class="fas fa-minus" /></button
+            >
+          {/if}
+        </div>
       </div>
       <div class="h-1/2 max-h-1/2 w-full overflow-hidden flex flex-col">
-        {#if $mode == 'map'}
+        {#if $mode == "map"}
           <MapList />
 
           <div class="flex-shrink flex">
@@ -119,8 +154,12 @@
               on:click={createNewMap}
               disabled={newMapButtonDisabled}
               type="button"
-              class="flex-1 rounded-l-md {newMapButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {newMapButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">New
-              Map</button>
+              class="flex-1 rounded-l-md {newMapButtonDisabled
+                ? 'text-gray-600 bg-gray-500'
+                : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {newMapButtonDisabled
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer'}">New Map</button
+            >
           </div>
         {:else}
           <AreaList />
@@ -130,36 +169,44 @@
               on:click={backToMapView}
               disabled={backToMapViewButtonDisabled}
               type="button"
-              class="flex-1 rounded-l-md {backToMapViewButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {backToMapViewButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">Back
-              to Map List</button>
+              class="flex-1 rounded-l-md {backToMapViewButtonDisabled
+                ? 'text-gray-600 bg-gray-500'
+                : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {backToMapViewButtonDisabled
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer'}">Back to Map List</button
+            >
             <button
               on:click={createArea}
               disabled={createNewAreaButtonDisabled}
               type="button"
-              class="flex-1 rounded-r-md {createNewAreaButtonDisabled ? 'text-gray-600 bg-gray-500' : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {createNewAreaButtonDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">Create
-              New Area</button>
+              class="flex-1 rounded-r-md {createNewAreaButtonDisabled
+                ? 'text-gray-600 bg-gray-500'
+                : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {createNewAreaButtonDisabled
+                ? 'cursor-not-allowed'
+                : 'cursor-pointer'}">Create New Area</button
+            >
           </div>
         {/if}
       </div>
     </div>
-    <div class="flex-1">
-      {#if $mode == 'map'}
-        {#if $view == 'details'}
+    <div class="h-full max-h-full flex-1">
+      {#if $mode == "map"}
+        {#if $view == "details"}
           <MapDetails />
-        {:else if $view == 'edit'}
+        {:else if $view == "edit"}
           <MapEditor />
-        {:else if $view == 'label'}
+        {:else if $view == "label"}
           <MapLabelEditor />
         {/if}
-      {:else if $mode == 'area'}
-        {#if $view == 'details'}
+      {:else if $mode == "area"}
+        {#if $view == "details"}
           <AreaDetails />
         {:else}
           <AreaEditor />
         {/if}
       {:else}
         <div class="h-full w-full flex flex-col">
-          {#if $selectedMap.id != $linkEditorMapForOtherAreaId && $linkEditorMapForOtherAreaId != ''}
+          {#if $selectedMap.id != $linkEditorMapForOtherAreaId && $linkEditorMapForOtherAreaId != ""}
             <div class="flex-1 overflow-hidden">
               <BuilderSvgMap
                 chosenMap={$mapsMap[$linkEditorMapForOtherAreaId]}
@@ -172,11 +219,15 @@
                 svgMapAllowIntraMapAreaSelection={true}
                 highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
                 highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
-                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id ? $linkUnderConstruction.fromId : $linkUnderConstruction.toId}
+                focusAreaId={$linkUnderConstruction.toId == $selectedArea.id
+                  ? $linkUnderConstruction.fromId
+                  : $linkUnderConstruction.toId}
+                zoomMultiplier={$mapZoomMultipliers[$mapZoomMultiplierIndex]}
                 areaUnderConstruction={$areaUnderConstruction}
                 buildingArea={false}
                 buildingLink={$buildingLink}
-                areasMapForOtherMap={$areasMap} />
+                areasMapForOtherMap={$areasMap}
+              />
             </div>
           {:else}
             <div class="flex-1">foo</div>
@@ -190,6 +241,7 @@
     <ConfirmWithInput
       show={showDeletePrompt}
       callback={deleteCallback}
-      matchString={deleteMatchString} />
+      matchString={deleteMatchString}
+    />
   {/if}
 </div>
