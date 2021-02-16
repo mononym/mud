@@ -66,7 +66,8 @@ defmodule Mud.Engine.Rules.Commands do
       define_travel_command(),
       define_unlock_command(),
       define_wealth_command(),
-      define_wear_command()
+      define_wear_command(),
+      define_withdraw_command()
     ])
   end
 
@@ -640,16 +641,58 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           key: :amount,
-          matches: ["all"],
+          matches: ["all", ~r/^\d+$/],
           must_follow: [:deposit],
           transformer: &Enum.join/1
         },
-        # %Part{
-        #   key: :amount,
-        #   matches: [~r/^\d$/],
-        #   must_follow: [:deposit],
-        #   transformer: &string_to_int/1
-        # },
+        %Part{
+          key: :type,
+          matches: [
+            "c",
+            "co",
+            "cop",
+            "copp",
+            "coppe",
+            "copper",
+            "g",
+            "go",
+            "gol",
+            "gold",
+            "b",
+            "br",
+            "bro",
+            "bron",
+            "bronz",
+            "bronze",
+            "s",
+            "si",
+            "sil",
+            "silv",
+            "silve",
+            "silver"
+          ],
+          must_follow: [:amount],
+          transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_withdraw_command do
+    %Definition{
+      callback_module: Command.Withdraw,
+      parts: [
+        %Part{
+          matches: ["withdraw"],
+          key: :withdraw,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          key: :amount,
+          matches: ["all", ~r/^\d+$/],
+          must_follow: [:withdraw],
+          transformer: &Enum.join/1
+        },
         %Part{
           key: :type,
           matches: [

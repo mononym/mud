@@ -97,6 +97,8 @@ export function getItemColor(colors, item) {
     return colors.furniture;
   } else if (item.flags.scenery) {
     return colors.scenery;
+  } else if (item.flags.gem) {
+    return colors.gem;
   } else {
     return colors.base;
   }

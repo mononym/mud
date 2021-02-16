@@ -116,7 +116,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
     copper_coins = number
 
-    %Wealth{
+    %{
       gold: gold_coins,
       silver: silver_coins,
       bronze: bronze_coins,

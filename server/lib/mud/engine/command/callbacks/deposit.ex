@@ -17,7 +17,6 @@ defmodule Mud.Engine.Command.Deposit do
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Area
   alias Mud.Engine.Message
-  alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Character.{Bank, Wealth}
   alias Mud.Engine.Event.Client.UpdateCharacter
 
@@ -34,7 +33,7 @@ defmodule Mud.Engine.Command.Deposit do
         %{amount: :all}
 
       [_, amount, type] ->
-        %{amount: amount.input, type: type.input}
+        %{amount: String.to_integer(amount.input), type: type.input}
     end
   end
 
@@ -68,11 +67,97 @@ defmodule Mud.Engine.Command.Deposit do
           |> Context.append_message(
             Message.new_story_output(
               context.character.id,
-              "You deposit all your coins leaving your pockets feeling, somehow, the exact same weight. Though less full.",
+              "You deposit all your coins leaving your pockets feeling, somehow, the exact same weight.",
               "base"
             )
           )
+
+        count ->
+          if has_coins(wealth, count, ast.type) do
+            {bank, wealth} = deposit_coins(context.character.bank, wealth, count, ast.type)
+
+            context
+            |> Context.append_event(
+              context.character.id,
+              UpdateCharacter.new(%{action: :bank, bank: bank, wealth: wealth})
+            )
+            |> Context.append_message(
+              Message.new_story_output(
+                context.character.id,
+                "You deposit your coins leaving your pockets feeling, somehow, the exact same weight.",
+                "base"
+              )
+            )
+          else
+            context
+            |> Context.append_message(
+              Message.new_story_output(
+                context.character.id,
+                "You do not have that many coins.",
+                "base"
+              )
+            )
+          end
       end
     end
   end
+
+  defp deposit_coins(bank, wealth, count, type) when type in ["g", "go", "gol", "gold"] do
+    bank =
+      Bank.update!(bank, %{
+        balance: Decimal.to_integer(bank.balance) + count * 1_000_000
+      })
+
+    wealth = Wealth.update!(wealth, %{gold: wealth.gold - count})
+
+    {bank, wealth}
+  end
+
+  defp deposit_coins(bank, wealth, count, type)
+       when type in ["s", "si", "sil", "silv", "silve", "silver"] do
+    bank =
+      Bank.update!(bank, %{
+        balance: Decimal.to_integer(bank.balance) + count * 10_000
+      })
+
+    wealth = Wealth.update!(wealth, %{silver: wealth.silver - count})
+
+    {bank, wealth}
+  end
+
+  defp deposit_coins(bank, wealth, count, type)
+       when type in ["b", "br", "bro", "bron", "bronze"] do
+    bank =
+      Bank.update!(bank, %{
+        balance: Decimal.to_integer(bank.balance) + count * 100
+      })
+
+    wealth = Wealth.update!(wealth, %{bronze: wealth.bronze - count})
+
+    {bank, wealth}
+  end
+
+  defp deposit_coins(bank, wealth, count, type)
+       when type in ["c", "co", "cop", "copp", "coppe", "copper"] do
+    bank =
+      Bank.update!(bank, %{
+        balance: Decimal.to_integer(bank.balance) + count
+      })
+
+    wealth = Wealth.update!(wealth, %{copper: wealth.copper - count})
+
+    {bank, wealth}
+  end
+
+  defp has_coins(wealth, count, type) when type in ["g", "go", "gol", "gold"],
+    do: wealth.gold >= count
+
+  defp has_coins(wealth, count, type) when type in ["s", "si", "sil", "silv", "silve", "silver"],
+    do: wealth.silver >= count
+
+  defp has_coins(wealth, count, type) when type in ["b", "br", "bro", "bron", "bronze"],
+    do: wealth.bronze >= count
+
+  defp has_coins(wealth, count, type) when type in ["c", "co", "cop", "copp", "coppe", "copper"],
+    do: wealth.copper >= count
 end

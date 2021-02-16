@@ -516,6 +516,9 @@ defmodule Mud.Engine.Util do
       item.flags.container ->
         "container"
 
+      item.flags.gem ->
+        "gem"
+
       item.flags.weapon ->
         "weapon"
 
