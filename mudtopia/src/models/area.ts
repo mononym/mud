@@ -1,3 +1,5 @@
+import AreaFlagsState, { AreaFlagsInterface } from "./areaFlags";
+
 export interface AreaInterface {
   id: string;
   description: string;
@@ -10,6 +12,7 @@ export interface AreaInterface {
   color: string;
   borderWidth: number;
   borderColor: string;
+  flags: AreaFlagsInterface;
 }
 
 const state: AreaInterface = {
@@ -24,6 +27,7 @@ const state: AreaInterface = {
   color: "#696969",
   borderColor: "#FFFFFF",
   borderWidth: 2,
+  flags: { ...AreaFlagsState },
 };
 
 export default state;

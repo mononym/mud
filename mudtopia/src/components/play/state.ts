@@ -587,6 +587,16 @@ export function createState() {
           char.wealth = msg.wealth;
           return char;
         });
+      } else if (msg.action == "bank") {
+        selectedCharacter.update(function (char) {
+          char.bank = msg.bank;
+          return char;
+        });
+
+        selectedCharacter.update(function (char) {
+          char.wealth = msg.wealth;
+          return char;
+        });
       }
     });
 

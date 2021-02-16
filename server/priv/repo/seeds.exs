@@ -1307,6 +1307,63 @@ alias Mud.Engine
     )
   )
 
+#
+#
+# Areas and links for testing out bank
+#
+#
+
+{:ok, bank} =
+  Area.create(%{
+    border_color: "#63462D",
+    color: "#85bb65",
+    map_x: 0,
+    map_y: 2,
+    map_size: 15,
+    map_id: map.id,
+    name: "Bank",
+    description: "It's a bank. It has a vault, and money, and stuff. And a Teller. Boom.",
+    flags: %{
+      bank: true
+    }
+  })
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: north_room.id,
+        to_id: bank.id,
+        departure_text: "through",
+        arrival_text: "through",
+        short_description: "a massive pair of oak doors",
+        long_description: "The heavy double doors are reinforced with steel bands.",
+        closable: %{
+          open: false
+        }
+      },
+      Mud.Engine.LinkTemplate.Closable.template()
+    )
+  )
+
+{:ok, _} =
+  Link.create(
+    Map.merge(
+      %{
+        from_id: bank.id,
+        to_id: north_room.id,
+        departure_text: "through",
+        arrival_text: "through",
+        short_description: "a massive pair of oak doors",
+        long_description: "The heavy double doors are reinforced with steel bands.",
+        closable: %{
+          open: false
+        }
+      },
+      Mud.Engine.LinkTemplate.Closable.template()
+    )
+  )
+
 # Link insertions
 
 # center room east room links
@@ -2310,21 +2367,62 @@ Mud.Engine.Item.create_from_template_for_area(
 #####
 
 Mud.Engine.Item.create_from_template_for_area(
-  Mud.Engine.ItemTemplate.Gem, %{type: "amethyst", carat: 6, clarity: 10, hue: "violet", saturation: 5, tone: 8, cut_type: "emerald", cut_quality: 10}, west_room.id
+  Mud.Engine.ItemTemplate.Gem,
+  %{
+    type: "amethyst",
+    carat: 6,
+    clarity: 10,
+    hue: "violet",
+    saturation: 5,
+    tone: 8,
+    cut_type: "emerald",
+    cut_quality: 10
+  },
+  west_room.id
 )
 
 Mud.Engine.Item.create_from_template_for_area(
-  Mud.Engine.ItemTemplate.Gem, %{type: "emerald", carat: 4, clarity: 5, hue: "green", saturation: 8, tone: 4, cut_type: "emerald", cut_quality: 8},
+  Mud.Engine.ItemTemplate.Gem,
+  %{
+    type: "emerald",
+    carat: 4,
+    clarity: 5,
+    hue: "green",
+    saturation: 8,
+    tone: 4,
+    cut_type: "emerald",
+    cut_quality: 8
+  },
   northwest_room.id
 )
 
 Mud.Engine.Item.create_from_template_for_area(
-  Mud.Engine.ItemTemplate.Gem, %{type: "spinel", carat: 2, clarity: 6, hue: "red", saturation: 8, tone: 3, cut_type: "uncut", cut_quality: 4},
+  Mud.Engine.ItemTemplate.Gem,
+  %{
+    type: "spinel",
+    carat: 2,
+    clarity: 6,
+    hue: "red",
+    saturation: 8,
+    tone: 3,
+    cut_type: "uncut",
+    cut_quality: 4
+  },
   northeast_room.id
 )
 
 Mud.Engine.Item.create_from_template_for_area(
-  Mud.Engine.ItemTemplate.Gem, %{type: "topaz", carat: 0.75, clarity: 3, hue: "blue", saturation: 1, tone: 9, cut_type: "uncut", cut_quality: 3},
+  Mud.Engine.ItemTemplate.Gem,
+  %{
+    type: "topaz",
+    carat: 0.75,
+    clarity: 3,
+    hue: "blue",
+    saturation: 1,
+    tone: 9,
+    cut_type: "uncut",
+    cut_quality: 3
+  },
   east_room.id
 )
 

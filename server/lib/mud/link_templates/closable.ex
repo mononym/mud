@@ -4,7 +4,8 @@ defmodule Mud.Engine.LinkTemplate.Closable do
       flags: %{
         closable: true
       },
-      closable: %{}
+      closable: %{
+      }
     }
   end
 end

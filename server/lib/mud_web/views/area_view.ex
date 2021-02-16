@@ -1,6 +1,7 @@
 defmodule MudWeb.AreaView do
   use MudWeb, :view
   alias MudWeb.AreaView
+  alias MudWeb.AreaFlagsView
 
   def render("index.json", %{areas: areas}) do
     render_many(areas, AreaView, "area.json")
@@ -24,7 +25,13 @@ defmodule MudWeb.AreaView do
       borderWidth: area.border_width,
       color: area.color,
       insertedAt: area.inserted_at,
-      updatedAt: area.updated_at
+      updatedAt: area.updated_at,
+      flags:
+        render_one(
+          area.flags,
+          AreaFlagsView,
+          "area_flags.json"
+        )
     }
   end
 end

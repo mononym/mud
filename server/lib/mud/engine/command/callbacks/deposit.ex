@@ -15,6 +15,7 @@ defmodule Mud.Engine.Command.Deposit do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.Context
+  alias Mud.Engine.Area
   alias Mud.Engine.Message
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Character.{Bank, Wealth}
@@ -40,15 +41,10 @@ defmodule Mud.Engine.Command.Deposit do
   @impl true
   def execute(%Context{} = context) do
     ast = context.command.ast
-    IO.inspect(ast, label: :ast)
-    IO.inspect(Decimal.to_integer(context.character.bank.balance), label: :balance)
-    # check the room the character is in and see if it is marked as a bank
-    # if it is marked as a bank, let the character check their balance
 
-    # Mock the check to see if the area is a bank at first
-    is_bank = true
+    area = Area.get!(context.character.area_id)
 
-    if is_bank do
+    if area.flags.bank do
       wealth = context.character.wealth
 
       wealth_total =
@@ -67,7 +63,7 @@ defmodule Mud.Engine.Command.Deposit do
           context
           |> Context.append_event(
             context.character.id,
-            UpdateCharacter.new(%{action: :update, bank: bank, wealth: wealth})
+            UpdateCharacter.new(%{action: :bank, bank: bank, wealth: wealth})
           )
           |> Context.append_message(
             Message.new_story_output(

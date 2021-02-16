@@ -8,6 +8,7 @@ defmodule Mud.Engine.Command.Balance do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.Context
+  alias Mud.Engine.Area
   alias Mud.Engine.Message
   alias Mud.Engine.Command.CallbackUtil
 
@@ -19,13 +20,9 @@ defmodule Mud.Engine.Command.Balance do
 
   @impl true
   def execute(%Context{} = context) do
-    # check the room the character is in and see if it is marked as a bank
-    # if it is marked as a bank, let the character check their balance
+    area = Area.get!(context.character.area_id)
 
-    # Mock the check to see if the area is a bank at first
-    is_bank = true
-
-    if is_bank do
+    if area.flags.bank do
       balance = Decimal.to_integer(context.character.bank.balance)
 
       if balance == 0 do
@@ -38,11 +35,48 @@ defmodule Mud.Engine.Command.Balance do
           )
         )
       else
-        Context.append_message(
-          context,
+        wealth = CallbackUtil.num_coppers_to_wealth(balance)
+
+        context
+        |> Context.append_message(
           Message.new_story_output(
             context.character.id,
-            "Balance: #{CallbackUtil.num_coppers_to_max_denomination(balance)}",
+            "The Teller flips through a massive tome for a few moments, muttering to themselves as they trace their finger down the pages until the find what they are looking for. With a slight nod of satisfaction at having found it, they pull an account sheet out of a drawer and show you your balance before returning it to its place.\n",
+            "base"
+          )
+        )
+        |> Context.append_message(
+          Message.new_story_output(
+            context.character.id,
+            "    #{wealth.gold} Gold\n",
+            "base"
+          )
+        )
+        |> Context.append_message(
+          Message.new_story_output(
+            context.character.id,
+            "    #{wealth.silver} Silver\n",
+            "base"
+          )
+        )
+        |> Context.append_message(
+          Message.new_story_output(
+            context.character.id,
+            "    #{wealth.bronze} Bronze\n",
+            "base"
+          )
+        )
+        |> Context.append_message(
+          Message.new_story_output(
+            context.character.id,
+            "    #{wealth.copper} Copper\n",
+            "base"
+          )
+        )
+        |> Context.append_message(
+          Message.new_story_output(
+            context.character.id,
+            "Total: #{CallbackUtil.num_coppers_to_short_string(balance)}",
             "base"
           )
         )

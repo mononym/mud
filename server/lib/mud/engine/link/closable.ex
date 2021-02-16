@@ -20,7 +20,7 @@ defmodule Mud.Engine.Link.Closable do
   schema "link_closables" do
     belongs_to(:link, Mud.Engine.Link, type: :binary_id)
 
-    field(:open, :boolean, default: false)
+    field(:open, :boolean, default: true)
     field(:locked, :boolean, default: false)
 
     #

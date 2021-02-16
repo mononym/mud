@@ -10,6 +10,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
   alias Mud.Engine.Message
   alias Mud.Engine.{Character, Item, Link}
   alias Mud.Engine.Link.Closable
+  alias Mud.Engine.Character.Wealth
 
   def coin_to_wealth_update_attrs(coin, wealth) do
     cond do
@@ -75,6 +76,52 @@ defmodule Mud.Engine.Command.CallbackUtil do
       true ->
         "#{number} copper"
     end
+  end
+
+  @doc """
+  Given an integer representing the number of coppers, transform it into a short form like 23.45B, 16.34M, 18.45K
+  """
+  def num_coppers_to_short_string(number) do
+    cond do
+      number < 1_000 ->
+        "#{number} Copper"
+
+      number < 1_000_000 ->
+        "#{Float.round(number / 1_000, 2)}K Copper"
+
+      number < 1_000_000_000 ->
+        "#{Float.round(number / 1_000_000, 2)}M Copper"
+
+      number < 1_000_000_000_000 ->
+        "#{Float.round(number / 1_000_000_000, 2)}B Copper"
+
+      number < 1_000_000_000_000_000 ->
+        "#{Float.round(number / 1_000_000_000_000, 2)}T Copper"
+    end
+  end
+
+  def num_coppers_to_wealth(number) do
+    gold_worth = 1_000_000
+    silver_worth = 10_000
+    bronze_worth = 100
+
+    gold_coins = floor(number / gold_worth)
+    number = number - gold_coins * gold_worth
+
+    silver_coins = floor(number / silver_worth)
+    number = number - silver_coins * silver_worth
+
+    bronze_coins = floor(number / bronze_worth)
+    number = number - bronze_coins * bronze_worth
+
+    copper_coins = number
+
+    %Wealth{
+      gold: gold_coins,
+      silver: silver_coins,
+      bronze: bronze_coins,
+      copper: copper_coins
+    }
   end
 
   def number_to_approximate_string(number) do

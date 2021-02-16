@@ -2,9 +2,10 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, CharactersAreas, Link, Item, Map, Message}
+  alias Mud.Engine.{Character, CharactersAreas, Link, Item, Message}
   alias Mud.Engine.Message.StoryOutput
   alias Mud.Engine
+  alias Mud.Engine.Area.{Flags}
   import Ecto.Query
   require Logger
 
@@ -26,6 +27,8 @@ defmodule Mud.Engine.Area do
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
+    has_one(:flags, Flags)
+
     field(:description, :string)
     field(:name, :string)
 
@@ -66,6 +69,7 @@ defmodule Mud.Engine.Area do
   @spec list_all() :: [%__MODULE__{}]
   def list_all do
     Repo.all(__MODULE__)
+    |> Repo.preload([:flags])
   end
 
   @doc """
@@ -113,6 +117,7 @@ defmodule Mud.Engine.Area do
 
       Stream.concat([external_areas, internal_areas])
       |> Enum.sort_by(& &1.updated_at, &(&2 <= &1))
+      |> Repo.preload([:flags])
     else
       Repo.all(
         from(
@@ -121,6 +126,7 @@ defmodule Mud.Engine.Area do
           order_by: [desc: area.updated_at]
         )
       )
+      |> Repo.preload([:flags])
     end
   end
 
@@ -139,14 +145,7 @@ defmodule Mud.Engine.Area do
 
   """
   @spec get!(id :: String.t()) :: %__MODULE__{}
-  def get!(id), do: Repo.get!(__MODULE__, id)
-
-  @spec get!(Ecto.Multi.t(), atom(), String.t()) :: Ecto.Multi.t()
-  def get!(multi, name, area_id) do
-    Ecto.Multi.run(multi, name, fn repo, _changes ->
-      {:ok, repo.get!(__MODULE__, area_id)}
-    end)
-  end
+  def get!(id), do: Repo.get!(__MODULE__, id) |> Repo.preload([:flags])
 
   @doc """
   Creates a area.
@@ -162,9 +161,17 @@ defmodule Mud.Engine.Area do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    %__MODULE__{}
-    |> changeset(attrs)
-    |> Repo.insert()
+    {:ok, area} =
+      %__MODULE__{}
+      |> changeset(attrs)
+      |> Repo.insert()
+
+    # Set up stuff for area
+    Flags.create(Map.put(Map.get(attrs, :flags, %{}), :area_id, area.id))
+
+    area = Repo.preload(area, [:flags])
+
+    {:ok, area}
   end
 
   @doc """
@@ -185,6 +192,7 @@ defmodule Mud.Engine.Area do
     area
     |> changeset(attrs)
     |> Repo.update()
+    |> Repo.preload([:flags])
   end
 
   @doc """
@@ -251,6 +259,7 @@ defmodule Mud.Engine.Area do
           area.id not in subquery(explored_ids)
     )
     |> Repo.all()
+    |> Repo.preload([:flags])
 
     # Mud.Repo.one(
     #   from(area in Mud.Engine.Area,
