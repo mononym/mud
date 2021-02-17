@@ -189,10 +189,25 @@ defmodule Mud.Engine.Area do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(area, attrs) do
-    area
-    |> changeset(attrs)
-    |> Repo.update()
-    |> Repo.preload([:flags])
+    IO.inspect(area)
+    IO.inspect(attrs)
+
+    if Map.has_key?(attrs, "flags") do
+      Flags.update!(area.flags, attrs["flags"]) |> IO.inspect(label: :flagupdate)
+    end
+
+    res =
+      area
+      |> changeset(attrs)
+      |> Repo.update()
+
+    case res do
+      {:ok, result} ->
+        {:ok, Repo.preload(result, [:flags], force: true)} |> IO.inspect()
+
+      error ->
+        error
+    end
   end
 
   @doc """
