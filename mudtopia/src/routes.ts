@@ -4,7 +4,7 @@ import Dashboard from "./routes/Dashboard.svelte";
 import Login from "./routes/Login.svelte";
 import ValidateLoginToken from "./routes/ValidateLoginToken.svelte";
 import CharacterCreation from "./routes/CharacterCreation.svelte";
-import BuildWorld from "./routes/BuildWorld.svelte";
+import Build from "./routes/Build.svelte";
 import Play from "./routes/Play.svelte";
 import NotFound from "./routes/NotFound.svelte";
 
@@ -21,7 +21,7 @@ export default {
   "/token": ValidateLoginToken,
 
   // Building stuff
-  "/build/world": BuildWorld,
+  "/build/world": Build,
 
   // Character creation stuff
   "/character/create": CharacterCreation,

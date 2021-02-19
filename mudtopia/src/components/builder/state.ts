@@ -10,11 +10,13 @@ import { MapsStore } from "../../stores/maps";
 import { LinksStore } from "../../stores/links";
 import { tick } from "svelte";
 
+export const key = {};
+
 const { mapsMap } = MapsStore;
 const { areasMap } = AreasStore;
 const { links, linksMap } = LinksStore;
 
-function createWorldBuilderStore() {
+export function createWorldBuilderStore() {
   const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
   const mapDataLoaded = writable(false);
@@ -62,6 +64,32 @@ function createWorldBuilderStore() {
       LinksStore.putLinks(res.links);
     } catch (e) {
       alert(e.message);
+    }
+  }
+
+  //
+  //
+  // UI STUFF
+  //
+  //
+
+  const builderTab = writable("mapsAndAreas");
+
+  async function selectBuilderTabMapsAndAreas() {
+    if (get(builderTab) != "mapsAndAreas") {
+      builderTab.set("mapsAndAreas");
+    }
+  }
+
+  async function selectBuilderTabShops() {
+    if (get(builderTab) != "shops") {
+      builderTab.set("shops");
+    }
+  }
+
+  async function selectBuilderTabItems() {
+    if (get(builderTab) != "items") {
+      builderTab.set("items");
     }
   }
 
@@ -683,6 +711,10 @@ function createWorldBuilderStore() {
     // UI stuff,
     mode,
     view,
+    builderTab,
+    selectBuilderTabMapsAndAreas,
+    selectBuilderTabItems,
+    selectBuilderTabShops,
     // Methods
     // Link stuff
     changeMapForLinkEditor,
