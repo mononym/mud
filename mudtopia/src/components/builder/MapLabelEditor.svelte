@@ -108,7 +108,7 @@
             for="horizontalOffset"
             class="block text-sm font-medium text-gray-300">Horizontal Offset</label>
           <input
-            bind:value={$mapLabelUnderConstruction.horizontalOffset}
+            bind:value={$mapLabelUnderConstruction.horizontal_offset}
             type="number"
             name="horizontalOffset"
             id="horizontalOffset"
@@ -136,7 +136,7 @@
             for="verticalOffset"
             class="block text-sm font-medium text-gray-300">Vertical Offset</label>
           <input
-            bind:value={$mapLabelUnderConstruction.verticalOffset}
+            bind:value={$mapLabelUnderConstruction.vertical_offset}
             type="number"
             name="verticalOffset"
             id="verticalOffset"

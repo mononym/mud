@@ -5,7 +5,6 @@
   import { CharactersStore } from "../stores/characters";
   import { push } from "svelte-spa-router";
   import MainNavBar from "../components/MainNavBar.svelte";
-  import { State } from "../components/play/state";
   const { loading, characters } = CharactersStore;
   let showDeletePrompt = false;
   let characterForDeleting;

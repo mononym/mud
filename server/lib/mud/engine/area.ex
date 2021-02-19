@@ -44,7 +44,7 @@ defmodule Mud.Engine.Area do
     field(:map_corners, :integer, default: 5)
     field(:permanently_explored, :boolean, default: false)
 
-    belongs_to(:map, Map, type: :binary_id)
+    belongs_to(:map, Engine.Map, type: :binary_id)
 
     has_many(:characters, Character)
     has_many(:to_links, Link, foreign_key: :to_id)
@@ -189,9 +189,6 @@ defmodule Mud.Engine.Area do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(area, attrs) do
-    IO.inspect(area)
-    IO.inspect(attrs)
-
     if Map.has_key?(attrs, "flags") do
       Flags.update!(area.flags, attrs["flags"]) |> IO.inspect(label: :flagupdate)
     end

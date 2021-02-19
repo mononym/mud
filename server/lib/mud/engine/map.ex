@@ -23,8 +23,8 @@ defmodule Mud.Engine.Map do
       field(:text, :string, default: "")
       field(:x, :integer, default: 0)
       field(:y, :integer, default: 0)
-      field(:verticalOffset, :integer, default: 0)
-      field(:horizontalOffset, :integer, default: 0)
+      field(:vertical_offset, :integer, default: 0)
+      field(:horizontal_offset, :integer, default: 0)
       field(:rotation, :integer, default: 0)
       field(:color, :string, default: "white")
       field(:size, :integer, default: 20)
@@ -331,7 +331,9 @@ defmodule Mud.Engine.Map do
       :inline_size,
       :style,
       :weight,
-      :family
+      :family,
+      :horizontal_offset,
+      :vertical_offset
     ])
     |> validate_required([
       :text,
@@ -343,7 +345,9 @@ defmodule Mud.Engine.Map do
       :inline_size,
       :style,
       :weight,
-      :family
+      :family,
+      :horizontal_offset,
+      :vertical_offset
     ])
   end
 

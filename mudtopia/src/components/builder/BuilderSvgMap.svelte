@@ -148,8 +148,8 @@
     const verticalPosition = (-label.y * gridSize + viewSize / 2).toString();
 
     let labelTransform = `translate(${
-      label.horizontalOffset
-    }, ${-label.verticalOffset}) rotate(${
+      label.horizontal_offset
+    }, ${-label.vertical_offset}) rotate(${
       label.rotation
     }, ${horizontalPosition}, ${verticalPosition})`;
 
@@ -915,7 +915,10 @@
 <div
   bind:clientWidth={svgWrapperWidth}
   bind:clientHeight={svgWrapperHeight}
-  class="p-1 h-full w-full max-w-full max-h-full flex flex-col {mapSelected ? '' : 'place-content-center'}">
+  class="p-1 h-full w-full max-w-full max-h-full flex flex-col {mapSelected
+    ? ''
+    : 'place-content-center'}"
+>
   {#if mapSelected}
     {#if loadingMapData}
       <div class="flex-1 flex flex-col items-center justify-center">
@@ -931,8 +934,27 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
-          shapes={[...highlightsForExistingIntraMapLinks, ...highlightsForExistingInterMapLinks, ...highlightsForExistingIntraMapAreas, ...existingIntraMapLinks, ...existingInterMapLinks, ...newIntraMapLinks, ...newInterMapLinks, ...existingIntraMapAreas, ...existingInterMapAreas, ...newInterMapLinkAreas, ...newIntraMapAreas, ...existingIntraMapLinkText, ...existingInterMapLinkText, ...newIntraMapLinkText, ...newInterMapLinkText, ...existingMapLabels, ...newMapLabels].flat(2)}
-          on:selectArea={handleSelectArea} />
+          shapes={[
+            ...highlightsForExistingIntraMapLinks,
+            ...highlightsForExistingInterMapLinks,
+            ...highlightsForExistingIntraMapAreas,
+            ...existingIntraMapLinks,
+            ...existingInterMapLinks,
+            ...newIntraMapLinks,
+            ...newInterMapLinks,
+            ...existingIntraMapAreas,
+            ...existingInterMapAreas,
+            ...newInterMapLinkAreas,
+            ...newIntraMapAreas,
+            ...existingIntraMapLinkText,
+            ...existingInterMapLinkText,
+            ...newIntraMapLinkText,
+            ...newInterMapLinkText,
+            ...existingMapLabels,
+            ...newMapLabels,
+          ].flat(2)}
+          on:selectArea={handleSelectArea}
+        />
       </div>
     {/if}
   {:else}

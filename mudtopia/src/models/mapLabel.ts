@@ -9,8 +9,8 @@ export interface MapLabelInterface {
   style: string;
   weight: string;
   family: string;
-  verticalOffset: number;
-  horizontalOffset: number;
+  vertical_offset: number;
+  horizontal_offset: number;
 }
 
 const state: MapLabelInterface = {
@@ -24,8 +24,8 @@ const state: MapLabelInterface = {
   style: "normal",
   weight: "normal",
   family: "sans-sarif",
-  verticalOffset: 0,
-  horizontalOffset: 0,
+  vertical_offset: 0,
+  horizontal_offset: 0,
 };
 
 export default state;
