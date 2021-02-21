@@ -11,6 +11,17 @@ defmodule MudWeb.ShopView do
   end
 
   def render("shop.json", %{shop: shop}) do
-    shop
+    products =
+      if is_list(shop.products) do
+        render_many(
+          shop.products,
+          MudWeb.ShopProductView,
+          "shop_product.json"
+        )
+      else
+        []
+      end
+
+    %{shop | products: products}
   end
 end

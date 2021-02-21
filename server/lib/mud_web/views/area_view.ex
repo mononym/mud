@@ -13,6 +13,17 @@ defmodule MudWeb.AreaView do
   end
 
   def render("area.json", %{area: area}) do
+    shops =
+      if is_list(area.shops) do
+        render_many(
+          area.shops,
+          ShopView,
+          "shop.json"
+        )
+      else
+        []
+      end
+
     %{
       id: area.id,
       name: area.name,
@@ -33,12 +44,7 @@ defmodule MudWeb.AreaView do
           AreaFlagsView,
           "area_flags.json"
         ),
-      shops:
-        render_many(
-          area.shops,
-          ShopView,
-          "shop.json"
-        )
+      shops: shops
     }
   end
 end

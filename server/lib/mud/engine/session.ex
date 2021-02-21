@@ -375,7 +375,7 @@ defmodule Mud.Engine.Session do
 
         %{
           action: :look,
-          area: area,
+          area: %{area | shops: []},
           other_characters: characters,
           items: items_in_area,
           exits: links
@@ -493,6 +493,11 @@ defmodule Mud.Engine.Session do
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateMap{}}) do
     {:update_map,
      Phoenix.View.render_one(event, MudWeb.MudClientView, "update_map.json", as: :event)}
+  end
+
+  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateShops{}}) do
+    {:update_shops,
+     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_shops.json", as: :event)}
   end
 
   defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateTime{}}) do

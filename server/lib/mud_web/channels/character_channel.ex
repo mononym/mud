@@ -97,6 +97,15 @@ defmodule MudWeb.CharacterChannel do
     {:noreply, socket}
   end
 
+  def handle_cast({:update_shops, updated_data}, socket) do
+    Logger.info("character_channel:#{socket.assigns.character_id}:update_shops")
+    Logger.debug("update_shops: #{inspect(updated_data)}")
+
+    Phoenix.Channel.push(socket, "update:shops", updated_data)
+
+    {:noreply, socket}
+  end
+
   def handle_cast({:update_time, updated_data}, socket) do
     Logger.info("character_channel:#{socket.assigns.character_id}:update_time")
     Logger.debug("update_time: #{inspect(updated_data)}")

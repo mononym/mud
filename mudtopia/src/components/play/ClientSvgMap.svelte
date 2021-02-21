@@ -92,8 +92,8 @@
     const verticalPosition = (-label.y * gridSize + viewSize / 2).toString();
 
     let labelTransform = `translate(${
-      label.horizontalOffset
-    }, ${-label.verticalOffset}) rotate(${
+      label.horizontal_offset
+    }, ${-label.vertical_offset}) rotate(${
       label.rotation
     }, ${horizontalPosition}, ${verticalPosition})`;
 

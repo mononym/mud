@@ -61,6 +61,8 @@ defmodule MudWeb.MudClientController do
 
     %{hour: hours, time_string: time_string} = Mud.Engine.System.Time.get_time()
 
+    shops = Character.list_known_shops(character_id)
+
     # Logger.debug("Attempting to start game session for #{character_id}")
 
     # character = Engine.Character.get_by_id!(character_id)
@@ -94,7 +96,8 @@ defmodule MudWeb.MudClientController do
       current_map_data: map_data,
       inventory: inventory,
       time: hours,
-      time_string: time_string
+      time_string: time_string,
+      shops: shops
     )
 
     # else

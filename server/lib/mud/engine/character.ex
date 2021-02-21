@@ -4,7 +4,7 @@ defmodule Mud.Engine.Character do
   import Ecto.Query
 
   alias Mud.Repo
-  alias Mud.Engine.{Area, Character, Item}
+  alias Mud.Engine.{Area, Character, Item, Shop}
   alias Mud.Engine.Util
   alias Mud.Engine.Character.{Bank, Containers, Settings, Skill, Wealth}
   alias Mud.DataType.NameSlug
@@ -762,6 +762,18 @@ defmodule Mud.Engine.Character do
   @spec get_with_skills_by_id!(String.t()) :: %__MODULE__{} | nil
   def get_with_skills_by_id!(character_id) do
     Repo.one!(base_skills_query(character_id))
+  end
+
+  @spec list_known_shops(String.t()) :: [%__MODULE__{}]
+  def list_known_shops(character_id) do
+    character_shops =
+      character_id
+      |> Mud.Engine.CharactersShops.known_shop_ids_from_character_id_query()
+      |> Shop.list_with_products_from_query()
+
+    default_known_shops = Shop.list_with_products_from_permanently_explored_areas()
+
+    Enum.concat([default_known_shops, character_shops])
   end
 
   @doc """

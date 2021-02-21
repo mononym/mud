@@ -13,6 +13,7 @@ defmodule MudWeb.MudClientView do
         current_map_data: map_data,
         inventory: inventory,
         maps: maps,
+        shops: shops,
         time: time,
         time_string: time_string
       }) do
@@ -24,6 +25,7 @@ defmodule MudWeb.MudClientView do
       },
       inventory: render_many(inventory, MudWeb.ItemView, "item.json"),
       maps: render_many(maps, MudWeb.MapView, "map.json"),
+      shops: render_many(shops, MudWeb.ShopView, "shop.json"),
       time: time,
       time_string: time_string
     }
@@ -72,6 +74,13 @@ defmodule MudWeb.MudClientView do
       action: event.action,
       areas: render_many(event.areas, MudWeb.AreaView, "area.json"),
       links: render_many(event.links, MudWeb.LinkView, "link.json")
+    }
+  end
+
+  def render("update_shop.json", %{event: event = %Mud.Engine.Event.Client.UpdateShops{}}) do
+    %{
+      action: event.action,
+      shops: render_many(event.shops, MudWeb.ShopView, "shop.json")
     }
   end
 

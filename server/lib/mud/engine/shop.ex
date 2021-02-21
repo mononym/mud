@@ -38,7 +38,7 @@ defmodule Mud.Engine.Shop do
   end
 
   @doc """
-  Returns the list of areas with populated product.
+  Returns the list of shops with populated product.
 
   ## Examples
 
@@ -50,6 +50,83 @@ defmodule Mud.Engine.Shop do
   def list_all_with_products do
     base_query_with_preload()
     |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of shops with populated product by area.
+
+  ## Examples
+
+      iex> list_by_area_with_products(area_id)
+      [%__MODULE__{}, ...]
+
+  """
+  @spec list_by_area_with_products(String.t() | [String.t()]) :: [%__MODULE__{}]
+  def list_by_area_with_products(area_ids) do
+    from(shop in base_query_with_preload(),
+      where: shop.area_id in ^List.wrap(area_ids)
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists all the shops that exist in permanently explores areas, which means all characters know them.
+
+  ## Examples
+
+      iex> list_with_products_from_permanently_explored_areas()
+      [%__MODULE__{}, ...]
+
+  """
+  def list_with_products_from_permanently_explored_areas() do
+    from(shop in __MODULE__,
+      inner_join: area in Mud.Engine.Area,
+      on: shop.area_id == area.id,
+      where: area.permanently_explored == true,
+      select: shop
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Given a subquery which spits out ids for shops, return a list of shops with populated products
+
+  ## Examples
+
+      iex> list_with_products_from_query(query)
+      [%__MODULE__{}, ...]
+
+  """
+  def list_with_products_from_query(sbquery) do
+    from(shop in base_query_with_preload(),
+      where: shop.id in subquery(sbquery)
+    )
+    |> Repo.all()
+  end
+
+  @doc """
+  Given a shop or list of shops, mark them as known by a character in a database
+
+  ## Examples
+
+      iex> mark_as_known(shops)
+      :ok
+
+  """
+  def mark_as_known(shops, character_id) do
+    shops = List.wrap(shops)
+
+    now = DateTime.utc_now()
+
+    new_values =
+      Enum.map(
+        shops,
+        &[shop_id: &1.id, character_id: character_id, inserted_at: now, updated_at: now]
+      )
+
+    Repo.insert_all(Mud.Engine.CharactersShops, new_values)
+
+    :ok
   end
 
   @doc """

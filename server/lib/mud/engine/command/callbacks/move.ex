@@ -21,14 +21,15 @@ defmodule Mud.Engine.Command.Move do
   """
   alias Mud.Engine
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Area, Link, Item}
+  alias Mud.Engine.{Character, Area, Link, Item, Shop}
 
   alias Mud.Engine.Event.Client.{
     UpdateArea,
     UpdateMap,
     UpdateCharacter,
     UpdateExploredArea,
-    UpdateExploredMap
+    UpdateExploredMap,
+    UpdateShops
   }
 
   alias Mud.Engine.Search
@@ -204,6 +205,7 @@ defmodule Mud.Engine.Command.Move do
   # end
 
   defp maybe_update_unexplored(context, area, old_area) do
+    # Check to see if this is a room that is being visited by the character for the first time
     if not Area.has_been_explored?(area.id, context.character.id) do
       unexplored_areas = Area.list_unexplored_areas_linked_to_area(area.id, context.character.id)
 
@@ -224,6 +226,7 @@ defmodule Mud.Engine.Command.Move do
           })
         )
 
+      # Check to see if in a map for the first time and update that if so
       if old_area.map_id != area.map_id and
            not Engine.Map.has_been_explored?(area.map_id, context.character.id) do
         Engine.Map.mark_as_explored(area.map_id, context.character.id)
@@ -241,8 +244,28 @@ defmodule Mud.Engine.Command.Move do
       else
         context
       end
+      |> maybe_update_known_shops(area)
     else
       context
+    end
+  end
+
+  defp maybe_update_known_shops(context, area) do
+    case Shop.list_by_area_with_products(area.id) do
+      [] ->
+        context
+
+      shops ->
+        Shop.mark_as_known(shops, context.character.id)
+
+        Context.append_event(
+          context,
+          context.character.id,
+          UpdateShops.new(%{
+            action: :add,
+            shops: shops
+          })
+        )
     end
   end
 

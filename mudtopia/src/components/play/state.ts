@@ -16,6 +16,8 @@ import { Socket } from "phoenix";
 import type { AreaInterface } from "../../models/area";
 import AreaState from "../../models/area";
 import type { LinkInterface } from "../../models/link";
+import type { ShopInterface } from "../../models/shop";
+import ShopState from "../../models/shop";
 
 export const key = {};
 
@@ -69,6 +71,45 @@ export function createState() {
     if (get(view) != "play") {
       view.set("play");
     }
+  }
+
+  //
+  // Shops stuff
+  //
+
+  const knownShopsIndex = writable(<Record<string, ShopInterface>>{});
+  const knownShopsByAreaIndex = writable(<Record<string, string[]>>{});
+
+  function resetKnownShops(shops: ShopInterface[]) {
+    const newIndex = {};
+    shops.forEach((shop) => (newIndex[shop.id] = shop));
+    knownShopsIndex.set(newIndex);
+
+    const newAreaIndex = {};
+    shops.forEach((shop) => {
+      const children = newAreaIndex[shop.area_id] || [];
+      children.push(shop.id);
+      newAreaIndex[shop.area_id] = children;
+    });
+    knownShopsByAreaIndex.set(newAreaIndex);
+  }
+
+  function addKnownShops(shops: ShopInterface[]) {
+    knownShopsIndex.update(function (index) {
+      shops.forEach((shop) => {
+        index[shop.id] = shop;
+      });
+      return index;
+    });
+
+    knownShopsByAreaIndex.update(function (index) {
+      shops.forEach((shop) => {
+        const children = index[shop.area_id] || [];
+        children.push(shop.id);
+        index[shop.area_id] = children;
+      });
+      return index;
+    });
   }
 
   //
@@ -149,6 +190,8 @@ export function createState() {
     const res = (await initializeCharacterClientData(character.id)).data;
     console.log("initializeCharacter");
     console.log(res);
+
+    resetKnownShops(res.shops);
 
     worldHourOfDay.set(res.time);
     worldTimeString.set(res.time_string);
@@ -681,6 +724,15 @@ export function createState() {
 
       worldHourOfDay.set(msg.hour);
       worldTimeString.set(msg.time_string);
+    });
+
+    newChannel.on("update:shops", async function (msg) {
+      console.log("received an update for shops");
+      console.log(msg);
+
+      if (msg.action == "add") {
+        addKnownShops(msg.shops);
+      }
     });
 
     newChannel.join();
