@@ -44,6 +44,7 @@ defmodule Mud.Engine.Rules.Commands do
   defp list_all_command_definitions do
     MapSet.new([
       define_balance_command(),
+      define_buy_command(),
       define_close_command(),
       define_deposit_command(),
       define_drop_command(),
@@ -59,6 +60,7 @@ defmodule Mud.Engine.Rules.Commands do
       define_remove_command(),
       define_say_command(),
       define_sit_command(),
+      define_shop_command(),
       define_stand_command(),
       define_store_command(),
       define_stow_command(),
@@ -624,6 +626,38 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           matches: ["balance"],
           key: :balance,
+          transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_shop_command do
+    %Definition{
+      callback_module: Command.Shop,
+      parts: [
+        %Part{
+          matches: ["shop"],
+          key: :shop,
+          transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_buy_command do
+    %Definition{
+      callback_module: Command.Buy,
+      parts: [
+        %Part{
+          matches: ["buy"],
+          key: :buy,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          key: :product,
+          matches: [~r/^\d+$/],
+          must_follow: [:buy],
           transformer: &Enum.join/1
         }
       ]

@@ -12,6 +12,10 @@ defmodule Mud.Engine.Command.CallbackUtil do
   alias Mud.Engine.Link.Closable
   alias Mud.Engine.Character.Wealth
 
+  @gold_worth 1_000_000
+  @silver_worth 10_000
+  @bronze_worth 100
+
   def coin_to_wealth_update_attrs(coin, wealth) do
     cond do
       coin.copper ->
@@ -29,13 +33,9 @@ defmodule Mud.Engine.Command.CallbackUtil do
   end
 
   def num_coppers_to_max_denomination(number) do
-    gold_worth = 1_000_000
-    silver_worth = 10_000
-    bronze_worth = 100
-
     cond do
-      number >= gold_worth ->
-        num_gold = Float.round(number / gold_worth, 1)
+      number >= @gold_worth ->
+        num_gold = Float.round(number / @gold_worth, 1)
 
         # Drop everything after the decimal if it is a 0
         num_gold =
@@ -47,8 +47,8 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
         "#{num_gold} gold"
 
-      number >= silver_worth ->
-        num_coins = Float.round(number / silver_worth, 1)
+      number >= @silver_worth ->
+        num_coins = Float.round(number / @silver_worth, 1)
 
         # Drop everything after the decimal if it is a 0
         num_coins =
@@ -60,8 +60,8 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
         "#{num_coins} silver"
 
-      number >= bronze_worth ->
-        num_coins = Float.round(number / bronze_worth, 1)
+      number >= @bronze_worth ->
+        num_coins = Float.round(number / @bronze_worth, 1)
 
         # Drop everything after the decimal if it is a 0
         num_coins =
@@ -101,18 +101,14 @@ defmodule Mud.Engine.Command.CallbackUtil do
   end
 
   def num_coppers_to_wealth(number) do
-    gold_worth = 1_000_000
-    silver_worth = 10_000
-    bronze_worth = 100
+    gold_coins = floor(number / @gold_worth)
+    number = number - gold_coins * @gold_worth
 
-    gold_coins = floor(number / gold_worth)
-    number = number - gold_coins * gold_worth
+    silver_coins = floor(number / @silver_worth)
+    number = number - silver_coins * @silver_worth
 
-    silver_coins = floor(number / silver_worth)
-    number = number - silver_coins * silver_worth
-
-    bronze_coins = floor(number / bronze_worth)
-    number = number - bronze_coins * bronze_worth
+    bronze_coins = floor(number / @bronze_worth)
+    number = number - bronze_coins * @bronze_worth
 
     copper_coins = number
 
@@ -122,6 +118,13 @@ defmodule Mud.Engine.Command.CallbackUtil do
       bronze: bronze_coins,
       copper: copper_coins
     }
+  end
+
+  def wealth_to_num_coppers(wealth) do
+    gold_value = wealth.gold * @gold_worth
+    silver_value = wealth.silver * @silver_worth
+    bronze_value = wealth.bronze * @bronze_worth
+    wealth.copper + bronze_value + silver_value + gold_value
   end
 
   def number_to_approximate_string(number) do
