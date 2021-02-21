@@ -110,6 +110,23 @@ export async function createArea(
   ));
 }
 
+export async function attachShopToArea(
+  shopId: string,
+  areaId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.post("/areas/attach_shop", { area_id: areaId, shop_id: shopId })
+  ));
+}
+
+export async function detachShopFromArea(
+  shopId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.post("/areas/detach_shop", { shop_id: shopId })
+  ));
+}
+
 // Character Stuff
 
 export async function updateCharacter(

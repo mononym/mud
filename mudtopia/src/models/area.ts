@@ -1,4 +1,5 @@
 import AreaFlagsState, { AreaFlagsInterface } from "./areaFlags";
+import type { ShopInterface } from "./shop";
 
 export interface AreaInterface {
   id: string;
@@ -13,6 +14,7 @@ export interface AreaInterface {
   borderWidth: number;
   borderColor: string;
   flags: AreaFlagsInterface;
+  shops: ShopInterface[];
 }
 
 const state: AreaInterface = {
@@ -28,6 +30,7 @@ const state: AreaInterface = {
   borderColor: "#FFFFFF",
   borderWidth: 2,
   flags: { ...AreaFlagsState },
+  shops: [],
 };
 
 export default state;

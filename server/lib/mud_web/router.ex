@@ -82,6 +82,8 @@ defmodule MudWeb.Router do
     # Area related stuff
     resources("/areas", AreaController, except: [:new, :edit])
     get("/areas/map/:map_id", AreaController, :list_by_map)
+    post("/areas/attach_shop", AreaController, :attach_shop)
+    post("/areas/detach_shop", AreaController, :detach_shop)
 
     # Link related stuff
     resources("/links", LinkController, except: [:new, :edit, :index])

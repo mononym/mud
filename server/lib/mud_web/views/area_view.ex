@@ -2,6 +2,7 @@ defmodule MudWeb.AreaView do
   use MudWeb, :view
   alias MudWeb.AreaView
   alias MudWeb.AreaFlagsView
+  alias MudWeb.ShopView
 
   def render("index.json", %{areas: areas}) do
     render_many(areas, AreaView, "area.json")
@@ -31,6 +32,12 @@ defmodule MudWeb.AreaView do
           area.flags,
           AreaFlagsView,
           "area_flags.json"
+        ),
+      shops:
+        render_many(
+          area.shops,
+          ShopView,
+          "shop.json"
         )
     }
   end

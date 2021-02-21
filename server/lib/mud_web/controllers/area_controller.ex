@@ -1,7 +1,7 @@
 defmodule MudWeb.AreaController do
   use MudWeb, :controller
 
-  alias Mud.Engine.Area
+  alias Mud.Engine.{Area, Shop}
 
   action_fallback(MudWeb.FallbackController)
 
@@ -44,6 +44,22 @@ defmodule MudWeb.AreaController do
 
     with {:ok, %Area{}} <- Area.delete(area) do
       send_resp(conn, :no_content, "")
+    end
+  end
+
+  def attach_shop(conn, %{"shop_id" => shop_id, "area_id" => area_id}) do
+    shop = Shop.get!(shop_id)
+
+    with {:ok, %Shop{}} <- Shop.update(shop, %{area_id: area_id}) do
+      send_resp(conn, :ok, "")
+    end
+  end
+
+  def detach_shop(conn, %{"shop_id" => shop_id}) do
+    shop = Shop.get!(shop_id)
+
+    with {:ok, %Shop{}} <- Shop.update(shop, %{area_id: nil}) do
+      send_resp(conn, :ok, "")
     end
   end
 end

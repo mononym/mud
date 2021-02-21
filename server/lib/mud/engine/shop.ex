@@ -103,9 +103,18 @@ defmodule Mud.Engine.Shop do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(area, attrs) do
-    area
-    |> changeset(attrs)
-    |> Repo.update()
+    res =
+      area
+      |> changeset(attrs)
+      |> Repo.update()
+
+    case res do
+      {:ok, shop} ->
+        {:ok, Repo.preload(shop, [:products])}
+
+      error ->
+        error
+    end
   end
 
   @doc """

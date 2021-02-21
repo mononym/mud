@@ -45,6 +45,7 @@
     zoomMapOut,
     mapAtMaxZoom,
     mapAtMinZoom,
+    loadShops,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -59,6 +60,7 @@
   let primaryMap;
 
   onMount(async () => {
+    loadShops();
     MapsStore.load();
   });
 

@@ -19,6 +19,8 @@ import {
   deleteShopProduct as delShopProduct,
   createShopProduct,
   updateShopProduct,
+  detachShopFromArea,
+  attachShopToArea,
 } from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
@@ -104,6 +106,12 @@ export function createWorldBuilderStore() {
       res = (await createShop(shop)).data;
     } else {
       res = (await updateShop(shop.id, shop)).data;
+
+      selectedArea.update(function (area) {
+        if (res.area_id == area.id) {
+        }
+        return area;
+      });
     }
     addShopToIndex(res);
 
@@ -150,11 +158,29 @@ export function createWorldBuilderStore() {
 
   const allShopsIndex = writable(<Record<string, ShopInterface>>{});
   const shops = writable(<ShopInterface[]>[]);
+  const unattachedShops = derived(shops, ($shops) =>
+    $shops.filter((shop) => shop.area_id == null || shop.area_id == "")
+  );
   const selectedShop = writable({ ...ShopState });
   const shopSelected = writable(false);
   const loadingShops = writable(false);
   const selectedShopProduct = writable({ ...ShopProductState });
   const shopProductUnderConstruction = writable({ ...ShopProductState });
+
+  const selectedAreaShops = writable([]);
+
+  function resetSelectedAreaShops() {
+    const selectedAreaId = get(selectedArea).id;
+    const newShops = [];
+
+    get(shops).forEach((shop) => {
+      if (shop.area_id == selectedAreaId) {
+        newShops.push(shop);
+      }
+    });
+
+    selectedAreaShops.set(newShops);
+  }
 
   async function loadShops() {
     loadingShops.set(true);
@@ -301,6 +327,38 @@ export function createWorldBuilderStore() {
     shopview.set("details");
   }
 
+  async function attachShop(shop: ShopInterface, areaId: string) {
+    attachShopToArea(shop.id, areaId);
+    allShopsIndex.update(function (index) {
+      const newShop = index[shop.id];
+      newShop.area_id = areaId;
+      index[shop.id] = newShop;
+      return index;
+    });
+    resetSelectedAreaShops();
+  }
+
+  async function detachShop(shop: ShopInterface) {
+    detachShopFromArea(shop.id);
+    allShopsIndex.update(function (index) {
+      const newShop = index[shop.id];
+      newShop.area_id = undefined;
+      index[shop.id] = newShop;
+      return index;
+    });
+    resetSelectedAreaShops();
+  }
+
+  async function viewShopFromArea(shop) {
+    console.log(shop);
+    shopview.set("details");
+    console.log(get(builderTab));
+    selectBuilderTabShops();
+    console.log(get(builderTab));
+    await tick();
+    selectedShop.set({ ...shop });
+  }
+
   //
   //
   // UI STUFF
@@ -315,7 +373,7 @@ export function createWorldBuilderStore() {
     }
   }
 
-  async function selectBuilderTabShops() {
+  function selectBuilderTabShops() {
     if (get(builderTab) != "shops") {
       builderTab.set("shops");
     }
@@ -669,6 +727,8 @@ export function createWorldBuilderStore() {
         await tick();
         document.getElementById(`AreaList:${area.id}`).scrollIntoView();
       }
+
+      resetSelectedAreaShops();
     }
   }
 
@@ -964,6 +1024,11 @@ export function createWorldBuilderStore() {
     saveShopProduct,
     createNewShopProduct,
     cancelEditShopProduct,
+    unattachedShops,
+    attachShop,
+    detachShop,
+    selectedAreaShops,
+    viewShopFromArea,
     // UI stuff,
     mode,
     view,

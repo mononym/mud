@@ -2,7 +2,7 @@ defmodule Mud.Engine.Area do
   use Mud.Schema
   import Ecto.Changeset
   alias Mud.Repo
-  alias Mud.Engine.{Character, CharactersAreas, Link, Item, Message}
+  alias Mud.Engine.{Character, CharactersAreas, Link, Item, Message, Shop}
   alias Mud.Engine.Message.StoryOutput
   alias Mud.Engine
   alias Mud.Engine.Area.{Flags}
@@ -49,6 +49,7 @@ defmodule Mud.Engine.Area do
     has_many(:characters, Character)
     has_many(:to_links, Link, foreign_key: :to_id)
     has_many(:from_links, Link, foreign_key: :from_id)
+    has_many(:shops, Shop)
 
     field(:border_width, :integer, default: 2)
     field(:border_color, :string, default: "#FFFFFF")
