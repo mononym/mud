@@ -2,6 +2,7 @@
   import MainNavBar from "../components/MainNavBar.svelte";
   import BuilderTabBar from "../components/builder/BuilderTabBar.svelte";
   import BuildWorldAndAreasTab from "../components/builder/BuildWorldAndAreasTab.svelte";
+  import BuildShopsTab from "../components/builder/BuildShopsTab.svelte";
 
   import { setContext } from "svelte";
   import { createWorldBuilderStore, key } from "../components/builder/state";
@@ -20,7 +21,7 @@
     <BuildWorldAndAreasTab />
   {/if}
   {#if $builderTab == "shops"}
-    <BuildWorldAndAreasTab />
+    <BuildShopsTab />
   {/if}
   {#if $builderTab == "items"}
     <BuildWorldAndAreasTab />

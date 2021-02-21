@@ -20,7 +20,7 @@
   }
 
   function deleteCallback() {
-    WorldBuilderStore.deleteLabel(labelForDeleting);
+    WorldBuilderStore.deleteMapLabel(labelForDeleting);
   }
 </script>
 

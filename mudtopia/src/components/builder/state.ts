@@ -4,7 +4,22 @@ import MapState, { MapInterface } from "../../models/map";
 import MapLabelState, { MapLabelInterface } from "../../models/mapLabel";
 import AreaState, { AreaInterface } from "../../models/area";
 import LinkState from "../../models/link";
-import { loadMapData, deleteLink as delLink } from "../../api/server";
+import ShopState from "../../models/shop";
+import ShopProductState, {
+  ShopProductInterface,
+} from "../../models/shopProduct";
+import type { ShopInterface } from "../../models/shop";
+import {
+  loadShopsForBuilder,
+  loadMapData,
+  deleteLink as delLink,
+  createShop,
+  updateShop,
+  deleteShop as delShop,
+  deleteShopProduct as delShopProduct,
+  createShopProduct,
+  updateShopProduct,
+} from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
 import { LinksStore } from "../../stores/links";
@@ -65,6 +80,225 @@ export function createWorldBuilderStore() {
     } catch (e) {
       alert(e.message);
     }
+  }
+
+  //
+  //
+  // Shop STUFF
+  //
+  //
+
+  const shopview = writable("details");
+  const shopUnderConstruction = writable(<ShopInterface>{ ...ShopState });
+  const savingShop = writable(false);
+  const savingShopProduct = writable(false);
+
+  async function saveShop() {
+    const shop = get(shopUnderConstruction);
+    savingShop.set(true);
+    const isNew = shop.id == "";
+
+    let res: ShopInterface;
+
+    if (isNew) {
+      res = (await createShop(shop)).data;
+    } else {
+      res = (await updateShop(shop.id, shop)).data;
+    }
+    addShopToIndex(res);
+
+    shopUnderConstruction.set({ ...ShopState });
+    savingShop.set(false);
+    selectedShop.set(res);
+    shopview.set("details");
+  }
+
+  async function createNewShop() {
+    shopUnderConstruction.set({ ...ShopState });
+    shopview.set("edit");
+  }
+
+  async function selectShop(shop) {
+    selectedShop.set(shop);
+    shopSelected.set(true);
+  }
+
+  async function addShopsToIndex(shops) {
+    allShopsIndex.update(function (index) {
+      shops.forEach((shop) => {
+        index[shop.id] = shop;
+      });
+
+      return index;
+    });
+
+    resetShopsList();
+  }
+
+  async function addShopToIndex(shop) {
+    allShopsIndex.update(function (index) {
+      index[shop.id] = shop;
+      return index;
+    });
+
+    resetShopsList();
+  }
+
+  async function resetShopsList() {
+    shops.set(Object.values(get(allShopsIndex)));
+  }
+
+  const allShopsIndex = writable(<Record<string, ShopInterface>>{});
+  const shops = writable(<ShopInterface[]>[]);
+  const selectedShop = writable({ ...ShopState });
+  const shopSelected = writable(false);
+  const loadingShops = writable(false);
+  const selectedShopProduct = writable({ ...ShopProductState });
+  const shopProductUnderConstruction = writable({ ...ShopProductState });
+
+  async function loadShops() {
+    loadingShops.set(true);
+    const allShops = (await loadShopsForBuilder()).data;
+    addShopsToIndex(allShops);
+    loadingShops.set(false);
+  }
+
+  async function cancelEditShop() {
+    shopUnderConstruction.set({ ...ShopState });
+
+    if (get(selectedShop).id == "") {
+      selectedShop.set({ ...ShopState });
+    }
+
+    shopview.set("details");
+  }
+
+  async function editShop(shop: ShopInterface) {
+    shopUnderConstruction.set(shop);
+    selectedShop.set(shop);
+    shopview.set("edit");
+  }
+
+  async function deleteShop(shop: ShopInterface) {
+    delShop(shop.id);
+
+    selectedShop.set({ ...ShopState });
+    shopUnderConstruction.set({ ...ShopState });
+
+    allShopsIndex.update(function (index) {
+      delete index[shop.id];
+      return index;
+    });
+
+    resetShopsList();
+  }
+
+  async function selectShopProduct(shopProduct: ShopProductInterface) {
+    selectedShopProduct.set(shopProduct);
+  }
+
+  async function editShopProduct(shopProduct: ShopProductInterface) {
+    selectedShopProduct.set(shopProduct);
+    shopProductUnderConstruction.set({ ...shopProduct });
+
+    await tick();
+    shopview.set("edit_product");
+  }
+
+  async function deleteShopProduct(product: ShopProductInterface) {
+    console.log("deleteShopProduct");
+    console.log(product);
+    console.log("allShopsIndex");
+    console.log({ ...get(allShopsIndex) });
+    const res = await delShopProduct(product.id);
+    console.log(res);
+    console.log("allShopsIndex");
+    console.log({ ...get(allShopsIndex) });
+
+    selectedShopProduct.set({ ...ShopProductState });
+    shopProductUnderConstruction.set({ ...ShopProductState });
+
+    let products;
+
+    allShopsIndex.update(function (index) {
+      console.log("update");
+      console.log(index);
+      const shop = index[product.shop_id];
+      console.log(shop);
+      shop.products = products = shop.products.filter(
+        (prod) => prod.id != product.id
+      );
+      console.log(shop);
+      index[product.shop_id] = shop;
+      console.log(index);
+      return index;
+    });
+    console.log("allShopsIndex");
+    console.log({ ...get(allShopsIndex) });
+
+    if (product.shop_id == get(selectedShop).id) {
+      selectedShop.update(function (shop) {
+        shop.products = products;
+        return shop;
+      });
+    }
+
+    resetShopsList();
+  }
+
+  async function createNewShopProduct() {
+    shopProductUnderConstruction.set({
+      ...ShopProductState,
+      ...{ shop_id: get(selectedShop).id },
+    });
+
+    shopview.set("edit_product");
+  }
+
+  async function saveShopProduct() {
+    const product = get(shopProductUnderConstruction);
+    savingShopProduct.set(true);
+    const isNew = product.id == "";
+
+    let res: ShopProductInterface;
+
+    if (isNew) {
+      res = (await createShopProduct(product)).data;
+    } else {
+      res = (await updateShopProduct(product.id, product)).data;
+    }
+
+    allShopsIndex.update(function (index) {
+      const shop = index[product.shop_id];
+
+      if (isNew) {
+        shop.products.push(res);
+      } else {
+        shop.products = shop.products.map((prod) => {
+          if (prod.id != product.id) {
+            return prod;
+          } else {
+            return res;
+          }
+        });
+      }
+
+      index[product.shop_id] = shop;
+      return index;
+    });
+
+    resetShopsList();
+
+    shopProductUnderConstruction.set({ ...ShopProductState });
+    savingShopProduct.set(false);
+    selectedShopProduct.set(res);
+    shopview.set("details");
+  }
+
+  async function cancelEditShopProduct() {
+    shopProductUnderConstruction.set({ ...ShopProductState });
+
+    shopview.set("details");
   }
 
   //
@@ -708,6 +942,28 @@ export function createWorldBuilderStore() {
     mapAtMaxZoom,
     zoomMapIn,
     zoomMapOut,
+    // Shops stuff
+    shops,
+    selectedShop,
+    loadShops,
+    shopview,
+    createNewShop,
+    shopUnderConstruction,
+    cancelEditShop,
+    saveShop,
+    loadingShops,
+    selectShop,
+    shopSelected,
+    editShop,
+    deleteShop,
+    selectedShopProduct,
+    selectShopProduct,
+    shopProductUnderConstruction,
+    editShopProduct,
+    deleteShopProduct,
+    saveShopProduct,
+    createNewShopProduct,
+    cancelEditShopProduct,
     // UI stuff,
     mode,
     view,

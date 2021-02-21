@@ -20,9 +20,10 @@ export interface ItemFlagsInterface {
   instrument: boolean;
   jewellery: boolean;
   material: boolean;
-  shield: boolean;
-  weapon: boolean;
   scenery: boolean;
+  shield: boolean;
+  shop_display: boolean;
+  weapon: boolean;
   wearable: boolean;
 }
 
@@ -48,9 +49,10 @@ const state: ItemFlagsInterface = {
   instrument: false,
   jewellery: false,
   material: false,
-  shield: false,
-  weapon: false,
   scenery: false,
+  shield: false,
+  shop_display: false,
+  weapon: false,
   wearable: false,
 };
 

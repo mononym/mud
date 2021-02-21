@@ -6,6 +6,8 @@ import type { PlayerInterface } from "../models/player";
 import type { MapInterface } from "../models/map";
 import type { LinkInterface } from "../models/link";
 import type { AreaInterface } from "../models/area";
+import type { ShopInterface } from "../models/shop";
+import type { ShopProductInterface } from "../models/shopProduct";
 
 // Method to begin login/signup process by submitting an email address
 export async function submitEmailForAuth(
@@ -218,5 +220,69 @@ export async function saveCharacterSettings(
 ): Promise<AxiosResponse<CharacterSettingsInterface>> {
   return await (<Promise<AxiosResponse<CharacterSettingsInterface>>>(
     Api.patch(`/characters/settings/${settings.id}`, { settings: settings })
+  ));
+}
+
+//
+//
+// Shops stuff
+//
+//
+
+export async function loadShopsForBuilder(): Promise<
+  AxiosResponse<ShopInterface[]>
+> {
+  return await (<Promise<AxiosResponse<ShopInterface[]>>>(
+    Api.get(`/shops/builder`)
+  ));
+}
+
+export async function createShop(
+  params: ShopInterface
+): Promise<AxiosResponse<ShopInterface>> {
+  return await (<Promise<AxiosResponse<ShopInterface>>>(
+    Api.post("/shops/create", { shop: params })
+  ));
+}
+
+export async function updateShop(
+  id: string,
+  params: ShopInterface
+): Promise<AxiosResponse<ShopInterface>> {
+  return await (<Promise<AxiosResponse<ShopInterface>>>(
+    Api.patch("/shops/" + id, { shop: params })
+  ));
+}
+
+export async function deleteShop(
+  shopId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.delete("/shops/" + shopId, "")
+  ));
+}
+
+export async function updateShopProduct(
+  id: string,
+  params: ShopProductInterface
+): Promise<AxiosResponse<ShopProductInterface>> {
+  return await (<Promise<AxiosResponse<ShopProductInterface>>>(
+    Api.patch("/shops/products/" + id, { shop_product: params })
+  ));
+}
+
+export async function createShopProduct(
+  params: ShopProductInterface
+): Promise<AxiosResponse<ShopProductInterface>> {
+  return await (<Promise<AxiosResponse<ShopProductInterface>>>(
+    Api.post("/shops/products/create", { shop_product: params })
+  ));
+}
+
+export async function deleteShopProduct(
+  shopProductId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.delete("/shops/products/" + shopProductId, "")
   ));
 }

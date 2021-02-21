@@ -10,7 +10,6 @@
     selectedArea,
     incomingLinksForSelectedArea,
     outgoingLinksForSelectedArea,
-    areasForLinkEditorMap,
   } = WorldBuilderStore;
 </script>
 

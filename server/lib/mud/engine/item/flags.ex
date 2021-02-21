@@ -31,9 +31,10 @@ defmodule Mud.Engine.Item.Flags do
              :instrument,
              :jewellery,
              :material,
-             :shield,
-             :weapon,
              :scenery,
+             :shield,
+             :shop_display,
+             :weapon,
              :wearable
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -71,15 +72,21 @@ defmodule Mud.Engine.Item.Flags do
     field(:clothing, :boolean, default: false)
     field(:coin, :boolean, default: false)
     field(:container, :boolean, default: false)
+
+    # This doesn't actually say what types of surfaces or interactions the specific piece of furniture might have.
+    # You can't really lie down in a chair, but you can sit in it. Can't sit on a coat rack but can hang things on it.
     field(:furniture, :boolean, default: false)
     field(:gem, :boolean, default: false)
     field(:gem_pouch, :boolean, default: false)
     field(:instrument, :boolean, default: false)
     field(:jewellery, :boolean, default: false)
     field(:material, :boolean, default: false)
-    field(:shield, :boolean, default: false)
-    field(:weapon, :boolean, default: false)
     field(:scenery, :boolean, default: false)
+    field(:shield, :boolean, default: false)
+    # A shop display might be a container, such as a box or a chest,
+    # or it might be a surface such as a table or a shelf or a coat rack etc...
+    field(:shop_display, :boolean, default: false)
+    field(:weapon, :boolean, default: false)
     field(:wearable, :boolean, default: false)
   end
 
@@ -116,6 +123,7 @@ defmodule Mud.Engine.Item.Flags do
       :jewellery,
       :material,
       :shield,
+      :shop_display,
       :weapon,
       :scenery,
       :wearable

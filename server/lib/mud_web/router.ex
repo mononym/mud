@@ -112,6 +112,18 @@ defmodule MudWeb.Router do
     # Commands stuff
     resources("/commands", CommandController, except: [:new, :edit])
 
+    # Shops stuff
+    get("/shops", ShopController, :index)
+    get("/shops/builder", ShopController, :load_shops_for_builder)
+    post("/shops/create", ShopController, :create)
+    patch("/shops/:shop_id", ShopController, :update)
+    delete("/shops/:shop_id", ShopController, :delete)
+
+    # Shop Products stuff
+    post("/shops/products/create", ShopProductController, :create)
+    patch("/shops/products/:shop_product_id", ShopProductController, :update)
+    delete("/shops/products/:shop_product_id", ShopProductController, :delete)
+
     #
     #
     # Game Client API
