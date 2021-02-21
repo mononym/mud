@@ -177,9 +177,10 @@ defmodule Mud.Engine.Command.Buy do
       "Might uh...might want to count those coins again...",
       "Tryin' to pull a fast one? Come back with a bigger purse, or at least one with a few more coins in it.",
       "Not enough coin.",
-      "Your coin purse is a little light.",
+      "Your coin purse is a little empty.",
       "Hear That? That's the sound of not making a purchase. Please come back with more coin.",
-      "Your coin purse seems to have developed some holes. Come back when you've sewn them up and replinished your supply."
+      "Your coin purse seems to have developed some holes. Come back when you've sewn them up and replinished your supply.",
+      "Did you run into a thief along the way? Your purse is a little empty."
     ])
   end
 
