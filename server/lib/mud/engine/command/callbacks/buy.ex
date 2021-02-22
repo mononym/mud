@@ -123,13 +123,7 @@ defmodule Mud.Engine.Command.Buy do
     silver_value = wealth.silver * @silver_worth
     gold_value = wealth.gold * @gold_worth
 
-    IO.inspect(copper_value, label: :copper_value)
-    IO.inspect(bronze_value, label: :bronze_value)
-    IO.inspect(silver_value, label: :silver_value)
-    IO.inspect(gold_value, label: :gold_value)
-
     base_cost_product = CallbackUtil.wealth_to_num_coppers(product)
-    IO.inspect(base_cost_product, label: :base_cost_product)
 
     updated_wealth =
       cond do
@@ -178,92 +172,63 @@ defmodule Mud.Engine.Command.Buy do
       "Tryin' to pull a fast one? Come back with a bigger purse, or at least one with a few more coins in it.",
       "Not enough coin.",
       "Your coin purse is a little empty.",
+      "Merchants tend to like cold hard coin. And enough of it.",
       "Hear That? That's the sound of not making a purchase. Please come back with more coin.",
       "Your coin purse seems to have developed some holes. Come back when you've sewn them up and replinished your supply.",
-      "Did you run into a thief along the way? Your purse is a little empty."
+      "Did you run into a thief along the way? Your purse is a little empty.",
+      "Know the difference between a bank and a merchant? Banks do loans. Come back with more coin."
     ])
   end
 
   defp random_buy_post_message do
-    Enum.random([
-      "",
-      " Was it a mistake? You'll find out!",
-      "",
-      " Maybe it serve you well.",
-      "",
-      " Isn't that just grand!",
-      "",
-      " Are you excited?",
-      "",
-      " Are you proud?",
-      "",
-      " Nothing like working hard for a goal and then achieving it. Eh?",
-      "",
-      " That one was the best one.",
-      "",
-      " The bestest of the bunch.",
-      "",
-      " The bestest of the bunch. Maybe.",
-      "",
-      " Did it have to be that one?",
-      "",
-      " Why that one?",
-      "",
-      " Really? Just...why?",
-      "",
-      " Really? Just...REALLY?",
-      "",
-      " Ohhhhhhhhhhhhhh!",
-      "",
-      " That's one way to spend some coin.",
-      "",
-      " That's one way to spend some coin!",
-      "",
-      " That's a good way to spend some coin.",
-      "",
-      " That's a good way to spend some coin!",
-      "",
-      " Good pick!",
-      "",
-      " Good pick.",
-      "",
-      " That was a good pick!",
-      "",
-      " That was a good pick.",
-      "",
-      " How many of those have been sold, do you think?",
-      "",
-      " Someone has good taste.",
-      "",
-      " Someone has unique taste.",
-      "",
-      " Someone has good taste!",
-      "",
-      " Someone has...taste.",
-      "",
-      " Someone has...unique taste.",
-      "",
-      " Fancy!",
-      "",
-      " Perfect!",
-      "",
-      " Perfect.",
-      "",
-      " Good enough!",
-      "",
-      " Good enough.",
-      "",
-      " That will make someone jealous!",
-      "",
-      " Watch out, envy incoming!",
-      "",
-      " You'll be the talk of the town.",
-      "",
-      " You'll be the talk of the village.",
-      "",
-      " You'll be the talk of the city.",
-      "",
-      " You'll be the talk of everywhere you go. Probably. Maybe."
-    ])
+    if rem(Enum.random(1..10), 2) == 1 do
+      ""
+    else
+      Enum.random([
+        " Was it a mistake? You'll find out!",
+        " Maybe it serve you well.",
+        " Isn't that just grand!",
+        " Are you excited?",
+        " Are you proud?",
+        " Nothing like working hard for a goal and then achieving it. Eh?",
+        " That one was the best one.",
+        " The bestest of the bunch.",
+        " The bestest of the bunch. Maybe.",
+        " Did it have to be that one?",
+        " Why that one?",
+        " Really? Just...why?",
+        " Really? Just...REALLY?",
+        " Ohhhhhhhhhhhhhh!",
+        " That's one way to spend some coin.",
+        " That's one way to spend some coin!",
+        " That's a good way to spend some coin.",
+        " That's a good way to spend some coin!",
+        " Good pick!",
+        " Good pick.",
+        " Nice pick!",
+        " Nice pick.",
+        " Wonderful pick!",
+        " Wonderful pick.",
+        " That was a good pick!",
+        " That was a good pick.",
+        " How many of those have been sold, do you think?",
+        " Someone has good taste.",
+        " Someone has unique taste.",
+        " Someone has good taste!",
+        " Someone has...taste.",
+        " Someone has...unique taste.",
+        " Fancy!",
+        " Perfect!",
+        " Perfect.",
+        " Good enough!",
+        " Good enough.",
+        " That will make someone jealous!",
+        " Watch out, envy incoming!",
+        " You'll be the talk of the town.",
+        " You'll be the talk of the village.",
+        " You'll be the talk of the city.",
+        " You'll be the talk of everywhere you go. Probably. Maybe."
+      ])
+    end
   end
 end
