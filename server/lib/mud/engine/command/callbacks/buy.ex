@@ -13,11 +13,13 @@ defmodule Mud.Engine.Command.Buy do
   use Mud.Engine.Command.Callback
 
   alias Mud.Engine.Command.Context
+  alias Mud.Engine.Item
   alias Mud.Engine.Shop
   alias Mud.Engine.Message
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Event.Client.UpdateCharacter
+  alias Mud.Engine.Event.Client.UpdateInventory
 
   @gold_worth 1_000_000
   @silver_worth 10_000
@@ -71,49 +73,91 @@ defmodule Mud.Engine.Command.Buy do
   end
 
   defp buy_from_shop(context, shop) do
-    ast = context.command.ast
+    held_items = Item.list_items_in_hands(context.character.id)
 
-    which_product = String.to_integer(ast.product)
-
-    if which_product <= length(shop.products) do
-      product = Enum.at(shop.products, which_product - 1)
-
-      wealth = context.character.wealth
-
-      if has_enough_coin(product, wealth) do
-        updated_wealth = update_wealth(wealth, product)
-
-        context
-        |> Context.append_event(
+    if length(held_items) == 2 do
+      Context.append_message(
+        context,
+        Message.new_story_output(
           context.character.id,
-          UpdateCharacter.new(%{action: "wealth", wealth: updated_wealth})
+          "You must have an empty hand to purchase something.",
+          "base"
         )
-        |> Context.append_message(
-          Message.new_story_output(
+      )
+    else
+      ast = context.command.ast
+
+      which_product = String.to_integer(ast.product)
+
+      if which_product <= length(shop.products) do
+        product = Enum.at(shop.products, which_product - 1)
+
+        wealth = context.character.wealth
+
+        if has_enough_coin(product, wealth) do
+          updated_wealth = update_wealth(wealth, product)
+
+          product = Mud.Repo.preload(product, [:template])
+
+          hand =
+            cond do
+              length(held_items) == 0 ->
+                context.character.settings.handedness
+
+              true ->
+                if List.first(held_items).location.hand == "right" do
+                  "left"
+                else
+                  "right"
+                end
+            end
+
+          # create the item they are buying
+          {:ok, new_item} =
+            Item.build_from_template_and_place_in_character_hand(
+              product.template.template,
+              context.character.id,
+              hand
+            )
+
+          new_item = Mud.Repo.preload(new_item, [:coin, :description, :gem, :container, :physics])
+
+          context
+          |> Context.append_event(
             context.character.id,
-            "You bought #{product.description}.#{random_buy_post_message()}",
-            "base"
+            UpdateInventory.new(%{action: "add", items: [new_item]})
           )
-        )
+          |> Context.append_event(
+            context.character.id,
+            UpdateCharacter.new(%{action: "wealth", wealth: updated_wealth})
+          )
+          |> Context.append_message(
+            Message.new_story_output(
+              context.character.id,
+              "You bought #{product.description}.#{random_buy_post_message()}",
+              "base"
+            )
+          )
+        else
+          Context.append_message(
+            context,
+            Message.new_story_output(
+              context.character.id,
+              random_out_of_coin_message(),
+              "system_alert"
+            )
+          )
+        end
       else
         Context.append_message(
           context,
           Message.new_story_output(
             context.character.id,
-            random_out_of_coin_message(),
+            "Might be getting a little over zealous with your coin there. Can't find anything like that to purchase.",
             "system_alert"
           )
         )
       end
-    else
-      Context.append_message(
-        context,
-        Message.new_story_output(
-          context.character.id,
-          "Might be getting a little over zealous with your coin there. Can't find anything like that to purchase.",
-          "system_alert"
-        )
-      )
     end
   end
 
@@ -181,7 +225,7 @@ defmodule Mud.Engine.Command.Buy do
   end
 
   defp random_buy_post_message do
-    if rem(Enum.random(1..10), 2) == 1 do
+    if Enum.random(1..20) == 1 do
       ""
     else
       Enum.random([

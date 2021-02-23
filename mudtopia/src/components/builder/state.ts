@@ -2,6 +2,7 @@ import { derived, writable, get } from "svelte/store";
 import type { LinkInterface } from "../../models/link";
 import MapState, { MapInterface } from "../../models/map";
 import MapLabelState, { MapLabelInterface } from "../../models/mapLabel";
+import TemplateState, { TemplateInterface } from "../../models/template";
 import AreaState, { AreaInterface } from "../../models/area";
 import LinkState from "../../models/link";
 import ShopState from "../../models/shop";
@@ -21,6 +22,10 @@ import {
   updateShopProduct,
   detachShopFromArea,
   attachShopToArea,
+  createTemplate,
+  updateTemplate,
+  deleteTemplate as delTemplate,
+  listTemplates,
 } from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
@@ -357,6 +362,116 @@ export function createWorldBuilderStore() {
     console.log(get(builderTab));
     await tick();
     selectedShop.set({ ...shop });
+  }
+
+  //
+  //
+  // Template Stuff
+  //
+  //
+
+  const templateview = writable("details");
+  const templateUnderConstruction = writable(<TemplateInterface>{
+    ...TemplateState,
+  });
+  const savingTemplate = writable(false);
+
+  async function saveTemplate() {
+    const template = get(templateUnderConstruction);
+    savingTemplate.set(true);
+    const isNew = template.id == "";
+
+    let res: TemplateInterface;
+
+    if (isNew) {
+      res = (await createTemplate(template)).data;
+    } else {
+      res = (await updateTemplate(template.id, template)).data;
+    }
+    addTemplateToIndex(res);
+
+    templateUnderConstruction.set({ ...TemplateState });
+    savingTemplate.set(false);
+    selectedTemplate.set(res);
+    templateview.set("details");
+  }
+
+  async function createNewTemplate() {
+    templateUnderConstruction.set({ ...TemplateState });
+    templateview.set("edit");
+  }
+
+  async function selectTemplate(template) {
+    selectedTemplate.set(template);
+    templateSelected.set(true);
+  }
+
+  async function addTemplatesToIndex(templates) {
+    allTemplatesIndex.update(function (index) {
+      templates.forEach((template) => {
+        index[template.id] = template;
+      });
+
+      return index;
+    });
+
+    resetTemplatesList();
+  }
+
+  async function addTemplateToIndex(template) {
+    allTemplatesIndex.update(function (index) {
+      index[template.id] = template;
+      return index;
+    });
+
+    resetTemplatesList();
+  }
+
+  async function resetTemplatesList() {
+    templates.set(Object.values(get(allTemplatesIndex)));
+  }
+
+  const allTemplatesIndex = writable(<Record<string, TemplateInterface>>{});
+  const templates = writable(<TemplateInterface[]>[]);
+  const selectedTemplate = writable({ ...TemplateState });
+  const templateSelected = writable(false);
+  const loadingTemplates = writable(false);
+
+  async function loadTemplates() {
+    loadingTemplates.set(true);
+    const allTemplates = (await listTemplates()).data;
+    addTemplatesToIndex(allTemplates);
+    loadingTemplates.set(false);
+  }
+
+  async function cancelEditTemplate() {
+    templateUnderConstruction.set({ ...TemplateState });
+
+    if (get(selectedTemplate).id == "") {
+      selectedTemplate.set({ ...TemplateState });
+    }
+
+    templateview.set("details");
+  }
+
+  async function editTemplate(template: TemplateInterface) {
+    templateUnderConstruction.set(template);
+    selectedTemplate.set(template);
+    templateview.set("edit");
+  }
+
+  async function deleteTemplate(template: TemplateInterface) {
+    delTemplate(template.id);
+
+    selectedTemplate.set({ ...TemplateState });
+    templateUnderConstruction.set({ ...TemplateState });
+
+    allTemplatesIndex.update(function (index) {
+      delete index[template.id];
+      return index;
+    });
+
+    resetTemplatesList();
   }
 
   //
@@ -1029,6 +1144,20 @@ export function createWorldBuilderStore() {
     detachShop,
     selectedAreaShops,
     viewShopFromArea,
+    // Template stuff
+    templates,
+    selectedTemplate,
+    loadTemplates,
+    templateview,
+    createNewTemplate,
+    templateUnderConstruction,
+    cancelEditTemplate,
+    saveTemplate,
+    loadingTemplates,
+    selectTemplate,
+    templateSelected,
+    editTemplate,
+    deleteTemplate,
     // UI stuff,
     mode,
     view,

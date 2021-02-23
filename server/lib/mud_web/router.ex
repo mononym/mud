@@ -126,6 +126,12 @@ defmodule MudWeb.Router do
     patch("/shops/products/:shop_product_id", ShopProductController, :update)
     delete("/shops/products/:shop_product_id", ShopProductController, :delete)
 
+    # Templates stuff
+    get("/templates", TemplateController, :index)
+    post("/templates/create", TemplateController, :create)
+    patch("/templates/:template_id", TemplateController, :update)
+    delete("/templates/:template_id", TemplateController, :delete)
+
     #
     #
     # Game Client API

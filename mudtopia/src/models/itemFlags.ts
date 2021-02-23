@@ -3,9 +3,6 @@ export interface ItemFlagsInterface {
   item_id: string;
   close: boolean;
   drop: boolean;
-  gem: boolean;
-  gem_pouch: boolean;
-  hidden: boolean;
   hold: boolean;
   look: boolean;
   open: boolean;
@@ -15,10 +12,14 @@ export interface ItemFlagsInterface {
   wear: boolean;
   armor: boolean;
   clothing: boolean;
+  coin: boolean;
   container: boolean;
   furniture: boolean;
+  gem: boolean;
+  gem_pouch: boolean;
+  hidden: boolean;
   instrument: boolean;
-  jewellery: boolean;
+  jewelry: boolean;
   material: boolean;
   scenery: boolean;
   shield: boolean;
@@ -32,9 +33,6 @@ const state: ItemFlagsInterface = {
   item_id: "",
   close: false,
   drop: false,
-  hidden: false,
-  gem: false,
-  gem_pouch: false,
   hold: false,
   look: false,
   open: false,
@@ -44,10 +42,14 @@ const state: ItemFlagsInterface = {
   wear: false,
   armor: false,
   clothing: false,
+  coin: false,
   container: false,
   furniture: false,
+  gem: false,
+  gem_pouch: false,
+  hidden: false,
   instrument: false,
-  jewellery: false,
+  jewelry: false,
   material: false,
   scenery: false,
   shield: false,

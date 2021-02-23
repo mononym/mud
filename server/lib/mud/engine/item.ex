@@ -60,18 +60,96 @@ defmodule Mud.Engine.Item do
   end
 
   def create(attrs \\ %{}) do
-    # IO.inspect(attrs, label: :create)
+    IO.inspect(attrs, label: :create)
+    normalized_attrs = normalize_attrs(attrs)
 
     Repo.transaction(fn ->
       insert_new()
-      |> setup_required_component(attrs, :flags, Flags)
-      |> setup_required_component(attrs, :location, Location)
-      |> maybe_setup_optional_component(attrs, :container, Container)
-      |> maybe_setup_optional_component(attrs, :physics, Physics)
-      |> maybe_setup_optional_component(attrs, :coin, Coin)
-      |> maybe_setup_optional_component(attrs, :gem, Gem)
-      |> maybe_setup_optional_component(attrs, :description, Description)
+      |> setup_required_component(normalized_attrs, :flags, Flags)
+      |> setup_required_component(normalized_attrs, :location, Location)
+      |> maybe_setup_optional_component(normalized_attrs, :container, Container)
+      |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
+      |> maybe_setup_optional_component(normalized_attrs, :coin, Coin)
+      |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
+      |> maybe_setup_optional_component(normalized_attrs, :description, Description)
     end)
+  end
+
+  defp template_keys_to_atoms(template) do
+    Map.new(template, fn {k, v} ->
+      {if is_binary(k) do
+         String.to_existing_atom(k)
+       else
+         k
+       end,
+       if is_binary(v) do
+         v
+       else
+         Map.new(v, fn {key, val} ->
+           {if is_binary(key) do
+              String.to_existing_atom(key)
+            else
+              key
+            end, val}
+         end)
+       end}
+    end)
+  end
+
+  # given a set of attributes, go through the flags and then strip away any components which do not match the set flags
+  # this is to facilitate templates
+  defp normalize_attrs(attrs) do
+    attrs = template_keys_to_atoms(attrs)
+
+    IO.inspect(attrs, label: :modified_attrs)
+
+    keys_to_keep =
+      cond do
+        Map.has_key?(attrs[:flags], :gem) and attrs[:flags][:gem] ->
+          [:gem]
+
+        Map.has_key?(attrs[:flags], :coin) and attrs[:flags][:coin] ->
+          [:coin]
+
+        Map.has_key?(attrs[:flags], :container) and attrs[:flags][:container] ->
+          [:container, :description]
+
+        Map.has_key?(attrs[:flags], :furniture) and attrs[:flags][:furniture] ->
+          [:furniture, :description]
+      end
+
+    keys_to_keep = [:location, :physics, :flags] ++ keys_to_keep
+
+    IO.inspect(keys_to_keep, label: :keys_to_keep)
+
+    purged_attrs =
+      Enum.reduce(Map.keys(attrs), attrs, fn key, attr ->
+        if key in keys_to_keep do
+          attr
+        else
+          Map.delete(attr, key)
+        end
+      end)
+
+    IO.inspect(purged_attrs, label: :purged_attrs)
+
+    # Make sure the item is described
+    cond do
+      Map.has_key?(purged_attrs[:flags], :gem) and purged_attrs[:flags][:gem] ->
+        Map.put(purged_attrs, :description, %{
+          short: Gem.generate_short_description(purged_attrs.gem),
+          long: Gem.generate_short_description(purged_attrs.gem)
+        })
+
+      Map.has_key?(purged_attrs[:flags], :coin) and purged_attrs[:flags][:coin] ->
+        Map.put(purged_attrs, :description, %{
+          short: "some coins",
+          long: "some coins"
+        })
+
+      true ->
+        purged_attrs
+    end
   end
 
   defp setup_required_component(item, attrs, key, callback) do
@@ -927,6 +1005,15 @@ defmodule Mud.Engine.Item do
     from(item in base_query_with_preload(), where: item.id in subquery(all_item_ids))
   end
 
+  def build_from_template_and_place_in_character_hand(template, character_id, hand) do
+    location_props = %{held_in_hand: true, character_id: character_id, hand: hand}
+
+    template
+    |> Map.delete("location")
+    |> Map.put(:location, location_props)
+    |> create()
+  end
+
   #
   #
   # Helper functions
@@ -1040,14 +1127,14 @@ defmodule Mud.Engine.Item do
   def child_query(ids) do
     if is_list(ids) do
       from(
-      [location: location] in base_query_without_preload(),
-      where: location.relative_to_item and location.relative_item_id in ^ids
-    )
+        [location: location] in base_query_without_preload(),
+        where: location.relative_to_item and location.relative_item_id in ^ids
+      )
     else
       from(
-      [location: location] in base_query_without_preload(),
-      where: location.relative_to_item and location.relative_item_id in subquery(ids)
-    )
+        [location: location] in base_query_without_preload(),
+        where: location.relative_to_item and location.relative_item_id in subquery(ids)
+      )
     end
   end
 

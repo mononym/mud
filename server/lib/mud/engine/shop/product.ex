@@ -11,6 +11,7 @@ defmodule Mud.Engine.Shop.Product do
            only: [
              :id,
              :shop_id,
+             :template_id,
              :description,
              :copper,
              :bronze,
@@ -20,6 +21,7 @@ defmodule Mud.Engine.Shop.Product do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "shop_products" do
     belongs_to(:shop, Mud.Engine.Shop, type: :binary_id)
+    belongs_to(:template, Mud.Engine.Template, type: :binary_id)
     field(:description, :string, required: true)
     field(:copper, :integer, default: 0)
     field(:bronze, :integer, default: 0)
@@ -33,13 +35,14 @@ defmodule Mud.Engine.Shop.Product do
     |> change()
     |> cast(attrs, [
       :shop_id,
+      :template_id,
       :description,
       :copper,
       :bronze,
       :silver,
       :gold
     ])
-    |> validate_required([:description, :shop_id])
+    |> validate_required([:description, :shop_id, :template_id])
     |> foreign_key_constraint(:shop_id)
   end
 

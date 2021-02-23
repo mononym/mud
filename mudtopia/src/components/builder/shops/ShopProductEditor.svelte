@@ -4,6 +4,7 @@
     shopProductUnderConstruction,
     saveShopProduct,
     cancelEditShopProduct,
+    templates,
   } = WorldBuilderStore;
 </script>
 
@@ -35,8 +36,8 @@
           <input
             bind:value={$shopProductUnderConstruction.gold}
             type="number"
-            min=0
-            max=9223372036854775807
+            min="0"
+            max="9223372036854775807"
             name="gold"
             id="gold"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -50,8 +51,8 @@
           <input
             bind:value={$shopProductUnderConstruction.silver}
             type="number"
-            min=0
-            max=99
+            min="0"
+            max="99"
             name="silver"
             id="silver"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -65,8 +66,8 @@
           <input
             bind:value={$shopProductUnderConstruction.bronze}
             type="number"
-            min=0
-            max=99
+            min="0"
+            max="99"
             name="bronze"
             id="bronze"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -80,12 +81,36 @@
           <input
             bind:value={$shopProductUnderConstruction.copper}
             type="number"
-            min=0
-            max=99
+            min="0"
+            max="99"
             name="copper"
             id="copper"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
+        </div>
+        <div class="col-span-6">
+          <label
+            for="itemTemplate"
+            class="block text-sm font-medium text-gray-300">Item Template</label
+          >
+          <select
+            id="itemTemplate"
+            bind:value={$shopProductUnderConstruction.template_id}
+            name="itemTemplate"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            {#if $shopProductUnderConstruction.template_id == "" || $shopProductUnderConstruction.template_id == undefined}
+              <option disabled selected value> -- select an option -- </option>
+            {/if}
+            {#each $templates as template}
+              <option
+                value={template.id}
+                selected={template.id ==
+                  $shopProductUnderConstruction.template_id}
+                >{template.name}</option
+              >
+            {/each}
+          </select>
         </div>
       </div>
     </div>

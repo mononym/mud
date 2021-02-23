@@ -15,7 +15,7 @@ defmodule Mud.Engine.Character.Wealth do
     field(:copper, :integer, default: 0)
     field(:bronze, :integer, default: 0)
     field(:silver, :integer, default: 0)
-    field(:gold, :integer, default: 0)
+    field(:gold, :integer, default: 1)
   end
 
   @doc false

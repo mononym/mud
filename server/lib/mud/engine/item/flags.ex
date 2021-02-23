@@ -29,7 +29,7 @@ defmodule Mud.Engine.Item.Flags do
              :furniture,
              :gem_pouch,
              :instrument,
-             :jewellery,
+             :jewelry,
              :material,
              :scenery,
              :shield,
@@ -79,7 +79,7 @@ defmodule Mud.Engine.Item.Flags do
     field(:gem, :boolean, default: false)
     field(:gem_pouch, :boolean, default: false)
     field(:instrument, :boolean, default: false)
-    field(:jewellery, :boolean, default: false)
+    field(:jewelry, :boolean, default: false)
     field(:material, :boolean, default: false)
     field(:scenery, :boolean, default: false)
     field(:shield, :boolean, default: false)
@@ -120,7 +120,7 @@ defmodule Mud.Engine.Item.Flags do
       :gem,
       :gem_pouch,
       :instrument,
-      :jewellery,
+      :jewelry,
       :material,
       :shield,
       :shop_display,

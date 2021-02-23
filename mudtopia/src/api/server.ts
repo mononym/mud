@@ -8,6 +8,7 @@ import type { LinkInterface } from "../models/link";
 import type { AreaInterface } from "../models/area";
 import type { ShopInterface } from "../models/shop";
 import type { ShopProductInterface } from "../models/shopProduct";
+import type { TemplateInterface } from "../models/template";
 
 // Method to begin login/signup process by submitting an email address
 export async function submitEmailForAuth(
@@ -301,5 +302,44 @@ export async function deleteShopProduct(
 ): Promise<AxiosResponse<string>> {
   return await (<Promise<AxiosResponse<string>>>(
     Api.delete("/shops/products/" + shopProductId, "")
+  ));
+}
+
+//
+//
+// Template stuff
+//
+//
+
+export async function listTemplates(): Promise<
+  AxiosResponse<TemplateInterface[]>
+> {
+  return await (<Promise<AxiosResponse<TemplateInterface[]>>>(
+    Api.get(`/templates`)
+  ));
+}
+
+export async function createTemplate(
+  params: TemplateInterface
+): Promise<AxiosResponse<TemplateInterface>> {
+  return await (<Promise<AxiosResponse<TemplateInterface>>>(
+    Api.post("/templates/create", { template: params })
+  ));
+}
+
+export async function updateTemplate(
+  id: string,
+  params: TemplateInterface
+): Promise<AxiosResponse<TemplateInterface>> {
+  return await (<Promise<AxiosResponse<TemplateInterface>>>(
+    Api.patch("/templates/" + id, { template: params })
+  ));
+}
+
+export async function deleteTemplate(
+  templateId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.delete("/templates/" + templateId, "")
   ));
 }

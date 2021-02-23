@@ -12,6 +12,9 @@ import ItemFlagsState from "../models/itemFlags";
 
 import type { ItemPhysicsInterface } from "../models/itemPhysics";
 import ItemPhysicsState from "../models/itemPhysics";
+
+import type { ItemGemInterface } from "../models/itemGem";
+import ItemGemState from "../models/itemGem";
 export interface ItemInterface {
   id: string;
   location: ItemLocationInterface;
@@ -19,6 +22,7 @@ export interface ItemInterface {
   flags: ItemFlagsInterface;
   description: ItemDescriptionInterface;
   container: ItemContainerInterface;
+  gem: ItemGemInterface;
 }
 
 const state: ItemInterface = {
@@ -28,6 +32,7 @@ const state: ItemInterface = {
   description: { ...ItemDescriptionState },
   container: { ...ItemContainerState },
   location: { ...ItemLocationState },
+  gem: { ...ItemGemState },
 };
 
 export default state;

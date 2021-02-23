@@ -1,6 +1,7 @@
 export interface ShopProductInterface {
   id: string;
   shop_id: string;
+  template_id: string;
   description: string;
   copper: number;
   bronze: number;
@@ -11,6 +12,7 @@ export interface ShopProductInterface {
 const state: ShopProductInterface = {
   id: "",
   shop_id: "",
+  template_id: "",
   description: "",
   copper: 0,
   bronze: 0,

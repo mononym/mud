@@ -157,7 +157,7 @@ defmodule Mud.Engine.Item.Gem do
   gigantic > 100ct < 200ct
   colossal > 200ct
   """
-  def generate_short_description(gem = %__MODULE__{}) do
+  def generate_short_description(gem) do
     if gem.cut_type == "uncut" do
       "a #{gem_size(gem.carat)} uncut #{gem.hue} #{gem.type}"
     else
