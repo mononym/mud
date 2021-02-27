@@ -3,6 +3,7 @@ defmodule MudWeb.CharacterView do
   alias MudWeb.CharacterView
   alias MudWeb.CharacterSettingsView
   alias MudWeb.CharacterBankView
+  alias MudWeb.CharacterSlotsView
   alias MudWeb.CharacterWealthView
   alias MudWeb.RaceView
 
@@ -35,6 +36,14 @@ defmodule MudWeb.CharacterView do
         character.settings,
         CharacterSettingsView,
         "character_settings.json"
+      )
+    )
+    |> Map.put(
+      :slots,
+      render_one(
+        character.slots,
+        CharacterSlotsView,
+        "character_slots.json"
       )
     )
     |> Map.put(

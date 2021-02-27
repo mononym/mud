@@ -2241,6 +2241,9 @@ Mud.Engine.Item.create(%{
     width: 50,
     height: 75,
     weight: 50
+  },
+  wearable: %{
+    slot: Mud.Engine.Constants.on_back_slot()
   }
 })
 

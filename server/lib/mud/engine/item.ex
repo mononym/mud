@@ -9,7 +9,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Query
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Search}
-  alias Mud.Engine.Item.{Coin, Flags, Gem, Location, Physics, Description, Container}
+  alias Mud.Engine.Item.{Coin, Flags, Gem, Location, Physics, Description, Container, Wearable}
   require Logger
 
   @type id :: String.t()
@@ -24,6 +24,7 @@ defmodule Mud.Engine.Item do
     has_one(:physics, Physics)
     has_one(:coin, Coin)
     has_one(:gem, Gem)
+    has_one(:wearable, Wearable)
 
     timestamps()
   end
@@ -72,6 +73,7 @@ defmodule Mud.Engine.Item do
       |> maybe_setup_optional_component(normalized_attrs, :coin, Coin)
       |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
       |> maybe_setup_optional_component(normalized_attrs, :description, Description)
+      |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
     end)
   end
 
@@ -102,25 +104,51 @@ defmodule Mud.Engine.Item do
     attrs = template_keys_to_atoms(attrs)
 
     IO.inspect(attrs, label: :modified_attrs)
+    IO.inspect(attrs[:flags][:material], label: :modified_attrs)
 
     keys_to_keep =
-      cond do
-        Map.has_key?(attrs[:flags], :gem) and attrs[:flags][:gem] ->
-          [:gem]
+      if Map.has_key?(attrs[:flags], :gem) and attrs[:flags][:gem] do
+        [:gem]
+      else
+        []
+      end
 
-        Map.has_key?(attrs[:flags], :coin) and attrs[:flags][:coin] ->
-          [:coin]
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :coin) and attrs[:flags][:coin] do
+        keys_to_keep ++ [:coin]
+      else
+        keys_to_keep
+      end
 
-        Map.has_key?(attrs[:flags], :container) and attrs[:flags][:container] ->
-          [:container, :description]
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :container) and attrs[:flags][:container] do
+        keys_to_keep ++ [:container, :description]
+      else
+        keys_to_keep
+      end
 
-        Map.has_key?(attrs[:flags], :furniture) and attrs[:flags][:furniture] ->
-          [:furniture, :description]
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :furniture) and attrs[:flags][:furniture] do
+        keys_to_keep ++ [:furniture, :description]
+      else
+        keys_to_keep
+      end
+
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :wearable) and attrs[:flags][:wearable] do
+        keys_to_keep ++ [:wearable]
+      else
+        keys_to_keep
+      end
+
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :material) and attrs[:flags][:material] do
+        keys_to_keep ++ [:description]
+      else
+        keys_to_keep
       end
 
     keys_to_keep = [:location, :physics, :flags] ++ keys_to_keep
-
-    IO.inspect(keys_to_keep, label: :keys_to_keep)
 
     purged_attrs =
       Enum.reduce(Map.keys(attrs), attrs, fn key, attr ->
@@ -130,8 +158,6 @@ defmodule Mud.Engine.Item do
           Map.delete(attr, key)
         end
       end)
-
-    IO.inspect(purged_attrs, label: :purged_attrs)
 
     # Make sure the item is described
     cond do
@@ -965,11 +991,7 @@ defmodule Mud.Engine.Item do
   end
 
   def list_held_by(character_id) do
-    from(
-      item in __MODULE__,
-      where: item.holdable_held_by_id == ^character_id,
-      order_by: item.moved_at
-    )
+    base_query_for_held_items(character_id)
     |> Repo.all()
   end
 
@@ -1036,7 +1058,9 @@ defmodule Mud.Engine.Item do
       left_join: coin in assoc(item, :coin),
       as: :coin,
       left_join: gem in assoc(item, :gem),
-      as: :gem
+      as: :gem,
+      left_join: wearable in assoc(item, :wearable),
+      as: :wearable
     )
   end
 
@@ -1057,6 +1081,8 @@ defmodule Mud.Engine.Item do
       as: :coin,
       left_join: gem in assoc(item, :gem),
       as: :gem,
+      left_join: wearable in assoc(item, :wearable),
+      as: :wearable,
       preload: [
         container: container,
         description: description,
@@ -1064,7 +1090,8 @@ defmodule Mud.Engine.Item do
         location: location,
         physics: physics,
         coin: coin,
-        gem: gem
+        gem: gem,
+        wearable: wearable
       ]
     )
   end

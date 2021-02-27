@@ -6,7 +6,7 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item, Shop}
   alias Mud.Engine.Util
-  alias Mud.Engine.Character.{Bank, Containers, Settings, Skill, Wealth}
+  alias Mud.Engine.Character.{Bank, Containers, Settings, Skill, Slots, Wealth}
   alias Mud.DataType.NameSlug
 
   require Logger
@@ -24,6 +24,7 @@ defmodule Mud.Engine.Character do
     has_one(:bank, Bank)
     has_one(:wealth, Wealth)
     has_one(:containers, Containers)
+    has_one(:slots, Slots)
 
     timestamps()
     # Naming and Titles
@@ -219,11 +220,12 @@ defmodule Mud.Engine.Character do
         :ok = Settings.create(%{character_id: character.id})
         :ok = Wealth.create(%{character_id: character.id})
         :ok = Bank.create(%{character_id: character.id})
+        :ok = Slots.create(%{character_id: character.id})
         Containers.create(%{character_id: character.id})
 
-        character = Repo.preload(character, [:bank, :containers, :settings, :wealth])
+        character = Repo.preload(character, [:bank, :containers, :settings, :slots, :wealth])
 
-        setup_default_items(character)
+        # setup_default_items(character)
 
         {:ok, character}
 
@@ -232,189 +234,9 @@ defmodule Mud.Engine.Character do
     end
   end
 
-  defp setup_default_items(character) do
-    Mud.Engine.Item.create(%{
-      description: %{
-        key: "rock",
-        short: "a flat rounded rock",
-        long: "This rock has been worn down over time by water into a smooth, flat round shape."
-      },
-      flags: %{
-        drop: true,
-        hold: true,
-        look: true,
-        stow: true,
-        trash: true,
-        material: true
-      },
-      location: %{character_id: character.id, held_in_hand: true, hand: "right"},
-      physics: %{
-        weight: 1
-      }
-    })
-
-    {:ok, backpack} =
-      Mud.Engine.Item.create(%{
-        description: %{
-          key: "backpack",
-          short: "a ragged leather backpack",
-          long: "The backpack has clearly seen better days."
-        },
-        flags: %{
-          look: true,
-          open: true,
-          close: true,
-          wear: true,
-          remove: true,
-          trash: true,
-          drop: true,
-          hold: true,
-          stow: true,
-          container: true,
-          wearable: true
-        },
-        location: %{character_id: character.id, worn_on_character: true},
-        container: %{
-          capacity: 1000,
-          length: 75,
-          width: 50,
-          height: 75
-        },
-        physics: %{
-          length: 100,
-          width: 50,
-          height: 75,
-          weight: 50
-        }
-      })
-
-    {:ok, pack1} =
-      Mud.Engine.Item.create(%{
-        description: %{
-          key: "sack",
-          short: "a fine cloth sack",
-          long: "The sack is made of fine cloth."
-        },
-        flags: %{
-          look: true,
-          open: true,
-          close: true,
-          wear: true,
-          remove: true,
-          trash: true,
-          drop: true,
-          hold: true,
-          stow: true,
-          container: true,
-          wearable: true
-        },
-        location: %{relative_item_id: backpack.id, relative_to_item: true},
-        container: %{
-          capacity: 1000,
-          length: 75,
-          width: 50,
-          height: 75
-        },
-        physics: %{
-          length: 100,
-          width: 50,
-          height: 75,
-          weight: 50
-        }
-      })
-
-    {:ok, pouch1} =
-      Mud.Engine.Item.create(%{
-        description: %{
-          key: "pouch",
-          short: "a silk lootsack",
-          long: "The lootsack is made of fine silk."
-        },
-        flags: %{
-          look: true,
-          open: true,
-          close: true,
-          wear: true,
-          remove: true,
-          trash: true,
-          drop: true,
-          hold: true,
-          stow: true,
-          container: true,
-          wearable: true
-        },
-        location: %{relative_item_id: pack1.id, relative_to_item: true},
-        container: %{
-          capacity: 1000,
-          length: 75,
-          width: 50,
-          height: 75
-        },
-        physics: %{
-          length: 100,
-          width: 50,
-          height: 75,
-          weight: 50
-        }
-      })
-
-    Mud.Engine.Item.create(%{
-      description: %{
-        key: "pouch",
-        short: "a black spidersilk gem pouch",
-        long:
-          "The black spidersilk gem pouch is clasped at the neck with the long legs of a grasping black window spider."
-      },
-      flags: %{
-        gem_pouch: true,
-        look: true,
-        open: true,
-        close: true,
-        wear: true,
-        remove: true,
-        trash: true,
-        drop: true,
-        hold: true,
-        stow: true,
-        worn_container: true,
-        container: true,
-        wearable: true
-      },
-      location: %{character_id: character.id, worn_on_character: true},
-      container: %{
-        capacity: 100,
-        length: 5,
-        width: 5,
-        height: 5
-      },
-      physics: %{
-        length: 5,
-        width: 5,
-        height: 5,
-        weight: 5
-      }
-    })
-
-    Mud.Engine.Item.create(%{
-      description: %{
-        key: "rock",
-        short: "a flat rounded rock",
-        long: "This rock has been worn down over time by water into a smooth, flat round shape."
-      },
-      flags: %{
-        drop: true,
-        hold: true,
-        look: true,
-        stow: true,
-        trash: true,
-        material: true
-      },
-      location: %{relative_item_id: pouch1.id, relative_to_item: true},
-      physics: %{
-        weight: 1
-      }
-    })
-  end
+  # defp setup_default_items(character) do
+  #   :ok
+  # end
 
   def new, do: %__MODULE__{}
 
@@ -906,11 +728,18 @@ defmodule Mud.Engine.Character do
   defp base_query_with_preload() do
     from(
       character in __MODULE__,
+      join: bank in assoc(character, :bank),
       join: containers in assoc(character, :containers),
       join: settings in assoc(character, :settings),
+      join: slots in assoc(character, :slots),
       join: wealth in assoc(character, :wealth),
-      join: bank in assoc(character, :bank),
-      preload: [bank: bank, containers: containers, settings: settings, wealth: wealth]
+      preload: [
+        bank: bank,
+        containers: containers,
+        settings: settings,
+        slots: slots,
+        wealth: wealth
+      ]
     )
   end
 

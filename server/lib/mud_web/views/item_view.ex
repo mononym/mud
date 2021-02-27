@@ -9,7 +9,8 @@ defmodule MudWeb.ItemView do
     ItemPhysicsView,
     ItemContainerView,
     ItemDescriptionView,
-    ItemCoinView
+    ItemCoinView,
+    ItemWearableView
   }
 
   alias MudWeb.ItemLocationView
@@ -34,7 +35,8 @@ defmodule MudWeb.ItemView do
         container: render_one(item.container, ItemContainerView, "item_container.json"),
         physics: render_one(item.physics, ItemPhysicsView, "item_physics.json"),
         coin: render_one(item.coin, ItemCoinView, "item_coin.json"),
-        gem: render_one(item.gem, ItemGemView, "item_gem.json")
+        gem: render_one(item.gem, ItemGemView, "item_gem.json"),
+        wearable: render_one(item.wearable, ItemWearableView, "item_wearable.json")
       }
     end
   end

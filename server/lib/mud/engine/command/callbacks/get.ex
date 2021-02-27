@@ -337,10 +337,6 @@ defmodule Mud.Engine.Command.Get do
                 if other_matches != [] do
                   other_items = Enum.map(other_matches, & &1.match)
 
-                  # IO.inspect(self_msg, label: :self_msg)
-                  # IO.inspect(original_item, label: :original_item)
-                  # IO.inspect(other_items, label: :other_items)
-
                   Util.append_assumption_text(
                     self_msg,
                     original_item,

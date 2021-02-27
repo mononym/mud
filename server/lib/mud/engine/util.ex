@@ -8,6 +8,7 @@ defmodule Mud.Engine.Util do
   alias Mud.Engine.Message
   alias Mud.Engine.{Area, Character, Link, Item}
   alias Mud.Engine.Event.Client.UpdateInventory
+  alias Mud.Engine.Constants
 
   def clear_continuation_from_context(context) do
     context
@@ -972,6 +973,18 @@ defmodule Mud.Engine.Util do
           } holding",
           "base"
         )
+    end
+  end
+
+  def item_wearable_slot_to_description_string(wearable) do
+    IO.inspect(wearable, label: :wearable)
+
+    cond do
+      wearable.slot == Constants.on_back_slot() ->
+        {"on", "back"}
+
+      true ->
+        {"on", "body"}
     end
   end
 end

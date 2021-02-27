@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Item.Physics do
+defmodule Mud.Engine.Item.Wearable do
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -10,30 +10,22 @@ defmodule Mud.Engine.Item.Physics do
   @derive {Jason.Encoder,
            only: [
              :id,
-             :length,
-             :width,
-             :height,
-             :weight,
+             :slot,
              :item_id
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
-  schema "item_physics" do
+  schema "item_wearables" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:length, :float, default: 1.0)
-    field(:width, :float, default: 1.0)
-    field(:height, :float, default: 1.0)
-    field(:weight, :float, default: 1.0)
+    field(:slot, :string, required: true)
   end
 
   @doc false
-  def changeset(physics, attrs) do
-    physics
+  def changeset(slot, attrs) do
+    slot
     |> change()
     |> cast(attrs, [
-      :length,
-      :width,
-      :height,
-      :weight
+      :item_id,
+      :slot
     ])
     |> foreign_key_constraint(:item_id)
   end
@@ -41,18 +33,17 @@ defmodule Mud.Engine.Item.Physics do
   def create(attrs \\ %{}) do
     %__MODULE__{}
     |> changeset(attrs)
-    |> changeset(Map.put(attrs, :moved_at, DateTime.utc_now()))
     |> Repo.insert!()
   end
 
-  def update!(physics, attrs) do
-    physics
+  def update!(slot, attrs) do
+    slot
     |> changeset(attrs)
     |> Repo.update!()
   end
 
-  def update(physics, attrs) do
-    physics
+  def update(slot, attrs) do
+    slot
     |> changeset(attrs)
     |> Repo.update()
   end
@@ -60,8 +51,8 @@ defmodule Mud.Engine.Item.Physics do
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
-      physics in __MODULE__,
-      where: physics.id == ^id
+      slot in __MODULE__,
+      where: slot.id == ^id
     )
     |> Repo.one!()
   end
@@ -69,8 +60,8 @@ defmodule Mud.Engine.Item.Physics do
   @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
     from(
-      physics in __MODULE__,
-      where: physics.id == ^id
+      slot in __MODULE__,
+      where: slot.id == ^id
     )
     |> Repo.one()
   end

@@ -15,6 +15,9 @@ import ItemPhysicsState from "../models/itemPhysics";
 
 import type { ItemGemInterface } from "../models/itemGem";
 import ItemGemState from "../models/itemGem";
+
+import type { ItemWearableInterface } from "../models/itemWearable";
+import ItemWearableState from "../models/itemWearable";
 export interface ItemInterface {
   id: string;
   location: ItemLocationInterface;
@@ -23,6 +26,7 @@ export interface ItemInterface {
   description: ItemDescriptionInterface;
   container: ItemContainerInterface;
   gem: ItemGemInterface;
+  wearable: ItemWearableInterface;
 }
 
 const state: ItemInterface = {
@@ -33,6 +37,7 @@ const state: ItemInterface = {
   container: { ...ItemContainerState },
   location: { ...ItemLocationState },
   gem: { ...ItemGemState },
+  wearable: { ...ItemWearableState },
 };
 
 export default state;

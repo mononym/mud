@@ -108,7 +108,8 @@ defmodule Mud.Engine.Item.Location do
       character_id: nil,
       relative_item_id: item_id,
       relative_to_item: true,
-      relation: relation
+      relation: relation,
+      worn_on_character: false
     })
   end
 
@@ -120,7 +121,8 @@ defmodule Mud.Engine.Item.Location do
       area_id: nil,
       character_id: character_id,
       relative_item_id: nil,
-      relative_to_item: false
+      relative_to_item: false,
+      worn_on_character: false
     })
   end
 
@@ -131,13 +133,26 @@ defmodule Mud.Engine.Item.Location do
       area_id: area_id,
       character_id: nil,
       relative_item_id: nil,
-      relative_to_item: false
+      relative_to_item: false,
+      worn_on_character: false
     })
   end
 
   def update_stow_home!(location, stow_home_id) do
     update!(location, %{
       stow_home_id: stow_home_id
+    })
+  end
+
+  def update_worn_item!(location, character_id) do
+    update!(location, %{
+      held_in_hand: false,
+      on_ground: false,
+      area_id: nil,
+      character_id: character_id,
+      relative_item_id: nil,
+      relative_to_item: false,
+      worn_on_character: true
     })
   end
 end

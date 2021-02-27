@@ -13,9 +13,12 @@ defmodule Mud.Engine.Command.Wear do
 
   alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Util
+  alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
+  alias Mud.Engine.Message
   alias Mud.Engine.Search
   alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.Item.Location
 
   require Logger
 
@@ -42,7 +45,7 @@ defmodule Mud.Engine.Command.Wear do
       if Util.is_uuid4(ast.thing.input) do
         item = Item.get!(ast.thing.input)
 
-        if item.holdable_held_by_id == context.character.id do
+        if item.location.held_in_hand and item.location.character_id == context.character.id do
           wear_thing(context, item)
         else
           Util.dave_error(context)
@@ -54,74 +57,95 @@ defmodule Mud.Engine.Command.Wear do
   end
 
   defp find_thing_to_wear(context) do
-    held_items = Character.list_held_items(context.character)
+    results =
+      Search.find_matches_in_held_items(
+        context.character.id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
 
-    if length(held_items) == 0 do
-      context
-      |> Context.append_error("You aren't holding anything.")
-    else
-      ast = context.command.ast
+    case results do
+      {:ok, matches} ->
+        [first | last] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
 
-      matches = Search.generate_matches(held_items, ast.thing.input, ast.thing.which)
+        # then just handle results as normal
+        wear_thing(context, first, List.wrap(last))
 
-      case matches do
-        {:ok, [match]} ->
-          wear_thing(context, match.match)
-
-        {:ok, matches} when length(matches) > 1 ->
-          Util.multiple_error(context)
-
-        _ ->
-          context
-          |> Context.append_error("Could not find what you were attempting to wear.")
-      end
+      _ ->
+        Util.not_found_error(context)
     end
   end
 
   @spec wear_thing(Context.t(), Mud.Engine.Item.t()) :: Context.t()
-  defp wear_thing(context, item) do
-    primary_container = Item.get_primary_container(context.character.id)
+  defp wear_thing(context, match, other_matches \\ []) do
+    original_item = match.match
 
-    if item.is_wearable do
-      item =
-        Item.update!(item, %{
-          wearable_worn_by_id: context.character.id,
-          wearable_is_worn: true,
-          holdable_held_by_id: nil,
-          holdable_is_held: false,
-          holdable_hand: nil,
-          container_primary: item.is_container and is_nil(primary_container)
-        })
+    if original_item.flags.wearable and original_item.flags.wear do
+      location = Location.update_worn_item!(original_item.location, context.character.id)
+
+      item = %{original_item | location: location}
 
       others =
         Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
+      {how, where} = Util.item_wearable_slot_to_description_string(item.wearable)
+
+      other_msg =
+        [context.character.id | others]
+        |> Message.new_story_output()
+        |> Message.append_text("#{context.character.name}", "character")
+        |> Message.append_text(" wears ", "base")
+        |> Message.append_text(item.description.short, Util.get_item_type(item))
+        |> Message.append_text(
+          " #{how} #{Util.his_her_their(context.character)} #{where}.",
+          "base"
+        )
+
+      self_msg =
+        context.character.id
+        |> Message.new_story_output()
+        |> Message.append_text("You", "character")
+        |> Message.append_text(" wear ", "base")
+        |> Message.append_text(item.description.short, Util.get_item_type(item))
+        |> Message.append_text(
+          " #{how} your #{where}.",
+          "base"
+        )
+
+      self_msg =
+        if other_matches != [] do
+          other_items = Enum.map(other_matches, & &1.match)
+
+          Util.append_assumption_text(
+            self_msg,
+            original_item,
+            other_items,
+            context.character.settings.commands.multiple_matches_mode
+          )
+        else
+          self_msg
+        end
+
       context
-      |> Context.append_output(
-        others,
-        "{{character}}#{context.character.name}{{/character}} puts {{item}}#{
-          item.description.short
-        }{{/item}} on their {{bodypart}}#{item.wearable_location}{{/bodypart}}.",
-        "info"
-      )
-      |> Context.append_output(
-        context.character.id,
-        "You put {{item}}#{item.description.short}{{/item}} on your {{bodypart}}#{
-          item.wearable_location
-        }{{/bodypart}}.",
-        "info"
-      )
+      |> Context.append_message(other_msg)
+      |> Context.append_message(self_msg)
       |> Context.append_event(
         context.character_id,
         UpdateInventory.new(:update, item)
       )
     else
-      Context.append_output(
-        context,
-        context.character.id,
-        String.capitalize("{{item}}#{item.description.short}{{/item}} cannot be worn."),
-        "error"
-      )
+      error_message =
+        Message.new_story_output(
+          context.character.id,
+          Util.upcase_first(original_item.description.short),
+          Util.get_item_type(original_item)
+        )
+        |> Message.append_text(
+          " cannot be worn.",
+          "system_alert"
+        )
+
+      Context.append_message(context, error_message)
     end
   end
 end

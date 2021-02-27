@@ -710,6 +710,45 @@
           </div>
         {/if}
 
+        {#if $templateUnderConstruction.template.flags.wearable}
+          <div class="col-span-12">
+            <h2 class="text-gray-300 text-center">Wearable Properties</h2>
+          </div>
+          <div class="col-span-2">
+            <label for="gemType" class="block text-sm font-medium text-gray-300"
+              >Slot</label
+            >
+            <select
+              id="gemType"
+              bind:value={$templateUnderConstruction.template.wearable.slot}
+              name="gemType"
+              class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="on_back">On Back</option>
+              <option value="around_waist">Around Waist (like belt)</option>
+              <option value="on_belt"
+                >On Belt (belt assumed to be present)</option
+              >
+              <option value="on_finger">On Finger</option>
+              <option value="over_shoulders">Over Shoulders (like cloak)</option
+              >
+              <option value="over_shoulder"
+                >Over Shoulder (like bow or satchal tossed over a shoulder)</option
+              >
+              <option value="on_head">On Head</option>
+              <option value="in_hair">In Hair (like a hair comb)</option>
+              <option value="on_hair">On Hair (like a bow or hair net)</option>
+              <option value="around_neck">Around Neck (like necklace)</option>
+              <option value="on_torso">On Torso (like shirt)</option>
+              <option value="on_legs">On Legs (like pants)</option>
+              <option value="on_feet">On Feet (like shoes)</option>
+              <option value="on_hands">On Hands (like gloves)</option>
+              <option value="on_thigh">On Thigh</option>
+              <option value="on_ankle">On Ankle (like anklet)</option>
+            </select>
+          </div>
+        {/if}
+
         {#if $templateUnderConstruction.template.flags.gem}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Gem Properties</h2>

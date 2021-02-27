@@ -6,7 +6,10 @@ defmodule Mud.Engine.ItemTemplate.BronzeCoin do
         long: Mud.Engine.Util.describe_coin("bronze", count)
       },
       flags: %{
-        coin: true
+        coin: true,
+        hold: true,
+        look: true,
+        stow: true
       },
       coin: %{
         count: count,
