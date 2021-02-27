@@ -96,6 +96,9 @@ export interface CharacterSettingsInterface {
     worn_jewelry_label: string;
     show_worn_jewelry: boolean;
     worn_items_label: string;
+    show_worn_items: boolean;
+    slots_label: string;
+    show_slots: boolean;
     background: string;
     filter_border_color: string;
     filter_active_icon_color: string;
@@ -196,6 +199,9 @@ const state: CharacterSettingsInterface = {
     worn_jewelry_label: "",
     show_worn_jewelry: true,
     worn_items_label: "",
+    show_worn_items: true,
+    slots_label: "",
+    show_slots: true,
     background: "",
     filter_border_color: "",
     filter_active_icon_color: "",

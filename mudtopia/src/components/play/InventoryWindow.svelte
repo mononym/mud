@@ -20,6 +20,25 @@
     characterSettings,
     saveCharacterSettings,
     inventoryItemsParentChildIndex,
+    onBackIds,
+    allInventoryItemsIndex,
+    aroundWaistIds,
+    onBeltIds,
+    onFingerIds,
+    overShouldersIds,
+    overShoulderIds,
+    onHeadIds,
+    inHairIds,
+    onHairIds,
+    aroundNeckIds,
+    onTorsoIds,
+    onLegsIds,
+    onFeetIds,
+    onHandsIds,
+    onThighIds,
+    onAnkleIds,
+    totalNumberOfSlotsUsed,
+    totalNumberOfCharacterSlotsAvailable,
   } = state;
 
   let menuItem;
@@ -62,6 +81,11 @@
     wornItemsExpanded = !wornItemsExpanded;
   }
 
+  let slotsExpanded = true;
+  function toggleSlots() {
+    slotsExpanded = !slotsExpanded;
+  }
+
   function saveSettings() {
     saveCharacterSettings();
   }
@@ -91,291 +115,619 @@
   style="background-color:{$selectedCharacter.settings.inventoryWindow
     .background}"
 >
-  {#if $selectedCharacter.settings.inventoryWindow.show_held_items}
-    <div
-      class="cursor-pointer select-none"
-      on:click={toggleHeldItems}
-      style="color:{$selectedCharacter.settings.inventoryWindow[
-        'held_items_label'
-      ]}"
-    >
-      <i class="fas fa-{heldItemsExpanded ? 'minus' : 'plus'}" />
-      <pre
-        class="inline ml-2">Held Items ({($leftHandHasItem ? 1 : 0) + ($rightHandHasItem ? 1 : 0)})</pre>
-    </div>
-    {#if heldItemsExpanded}
-      <div class="ml-2">
-        {#if $selectedCharacter.handedness == "right"}
-          <div
-            class="flex"
-            style="color:{$rightHandHasItem
-              ? getItemColor(
-                  $selectedCharacter.settings.colors,
-                  $itemInRightHand
-                )
-              : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
-          >
-            <i
-              class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed mr-4"
-              data-tippy-content="Right Hand"
-            />
-            {#if $rightHandHasItem}
-              <InventoryItem
-                item={$itemInRightHand}
-                showQuickActions={$selectedCharacter.settings.inventoryWindow
-                  .show_quick_actions}
-                on:showContextMenu={showRightClickMenu}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
-              >
-                <div class="h-full flex space-x-2" slot="quickActions">
-                  <QuickAction
-                    icon="fas fa-backpack"
-                    activeTooltip="stow"
-                    cliInput="stow {$itemInRightHand.id}"
-                    storyOutput="stow {$itemInRightHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                  <QuickAction
-                    icon="fas fa-hand-holding-box fa-rotate-180"
-                    activeTooltip="drop"
-                    cliInput="drop {$itemInRightHand.id}"
-                    storyOutput="drop {$itemInRightHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                </div>
-              </InventoryItem>
-            {:else}
-              <pre
-                class="select-none cursor-not-allowed self-center"
-                style="color:{$selectedCharacter.settings.inventoryWindow[
-                  'empty_hand'
-                ]}">EMPTY</pre>
-            {/if}
-          </div>
-          <div
-            class="flex"
-            style="color:{$leftHandHasItem
-              ? getItemColor(
-                  $selectedCharacter.settings.colors,
-                  $itemInLeftHand
-                )
-              : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
-          >
-            <i
-              class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed mr-4"
-              data-tippy-content="Left Hand"
-            />
-            {#if $leftHandHasItem}
-              <InventoryItem
-                item={$itemInLeftHand}
-                showQuickActions={$selectedCharacter.settings.inventoryWindow
-                  .show_quick_actions}
-                on:showContextMenu={showRightClickMenu}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
-              >
-                <div class="h-full flex space-x-2" slot="quickActions">
-                  <QuickAction
-                    icon="fas fa-backpack"
-                    activeTooltip="stow"
-                    cliInput="stow {$itemInLeftHand.id}"
-                    storyOutput="stow {$itemInLeftHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                  <QuickAction
-                    icon="fas fa-hand-holding-box fa-rotate-180"
-                    activeTooltip="drop"
-                    cliInput="drop {$itemInLeftHand.id}"
-                    storyOutput="drop {$itemInLeftHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                </div>
-              </InventoryItem>
-            {:else}
-              <pre
-                class="select-none cursor-not-allowed self-center">EMPTY</pre>
-            {/if}
-          </div>
-        {:else}
-          <div class="flex">
-            <i
-              class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed mr-4"
-              data-tippy-content="Left Hand"
-            />
-            {#if $leftHandHasItem}
-              <InventoryItem
-                item={$itemInLeftHand}
-                showQuickActions={$selectedCharacter.settings.inventoryWindow
-                  .show_quick_actions}
-                on:showContextMenu={showRightClickMenu}
-              >
-                <div class="h-full flex space-x-2" slot="quickActions">
-                  <QuickAction
-                    icon="fas fa-backpack"
-                    activeTooltip="stow"
-                    cliInput="stow {$itemInLeftHand.id}"
-                    storyOutput="stow {$itemInLeftHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                  <QuickAction
-                    icon="fas fa-hand-holding-box fa-rotate-180"
-                    activeTooltip="drop"
-                    cliInput="drop {$itemInLeftHand.id}"
-                    storyOutput="drop {$itemInLeftHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                </div>
-              </InventoryItem>
-            {:else}
-              <pre
-                class="select-none cursor-not-allowed self-center">EMPTY</pre>
-            {/if}
-          </div>
-          <div class="flex">
-            <i
-              class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed mr-4"
-              data-tippy-content="Right Hand"
-            />
-            {#if $rightHandHasItem}
-              <InventoryItem
-                item={$itemInRightHand}
-                showQuickActions={$selectedCharacter.settings.inventoryWindow
-                  .show_quick_actions}
-                on:showContextMenu={showRightClickMenu}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
-              >
-                <div class="h-full flex space-x-2" slot="quickActions">
-                  <QuickAction
-                    icon="fas fa-backpack"
-                    activeTooltip="stow"
-                    cliInput="stow {$itemInRightHand.id}"
-                    storyOutput="stow {$itemInRightHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                  <QuickAction
-                    icon="fas fa-hand-holding-box fa-rotate-180"
-                    activeTooltip="drop"
-                    cliInput="drop {$itemInRightHand.id}"
-                    storyOutput="drop {$itemInRightHand.description.short}"
-                    activeIconColor={$selectedCharacter.settings
-                      .inventoryWindow["enabled_quick_action_color"]}
-                    inactiveIconColor={$selectedCharacter.settings
-                      .inventoryWindow["disabled_quick_action_color"]}
-                  />
-                </div>
-              </InventoryItem>
-            {:else}
-              <pre
-                class="select-none cursor-not-allowed self-center">EMPTY</pre>
-            {/if}
-          </div>
-        {/if}
+  <div class="flex flex-col relative overflow-y-auto flex-grow">
+    {#if $selectedCharacter.settings.inventoryWindow.show_held_items}
+      <div
+        class="cursor-pointer select-none"
+        on:click={toggleHeldItems}
+        style="color:{$selectedCharacter.settings.inventoryWindow[
+          'held_items_label'
+        ]}"
+      >
+        <i class="fas fa-{heldItemsExpanded ? 'minus' : 'plus'}" />
+        <pre
+          class="inline ml-2">Held Items ({($leftHandHasItem ? 1 : 0) + ($rightHandHasItem ? 1 : 0)})</pre>
       </div>
-    {/if}
-  {/if}
-  {#if $selectedCharacter.settings.inventoryWindow.show_worn_containers}
-    <div
-      class="cursor-pointer select-none"
-      on:click={toggleWornContainers}
-      style="color:{$selectedCharacter.settings.inventoryWindow[
-        'worn_containers_label'
-      ]}"
-    >
-      <i class="fas fa-{wornContainersExpanded ? 'minus' : 'plus'}" />
-      <pre class="inline ml-2">Worn Containers ({$wornContainers.length})</pre>
-    </div>
-    {#if wornContainersExpanded}
-      {#each $wornContainers as wornContainer}
-        <InventoryItem
-          item={wornContainer}
-          showQuickActions={$selectedCharacter.settings.inventoryWindow
-            .show_quick_actions}
-          on:showContextMenu={showRightClickMenu}
-        >
-          <div class="h-full flex space-x-2 pl-2" slot="quickActions">
-            {#if wornContainer.container.open}
-              <QuickAction
-                icon="fas fa-box-open"
-                activeTooltip="close"
-                cliInput="close {wornContainer.id}"
-                storyOutput="close {wornContainer.description.short}"
-                activeIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "enabled_quick_action_color"
-                ]}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
+      {#if heldItemsExpanded}
+        <div class="ml-2">
+          {#if $selectedCharacter.handedness == "right"}
+            <div
+              class="flex"
+              style="color:{$rightHandHasItem
+                ? getItemColor(
+                    $selectedCharacter.settings.colors,
+                    $itemInRightHand
+                  )
+                : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
+            >
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed mr-4"
+                data-tippy-content="Right Hand"
               />
-            {:else}
-              <QuickAction
-                icon="fas fa-box"
-                activeTooltip="open"
-                cliInput="open {wornContainer.id}"
-                storyOutput="open {wornContainer.description.short}"
-                activeIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "enabled_quick_action_color"
-                ]}
-                inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
-                  "disabled_quick_action_color"
-                ]}
+              {#if $rightHandHasItem}
+                <InventoryItem
+                  item={$itemInRightHand}
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  on:showContextMenu={showRightClickMenu}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                >
+                  <div class="h-full flex space-x-2" slot="quickActions">
+                    <QuickAction
+                      icon="fas fa-backpack"
+                      activeTooltip="stow"
+                      cliInput="stow {$itemInRightHand.id}"
+                      storyOutput="stow {$itemInRightHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                    <QuickAction
+                      icon="fas fa-hand-holding-box fa-rotate-180"
+                      activeTooltip="drop"
+                      cliInput="drop {$itemInRightHand.id}"
+                      storyOutput="drop {$itemInRightHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  </div>
+                </InventoryItem>
+              {:else}
+                <pre
+                  class="select-none cursor-not-allowed self-center"
+                  style="color:{$selectedCharacter.settings.inventoryWindow[
+                    'empty_hand'
+                  ]}">EMPTY</pre>
+              {/if}
+            </div>
+            <div
+              class="flex"
+              style="color:{$leftHandHasItem
+                ? getItemColor(
+                    $selectedCharacter.settings.colors,
+                    $itemInLeftHand
+                  )
+                : $selectedCharacter.settings.inventoryWindow['empty_hand']}"
+            >
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed mr-4"
+                data-tippy-content="Left Hand"
               />
-            {/if}
-          </div>
-        </InventoryItem>
-      {/each}
+              {#if $leftHandHasItem}
+                <InventoryItem
+                  item={$itemInLeftHand}
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  on:showContextMenu={showRightClickMenu}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                >
+                  <div class="h-full flex space-x-2" slot="quickActions">
+                    <QuickAction
+                      icon="fas fa-backpack"
+                      activeTooltip="stow"
+                      cliInput="stow {$itemInLeftHand.id}"
+                      storyOutput="stow {$itemInLeftHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                    <QuickAction
+                      icon="fas fa-hand-holding-box fa-rotate-180"
+                      activeTooltip="drop"
+                      cliInput="drop {$itemInLeftHand.id}"
+                      storyOutput="drop {$itemInLeftHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  </div>
+                </InventoryItem>
+              {:else}
+                <pre
+                  class="select-none cursor-not-allowed self-center">EMPTY</pre>
+              {/if}
+            </div>
+          {:else}
+            <div class="flex">
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw fa-flip-horizontal text-xl cursor-not-allowed mr-4"
+                data-tippy-content="Left Hand"
+              />
+              {#if $leftHandHasItem}
+                <InventoryItem
+                  item={$itemInLeftHand}
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  on:showContextMenu={showRightClickMenu}
+                >
+                  <div class="h-full flex space-x-2" slot="quickActions">
+                    <QuickAction
+                      icon="fas fa-backpack"
+                      activeTooltip="stow"
+                      cliInput="stow {$itemInLeftHand.id}"
+                      storyOutput="stow {$itemInLeftHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                    <QuickAction
+                      icon="fas fa-hand-holding-box fa-rotate-180"
+                      activeTooltip="drop"
+                      cliInput="drop {$itemInLeftHand.id}"
+                      storyOutput="drop {$itemInLeftHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  </div>
+                </InventoryItem>
+              {:else}
+                <pre
+                  class="select-none cursor-not-allowed self-center">EMPTY</pre>
+              {/if}
+            </div>
+            <div class="flex">
+              <i
+                class="fas fa-hand-paper fa-lg fa-fw text-xl cursor-not-allowed mr-4"
+                data-tippy-content="Right Hand"
+              />
+              {#if $rightHandHasItem}
+                <InventoryItem
+                  item={$itemInRightHand}
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  on:showContextMenu={showRightClickMenu}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                >
+                  <div class="h-full flex space-x-2" slot="quickActions">
+                    <QuickAction
+                      icon="fas fa-backpack"
+                      activeTooltip="stow"
+                      cliInput="stow {$itemInRightHand.id}"
+                      storyOutput="stow {$itemInRightHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                    <QuickAction
+                      icon="fas fa-hand-holding-box fa-rotate-180"
+                      activeTooltip="drop"
+                      cliInput="drop {$itemInRightHand.id}"
+                      storyOutput="drop {$itemInRightHand.description.short}"
+                      activeIconColor={$selectedCharacter.settings
+                        .inventoryWindow["enabled_quick_action_color"]}
+                      inactiveIconColor={$selectedCharacter.settings
+                        .inventoryWindow["disabled_quick_action_color"]}
+                    />
+                  </div>
+                </InventoryItem>
+              {:else}
+                <pre
+                  class="select-none cursor-not-allowed self-center">EMPTY</pre>
+              {/if}
+            </div>
+          {/if}
+        </div>
+      {/if}
     {/if}
-  {/if}
-  {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
-    <div
-      class="cursor-pointer select-none"
-      on:click={toggleWornItems}
-      style="color:{$selectedCharacter.settings.inventoryWindow[
-        'worn_items_label'
-      ]}"
-    >
-      <i class="fas fa-{wornItemsExpanded ? 'minus' : 'plus'}" />
-      <pre class="inline ml-2">Other Worn Items ({wornItems.length})</pre>
-    </div>
-    {#if wornItemsExpanded}
-      <div class="ml-2">
-        {#each wornItems as wornItem}
+    {#if $selectedCharacter.settings.inventoryWindow.show_worn_containers}
+      <div
+        class="cursor-pointer select-none"
+        on:click={toggleWornContainers}
+        style="color:{$selectedCharacter.settings.inventoryWindow[
+          'worn_containers_label'
+        ]}"
+      >
+        <i class="fas fa-{wornContainersExpanded ? 'minus' : 'plus'}" />
+        <pre
+          class="inline ml-2">Worn Containers ({$wornContainers.length})</pre>
+      </div>
+      {#if wornContainersExpanded}
+        {#each $wornContainers as wornContainer}
           <InventoryItem
+            item={wornContainer}
             showQuickActions={$selectedCharacter.settings.inventoryWindow
               .show_quick_actions}
-            item={wornItem}
             on:showContextMenu={showRightClickMenu}
-          />
+          >
+            <div class="h-full flex space-x-2 pl-2" slot="quickActions">
+              {#if wornContainer.container.open}
+                <QuickAction
+                  icon="fas fa-box-open"
+                  activeTooltip="close"
+                  cliInput="close {wornContainer.id}"
+                  storyOutput="close {wornContainer.description.short}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+              {:else}
+                <QuickAction
+                  icon="fas fa-box"
+                  activeTooltip="open"
+                  cliInput="open {wornContainer.id}"
+                  storyOutput="open {wornContainer.description.short}"
+                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
+                    "enabled_quick_action_color"
+                  ]}
+                  inactiveIconColor={$selectedCharacter.settings
+                    .inventoryWindow["disabled_quick_action_color"]}
+                />
+              {/if}
+            </div>
+          </InventoryItem>
         {/each}
-      </div>
+      {/if}
     {/if}
-  {/if}
-  <div class="spacer flex-1" />
+    {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
+      <div
+        class="cursor-pointer select-none"
+        on:click={toggleWornItems}
+        style="color:{$selectedCharacter.settings.inventoryWindow[
+          'worn_items_label'
+        ]}"
+      >
+        <i class="fas fa-{wornItemsExpanded ? 'minus' : 'plus'}" />
+        <pre class="inline ml-2">Other Worn Items ({wornItems.length})</pre>
+      </div>
+      {#if wornItemsExpanded}
+        <div class="ml-2">
+          {#each wornItems as wornItem}
+            <InventoryItem
+              showQuickActions={$selectedCharacter.settings.inventoryWindow
+                .show_quick_actions}
+              item={wornItem}
+              on:showContextMenu={showRightClickMenu}
+            />
+          {/each}
+        </div>
+      {/if}
+    {/if}
+    {#if $selectedCharacter.settings.inventoryWindow.show_slots}
+      <div
+        class="cursor-pointer select-none"
+        on:click={toggleSlots}
+        style="color:{$selectedCharacter.settings.inventoryWindow[
+          'slots_label'
+        ]}"
+      >
+        <i class="fas fa-{slotsExpanded ? 'minus' : 'plus'}" />
+        <pre
+          class="inline ml-2">Slots ({$totalNumberOfSlotsUsed}/{$totalNumberOfCharacterSlotsAvailable})</pre>
+      </div>
+      {#if slotsExpanded}
+        <div class="ml-2">
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Head ({$onHeadIds.length}/{$selectedCharacter.slots.on_head})
+            </p>
+            {#each $onHeadIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Hair ({$onHairIds.length}/{$selectedCharacter.slots.on_hair})
+            </p>
+            {#each $onHairIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              In Hair ({$inHairIds.length}/{$selectedCharacter.slots.in_hair})
+            </p>
+            {#each $inHairIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              Around Neck ({$aroundNeckIds.length}/{$selectedCharacter.slots
+                .around_neck})
+            </p>
+            {#each $aroundNeckIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              Over Shoulders ({$overShouldersIds.length}/{$selectedCharacter
+                .slots.over_shoulders})
+            </p>
+            {#each $overShouldersIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              Over Shoulder ({$overShoulderIds.length}/{$selectedCharacter.slots
+                .over_shoulder})
+            </p>
+            {#each $overShoulderIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Torso ({$onTorsoIds.length}/{$selectedCharacter.slots
+                .on_torso})
+            </p>
+            {#each $onTorsoIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Back ({$onBackIds.length}/{$selectedCharacter.slots.on_back})
+            </p>
+            {#each $onBackIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              Around Waist ({$aroundWaistIds.length}/{$selectedCharacter.slots
+                .around_waist})
+            </p>
+            {#each $aroundWaistIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Belt ({$onBeltIds.length}/{$selectedCharacter.slots.on_belt})
+            </p>
+            {#each $onBeltIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Hands ({$onHandsIds.length}/{$selectedCharacter.slots
+                .on_hands})
+            </p>
+            {#each $onHandsIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Finger ({$onFingerIds.length}/{$selectedCharacter.slots
+                .on_finger})
+            </p>
+            {#each $onFingerIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Legs ({$onLegsIds.length}/{$selectedCharacter.slots.on_legs})
+            </p>
+            {#each $onLegsIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Thigh ({$onThighIds.length}/{$selectedCharacter.slots
+                .on_thigh})
+            </p>
+            {#each $onThighIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Ankle ({$onAnkleIds.length}/{$selectedCharacter.slots
+                .on_ankle})
+            </p>
+            {#each $onAnkleIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+          <div>
+            <p
+              style="color:{$selectedCharacter.settings.inventoryWindow[
+                'slots_label'
+              ]}"
+            >
+              On Feet ({$onFeetIds.length}/{$selectedCharacter.slots.on_feet})
+            </p>
+            {#each $onFeetIds as itemId}
+              <div class="ml-2">
+                <InventoryItem
+                  showQuickActions={$selectedCharacter.settings.inventoryWindow
+                    .show_quick_actions}
+                  item={$allInventoryItemsIndex[itemId]}
+                  on:showContextMenu={showRightClickMenu}
+                />
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+    {/if}
+  </div>
+  <div class="spacer" />
   <div
     class="w-full flex"
     style="border:1px solid {$selectedCharacter.settings.inventoryWindow[
@@ -466,6 +818,19 @@
       on:toggle={saveSettings}
       activeTooltip="Hide other worn items"
       inactiveTooltip="Show other worn items"
+      activeIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_icon_color"
+      ]}
+      inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_icon_color"
+      ]}
+    />
+    <FilterButton
+      icon="fas fa-folder-tree"
+      bind:active={$characterSettings.inventoryWindow.show_slots}
+      on:toggle={saveSettings}
+      activeTooltip="Hide slots"
+      inactiveTooltip="Show slots"
       activeIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_active_icon_color"
       ]}

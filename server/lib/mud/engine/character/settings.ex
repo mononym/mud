@@ -72,6 +72,8 @@ defmodule Mud.Engine.Character.Settings do
       field(:show_worn_jewelry, :boolean, default: true)
       field(:worn_items_label, :string, default: "#6b7280")
       field(:show_worn_items, :boolean, default: true)
+      field(:slots_label, :string, default: "#6b7280")
+      field(:show_slots, :boolean, default: true)
       field(:background, :string, default: "#28282D")
       field(:filter_border_color, :string, default: "#ffffff")
       field(:filter_active_icon_color, :string, default: "#a7f3d0")
@@ -319,6 +321,8 @@ defmodule Mud.Engine.Character.Settings do
       :show_worn_jewelry,
       :worn_items_label,
       :show_worn_items,
+      :slots_label,
+      :show_slots,
       :background,
       :filter_border_color,
       :filter_active_icon_color,

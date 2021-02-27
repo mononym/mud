@@ -1,5 +1,5 @@
 import * as _ from "lodash";
-import { get, writable } from "svelte/store";
+import { derived, get, writable } from "svelte/store";
 import {
   startGameSession as apiStartGameSession,
   saveCharacterSettings as saveCharSettings,
@@ -174,6 +174,106 @@ export function createState() {
     <Record<string, ItemInterface[]>>{}
   );
 
+  const onBackIds = writable(<string[]>[]);
+  const aroundWaistIds = writable(<string[]>[]);
+  const onBeltIds = writable(<string[]>[]);
+  const onFingerIds = writable(<string[]>[]);
+  const overShouldersIds = writable(<string[]>[]);
+  const overShoulderIds = writable(<string[]>[]);
+  const onHeadIds = writable(<string[]>[]);
+  const inHairIds = writable(<string[]>[]);
+  const onHairIds = writable(<string[]>[]);
+  const aroundNeckIds = writable(<string[]>[]);
+  const onTorsoIds = writable(<string[]>[]);
+  const onLegsIds = writable(<string[]>[]);
+  const onFeetIds = writable(<string[]>[]);
+  const onHandsIds = writable(<string[]>[]);
+  const onThighIds = writable(<string[]>[]);
+  const onAnkleIds = writable(<string[]>[]);
+
+  const totalNumberOfSlotsUsed = derived(
+    [
+      onBackIds,
+      aroundWaistIds,
+      onBeltIds,
+      onFingerIds,
+      overShouldersIds,
+      overShoulderIds,
+      onHeadIds,
+      inHairIds,
+      onHairIds,
+      aroundNeckIds,
+      onTorsoIds,
+      onLegsIds,
+      onFeetIds,
+      onHandsIds,
+      onThighIds,
+      onAnkleIds,
+    ],
+    function ([
+      $onBackIds,
+      $aroundWaistIds,
+      $onBeltIds,
+      $onFingerIds,
+      $overShouldersIds,
+      $overShoulderIds,
+      $onHeadIds,
+      $inHairIds,
+      $onHairIds,
+      $aroundNeckIds,
+      $onTorsoIds,
+      $onLegsIds,
+      $onFeetIds,
+      $onHandsIds,
+      $onThighIds,
+      $onAnkleIds,
+    ]) {
+      return (
+        $onBackIds.length +
+        $aroundWaistIds.length +
+        $onBeltIds.length +
+        $onFingerIds.length +
+        $overShouldersIds.length +
+        $overShoulderIds.length +
+        $onHeadIds.length +
+        $inHairIds.length +
+        $onHairIds.length +
+        $aroundNeckIds.length +
+        $onTorsoIds.length +
+        $onLegsIds.length +
+        $onFeetIds.length +
+        $onHandsIds.length +
+        $onThighIds.length +
+        $onAnkleIds.length
+      );
+    }
+  );
+
+  const totalNumberOfCharacterSlotsAvailable = derived(
+    [selectedCharacter],
+    function ([$selectedCharacter]) {
+      const slots = $selectedCharacter.slots;
+      return (
+        slots.on_back +
+        slots.around_waist +
+        slots.on_belt +
+        slots.on_finger +
+        slots.over_shoulders +
+        slots.over_shoulder +
+        slots.on_head +
+        slots.in_hair +
+        slots.on_hair +
+        slots.around_neck +
+        slots.on_torso +
+        slots.on_legs +
+        slots.on_feet +
+        slots.on_hands +
+        slots.on_thigh +
+        slots.on_ankle
+      );
+    }
+  );
+
   // explored areas set
   //    A set of ids of the areas known to the character in the current map.
   const exploredAreas = writable(<string[]>[]);
@@ -244,18 +344,102 @@ export function createState() {
     resetHeldItems();
     resetWornContainers();
     resetParentChildIndex();
+    resetInventorySlotsIndexes();
   }
 
-  function resetAllInventoryItemsIndex(items) {
-    const newAllItemsIndex = {};
+  function resetInventorySlotsIndexes() {
+    const newOnBackIds = [];
+    const newAroundWaistIds = [];
+    const newOnBeltIds = [];
+    const newOnFingerIds = [];
+    const newOverShouldersIds = [];
+    const newOverShoulderIds = [];
+    const newOnHeadIds = [];
+    const newOnHairIds = [];
+    const newInHairIds = [];
+    const newAroundNeckIds = [];
+    const newOnTorsoIds = [];
+    const newOnLegsIds = [];
+    const newOnFeetIds = [];
+    const newOnHands = [];
+    const newOnThigh = [];
+    const newOnAnkleIds = [];
 
-    items.forEach((item) => {
-      newAllItemsIndex[item.id] = item;
+    Object.values(get(allInventoryItemsIndex)).forEach((item) => {
+      if (item.location.worn_on_character) {
+        console.log("item worn: " + item.wearable.slot);
+        switch (item.wearable.slot) {
+          case "on_back":
+            newOnBackIds.push(item.id);
+            break;
+          case "around_waist":
+            newAroundWaistIds.push(item.id);
+            break;
+          case "on_belt":
+            newOnBeltIds.push(item.id);
+            break;
+          case "on_finger":
+            newOnFingerIds.push(item.id);
+            break;
+          case "over_shoulders":
+            newOverShouldersIds.push(item.id);
+            break;
+          case "over_shoulder":
+            newOverShoulderIds.push(item.id);
+            break;
+          case "on_head":
+            newOnHeadIds.push(item.id);
+            break;
+          case "on_hair":
+            newOnHairIds.push(item.id);
+            break;
+          case "in_hair":
+            newInHairIds.push(item.id);
+            break;
+          case "around_neck":
+            newAroundNeckIds.push(item.id);
+            break;
+          case "on_torso":
+            newOnTorsoIds.push(item.id);
+            break;
+          case "on_legs":
+            newOnLegsIds.push(item.id);
+            break;
+          case "on_feet":
+            newOnFeetIds.push(item.id);
+            break;
+          case "on_hands":
+            newOnHands.push(item.id);
+            break;
+          case "on_thigh":
+            newOnThigh.push(item.id);
+            break;
+          case "on_ankle":
+            newOnAnkleIds.push(item.id);
+            break;
+
+          default:
+            break;
+        }
+      }
     });
 
-    allInventoryItemsIndex.set(newAllItemsIndex);
-
-    resetParentChildIndex();
+    onBackIds.set(newOnBackIds);
+    aroundWaistIds.set(newAroundWaistIds);
+    onBeltIds.set(newOnBeltIds);
+    onFingerIds.set(newOnFingerIds);
+    overShouldersIds.set(newOverShouldersIds);
+    overShoulderIds.set(newOverShoulderIds);
+    onHeadIds.set(newOnHeadIds);
+    inHairIds.set(newInHairIds);
+    onHairIds.set(newOnHairIds);
+    aroundNeckIds.set(newAroundNeckIds);
+    onTorsoIds.set(newOnTorsoIds);
+    onLegsIds.set(newOnLegsIds);
+    onFeetIds.set(newOnFeetIds);
+    onHandsIds.set(newOnHands);
+    onThighIds.set(newOnThigh);
+    onAnkleIds.set(newOnAnkleIds);
   }
 
   function removeItemsFromAllInventoryItemsIndex(items) {
@@ -411,6 +595,7 @@ export function createState() {
     resetParentChildIndex();
     resetHeldItems();
     resetWornContainers();
+    resetInventorySlotsIndexes();
   }
 
   function addInventory(items) {
@@ -473,6 +658,7 @@ export function createState() {
     removeItemsFromAllInventoryItemsIndex(items);
     resetHeldItems();
     resetWornContainers();
+    resetInventorySlotsIndexes();
   }
 
   //
@@ -1002,6 +1188,24 @@ export function createState() {
     updateInventory,
     addInventory,
     removeInventory,
+    onBackIds,
+    aroundWaistIds,
+    onBeltIds,
+    onFingerIds,
+    overShouldersIds,
+    overShoulderIds,
+    onHeadIds,
+    inHairIds,
+    onHairIds,
+    aroundNeckIds,
+    onTorsoIds,
+    onLegsIds,
+    onFeetIds,
+    onHandsIds,
+    onThighIds,
+    onAnkleIds,
+    totalNumberOfSlotsUsed,
+    totalNumberOfCharacterSlotsAvailable,
     //
     // Connection Stuff
     //
