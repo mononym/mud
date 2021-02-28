@@ -16,7 +16,7 @@ phases:
       - echo Entered the install phase...
       - apt-get update
       - apt-get install -y git
-      - DEBIAN_FRONTEND=noninteractive apt-get install keyboard-configuration
+      - DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
       - wget https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb && dpkg -i erlang-solutions_2.0_all.deb
       - apt-get update
       - apt-get install -y esl-erlang
@@ -50,7 +50,6 @@ phases:
   post_build:
     commands:
       - echo Entered the post_build phase...
-      - mix ecto.migrate
       - echo Build completed on `date`
 artifacts:
   base-directory: _build/prod/rel/mud
