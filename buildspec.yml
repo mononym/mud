@@ -5,6 +5,7 @@ env:
     LANG: "en_US.UTF-8"
     LANGUAGE: "en_US:UTF-8"
     LC_ALL: "en_US.UTF-8"
+    LC_CTYPE: "en_US.UTF-8"
     HOME: "/root"
     ELIXIR_VERSION: "1.9.1"
     MIX_ENV: "prod"
@@ -21,13 +22,6 @@ phases:
       - apt-get update
       - apt-get install -y esl-erlang
       - apt-get install -y elixir
-      - mkdir ~/node-latest-install && cd $_ && \
-      - curl --silent --location https://deb.nodesource.com/setup_10.x | bash -
-      - apt-get install -y nodejs
-      - curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -;
-      - echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list;
-      - apt-get update && apt-get install -y yarn;
-
   pre_build:
     commands:
       - echo Entered the pre_build phase...
@@ -41,8 +35,7 @@ phases:
       - mix compile
       - echo Building assets
       - cd assets
-      - yarn
-      - yarn run deploy
+      - npm install
       - cd ..
       - echo Build started on `date` in dir `pwd`
       - mix phx.digest
