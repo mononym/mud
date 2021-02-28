@@ -30,3 +30,10 @@ config :ex_aws,
   region: {:system, "AWS_REGION"}
 
 config :ex_aws, :hackney_opts, recv_timeout: 30_000
+
+config :mud, Mud.Repo,
+  username: "mud",
+  password: System.get_env("DB_PASSWORD"),
+  database: "mud",
+  hostname: System.get_env("DB_HOSTNAME"),
+  pool_size: 10
