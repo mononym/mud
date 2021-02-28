@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     LANG: "en_US.UTF-8"
-    LANGUAGE: "en_US:"
+    LANGUAGE: "en_US:UTF-8"
     LC_ALL: "en_US.UTF-8"
     HOME: "/root"
     ELIXIR_VERSION: "1.9.1"
@@ -14,7 +14,6 @@ phases:
   install:
     commands:
       - echo Entered the install phase...
-      - update-locale LC_ALL=en_US.UTF-8
       - apt-get update
       - apt-get install -y git
       - DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
