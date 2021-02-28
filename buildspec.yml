@@ -39,6 +39,7 @@ phases:
     commands:
       - echo Entered the build phase...
       - cd $CODEBUILD_SRC_DIR
+      - cd server
       - mix deps.get
       - mix compile
       - echo Building assets
