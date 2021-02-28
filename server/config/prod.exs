@@ -16,6 +16,13 @@ config :mud, MudWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+config :mud, Mud.Repo,
+  username: "mud",
+  password: "WUTCC6OOvVTLFAxig9SJ",
+  database: "mud",
+  hostname: "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com",
+  pool_size: 10
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
@@ -40,7 +47,7 @@ config :logger, level: :info
 # `:keyfile` and `:certfile` expect an absolute path to the key
 # and cert in disk or a relative path inside priv, for example
 # "priv/ssl/server.key". For all supported SSL configuration
-# options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1
+# options, see https://hexdocs.pm/plug/Plug.SSL.html#configure/1   mud-alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com
 #
 # We also recommend setting `force_ssl` in your endpoint, ensuring
 # no data is ever sent via http, always redirecting to https:
