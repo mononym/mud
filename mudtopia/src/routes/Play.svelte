@@ -252,24 +252,30 @@
     startingCliY = Math.floor(wrapper.offsetHeight - 144).toString();
 
     startingAreaWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
-    startingAreaHeight = wrapper.offsetHeight - 64;
+    startingAreaHeight = wrapper.offsetHeight - 264;
     startingAreaX = Math.floor(wrapper.offsetWidth * 0.7).toString();
     startingAreaY = "0";
 
-    startingCompassWidth = "200";
+    startingCompassWidth = Math.floor(wrapper.offsetWidth * 0.1).toString();
     startingCompassHeight = "200";
-    startingCompassX = "0";
-    startingCompassY = "0";
+    startingCompassX = Math.floor(wrapper.offsetWidth * 0.7).toString();
+    startingCompassY = Math.floor(wrapper.offsetHeight - 264).toString();
 
-    startingEnvironmentInfoWidth = "200";
-    startingEnvironmentInfoHeight = "150";
-    startingEnvironmentInfoX = "0";
-    startingEnvironmentInfoY = "200";
+    startingEnvironmentInfoWidth = Math.floor(
+      wrapper.offsetWidth * 0.1
+    ).toString();
+    startingEnvironmentInfoHeight = "200";
+    startingEnvironmentInfoX = Math.floor(
+      wrapper.offsetWidth * 0.7 + wrapper.offsetWidth * 0.1
+    ).toString();
+    startingEnvironmentInfoY = Math.floor(
+      wrapper.offsetHeight - 264
+    ).toString();
 
-    startingStatusWidth = "200";
+    startingStatusWidth = Math.floor(wrapper.offsetWidth * 0.1).toString();
     startingStatusHeight = "200";
-    startingStatusX = "0";
-    startingStatusY = "350";
+    startingStatusX = Math.floor(wrapper.offsetWidth * 0.7 + wrapper.offsetWidth * 0.2).toString();
+    startingStatusY = Math.floor(wrapper.offsetHeight - 264).toString();
 
     const character = $characters.filter(
       (character) => character.id == params.characterId

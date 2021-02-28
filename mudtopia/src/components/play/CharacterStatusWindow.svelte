@@ -8,7 +8,10 @@
 
 <div
   style="background-color:#28282D"
-  class="CharacterStatusWindow h-full w-full flex flex-col place-content-center items-center"
+  class="CharacterStatusWindow h-full w-full flex flex-col place-content-center items-center p-2"
 >
-  <p class="text-center text-white">{$selectedCharacter.status.position}</p>
+  <img
+    src="positions/{$selectedCharacter.status.position}.svg"
+    alt={$selectedCharacter.status.position}
+  />
 </div>
