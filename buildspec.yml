@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     LANG: "en_US.UTF-8"
-    LANGUAGE: "en_US:en"
+    LANGUAGE: "en_US:"
     LC_ALL: "en_US.UTF-8"
     HOME: "/root"
     ELIXIR_VERSION: "1.9.1"
@@ -14,6 +14,7 @@ phases:
   install:
     commands:
       - echo Entered the install phase...
+      - update-locale LC_ALL=en_US.UTF-8
       - apt-get update
       - apt-get install -y git
       - DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
@@ -52,6 +53,6 @@ phases:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
 artifacts:
-  base-directory: _build/prod/rel/mud
+  base-directory: _build/prod/rel/prod
   files:
     - "**/*"
