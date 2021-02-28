@@ -14,6 +14,7 @@
   import AreaWindow from "../components/play/AreaWindow.svelte";
   import CompassWindow from "../components/play/CompassWindow.svelte";
   import EnvironmentInfoWindow from "../components/play/EnvironmentInfoWindow.svelte";
+  import CharacterStatusWindow from "../components/play/CharacterStatusWindow.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -218,6 +219,11 @@
   let startingEnvironmentInfoX;
   let startingEnvironmentInfoY;
 
+  let startingStatusWidth;
+  let startingStatusHeight;
+  let startingStatusX;
+  let startingStatusY;
+
   onMount(async () => {
     startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
@@ -259,6 +265,11 @@
     startingEnvironmentInfoHeight = "150";
     startingEnvironmentInfoX = "0";
     startingEnvironmentInfoY = "200";
+
+    startingStatusWidth = "200";
+    startingStatusHeight = "200";
+    startingStatusX = "0";
+    startingStatusY = "350";
 
     const character = $characters.filter(
       (character) => character.id == params.characterId
@@ -366,6 +377,16 @@
         bind:initialY={startingEnvironmentInfoY}
       >
         <EnvironmentInfoWindow />
+      </LayoutItemWrapper>
+      <LayoutItemWrapper
+        id="characterStatusWindow"
+        label="Status"
+        bind:initialHeight={startingStatusHeight}
+        bind:initialWidth={startingStatusWidth}
+        bind:initialX={startingStatusX}
+        bind:initialY={startingStatusY}
+      >
+        <CharacterStatusWindow />
       </LayoutItemWrapper>
     </div>
     {#if $view == "settings"}

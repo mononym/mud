@@ -17,8 +17,7 @@
   let actualInput = "";
   let commandLineDiv;
   let commandHistory = [];
-  let workingInput = "";
-  let commandHistoryIndex = 0;
+  let commandHistoryIndex = -1;
   let commandHistoryLength = 1000;
   let inputMode = "command";
   let tippyInstance;
@@ -35,6 +34,7 @@
 
   onMount(() => {
     actualInput = input;
+    let workingInput = "";
 
     commandLineDiv.addEventListener("keydown", (event) => {
       if (event.key == "Enter" && !event.shiftKey) {
@@ -46,37 +46,36 @@
       } else if (event.key == "ArrowUp") {
         event.preventDefault();
 
-        if (commandHistory.length - 1 > commandHistoryIndex) {
-          commandHistoryIndex++;
-        }
-
-        if (commandHistory.length == 0) {
-          return;
-          // if there is existing input we don't want to lose it, so move to a special holder
-        } else if (commandHistoryIndex == 0) {
+        if (commandHistoryIndex == -1) {
           workingInput = actualInput;
         }
 
-        if (commandHistory.length - 1 >= commandHistoryIndex) {
-          actualInput = commandHistory[commandHistoryIndex];
+        if (
+          commandHistory.length != 0 &&
+          commandHistory.length - 1 > commandHistoryIndex
+        ) {
+          actualInput = commandHistory[++commandHistoryIndex];
+        } else if (
+          commandHistory.length == 0 ||
+          commandHistory.length - 1 == commandHistoryIndex
+        ) {
+          return;
+          // if there is existing input we don't want to lose it, so move to a special holder
         }
       } else if (event.key == "ArrowDown") {
-        prevent_default(event);
+        event.preventDefault();
 
-        if (commandHistory.length == 0 || commandHistoryIndex == -1) {
-          return;
-        } else {
-          commandHistoryIndex--;
-        }
-
-        if (commandHistoryIndex == -1) {
+        if (commandHistory.length != 0 && commandHistoryIndex == 0) {
           actualInput = workingInput;
           workingInput = "";
+          --commandHistoryIndex;
+        } else if (commandHistory.length == 0 || commandHistoryIndex == -1) {
+          return;
         } else {
-          actualInput = commandHistory[commandHistoryIndex];
+          actualInput = commandHistory[--commandHistoryIndex];
         }
       } else {
-        commandHistoryIndex = 0;
+        commandHistoryIndex = -1;
       }
     });
 

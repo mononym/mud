@@ -1,7 +1,6 @@
 <script>
   import { getContext } from "svelte";
   import { key } from "./state";
-  // import CompassButton from "./CompassButton.svelte";
 
   const timeIconBaseRotationToMidnight = -144; // degrees
 
@@ -17,7 +16,6 @@
   class="environmentInfo h-full w-full flex flex-col place-content-center items-center"
 >
   <p class="text-center text-white">{$worldTimeString}</p>
-  <!-- <i class="fa-fw fa-3x fas fa-sunrise" /> -->
   <img
     src="day_and_night.svg"
     alt="time of day"

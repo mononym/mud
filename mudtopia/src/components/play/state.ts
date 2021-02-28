@@ -633,8 +633,6 @@ export function createState() {
           return index;
         });
       }
-
-      console.log(get(inventoryItemsParentChildIndex));
     });
   }
 

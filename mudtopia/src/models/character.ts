@@ -12,6 +12,10 @@ import CharacterContainersState, {
   CharacterContainersInterface,
 } from "./characterContainers";
 
+import CharacterStatusState, {
+  CharacterStatusInterface,
+} from "./characterStatus";
+
 import CharacterSlotsState, { CharacterSlotsInterface } from "./characterSlots";
 
 export interface CharacterInterface {
@@ -51,6 +55,7 @@ export interface CharacterInterface {
   wealth: CharacterWealthInterface;
   containers: CharacterContainersInterface;
   slots: CharacterSlotsInterface;
+  status: CharacterStatusInterface;
   moved_at: string;
 }
 
@@ -91,6 +96,7 @@ const state: CharacterInterface = {
   wealth: { ...CharacterWealthState },
   containers: { ...CharacterContainersState },
   slots: { ...CharacterSlotsState },
+  status: { ...CharacterStatusState },
   moved_at: "",
 };
 
