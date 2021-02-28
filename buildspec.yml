@@ -45,5 +45,6 @@ phases:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
 artifacts:
+  base-directory: server/_build/prod
   files:
-    - "**/*"
+    - "prod-*.tar.gz"
