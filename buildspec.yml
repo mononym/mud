@@ -37,8 +37,8 @@ phases:
       - cd server
       - mix deps.get
       - mix compile
-      - cp appspec.yml _build/prod/rel/prod
-      - cp -R scripts _build/prod/rel/prod
+      - cp appspec.yml _build/prod
+      - cp -R scripts _build/prod
       - echo Building assets
       - cd assets
       - npm install
