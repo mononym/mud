@@ -37,6 +37,7 @@ phases:
       - cd server
       - mix deps.get
       - mix compile
+      - mkdir -p _build/prod/rel/prod
       - cp appspec.yml _build/prod/rel/prod
       - cp -R scripts _build/prod/rel/prod
       - echo Building assets
