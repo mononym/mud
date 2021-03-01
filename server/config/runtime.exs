@@ -32,8 +32,8 @@ config :ex_aws,
 config :ex_aws, :hackney_opts, recv_timeout: 30_000
 
 config :mud, Mud.Repo,
-  username: "mud",
-  password: System.get_env("DB_PASSWORD"),
-  database: "mud",
-  hostname: System.get_env("DB_HOSTNAME"),
+  username: System.get_env("DB_USERNAME", "mud"),
+  password: System.get_env("DB_PASSWORD", "mud"),
+  database: System.get_env("DB_DATABASE", "mud"),
+  hostname: System.get_env("DB_HOSTNAME", "localhost"),
   pool_size: 10

@@ -44,6 +44,8 @@ phases:
       - echo Build started on `date` in dir `pwd`
       - mix phx.digest
       - mix release
+      - cp appspec.yml _build/prod/rel/mud/
+      - cp -R scripts _build/prod/rel/mud/
   post_build:
     commands:
       - echo Entered the post_build phase...
