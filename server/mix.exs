@@ -14,7 +14,7 @@ defmodule Mud.MixProject do
       releases: [
         prod: [
           include_executables_for: [:unix],
-          steps: [:assemble]
+          steps: [:assemble, :tar]
         ]
       ]
     ]
