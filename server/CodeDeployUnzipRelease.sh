@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-tar xzf /home/ubuntu/apps/mud/prod*tar.gz
+export HOME=/home/ubuntu
+cd /home/ubuntu/apps/mud
+ls
+tar xzf prod*tar.gz
