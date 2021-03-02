@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-tar xzf prod-*tar.gz
+sudo tar xzf prod*tar.gz
