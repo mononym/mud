@@ -51,8 +51,7 @@ phases:
 artifacts:
   base-directory: server
   files:
-    # - "_build/prod/prod-*.tar.gz"
-    - "_build/prod/*"
+    - "_build/prod/prod-*.tar.gz"
     - appspec.yml
     - CodeDeployUnzipRelease.sh
   discard-paths: yes
