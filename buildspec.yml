@@ -49,7 +49,7 @@ phases:
       - echo Entered the post_build phase...
       - echo Build completed on `date`
 artifacts:
-  base-directory: server/_build/prod
+  base-directory: server
   files:
-    - "prod-*.tar.gz"
+    - "_build/prod/prod-*.tar.gz"
     - appspec.yml
