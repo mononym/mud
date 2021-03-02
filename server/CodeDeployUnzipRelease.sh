@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-echo $PWD
-
-# sudo tar xzf prod*tar.gz
+tar xzf /home/ubuntu/apps/mud/prod*tar.gz
