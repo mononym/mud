@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :mud,
   signup_player_token_ttl: String.to_integer(System.get_env("SIGNUP_PLAYER_TOKEN_TTL", "604800")),
