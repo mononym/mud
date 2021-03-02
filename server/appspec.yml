@@ -5,6 +5,6 @@ files:
     destination: /home/ubuntu/apps/mud
 hooks:
   BeforeInstall:
-    - location: _build/prod/scripts/start.sh
+    - location: CodeDeployUnzipRelease.sh
   ApplicationStart:
-    - location: _build/prod/scripts/start.sh
+    - location: scripts/start.sh
