@@ -54,4 +54,5 @@ artifacts:
     - "_build/prod/prod-*.tar.gz"
     - appspec.yml
     - CodeDeployUnzipRelease.sh
+    - CodeDeployStartRelease.sh
   discard-paths: yes
