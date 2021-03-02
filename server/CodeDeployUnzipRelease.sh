@@ -1,3 +1,5 @@
 #!/usr/bin/env bash
 
-sudo tar xzf prod*tar.gz
+echo $PWD
+
+# sudo tar xzf prod*tar.gz
