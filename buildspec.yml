@@ -51,5 +51,7 @@ phases:
 artifacts:
   base-directory: server
   files:
-    - "_build/prod/prod-*.tar.gz"
+    # - "_build/prod/prod-*.tar.gz"
+    - "_build/prod/*"
     - appspec.yml
+  discard-paths: yes
