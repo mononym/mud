@@ -5,4 +5,4 @@ files:
     destination: /home/ubuntu/apps/mud
 hooks:
   ApplicationStart:
-    - location: scripts/start.sh
+    - location: _build/prod/scripts/start.sh
