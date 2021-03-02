@@ -52,3 +52,4 @@ artifacts:
   base-directory: server/_build/prod
   files:
     - "prod-*.tar.gz"
+    - appspec.yml
