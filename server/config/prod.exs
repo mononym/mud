@@ -18,9 +18,9 @@ config :logger, level: :info
 
 config :mud, Mud.Repo,
   username: "mud",
-  password: "WUTCC6OOvVTLFAxig9SJ",
+  password: "",
   database: "mud",
-  hostname: "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com",
+  hostname: "",
   pool_size: 10
 
 # ## SSL Support

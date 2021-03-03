@@ -16,7 +16,7 @@ pip install --upgrade pip &> /dev/null
 pip install awscli --ignore-installed six &> /dev/null
 
 # add boot script which loads environment variables
-cat > /etc/profile.d/export_instance_tags.sh << 'EOF'
+# cat > /etc/profile.d/export_instance_tags.sh << 'EOF'
     # fetch instance info
     INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
     REGION=${AWS::Region}
@@ -32,4 +32,4 @@ cat > /etc/profile.d/export_instance_tags.sh << 'EOF'
     # export instance info
     export INSTANCE_ID
     export REGION
-EOF
+# EOF
