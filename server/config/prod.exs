@@ -31,6 +31,7 @@ config :mud, Mud.Repo,
   hostname: "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com",
   pool_size: 10
 
+config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
