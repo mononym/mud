@@ -19,7 +19,11 @@ config :mud,
   character_inactivity_timeout_final:
     String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "1200000")),
   create_player_token_ttl: String.to_integer(System.get_env("CREATE_PLAYER_TOKEN_TTL", "1800")),
-  race_image_cf_domain: System.get_env("AWS_RACE_IMAGE_CF_DOMAIN", "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com")
+  race_image_cf_domain:
+    System.get_env(
+      "AWS_RACE_IMAGE_CF_DOMAIN",
+      "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com"
+    )
 
 config :mud, :generators,
   migration: true,
@@ -27,7 +31,7 @@ config :mud, :generators,
 
 config :ex_aws,
   normalize_path: false,
-  region: "eu-north-1"
+  region: "eu-north-1",
   access_key_id: ["AKIA57R6CLYKV2ZIZOZ7", :instance_role],
   secret_access_key: ["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", :instance_role]
 

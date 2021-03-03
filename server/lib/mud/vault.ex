@@ -7,7 +7,9 @@ defmodule Mud.Vault do
   def init(config) do
     config =
       Keyword.put(config, :ciphers,
-        default: {Cloak.Ciphers.AES.GCM, tag: "AES.GCM.V1", key: decode_env!("CLOAK_KEY")}
+        default:
+          {Cloak.Ciphers.AES.GCM,
+           tag: "AES.GCM.V1", key: "Cd+sdohrr2AZKsQmhBhoSGEOuPS/rRAvnoEGGlnK0MA="}
       )
 
     {:ok, config}
