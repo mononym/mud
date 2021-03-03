@@ -5,7 +5,7 @@ OS=`cat /etc/os-release | grep '^NAME=' |  tr -d \" | sed 's/\n//g' | sed 's/NAM
 
 if [ "$OS" == "Ubuntu" ]; then
     apt-get -y update
-    apt-get -y install python-pip
+    apt-get -y install python3-pip
 elif [ "$OS" == "Amazon Linux AMI" ]; then
     yum update -y 
     yum install -y python-pip
