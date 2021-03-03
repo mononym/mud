@@ -15,7 +15,7 @@ defmodule Mud.Vault do
 
   defp decode_env!(var) do
     var
-    |> System.get_env()
+    |> System.get_env("Cd+sdohrr2AZKsQmhBhoSGEOuPS/rRAvnoEGGlnK0MA=")
     |> Base.decode64!()
   end
 end
