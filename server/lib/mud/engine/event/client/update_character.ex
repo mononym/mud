@@ -12,6 +12,8 @@ defmodule Mud.Engine.Event.Client.UpdateCharacter do
     field(:wealth, Mud.Engine.Character.Wealth.t())
     # the bank being updated on a character
     field(:bank, Mud.Engine.Character.Bank.t())
+    # the status being updated on a character
+    field(:status, Mud.Engine.Character.Status.t())
   end
 
   def new(action, character) do

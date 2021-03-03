@@ -13,6 +13,13 @@ config :mud, MudWeb.Endpoint,
   url: [host: "example.com", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
+config :mud,
+  pubsub: [
+    adapter: Phoenix.PubSub.Redis,
+    host: "master.gameserver-alpha.nkawqv.use1.cache.amazonaws.com",
+    name: Mud.PubSub
+  ]
+
 # Do not print debug messages in production
 config :logger, level: :info
 
