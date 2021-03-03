@@ -19,7 +19,7 @@ pip install awscli --ignore-installed six &> /dev/null
 cat > /etc/profile.d/export_instance_tags.sh << 'EOF'
     # fetch instance info
     INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    REGION=${AWS::Region}
+    REGION=$(curl --silent http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
 
     # export instance tags
     export_statement=$(aws ec2 describe-tags --region "$REGION" \
