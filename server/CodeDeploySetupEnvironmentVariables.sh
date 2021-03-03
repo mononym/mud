@@ -1,14 +1,50 @@
 #!/usr/bin/env bash
 
-getInstanceTags () {
-    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
-    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed -e 's:\([0-9][0-9]*\)[a-z]*\$:\\1:'`"
+######
+# Description: Create Create Environment Variables in EC2 Hosts from EC2 Host Tags
+# 
+### Requirements:  
+# * Install jq library (sudo apt-get install -y jq)
+# * Install the EC2 Instance Metadata Query Tool (http://aws.amazon.com/code/1825)
+#
+### Installation:
+# * Add the Policy EC2:DescribeTags to a User
+# * aws configure
+# * Souce it to the user's ~/.profile that has permissions
+#### 
+# Add tags to an EC2 host or Image Profile
+# Reboot and verify the result of $(env).
 
-    # Print tags as 'export TAG_Key="Value"'
-    aws ec2 describe-tags --region $EC2_REGION --filters "Name=resource-id,Values=$INSTANCE_ID" | \
-      python -c "import sys,json; map(lambda t: sys.stdout.write('export TAG_%s=\"%s\"\n' % (t['Key'], t['Value'])), json.load(sys.stdin)['Tags'])"
+# Loads the Tags from the current instance
+getInstanceTags () {
+  # http://aws.amazon.com/code/1825 EC2 Instance Metadata Query Tool
+  INSTANCE_ID=$(./ec2-metadata | grep instance-id | awk '{print $2}')
+
+  # Describe the tags of this instance
+  aws ec2 describe-tags --region sa-east-1 --filters "Name=resource-id,Values=$INSTANCE_ID"
 }
 
-# Export variables from tags
-$(getInstanceTags)
+# Convert the tags to environment variables.
+# Based on https://github.com/berpj/ec2-tags-env/pull/1
+tags_to_env () {
+    tags=$1
+
+    for key in $(echo $tags | /usr/bin/jq -r ".[][].Key"); do
+        value=$(echo $tags | /usr/bin/jq -r ".[][] | select(.Key==\"$key\") | .Value")
+        key=$(echo $key | /usr/bin/tr '-' '_' | /usr/bin/tr '[:lower:]' '[:upper:]')
+        echo "Exporting $key=$value"
+        export $key="$value"
+    done
+}
+
+# setup
+echo "export LC_ALL=en_US.UTF-8" >> ~/.bash_profile
+echo "export LANG=en_US.UTF-8" >> ~/.bash_profile
+source ~/.bash_profile
+sudo apt-get --assume-yes awscli jq
+wget http://s3.amazonaws.com/ec2metadata/ec2-metadata
+chmod u+x ec2-metadata
+
+# Execute the commands
+instanceTags=$(getInstanceTags)
+tags_to_env "$instanceTags"
