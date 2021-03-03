@@ -45,6 +45,14 @@ defmodule MudWeb.Router do
     post("/authenticate/email", PlayerAuthController, :authenticate_via_email)
     post("/authenticate/token", PlayerAuthController, :validate_auth_token)
     get("/authenticate/sync", PlayerAuthController, :sync_status)
+
+    #
+    #
+    # Health Check for Load Balancer
+    #
+    #
+
+    get("/health", HealthController, :health_check)
   end
 
   scope "/", MudWeb do
@@ -140,13 +148,5 @@ defmodule MudWeb.Router do
 
     get("/start-game-session/:character_id", MudClientController, :start_game_session)
     get("/init-client-data/:character_id", MudClientController, :init_client_data)
-
-    #
-    #
-    # Health Check for Load Balancer
-    #
-    #
-
-    get("/health", HealthController, :health_check)
   end
 end
