@@ -4,8 +4,6 @@ files:
   - source: /
     destination: /home/ubuntu/apps/mud
 hooks:
-  BeforeInstall:
-    - location: CodeDeploySetupEnvironmentVariables.sh
   AfterInstall:
     - location: CodeDeployUnzipRelease.sh
   ApplicationStart:
