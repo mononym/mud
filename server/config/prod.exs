@@ -71,4 +71,4 @@ config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 # import_config "prod.secret.exs"
 
 config :mud,
-  redis_endpoint: "gameserver-alpha-001.gameserver-alpha.nkawqv.use1.cache.amazonaws.com"
+  redis_endpoint: "master.gameserver-alpha.nkawqv.use1.cache.amazonaws.com"
