@@ -4,6 +4,8 @@ files:
   - source: /
     destination: /home/ubuntu/apps/mud
 hooks:
+  ApplicationStop:
+    - location: CodeDeployStopRelease.sh
   AfterInstall:
     - location: CodeDeployUnzipRelease.sh
   ApplicationStart:
