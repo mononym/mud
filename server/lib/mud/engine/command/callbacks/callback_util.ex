@@ -10,7 +10,6 @@ defmodule Mud.Engine.Command.CallbackUtil do
   alias Mud.Engine.Message
   alias Mud.Engine.{Character, Item, Link}
   alias Mud.Engine.Link.Closable
-  alias Mud.Engine.Character.Wealth
 
   @gold_worth 1_000_000
   @silver_worth 10_000
