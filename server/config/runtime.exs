@@ -31,7 +31,7 @@ config :mud, :generators,
 
 config :ex_aws,
   normalize_path: false,
-  region: "eu-north-1",
+  region: "us-east-1",
   access_key_id: ["AKIA57R6CLYKV2ZIZOZ7", :instance_role],
   secret_access_key: ["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", :instance_role]
 
