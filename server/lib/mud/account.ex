@@ -53,6 +53,12 @@ defmodule Mud.Account do
     # TODO: Sort out what happens when email is submitted second time before account creation finished
     case lookup_player_by_auth_email(email_address) do
       {:ok, player_id} ->
+        Logger.info(
+          "Starting authentication for existing player `#{player_id}` with token `#{auth_token}` and expiry `#{
+            @login_token_ttl
+          }`"
+        )
+
         redis_set_player_auth_token(auth_token, "login", player_id, @login_token_ttl)
 
         Mud.Account.Emails.login_email(email_address, @from_email_address, auth_token)
@@ -203,7 +209,6 @@ defmodule Mud.Account do
             )
 
             player = Mud.Repo.one!(player_select_query)
-
 
             {:ok, player}
 
