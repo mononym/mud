@@ -40,7 +40,7 @@ defmodule Mud.MixProject do
   defp deps do
     [
       {:arbor, "~> 1.1"},
-      {:bamboo, "~> 1.5"},
+      {:bamboo, "~> 2.0"},
       {:bamboo_ses, "~> 0.2.0"},
       {:cloak, "1.0.0"},
       {:corsica, "~> 1.1"},
