@@ -9,7 +9,7 @@ config :mud,
   nickname_format: Regex.compile!(System.get_env("NICKNAME_FORMAT", "^[a-zA-Z0-9 ]+$")),
   nickname_max_length: String.to_integer(System.get_env("NICKNAME_MAX_LENGTH", "30")),
   nickname_min_length: String.to_integer(System.get_env("NICKNAME_MIN_LENGTH", "2")),
-  no_reply_email_address: System.get_env("NO_REPLY_EMAIL_ADDRESS", "no-reply@mud"),
+  no_reply_email_address: System.get_env("NO_REPLY_EMAIL_ADDRESS", "no-reply@unnamedmud.com"),
   character_context_buffer_trim_size:
     String.to_integer(System.get_env("CHARACTER_CONTEXT_BUFFER_TRIM_SIZE", "800")),
   character_context_buffer_max_size:
