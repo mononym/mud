@@ -17,7 +17,7 @@ config :mud, MudWeb.Endpoint,
 config :mud,
   pubsub: [
     adapter: Phoenix.PubSub.Redis,
-    host: "master.gameserver-alpha.nkawqv.use1.cache.amazonaws.com",
+    host: "alpha.nkawqv.ng.0001.use1.cache.amazonaws.com",
     name: Mud.PubSub
   ]
 
@@ -71,4 +71,4 @@ config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 # import_config "prod.secret.exs"
 
 config :mud,
-  redis_endpoint: "master.gameserver-alpha.nkawqv.use1.cache.amazonaws.com"
+  redis_endpoint: "alpha.nkawqv.ng.0001.use1.cache.amazonaws.com"
