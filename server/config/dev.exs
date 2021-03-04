@@ -86,3 +86,6 @@ config :phoenix, :plug_init_mode, :runtime
 
 # Configure email
 config :mud, Mud.Mailer, adapter: Bamboo.LocalAdapter
+
+config :mud,
+  redis_endpoint: "localhost"

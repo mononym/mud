@@ -69,3 +69,6 @@ config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 # Finally import the config/prod.secret.exs which loads secrets
 # and configuration from environment variables.
 # import_config "prod.secret.exs"
+
+config :mud,
+  redis_endpoint: "gameserver-alpha-001.gameserver-alpha.nkawqv.use1.cache.amazonaws.com"
