@@ -38,10 +38,6 @@ defmodule Mud.Account do
     {:ok, :subscribed}
   end
 
-  @login_token_ttl Application.get_env(:mud, :login_token_ttl)
-  @signup_player_token_ttl Application.get_env(:mud, :create_player_token_ttl)
-  @from_email_address Application.get_env(:mud, :no_reply_email_address)
-
   @doc """
   Send a login or welcome email out based on whether or not a Player exists that uses the provided email.
 
@@ -55,13 +51,22 @@ defmodule Mud.Account do
       {:ok, player_id} ->
         Logger.info(
           "Starting authentication for existing player `#{player_id}` with token `#{auth_token}` and expiry `#{
-            @login_token_ttl
+            Application.get_env(:mud, :login_token_ttl)
           }`"
         )
 
-        redis_set_player_auth_token(auth_token, "login", player_id, @login_token_ttl)
+        redis_set_player_auth_token(
+          auth_token,
+          "login",
+          player_id,
+          Application.get_env(:mud, :login_token_ttl)
+        )
 
-        Mud.Account.Emails.login_email(email_address, @from_email_address, auth_token)
+        Mud.Account.Emails.login_email(
+          email_address,
+          Application.get_env(:mud, :no_reply_email_address),
+          auth_token
+        )
         |> Mud.Mailer.deliver_later()
 
         {:ok, :player_found}
@@ -90,10 +95,14 @@ defmodule Mud.Account do
           auth_token,
           "signup",
           player.id,
-          @signup_player_token_ttl
+          Application.get_env(:mud, :create_player_token_ttl)
         )
 
-        Mud.Account.Emails.welcome_email(email_address, @from_email_address, auth_token)
+        Mud.Account.Emails.welcome_email(
+          email_address,
+          Application.get_env(:mud, :no_reply_email_address),
+          auth_token
+        )
         |> Mud.Mailer.deliver_later()
 
         {:ok, :player_created}
