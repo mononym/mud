@@ -42,6 +42,7 @@ defmodule Mud.MixProject do
       {:arbor, "~> 1.1"},
       {:bamboo, "~> 2.0"},
       {:bamboo_ses, "~> 0.2.0"},
+      {:castore, ">= 0.0.0"},
       {:cloak, "1.0.0"},
       {:corsica, "~> 1.1"},
       {:ecto, "~> 3.4", override: true},
