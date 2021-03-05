@@ -195,7 +195,8 @@ defmodule Mud.Engine.Character do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    area = Area.list_all() |> Enum.find(&(&1.name == "Water Fountain"))
+    # Just grab something random for Alpha, as long as it is permanently explored
+    area = Area.list_all() |> Enum.filter(& &1.permanently_explored) |> Enum.random()
 
     Logger.debug(inspect(area))
     Logger.debug(inspect(attrs))
@@ -214,6 +215,8 @@ defmodule Mud.Engine.Character do
 
     case result do
       {:ok, character} ->
+        Logger.info("Character `#{character.name}` created in area `#{area.id}:#{area.name}`")
+
         # Set up skills
         :ok = Skill.initialize(character.id)
 

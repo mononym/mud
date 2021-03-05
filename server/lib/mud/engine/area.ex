@@ -23,7 +23,8 @@ defmodule Mud.Engine.Area do
              :border_color,
              :color,
              :inserted_at,
-             :updated_at
+             :updated_at,
+             :permanently_explored
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
