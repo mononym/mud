@@ -174,93 +174,93 @@ defmodule Mud.Engine.Item.Gem do
   defp gem_size(carats) when carats < 200.0, do: "gigantic"
   defp gem_size(_carats), do: "colossal"
 
-  defp gem_color(clarity, hue, saturation, tone) do
-    if tone == 1 do
-      ""
-    else
-      # "#{clarity(clarity)}#{tone(tone)}#{saturation(saturation, hue)} #{hue}"
-      # "#{clarity(clarity)}#{tone(tone)}#{saturation(saturation, hue)} #{hue}"
-      "#{saturation(saturation, hue)} #{hue}"
-      "#{saturation(saturation, hue)} #{hue}"
-    end
-  end
+  # defp gem_color(_clarity, hue, saturation, tone) do
+  #   if tone == 1 do
+  #     ""
+  #   else
+  #     # "#{clarity(clarity)}#{tone(tone)}#{saturation(saturation, hue)} #{hue}"
+  #     # "#{clarity(clarity)}#{tone(tone)}#{saturation(saturation, hue)} #{hue}"
+  #     "#{saturation(saturation, hue)} #{hue}"
+  #     "#{saturation(saturation, hue)} #{hue}"
+  #   end
+  # end
 
-  defp clarity(clarity) do
-    cond do
-      clarity == 1 -> " completely flawed"
-      clarity == 2 -> " heavily flawed"
-      clarity == 3 -> " heavily flawed"
-      clarity == 4 -> " flawed"
-      clarity == 5 -> " flawed"
-      clarity == 6 -> " slightly flawed"
-      clarity == 7 -> " slightly flawed"
-      clarity == 8 -> " nearly flawless"
-      clarity == 9 -> " apparently flawless"
-      clarity == 10 -> " flawless"
-    end
-  end
+  # defp clarity(clarity) do
+  #   cond do
+  #     clarity == 1 -> " completely flawed"
+  #     clarity == 2 -> " heavily flawed"
+  #     clarity == 3 -> " heavily flawed"
+  #     clarity == 4 -> " flawed"
+  #     clarity == 5 -> " flawed"
+  #     clarity == 6 -> " slightly flawed"
+  #     clarity == 7 -> " slightly flawed"
+  #     clarity == 8 -> " nearly flawless"
+  #     clarity == 9 -> " apparently flawless"
+  #     clarity == 10 -> " flawless"
+  #   end
+  # end
 
-  defp tone(tone) do
-    cond do
-      tone == 1 -> " extremely light"
-      tone == 2 -> " very light"
-      tone == 3 -> " light"
-      tone == 4 -> ""
-      tone == 5 -> ""
-      tone == 6 -> ""
-      tone == 7 -> ""
-      tone == 8 -> " dark"
-      tone == 9 -> " very dark"
-      tone == 10 -> " extremely dark"
-    end
-  end
+  # defp tone(tone) do
+  #   cond do
+  #     tone == 1 -> " extremely light"
+  #     tone == 2 -> " very light"
+  #     tone == 3 -> " light"
+  #     tone == 4 -> ""
+  #     tone == 5 -> ""
+  #     tone == 6 -> ""
+  #     tone == 7 -> ""
+  #     tone == 8 -> " dark"
+  #     tone == 9 -> " very dark"
+  #     tone == 10 -> " extremely dark"
+  #   end
+  # end
 
-  @warm_colors [
-    "red",
-    "orange",
-    "yellow",
-    "reddish orange",
-    "orange",
-    "yellowish orange",
-    "orangy yellow",
-    "greenish yellow",
-    "yellow green",
-    "bluish purple",
-    "reddish purple",
-    "purple",
-    "reddish purple",
-    "purple red",
-    "purplish red"
-  ]
-  defp saturation(saturation, hue) when hue in @warm_colors do
-    cond do
-      saturation == 1 -> " brownish"
-      saturation <= 3 -> " slightly brownish"
-      saturation <= 7 -> ""
-      saturation <= 9 -> " strong"
-      saturation <= 10 -> " vivid"
-    end
-  end
+  # @warm_colors [
+  #   "red",
+  #   "orange",
+  #   "yellow",
+  #   "reddish orange",
+  #   "orange",
+  #   "yellowish orange",
+  #   "orangy yellow",
+  #   "greenish yellow",
+  #   "yellow green",
+  #   "bluish purple",
+  #   "reddish purple",
+  #   "purple",
+  #   "reddish purple",
+  #   "purple red",
+  #   "purplish red"
+  # ]
+  # defp saturation(saturation, hue) when hue in @warm_colors do
+  #   cond do
+  #     saturation == 1 -> " brownish"
+  #     saturation <= 3 -> " slightly brownish"
+  #     saturation <= 7 -> ""
+  #     saturation <= 9 -> " strong"
+  #     saturation <= 10 -> " vivid"
+  #   end
+  # end
 
-  @cool_colors [
-    "yellowish green",
-    "green",
-    "bluish green",
-    "blue green",
-    "greenish blue",
-    "blue",
-    "violetish blue",
-    "bluish violet",
-    "violet",
-    "pink"
-  ]
-  defp saturation(saturation, hue) when hue in @cool_colors do
-    cond do
-      saturation == 1 -> " grayish"
-      saturation <= 3 -> " slightly grayish"
-      saturation <= 7 -> ""
-      saturation <= 9 -> " strong"
-      saturation <= 10 -> " vivid"
-    end
-  end
+  # @cool_colors [
+  #   "yellowish green",
+  #   "green",
+  #   "bluish green",
+  #   "blue green",
+  #   "greenish blue",
+  #   "blue",
+  #   "violetish blue",
+  #   "bluish violet",
+  #   "violet",
+  #   "pink"
+  # ]
+  # defp saturation(saturation, hue) when hue in @cool_colors do
+  #   cond do
+  #     saturation == 1 -> " grayish"
+  #     saturation <= 3 -> " slightly grayish"
+  #     saturation <= 7 -> ""
+  #     saturation <= 9 -> " strong"
+  #     saturation <= 10 -> " vivid"
+  #   end
+  # end
 end

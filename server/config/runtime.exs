@@ -36,10 +36,3 @@ config :ex_aws,
   secret_access_key: ["opSaKW/pppjZXv1hVXo3b4JQ2h7OcE8PKI8NYEnM", :instance_role]
 
 config :ex_aws, :hackney_opts, recv_timeout: 30_000
-
-# config :mud, Mud.Repo,
-#   username: System.get_env("DB_USERNAME", "mud"),
-#   password: System.get_env("DB_PASSWORD", "mud"),
-#   database: System.get_env("DB_DATABASE", "mud"),
-#   hostname: System.get_env("DB_HOSTNAME", "localhost"),
-#   pool_size: 10

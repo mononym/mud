@@ -88,6 +88,7 @@ defmodule MudWeb.MudClientView do
     %{
       action: event.action,
       character: render_one(event.character, MudWeb.CharacterView, "character.json"),
+      status: render_one(event.status, MudWeb.CharacterStatusView, "character_status.json"),
       wealth: render_one(event.wealth, MudWeb.CharacterWealthView, "character_wealth.json")
     }
   end

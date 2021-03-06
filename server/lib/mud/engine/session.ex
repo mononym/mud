@@ -12,26 +12,6 @@ defmodule Mud.Engine.Session do
   alias Mud.Engine.Item
   alias Mud.Engine.Event.Client.UpdateArea
 
-  @character_context_buffer_trim_size Application.get_env(
-                                        :mud,
-                                        :character_context_buffer_trim_size
-                                      )
-
-  @character_context_buffer_max_size Application.get_env(
-                                       :mud,
-                                       :character_context_buffer_max_size
-                                     )
-
-  @character_inactivity_timeout_warning Application.get_env(
-                                          :mud,
-                                          :character_inactivity_timeout_warning
-                                        )
-
-  @character_inactivity_timeout_final Application.get_env(
-                                        :mud,
-                                        :character_inactivity_timeout_final
-                                      )
-
   defmodule State do
     defstruct character_id: nil,
               text_buffer: [],
@@ -166,7 +146,15 @@ defmodule Mud.Engine.Session do
     # IO.inspect("update", label: "Mud.Engine.Session.init/1")
 
     # Start inactivity timer
-    state = update_timeout(state, @character_inactivity_timeout_warning)
+    state =
+      update_timeout(
+        state,
+        Application.get_env(
+          :mud,
+          :character_inactivity_timeout_warning
+        )
+      )
+
     # IO.inspect("ok", label: "Mud.Engine.Session.init/1")
 
     {:ok, state}
@@ -237,7 +225,14 @@ defmodule Mud.Engine.Session do
   def handle_cast(%Mud.Engine.Message.Input{} = input, state) do
     Logger.debug("#{inspect(input)}", label: "session_handle_cast")
     # Logger.debug("#{inspect(state)}", label: "handle_cast")
-    state = update_timeout(state, @character_inactivity_timeout_warning)
+    state =
+      update_timeout(
+        state,
+        Application.get_env(
+          :mud,
+          :character_inactivity_timeout_warning
+        )
+      )
 
     cond do
       length(state.input_buffer) == 0 and state.input_processing_task == nil ->
@@ -427,7 +422,14 @@ defmodule Mud.Engine.Session do
 
     GenServer.cast(self(), new_message)
 
-    state = update_timeout(state, @character_inactivity_timeout_final)
+    state =
+      update_timeout(
+        state,
+        Application.get_env(
+          :mud,
+          :character_inactivity_timeout_final
+        )
+      )
 
     {:noreply, %{state | inactivity_timer_type: :final}}
   end
@@ -595,8 +597,19 @@ defmodule Mud.Engine.Session do
   end
 
   defp maybe_deal_with_overflow(text_buffer) do
-    if length(text_buffer) > @character_context_buffer_max_size do
-      messages_to_trim = @character_context_buffer_max_size - @character_context_buffer_trim_size
+    buff_max_size =
+      Application.get_env(
+        :mud,
+        :character_context_buffer_max_size
+      )
+
+    if length(text_buffer) > buff_max_size do
+      messages_to_trim =
+        buff_max_size -
+          Application.get_env(
+            :mud,
+            :character_context_buffer_trim_size
+          )
 
       Enum.reverse_slice(text_buffer, 0, messages_to_trim)
     else

@@ -139,6 +139,29 @@ defmodule Mud.Engine.Search do
     end
   end
 
+  @spec find_furniture_in_area(String.t(), String.t(), String.t()) ::
+          {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
+  @doc """
+  Find furniture in an area.
+  """
+  @spec find_furniture_in_area(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_furniture_in_area(area_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = Item.search_furniture_in_area(area_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
   @spec find_exits_in_area(String.t(), String.t(), String.t()) ::
           {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
   @doc """
@@ -359,7 +382,6 @@ defmodule Mud.Engine.Search do
     # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
     # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
 
-
     items =
       Item.search_relative_to_inventory(
         character_id,
@@ -423,7 +445,7 @@ defmodule Mud.Engine.Search do
         thing_is_immediate_child
       )
 
-      # IO.inspect(items, label: :find_matches_relative_to_place_in_inventory_items)
+    # IO.inspect(items, label: :find_matches_relative_to_place_in_inventory_items)
 
     case things_to_match(items) do
       [] ->

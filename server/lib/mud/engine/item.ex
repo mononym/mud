@@ -9,7 +9,19 @@ defmodule Mud.Engine.Item do
   import Ecto.Query
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Search}
-  alias Mud.Engine.Item.{Coin, Flags, Gem, Location, Physics, Description, Container, Wearable}
+
+  alias Mud.Engine.Item.{
+    Coin,
+    Flags,
+    Furniture,
+    Gem,
+    Location,
+    Physics,
+    Description,
+    Container,
+    Wearable
+  }
+
   require Logger
 
   @type id :: String.t()
@@ -17,13 +29,14 @@ defmodule Mud.Engine.Item do
   @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
-    has_one(:location, Location)
-    has_one(:flags, Flags)
-    has_one(:description, Description)
-    has_one(:container, Container)
-    has_one(:physics, Physics)
     has_one(:coin, Coin)
+    has_one(:container, Container)
+    has_one(:description, Description)
+    has_one(:flags, Flags)
+    has_one(:furniture, Furniture)
     has_one(:gem, Gem)
+    has_one(:location, Location)
+    has_one(:physics, Physics)
     has_one(:wearable, Wearable)
 
     timestamps()
@@ -72,6 +85,7 @@ defmodule Mud.Engine.Item do
       |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
       |> maybe_setup_optional_component(normalized_attrs, :coin, Coin)
       |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
+      |> maybe_setup_optional_component(normalized_attrs, :furniture, Furniture)
       |> maybe_setup_optional_component(normalized_attrs, :description, Description)
       |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
     end)
@@ -772,6 +786,20 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
+  Furniture on the ground in an area is searched for a match in the Repo using the search_string as part of a LIKE query.
+  """
+  def search_furniture_in_area(area_id, search_string) do
+    from(
+      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      where:
+        location.area_id == ^area_id and flags.furniture and location.on_ground and
+          like(description.short, ^search_string),
+      order_by: location.moved_at
+    )
+    |> Repo.all()
+  end
+
+  @doc """
   Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
   """
   def search_on_ground(area_id, search_string) do
@@ -1059,6 +1087,8 @@ defmodule Mud.Engine.Item do
       as: :coin,
       left_join: gem in assoc(item, :gem),
       as: :gem,
+      left_join: furniture in assoc(item, :furniture),
+      as: :furniture,
       left_join: wearable in assoc(item, :wearable),
       as: :wearable
     )

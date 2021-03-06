@@ -1,11 +1,12 @@
 // api.js
 import axios, { AxiosResponse, Method } from "axios";
 import { push } from "svelte-spa-router";
-import pako from "pako";
+// import pako from "pako";
 
 // Create a instance of axios to use the same base url.
 const axiosAPI = axios.create({
   baseURL: "https://localhost:4000", // it's not recommended to have this info here.
+  // baseURL: "https://gameserver.unnamedmud.com", // it's not recommended to have this info here.
   // transformRequest: [
   //   (data, headers) => {
   //     console.log("axios.create");

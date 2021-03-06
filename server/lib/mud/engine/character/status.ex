@@ -7,12 +7,25 @@ defmodule Mud.Engine.Character.Status do
 
   @type id :: String.t()
 
-  @derive {Jason.Encoder, only: [:id, :position, :character_id]}
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :position,
+             :character_id,
+             :item_id,
+             :position_relation,
+             :position_relative_to_item
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "character_status" do
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
+    # Use this when the character is standing/sitting/kneeling/lying/whatever on/in/under/wherever in relation to an item.
+    belongs_to(:item, Mud.Engine.Item, type: :binary_id)
+
     field(:position, :string, default: "standing")
+    field(:position_relation, :string, default: "on")
+    field(:position_relative_to_item, :boolean, default: false)
   end
 
   @doc false
@@ -20,8 +33,12 @@ defmodule Mud.Engine.Character.Status do
     wealth
     |> change()
     |> cast(attrs, [
+      :id,
+      :position,
       :character_id,
-      :position
+      :item_id,
+      :position_relation,
+      :position_relative_to_item
     ])
     |> validate_required([:character_id, :position])
     |> foreign_key_constraint(:character_id)

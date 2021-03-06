@@ -2136,6 +2136,7 @@ Mud.Engine.Item.create(%{
     scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
+  furniture: %{has_external_surface: true, external_surface_can_hold_characters: true, external_surface_size: 6}
 })
 
 Mud.Engine.Item.create(%{
@@ -2151,6 +2152,7 @@ Mud.Engine.Item.create(%{
     scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
+  furniture: %{has_external_surface: true, external_surface_can_hold_characters: true, external_surface_size: 6}
 })
 
 Mud.Engine.Item.create(%{
@@ -2166,6 +2168,7 @@ Mud.Engine.Item.create(%{
     scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
+  furniture: %{has_external_surface: true, external_surface_can_hold_characters: true, external_surface_size: 6}
 })
 
 Mud.Engine.Item.create(%{
@@ -2181,6 +2184,7 @@ Mud.Engine.Item.create(%{
     scenery: true
   },
   location: %{area_id: center_room.id, on_ground: true}
+  furniture: %{has_external_surface: true, external_surface_can_hold_characters: true, external_surface_size: 6}
 })
 
 Mud.Engine.Item.create(%{

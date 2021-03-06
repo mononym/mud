@@ -812,6 +812,11 @@ export function createState() {
         } else {
           console.log("characters do not match");
         }
+      } else if (msg.action == "status") {
+        selectedCharacter.update(function (char) {
+          char.status = msg.status;
+          return char;
+        });
       } else if (msg.action == "wealth") {
         selectedCharacter.update(function (char) {
           char.wealth = msg.wealth;

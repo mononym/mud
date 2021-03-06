@@ -18,6 +18,9 @@ import ItemGemState from "../models/itemGem";
 
 import type { ItemWearableInterface } from "../models/itemWearable";
 import ItemWearableState from "../models/itemWearable";
+
+import type { ItemFurnitureInterface } from "../models/ItemFurniture";
+import ItemFurnitureState from "../models/ItemFurniture";
 export interface ItemInterface {
   id: string;
   location: ItemLocationInterface;
@@ -26,6 +29,7 @@ export interface ItemInterface {
   description: ItemDescriptionInterface;
   container: ItemContainerInterface;
   gem: ItemGemInterface;
+  furniture: ItemFurnitureInterface;
   wearable: ItemWearableInterface;
 }
 
@@ -37,6 +41,7 @@ const state: ItemInterface = {
   container: { ...ItemContainerState },
   location: { ...ItemLocationState },
   gem: { ...ItemGemState },
+  furniture: { ...ItemFurnitureState },
   wearable: { ...ItemWearableState },
 };
 

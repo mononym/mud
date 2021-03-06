@@ -710,6 +710,100 @@
           </div>
         {/if}
 
+        {#if $templateUnderConstruction.template.flags.furniture}
+          <div class="col-span-12">
+            <h2 class="text-gray-300 text-center">Furniture Properties</h2>
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureHasExternalSurface"
+              class="block text-sm font-medium text-gray-300"
+              >Has external surface?</label
+            >
+            <input
+              bind:checked={$templateUnderConstruction.template.furniture
+                .has_external_surface}
+              type="checkbox"
+              name="furnitureHasExternalSurface"
+              id="furnitureHasExternalSurface"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureExternalSurfaceCanHoldCharacters"
+              class="block text-sm font-medium text-gray-300"
+              >External surface can hold characters?</label
+            >
+            <input
+              bind:checked={$templateUnderConstruction.template.furniture
+                .external_surface_can_hold_characters}
+              type="checkbox"
+              name="furnitureExternalSurfaceCanHoldCharacters"
+              id="furnitureExternalSurfaceCanHoldCharacters"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureExternalSurfaceSize"
+              class="block text-sm font-medium text-gray-300"
+              >External surface size</label
+            >
+            <input
+              bind:value={$templateUnderConstruction.template.furniture.external_surface_size}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="furnitureExternalSurfaceSize"
+              id="furnitureExternalSurfaceSize"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureHasInternalSurface"
+              class="block text-sm font-medium text-gray-300"
+              >Has internal surface?</label
+            >
+            <input
+              bind:checked={$templateUnderConstruction.template.furniture
+                .has_internal_surface}
+              type="checkbox"
+              name="furnitureHasInternalSurface"
+              id="furnitureHasInternalSurface"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureInternalSurfaceCanHoldCharacters"
+              class="block text-sm font-medium text-gray-300"
+              >Internal surface can hold characters?</label
+            >
+            <input
+              bind:checked={$templateUnderConstruction.template.furniture
+                .internal_surface_can_hold_characters}
+              type="checkbox"
+              name="furnitureInternalSurfaceCanHoldCharacters"
+              id="furnitureInternalSurfaceCanHoldCharacters"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="furnitureInternalSurfaceSize"
+              class="block text-sm font-medium text-gray-300"
+              >Internal surface size</label
+            >
+            <input
+              bind:value={$templateUnderConstruction.template.furniture.internal_surface_size}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="furnitureInternalSurfaceSize"
+              id="furnitureInternalSurfaceSize"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+        {/if}
+
         {#if $templateUnderConstruction.template.flags.wearable}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Wearable Properties</h2>

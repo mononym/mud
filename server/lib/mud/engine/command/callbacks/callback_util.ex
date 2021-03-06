@@ -6,6 +6,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
   """
 
   alias Mud.Engine
+  alias Mud.Engine.Util
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
   alias Mud.Engine.{Character, Item, Link}
@@ -418,5 +419,24 @@ defmodule Mud.Engine.Command.CallbackUtil do
     else
       count_layers(result, parent_index, current_layer + 1)
     end
+  end
+
+  @doc """
+  For use when a piece of furniture is too full to sit/kneel/lay down, or whatever.
+  """
+  @spec furniture_full_error(
+          Mud.Engine.Command.Context.t(),
+          Mud.Engine.Item.t(),
+          String.t()
+        ) :: Mud.Engine.Command.Context.t()
+  def furniture_full_error(context, item, where) do
+    message =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("There is no more room #{where} ", "system_alert")
+      |> Message.append_text(item.description.short, Util.get_item_type(item))
+      |> Message.append_text(".", "system_alert")
+
+    Context.append_message(context, message)
   end
 end
