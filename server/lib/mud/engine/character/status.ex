@@ -99,4 +99,12 @@ defmodule Mud.Engine.Character.Status do
   def get_by_character(character_id) when is_binary(character_id) do
     Repo.get_by(__MODULE__, character_id: character_id)
   end
+
+  def list_all_relative_to_item(item_id) do
+    from(
+      status in __MODULE__,
+      where: status.position_relative_to_item and status.item_id == ^item_id
+    )
+    |> Repo.all
+  end
 end

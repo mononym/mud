@@ -1,16 +1,16 @@
-defmodule Mud.Engine.Command.Stand do
+defmodule Mud.Engine.Command.Lie do
   @moduledoc """
-  The STAND command moves the character into a standing position.
+  The CROUCH command moves the character into a laying down position.
 
-  If no target is provided, the Character will stand in place.
+  If no target is provided, the Character will lie in place.
 
   Syntax:
-    - stand [on] target
+    - lie [on] target
 
   Examples:
-    - stand
-    - stand chair
-    - stand on chair
+    - lie
+    - lie chair
+    - lie on chair
   """
   use Mud.Engine.Command.Callback
 
@@ -35,29 +35,25 @@ defmodule Mud.Engine.Command.Stand do
     ast = context.command.ast
 
     cond do
-      context.character.status.position == "standing" and
-          context.character.status.position_relative_to_item ->
-        stand_on_ground(context)
-
-      context.character.status.position == "standing" ->
+      context.character.status.position == "lying" ->
         Context.append_message(
           context,
           Message.new_story_output(
             context.character.id,
-            "You are already standing.",
+            "You are already laying down.",
             "system_info"
           )
         )
 
       is_nil(ast.thing) ->
-        stand_on_ground(context)
+        maybe_lie_on_ground(context)
 
       Util.is_uuid4(ast.thing.input) ->
-        Logger.debug("Stand command provided with uuid: #{ast.thing.input}")
+        Logger.debug("Lie command provided with uuid: #{ast.thing.input}")
 
         case Item.get(ast.thing.input) do
           {:ok, item} ->
-            maybe_stand_relative_to_item(
+            maybe_lie_relative_to_item(
               context,
               List.first(Search.things_to_match(item)),
               ast.thing.where || "on"
@@ -68,11 +64,11 @@ defmodule Mud.Engine.Command.Stand do
         end
 
       true ->
-        find_furniture_to_stand_relative_to(context)
+        find_furniture_to_lie_relative_to(context)
     end
   end
 
-  defp find_furniture_to_stand_relative_to(context) do
+  defp find_furniture_to_lie_relative_to(context) do
     ast = context.command.ast
 
     area_results =
@@ -84,7 +80,7 @@ defmodule Mud.Engine.Command.Stand do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        maybe_stand_relative_to_item(
+        maybe_lie_relative_to_item(
           context,
           List.first(area_matches),
           ast.thing.where || "on",
@@ -96,7 +92,7 @@ defmodule Mud.Engine.Command.Stand do
     end
   end
 
-  defp maybe_stand_relative_to_item(
+  defp maybe_lie_relative_to_item(
          context,
          thing = %Search.Match{},
          relative_place,
@@ -108,12 +104,12 @@ defmodule Mud.Engine.Command.Stand do
         context,
         Message.new_story_output(
           context.character.id,
-          "You must get off the furniture you are on before you can move to another piece of furniture.",
+          "You must stand before you can move to another piece of furniture.",
           "system_info"
         )
       )
     else
-      stand_relative_to_item(
+      lie_relative_to_item(
         context,
         thing,
         relative_place,
@@ -122,11 +118,11 @@ defmodule Mud.Engine.Command.Stand do
     end
   end
 
-  defp stand_relative_to_item(
+  defp lie_relative_to_item(
          context,
          thing = %Search.Match{},
          relative_place,
-         other_matches
+         other_matches \\ []
        ) do
     furniture_slots_used = Furniture.slots_used(thing.match.id, context.character.id)
 
@@ -137,7 +133,7 @@ defmodule Mud.Engine.Command.Stand do
 
       updated_status =
         Mud.Engine.Character.Status.update!(context.character.status, %{
-          position: "standing",
+          position: "lying",
           position_relation: relative_place,
           position_relative_to_item: true,
           item_id: thing.match.id
@@ -156,7 +152,7 @@ defmodule Mud.Engine.Command.Stand do
         |> Message.new_story_output()
         |> Message.append_text("[#{context.character.name}]", "character")
         |> Message.append_text(
-          " #{other_stand_message(original_status.position, false)} #{relative_place} ",
+          " #{other_laying_down_message(original_status.position)} #{relative_place} ",
           "base"
         )
         |> Message.append_text(thing.match.description.short, Util.get_item_type(thing.match))
@@ -167,7 +163,7 @@ defmodule Mud.Engine.Command.Stand do
         |> Message.new_story_output()
         |> Message.append_text("You", "character")
         |> Message.append_text(
-          " #{self_stand_message(original_status.position, false)} #{relative_place} ",
+          " #{self_laying_down_message(original_status.position)} #{relative_place} ",
           "base"
         )
         |> Message.append_text(thing.match.description.short, Util.get_item_type(thing.match))
@@ -201,18 +197,28 @@ defmodule Mud.Engine.Command.Stand do
     end
   end
 
-  defp stand_on_ground(context) do
+  defp maybe_lie_on_ground(context) do
+    if context.character.status.position_relative_to_item do
+      case Item.get(context.character.status.item_id) do
+        {:ok, item} ->
+          lie_relative_to_item(
+            context,
+            List.first(Search.things_to_match(item)),
+            "on"
+          )
+
+        _ ->
+          Util.dave_error_v2(context)
+      end
+    else
+      lie_on_ground(context)
+    end
+  end
+
+  defp lie_on_ground(context) do
     original_status = context.character.status
 
-    was_standing_on_item =
-      context.character.status.position_relative_to_item and
-        context.character.status.position == "standing"
-
-    updated_status =
-      Mud.Engine.Character.Status.update!(original_status, %{
-        position: "standing",
-        position_relative_to_item: false
-      })
+    updated_status = Mud.Engine.Character.Status.update!(original_status, %{position: "lying"})
 
     character = Map.put(context.character, :status, updated_status)
 
@@ -227,7 +233,7 @@ defmodule Mud.Engine.Command.Stand do
       |> Message.new_story_output()
       |> Message.append_text("[#{context.character.name}]", "character")
       |> Message.append_text(
-        " #{other_stand_message(original_status.position, was_standing_on_item)}.",
+        " #{other_laying_down_message(original_status.position)}.",
         "base"
       )
 
@@ -236,7 +242,7 @@ defmodule Mud.Engine.Command.Stand do
       |> Message.new_story_output()
       |> Message.append_text("You", "character")
       |> Message.append_text(
-        " #{self_stand_message(original_status.position, was_standing_on_item)}.",
+        " #{self_laying_down_message(original_status.position)}.",
         "base"
       )
 
@@ -253,9 +259,7 @@ defmodule Mud.Engine.Command.Stand do
     |> Context.append_message(self_msg)
   end
 
-  defp other_stand_message(_, true), do: "climbs off the furniture and stands on the ground"
-  defp other_stand_message(_, _), do: "stands up"
+  defp other_laying_down_message(_), do: "lays down"
 
-  defp self_stand_message(_, true), do: "climb off the furniture and stand on the ground"
-  defp self_stand_message(_, _), do: "stand up"
+  defp self_laying_down_message(_), do: "lie down"
 end

@@ -46,11 +46,13 @@ defmodule Mud.Engine.Rules.Commands do
       define_balance_command(),
       define_buy_command(),
       define_close_command(),
+      define_crouch_command(),
       define_deposit_command(),
       define_drop_command(),
       define_get_command(),
       define_kick_command(),
       define_kneel_command(),
+      define_lie_command(),
       define_lock_command(),
       define_look_command(),
       define_move_command(),
@@ -88,6 +90,31 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
+  defp define_crouch_command do
+    %Definition{
+      callback_module: Command.Crouch,
+      parts: [
+        %Part{
+          matches: ["crouch"],
+          key: :crouch,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:crouch],
+          matches: ["on"],
+          key: :thing_where,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:thing_where, :crouch],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
   defp define_kneel_command do
     %Definition{
       callback_module: Command.Kneel,
@@ -100,14 +127,13 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:kneel],
           matches: ["on"],
-          key: :position,
+          key: :thing_where,
           transformer: &Enum.join/1
         },
         %Part{
-          must_follow: [:position, :kneel],
+          must_follow: [:thing_where, :kneel],
           matches: [~r/.*/],
-          key: :target,
-          greedy: true,
+          key: :thing,
           transformer: &join_with_space_downcase/1
         }
       ]
@@ -793,6 +819,31 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
+  defp define_lie_command do
+    %Definition{
+      callback_module: Command.Lie,
+      parts: [
+        %Part{
+          matches: ["lie"],
+          key: :lie,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:lie],
+          matches: ["on"],
+          key: :thing_where,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:thing_where, :lie],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
+        }
+      ]
+    }
+  end
+
   defp define_sit_command do
     %Definition{
       callback_module: Command.Sit,
@@ -805,11 +856,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:sit],
           matches: ["on"],
-          key: :where,
+          key: :thing_where,
           transformer: &Enum.join/1
         },
         %Part{
-          must_follow: [:where, :sit],
+          must_follow: [:thing_where, :sit],
           matches: [~r/.*/],
           key: :thing,
           transformer: &join_with_space_downcase/1
@@ -826,6 +877,18 @@ defmodule Mud.Engine.Rules.Commands do
           matches: ["stand"],
           key: :stand,
           transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:stand],
+          matches: ["on"],
+          key: :thing_where,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:thing_where, :stand],
+          matches: [~r/.*/],
+          key: :thing,
+          transformer: &join_with_space_downcase/1
         }
       ]
     }

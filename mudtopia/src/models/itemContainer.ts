@@ -1,5 +1,6 @@
 export interface ItemContainerInterface {
   id: string;
+  item_id: string;
   capacity: number;
   height: number;
   length: number;
@@ -10,6 +11,7 @@ export interface ItemContainerInterface {
 
 const state: ItemContainerInterface = {
   id: "",
+  item_id: "",
   capacity: 1,
   height: 1,
   length: 1,

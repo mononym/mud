@@ -65,9 +65,7 @@ defmodule Mud.Engine.Command.AstUtil do
         }
 
       _ ->
-
-        place =
-          populate_place(%AstNode.Place{}, rest) |> normalize_personal()
+        place = populate_place(%AstNode.Place{}, rest) |> normalize_personal()
 
         case place.input do
           nil ->
@@ -126,7 +124,6 @@ defmodule Mud.Engine.Command.AstUtil do
   end
 
   defp populate_place(tap_node = %AstNode.Place{}, [ast_node | rest]) do
-
     case ast_node.key do
       :place_personal ->
         populate_place(%{tap_node | personal: true}, rest)

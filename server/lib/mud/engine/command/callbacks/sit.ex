@@ -21,6 +21,7 @@ defmodule Mud.Engine.Command.Sit do
   alias Mud.Engine.Search
   alias Mud.Engine.Message
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
+  alias Mud.Engine.Item.Furniture
 
   require Logger
 
@@ -44,14 +45,18 @@ defmodule Mud.Engine.Command.Sit do
         )
 
       is_nil(ast.thing) ->
-        sit_on_ground(context)
+        maybe_sit_on_ground(context)
 
       Util.is_uuid4(ast.thing.input) ->
         Logger.debug("Sit command provided with uuid: #{ast.thing.input}")
 
         case Item.get(ast.thing.input) do
           {:ok, item} ->
-            sit_relative_to_item(context, List.first(Search.things_to_match(item)))
+            maybe_sit_relative_to_item(
+              context,
+              List.first(Search.things_to_match(item)),
+              ast.thing.where || "on"
+            )
 
           _ ->
             Util.dave_error_v2(context)
@@ -66,7 +71,7 @@ defmodule Mud.Engine.Command.Sit do
     ast = context.command.ast
 
     area_results =
-      Search.find_matches_on_ground(
+      Search.find_furniture_in_area(
         context.character.area_id,
         ast.thing.input,
         context.character.settings.commands.search_mode
@@ -74,9 +79,10 @@ defmodule Mud.Engine.Command.Sit do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        sit_relative_to_item(
+        maybe_sit_relative_to_item(
           context,
           List.first(area_matches),
+          ast.thing.where || "on",
           Enum.slice(area_matches, 1..length(area_matches))
         )
 
@@ -85,20 +91,51 @@ defmodule Mud.Engine.Command.Sit do
     end
   end
 
-  defp sit_relative_to_item(context, thing = %Search.Match{}, _other_matches \\ []) do
-    # TODO: Check to see if there are already too many characters already sitting relative to the item
-    # and reject the attempt if there is.
-    furniture_full = false
-    relative_place = thing.match.where || "on"
+  defp maybe_sit_relative_to_item(
+         context,
+         thing = %Search.Match{},
+         relative_place,
+         other_matches \\ []
+       ) do
+    if context.character.status.position_relative_to_item and
+         context.character.status.item_id != thing.match.id do
+      Context.append_message(
+        context,
+        Message.new_story_output(
+          context.character.id,
+          "You must stand before you can move to another piece of furniture.",
+          "system_info"
+        )
+      )
+    else
+      sit_relative_to_item(
+        context,
+        thing,
+        relative_place,
+        other_matches
+      )
+    end
+  end
 
-    if furniture_full do
+  defp sit_relative_to_item(
+         context,
+         thing = %Search.Match{},
+         relative_place,
+         other_matches \\ []
+       ) do
+    furniture_slots_used = Furniture.slots_used(thing.match.id, context.character.id)
+
+    if furniture_slots_used + 1 > thing.match.furniture.external_surface_size do
       CallbackUtil.furniture_full_error(context, thing.match, relative_place)
     else
+      original_status = context.character.status
+
       updated_status =
-        Mud.Engine.Character.Status.update!(context.character.status, %{
+        Mud.Engine.Character.Status.update!(original_status, %{
           position: "sitting",
           position_relation: relative_place,
-          position_relative_to_item: true
+          position_relative_to_item: true,
+          item_id: thing.match.id
         })
 
       character = Map.put(context.character, :status, updated_status)
@@ -113,7 +150,10 @@ defmodule Mud.Engine.Command.Sit do
         others
         |> Message.new_story_output()
         |> Message.append_text("[#{context.character.name}]", "character")
-        |> Message.append_text(" sits down #{relative_place} ", "base")
+        |> Message.append_text(
+          " #{other_sitting_message(original_status.position)} #{relative_place} ",
+          "base"
+        )
         |> Message.append_text(thing.match.description.short, Util.get_item_type(thing.match))
         |> Message.append_text(".", "base")
 
@@ -121,9 +161,26 @@ defmodule Mud.Engine.Command.Sit do
         context.character.id
         |> Message.new_story_output()
         |> Message.append_text("You", "character")
-        |> Message.append_text(" sit down #{relative_place} ", "base")
+        |> Message.append_text(
+          " #{self_sitting_message(original_status.position)} #{relative_place} ",
+          "base"
+        )
         |> Message.append_text(thing.match.description.short, Util.get_item_type(thing.match))
         |> Message.append_text(".", "base")
+
+      self_msg =
+        if other_matches != [] do
+          other_items = Enum.map(other_matches, & &1.match)
+
+          Util.append_assumption_text(
+            self_msg,
+            thing.match,
+            other_items,
+            context.character.settings.commands.multiple_matches_mode
+          )
+        else
+          self_msg
+        end
 
       context
       |> Context.append_event(
@@ -139,9 +196,28 @@ defmodule Mud.Engine.Command.Sit do
     end
   end
 
+  defp maybe_sit_on_ground(context) do
+    if context.character.status.position_relative_to_item do
+      case Item.get(context.character.status.item_id) do
+        {:ok, item} ->
+          sit_relative_to_item(
+            context,
+            List.first(Search.things_to_match(item)),
+            "on"
+          )
+
+        _ ->
+          Util.dave_error_v2(context)
+      end
+    else
+      sit_on_ground(context)
+    end
+  end
+
   defp sit_on_ground(context) do
-    updated_status =
-      Mud.Engine.Character.Status.update!(context.character.status, %{position: "sitting"})
+    original_status = context.character.status
+
+    updated_status = Mud.Engine.Character.Status.update!(original_status, %{position: "sitting"})
 
     character = Map.put(context.character, :status, updated_status)
 
@@ -155,13 +231,19 @@ defmodule Mud.Engine.Command.Sit do
       others
       |> Message.new_story_output()
       |> Message.append_text("[#{context.character.name}]", "character")
-      |> Message.append_text(" sits down.", "base")
+      |> Message.append_text(
+        " #{other_sitting_message(original_status.position)}.",
+        "base"
+      )
 
     self_msg =
       context.character.id
       |> Message.new_story_output()
       |> Message.append_text("You", "character")
-      |> Message.append_text(" sit down.", "base")
+      |> Message.append_text(
+        " #{self_sitting_message(original_status.position)}.",
+        "base"
+      )
 
     context
     |> Context.append_event(
@@ -175,4 +257,12 @@ defmodule Mud.Engine.Command.Sit do
     |> Context.append_message(other_msg)
     |> Context.append_message(self_msg)
   end
+
+  defp other_sitting_message("lying"),
+    do: "sits up"
+
+  defp other_sitting_message(_), do: "sits down"
+
+  defp self_sitting_message("lying"), do: "sit up"
+  defp self_sitting_message(_old_position), do: "sit down"
 end

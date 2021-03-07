@@ -81,13 +81,14 @@ defmodule Mud.Engine.Item do
       insert_new()
       |> setup_required_component(normalized_attrs, :flags, Flags)
       |> setup_required_component(normalized_attrs, :location, Location)
-      |> maybe_setup_optional_component(normalized_attrs, :container, Container)
-      |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
       |> maybe_setup_optional_component(normalized_attrs, :coin, Coin)
-      |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
+      |> maybe_setup_optional_component(normalized_attrs, :container, Container)
       |> maybe_setup_optional_component(normalized_attrs, :furniture, Furniture)
-      |> maybe_setup_optional_component(normalized_attrs, :description, Description)
+      |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
+      |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
       |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
+      # Description should be very last since it might actually build up a description based on everything else having been filled in
+      |> maybe_setup_optional_component(normalized_attrs, :description, Description)
     end)
   end
 
@@ -116,9 +117,6 @@ defmodule Mud.Engine.Item do
   # this is to facilitate templates
   defp normalize_attrs(attrs) do
     attrs = template_keys_to_atoms(attrs)
-
-    IO.inspect(attrs, label: :modified_attrs)
-    IO.inspect(attrs[:flags][:material], label: :modified_attrs)
 
     keys_to_keep =
       if Map.has_key?(attrs[:flags], :gem) and attrs[:flags][:gem] do
@@ -465,12 +463,9 @@ defmodule Mud.Engine.Item do
   """
   @spec list_furniture_in_area(id) :: [%__MODULE__{}]
   def list_furniture_in_area(area_id) do
-    from(
-      item in __MODULE__,
-      where: item.area_id == ^area_id and item.is_furniture == true,
-      order_by: item.moved_at
-    )
+    furniture_in_area_query(area_id)
     |> Repo.all()
+    |> preload()
   end
 
   @spec list_visible_scenery_in_area(id) :: [%__MODULE__{}]
@@ -485,11 +480,9 @@ defmodule Mud.Engine.Item do
 
   @spec list_scenery_in_area(id) :: [%__MODULE__{}]
   def list_scenery_in_area(area_id) do
-    from(
-      item in scenery_in_area_query(area_id),
-      order_by: item.moved_at
-    )
+    scenery_in_area_query(area_id)
     |> Repo.all()
+    |> preload()
   end
 
   @spec list_held_or_worn_items_and_children(String.t()) :: [%__MODULE__{}]
@@ -790,13 +783,14 @@ defmodule Mud.Engine.Item do
   """
   def search_furniture_in_area(area_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
-      where:
-        location.area_id == ^area_id and flags.furniture and location.on_ground and
-          like(description.short, ^search_string),
+      [item, location: location] in furniture_in_area_query(area_id),
+      left_join: description in assoc(item, :description),
+      as: :description,
+      where: like(description.short, ^search_string),
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -1111,6 +1105,8 @@ defmodule Mud.Engine.Item do
       as: :coin,
       left_join: gem in assoc(item, :gem),
       as: :gem,
+      left_join: furniture in assoc(item, :furniture),
+      as: :furniture,
       left_join: wearable in assoc(item, :wearable),
       as: :wearable,
       preload: [
@@ -1121,6 +1117,7 @@ defmodule Mud.Engine.Item do
         physics: physics,
         coin: coin,
         gem: gem,
+        furniture: furniture,
         wearable: wearable
       ]
     )
@@ -1133,10 +1130,25 @@ defmodule Mud.Engine.Item do
     )
   end
 
+  defp furniture_in_area_query(area_id) do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: flags in assoc(item, :flags),
+      as: :flags,
+      where: location.area_id == ^area_id and flags.furniture
+    )
+  end
+
   defp scenery_in_area_query(area_id) do
     from(
-      [item, location: location, flags: flags] in base_query_with_preload(),
-      where: location.on_ground == true and location.area_id == ^area_id and flags.scenery
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: flags in assoc(item, :flags),
+      as: :flags,
+      where: location.area_id == ^area_id and flags.scenery
     )
   end
 
@@ -1505,5 +1517,19 @@ defmodule Mud.Engine.Item do
     Enum.reduce(items, %{}, fn item, map ->
       Map.put(map, item.id, item.location.relative_item_id)
     end)
+  end
+
+  defp preload(results) do
+    Repo.preload(results, [
+      :container,
+      :description,
+      :flags,
+      :location,
+      :physics,
+      :coin,
+      :gem,
+      :furniture,
+      :wearable
+    ])
   end
 end

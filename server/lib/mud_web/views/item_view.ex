@@ -9,6 +9,7 @@ defmodule MudWeb.ItemView do
     ItemPhysicsView,
     ItemContainerView,
     ItemDescriptionView,
+    ItemFurnitureView,
     ItemCoinView,
     ItemWearableView
   }

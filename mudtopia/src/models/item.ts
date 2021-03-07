@@ -1,26 +1,27 @@
-import type { ItemLocationInterface } from "../models/itemLocation";
-import ItemLocationState from "../models/itemLocation";
+import type { ItemLocationInterface } from "./itemLocation";
+import ItemLocationState from "./itemLocation";
 
-import type { ItemContainerInterface } from "../models/itemContainer";
-import ItemContainerState from "../models/itemContainer";
+import type { ItemContainerInterface } from "./itemContainer";
+import ItemContainerState from "./itemContainer";
 
-import type { ItemDescriptionInterface } from "../models/itemDescription";
-import ItemDescriptionState from "../models/itemDescription";
+import type { ItemDescriptionInterface } from "./itemDescription";
+import ItemDescriptionState from "./itemDescription";
 
-import type { ItemFlagsInterface } from "../models/itemFlags";
-import ItemFlagsState from "../models/itemFlags";
+import type { ItemFlagsInterface } from "./itemFlags";
+import ItemFlagsState from "./itemFlags";
 
-import type { ItemPhysicsInterface } from "../models/itemPhysics";
-import ItemPhysicsState from "../models/itemPhysics";
+import type { ItemPhysicsInterface } from "./itemPhysics";
+import ItemPhysicsState from "./itemPhysics";
 
-import type { ItemGemInterface } from "../models/itemGem";
-import ItemGemState from "../models/itemGem";
+import type { ItemGemInterface } from "./itemGem";
+import ItemGemState from "./itemGem";
 
-import type { ItemWearableInterface } from "../models/itemWearable";
-import ItemWearableState from "../models/itemWearable";
+import type { ItemWearableInterface } from "./itemWearable";
+import ItemWearableState from "./itemWearable";
 
-import type { ItemFurnitureInterface } from "../models/ItemFurniture";
-import ItemFurnitureState from "../models/ItemFurniture";
+import type { ItemFurnitureInterface } from "./ItemFurniture";
+import ItemFurnitureState from "./ItemFurniture";
+
 export interface ItemInterface {
   id: string;
   location: ItemLocationInterface;

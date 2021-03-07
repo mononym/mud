@@ -1,5 +1,6 @@
 export interface ItemPhysicsInterface {
   id: string;
+  item_id: string;
   weight: number;
   height: number;
   length: number;
@@ -8,6 +9,7 @@ export interface ItemPhysicsInterface {
 
 const state: ItemPhysicsInterface = {
   id: "",
+  item_id: "",
   weight: 1,
   height: 1,
   length: 1,
