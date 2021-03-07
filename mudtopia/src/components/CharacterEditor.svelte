@@ -111,72 +111,84 @@
       Loading Character Creation Data
     </h2>
   </div>
-{:else if characterUnderConstruction.race == ''}
-  <div class="flex flex-col place-content-center text-white space-y-4">
-    <p class="text-center">Pick a race</p>
-    <div class="flex flex-col place-content-center content-center space-y-4">
-      {#each [$races[index]] as race (index)}
-        <div class="flex place-content-center space-x-4">
-          <div class="flex-shrink flex flex-col place-content-center">
-            <i on:click={previous} class="fas fa-arrow-from-right text-6xl" />
+{:else if characterUnderConstruction.race == ""}
+  <div class="h-full flex flex-col justify-center text-white space-y-4">
+    <div class="flex flex-col place-content-center">
+      <p class="text-center">Pick a race</p>
+      <div class="flex flex-col place-content-center content-center space-y-4">
+        {#each [$races[index]] as race (index)}
+          <div class="flex place-content-center space-x-4">
+            <div class="flex-shrink flex flex-col place-content-center">
+              <i on:click={previous} class="fas fa-arrow-from-right text-6xl" />
+            </div>
+            <img
+              src={race.portrait}
+              alt={race.singular}
+              style="height:200px;width:200px;object-fit:cover"
+            />
+            <div class="flex-shrink flex flex-col place-content-center">
+              <i
+                on:click={next}
+                class="fas fa-arrow-from-left text-6xl align-middle"
+              />
+            </div>
           </div>
-          <img
-            src={race.portrait}
-            alt={race.singular}
-            style="height:200px;width:200px;object-fit:cover" />
-          <div class="flex-shrink flex flex-col place-content-center">
-            <i
-              on:click={next}
-              class="fas fa-arrow-from-left text-6xl align-middle" />
+          <div
+            class="flex flex-col place-content-center content-center text-center"
+          >
+            <p>{race.singular}</p>
+            <p>{race.description}</p>
           </div>
-        </div>
-        <div
-          class="flex flex-col place-content-center content-center text-center">
-          <p>{race.singular}</p>
-          <p>{race.description}</p>
-        </div>
-      {/each}
-    </div>
+        {/each}
+      </div>
 
-    <button
-      on:click={chooseRace}
-      type="button"
-      class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">Continue
-    </button>
+      <div class="flex justify-center">
+        <button
+          on:click={chooseRace}
+          type="button"
+          class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+          >Continue
+        </button>
+      </div>
+    </div>
   </div>
 {:else}
   <div class="container self-center justify-self-center">
     <form
       class="h-full flex flex-col place-content-center"
-      on:submit|preventDefault={save}>
+      on:submit|preventDefault={save}
+    >
       <div class="overflow-hidden sm:rounded-md">
         <div class="px-4 py-5 sm:p-6">
           <div class="grid grid-cols-6 gap-6">
             <div class="col-span-2">
-              <label
-                for="name"
-                class="block text-sm font-medium text-gray-300">Name</label>
+              <label for="name" class="block text-sm font-medium text-gray-300"
+                >Name</label
+              >
               <input
                 bind:value={characterUnderConstruction.name}
                 type="text"
                 name="name"
                 id="name"
-                class="focus mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                class="focus mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
             </div>
 
             <div class="col-span-2">
               <label
                 for="handedness"
-                class="block text-sm font-medium text-gray-300">Primary Hand
-                (Note: This has nothing to do with in-game abilities. It is
-                simply configuration for which hand to use as the primary when
-                interacting with the world)</label>
+                class="block text-sm font-medium text-gray-300"
+                >Primary Hand (Note: This has nothing to do with in-game
+                abilities. It is simply configuration for which hand to use as
+                the primary when interacting with the world)</label
+              >
 
               <select
                 id="handedness"
                 bind:value={characterUnderConstruction.handedness}
                 name="handedness"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 <option>right</option>
                 <option>left</option>
               </select>
@@ -185,16 +197,17 @@
             <div class="col-span-2">
               <label
                 for="genderPronoun"
-                class="block text-sm font-medium text-gray-300">Which set of
-                gender pronouns should be used with your character (i.e.
-                her/him/they or their/his/hers)
+                class="block text-sm font-medium text-gray-300"
+                >Which set of gender pronouns should be used with your character
+                (i.e. her/him/they or their/his/hers)
               </label>
 
               <select
                 id="genderPronoun"
                 bind:value={characterUnderConstruction.genderPronoun}
                 name="handedness"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 <option>neutral</option>
                 <option>feminine</option>
                 <option>masculine</option>
@@ -202,9 +215,9 @@
             </div>
 
             <div class="col-span-1">
-              <label
-                for="age"
-                class="block text-sm font-medium text-gray-300">Character Age</label>
+              <label for="age" class="block text-sm font-medium text-gray-300"
+                >Character Age</label
+              >
               <input
                 bind:value={characterUnderConstruction.age}
                 type="number"
@@ -212,19 +225,22 @@
                 id="age"
                 min={selectedRace.ageMin}
                 max={selectedRace.ageMax}
-                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
             </div>
 
             <div class="col-span-2">
               <label
                 for="eyeColorType"
-                class="block text-sm font-medium text-gray-300">Iris type</label>
+                class="block text-sm font-medium text-gray-300">Iris type</label
+              >
 
               <select
                 id="eyeColorType"
                 bind:value={characterUnderConstruction.eyeColorType}
                 name="eyeColorType"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 <option>solid</option>
                 <option>heterochromia</option>
               </select>
@@ -233,32 +249,36 @@
             <div class="col-span-2">
               <label
                 for="eyeColor"
-                class="block text-sm font-medium text-gray-300">Primary iris
-                color</label>
+                class="block text-sm font-medium text-gray-300"
+                >Primary iris color</label
+              >
 
               <select
                 id="eyeColor"
                 bind:value={characterUnderConstruction.eyeColor}
                 name="eyeColor"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each selectedRace.eyeColors as eyeColor}
                   <option>{eyeColor}</option>
                 {/each}
               </select>
             </div>
 
-            {#if characterUnderConstruction.eyeColorType == 'heterochromia'}
+            {#if characterUnderConstruction.eyeColorType == "heterochromia"}
               <div class="col-span-2">
                 <label
                   for="eyeColor"
-                  class="block text-sm font-medium text-gray-300">Iris accent
-                  color</label>
+                  class="block text-sm font-medium text-gray-300"
+                  >Iris accent color</label
+                >
 
                 <select
                   id="eyeColor"
                   bind:value={characterUnderConstruction.eyeAccentColor}
                   name="eyeColor"
-                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
                   {#each selectedRace.eyeColors as eyeColor}
                     <option>{eyeColor}</option>
                   {/each}
@@ -269,13 +289,16 @@
             <div class="col-span-2">
               <label
                 for="hairColor"
-                class="block text-sm font-medium text-gray-300">Hair Color</label>
+                class="block text-sm font-medium text-gray-300"
+                >Hair Color</label
+              >
 
               <select
                 id="hairColor"
                 bind:value={characterUnderConstruction.hairColor}
                 name="hairColor"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each selectedRace.hairColors as hairColor}
                   <option>{hairColor}</option>
                 {/each}
@@ -285,13 +308,16 @@
             <div class="col-span-2">
               <label
                 for="hairLength"
-                class="block text-sm font-medium text-gray-300">Hair Length</label>
+                class="block text-sm font-medium text-gray-300"
+                >Hair Length</label
+              >
 
               <select
                 id="hairLength"
                 bind:value={characterUnderConstruction.hairLength}
                 name="hairLength"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each selectedRace.hairLengths as hairLength}
                   <option>{hairLength}</option>
                 {/each}
@@ -301,14 +327,17 @@
             <div class="col-span-2">
               <label
                 for="hairStyle"
-                class="block text-sm font-medium text-gray-300">Hair Style</label>
+                class="block text-sm font-medium text-gray-300"
+                >Hair Style</label
+              >
 
               <select
                 id="hairStyle"
                 disabled={hairStylesDisabled}
                 bind:value={characterUnderConstruction.hairStyle}
                 name="hairStyle"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each viableHairStyles as hairStyle}
                   <option>{hairStyle}</option>
                 {/each}
@@ -318,13 +347,15 @@
             <div class="col-span-2">
               <label
                 for="skinTone"
-                class="block text-sm font-medium text-gray-300">Skin Tone</label>
+                class="block text-sm font-medium text-gray-300">Skin Tone</label
+              >
 
               <select
                 id="skinTone"
                 bind:value={characterUnderConstruction.skinTone}
                 name="skinTone"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each selectedRace.skinTones as skinTone}
                   <option>{skinTone}</option>
                 {/each}
@@ -334,13 +365,15 @@
             <div class="col-span-2">
               <label
                 for="height"
-                class="block text-sm font-medium text-gray-300">Height</label>
+                class="block text-sm font-medium text-gray-300">Height</label
+              >
 
               <select
                 id="height"
                 bind:value={characterUnderConstruction.height}
                 name="height"
-                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
                 {#each selectedRace.heights as height}
                   <option>{height}</option>
                 {/each}
@@ -351,12 +384,16 @@
               <button
                 disabled={saveButtonDisabled}
                 type="submit"
-                class="{saveButtonDisabled ? 'bg-indigo-800 text-gray-500 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="{saveButtonDisabled
+                  ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
                 Save
               </button>
               <button
                 on:click|preventDefault={cancel}
-                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
                 Cancel
               </button>
             </div>
