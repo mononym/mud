@@ -294,10 +294,18 @@ defmodule Mud.Engine.Link do
 
   """
   def update(%__MODULE__{} = link, attrs) do
-    link
-    |> __MODULE__.changeset(attrs)
-    |> Repo.update()
-    |> Repo.preload([:closable, :flags])
+    result =
+      link
+      |> __MODULE__.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, link} ->
+        {:ok, Repo.preload(link, [:closable, :flags])}
+
+      _ ->
+        result
+    end
   end
 
   @doc """
