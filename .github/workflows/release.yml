@@ -12,14 +12,14 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: 14
-      - name: change root folder
-        run: cd client
       - name: install dependencies
         run: npm install
+        working-directory: ./client
       - name: publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
+        working-directory: ./client
 
   publish_on_mac:
     runs-on: macos-latest
@@ -28,14 +28,14 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: 14
-      - name: change root folder
-        run: cd client
       - name: install dependencies
         run: npm install
+        working-directory: ./client
       - name: publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
+        working-directory: ./client
 
   publish_on_win:
     runs-on: windows-latest
@@ -44,11 +44,11 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: 14
-      - name: change root folder
-        run: cd client
       - name: install dependencies
         run: npm install
+        working-directory: ./client
       - name: publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run publish
+        working-directory: ./client
