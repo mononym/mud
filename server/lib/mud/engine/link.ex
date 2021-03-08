@@ -470,6 +470,7 @@ defmodule Mud.Engine.Link do
   defp preload(results) do
     Repo.preload(results, [
       :closable,
-      :flags,
+      :flags
     ])
+  end
 end
