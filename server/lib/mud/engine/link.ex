@@ -262,6 +262,7 @@ defmodule Mud.Engine.Link do
       |> Repo.insert!()
       |> setup_required_component(attrs, :flags, Flags)
       |> maybe_setup_optional_component(attrs, :closable, Closable)
+      |> preload()
     end)
   end
 
@@ -465,4 +466,10 @@ defmodule Mud.Engine.Link do
       ]
     )
   end
+
+  defp preload(results) do
+    Repo.preload(results, [
+      :closable,
+      :flags,
+    ])
 end
