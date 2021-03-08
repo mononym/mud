@@ -768,7 +768,8 @@ export function createState() {
 
   function initSocket(token) {
     if (!get(socketInitialized)) {
-      const newSocket = new Socket("wss://localhost:4000/socket", {
+      const newSocket = new Socket("wss://gameserver.unnamedmud.com/socket", {
+        // const newSocket = new Socket("wss://localhost:4000/socket", {
         params: { token: token },
       });
 

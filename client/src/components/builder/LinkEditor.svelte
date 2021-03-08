@@ -32,7 +32,7 @@
     cancelLinkArea();
   }
   function handleShortDescriptionChange() {
-    if ($linkUnderConstruction.type == "direction") {
+    if ($linkUnderConstruction.flags.direction) {
       $linkUnderConstruction.departureText =
         $linkUnderConstruction.shortDescription;
       $linkUnderConstruction.longDescription =
@@ -750,21 +750,6 @@
             </div>
           {/if}
         {/if}
-        <div class="col-span-2">
-          <label for="type" class="block text-sm font-medium text-gray-300"
-            >Link Type</label
-          >
-          <select
-            id="type"
-            bind:value={$linkUnderConstruction.type}
-            name="type"
-            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option>direction</option>
-            <option>door</option>
-            <option>portal</option>
-          </select>
-        </div>
 
         <div class="col-span-1">
           <label
@@ -824,13 +809,13 @@
           />
         </div>
 
-        {#if $linkUnderConstruction.type != "direction"}
+        {#if !$linkUnderConstruction.flags.direction}
           <div class="col-span-1 flex flex-col place-content-center">
             <i
               class="{$linkUnderConstruction.icon} text-center text-4xl text-gray-200"
             />
           </div>
-          <div class="col-span-1">
+          <!-- <div class="col-span-1">
             <label for="icon" class="block text-sm font-medium text-gray-300"
               >Icon</label
             >
@@ -847,7 +832,7 @@
               <option>fas fa-hiking</option>
               <option>fas fa-certificate</option>
             </select>
-          </div>
+          </div> -->
           <div class="col-span-2">
             <label
               for="shortDescription"
