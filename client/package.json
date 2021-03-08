@@ -8,6 +8,7 @@
     "validate": "svelte-check"
   },
   "devDependencies": {
+    "@electron-forge/publisher-github": "^6.0.0-beta.54",
     "@rollup/plugin-commonjs": "^16.0.0",
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.0.0",
@@ -49,5 +50,20 @@
     "tippy.js": "^6.2.7",
     "uuid": "^8.3.2",
     "victor": "^1.1.0"
+  },
+  "config": {
+    "forge": {
+      "publishers": [
+        {
+          "name": "@electron-forge/publisher-github",
+          "config": {
+            "repository": {
+              "owner": "mononym",
+              "name": "mud"
+            }
+          }
+        }
+      ]
+    }
   }
 }
