@@ -388,15 +388,59 @@
     };
   }
 
+  $: existingIntraMapLinksForAreaUnderConstruction =
+    mapSelected &&
+    links != undefined &&
+    areasMap != undefined &&
+    linkUnderConstruction != undefined &&
+    areaUnderConstruction != undefined
+      ? buildExistingIntraMapLinksForAreaUnderConstruction()
+      : [];
+
+  // These are your already existing links between areas, within a single map. One or more of them could be highlighted.
+  function buildExistingIntraMapLinksForAreaUnderConstruction() {
+    return links
+      .filter((link) => {
+        return (
+          link.id != "" &&
+          link.id != linkUnderConstruction.id &&
+          areasMap[link.toId] != undefined &&
+          areasMap[link.fromId] != undefined &&
+          areasMap[link.fromId].mapId == chosenMap.id &&
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
+          (link.fromId == areaUnderConstruction.id ||
+            link.toId == areaUnderConstruction.id)
+        );
+      })
+      .map((link) => {
+        const fromArea =
+          link.fromId == areaUnderConstruction.id
+            ? areaUnderConstruction
+            : areasMap[link.fromId];
+        const toArea =
+          link.toId == areaUnderConstruction.id
+            ? areaUnderConstruction
+            : areasMap[link.toId];
+        return buildPathFromLink(
+          link,
+          fromArea.mapX,
+          fromArea.mapY,
+          toArea.mapX,
+          toArea.mapY
+        );
+      });
+  }
+
   $: existingIntraMapLinks =
     mapSelected &&
     links != undefined &&
     areasMap != undefined &&
-    linkUnderConstruction != undefined
+    linkUnderConstruction != undefined &&
+    areaUnderConstruction != undefined
       ? buildExistingIntraMapLinks()
       : [];
 
-  // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
+  // These are your already existing links between areas, within a single map. One or more of them could be highlighted.
   function buildExistingIntraMapLinks() {
     return links
       .filter((link) => {
@@ -406,7 +450,9 @@
           areasMap[link.toId] != undefined &&
           areasMap[link.fromId] != undefined &&
           areasMap[link.fromId].mapId == chosenMap.id &&
-          areasMap[link.fromId].mapId == areasMap[link.toId].mapId
+          areasMap[link.fromId].mapId == areasMap[link.toId].mapId &&
+          link.fromId != areaUnderConstruction.id &&
+          link.toId != areaUnderConstruction.id
         );
       })
       .map((link) => {
@@ -505,9 +551,17 @@
     let toY;
     let fromX;
     let fromY;
+    const toArea =
+      areaUnderConstruction.id == link.toId
+        ? areaUnderConstruction
+        : allAreasMap[link.toId];
+    const fromArea =
+      areaUnderConstruction.id == link.fromId
+        ? areaUnderConstruction
+        : allAreasMap[link.fromId];
 
     // incoming
-    if (allAreasMap[link.toId].mapId == chosenMap.id) {
+    if (toArea.mapId == chosenMap.id) {
       modifiedLink.label = link.localFromLabel;
       modifiedLink.labelFontSize = link.localFromLabelFontSize;
       modifiedLink.labelHorizontalOffset = link.localFromLabelHorizontalOffset;
@@ -519,8 +573,8 @@
       modifiedLink.lineWidth = link.localFromLineWidth;
       fromX = link.localFromX;
       fromY = link.localFromY;
-      toX = allAreasMap[link.toId].mapX;
-      toY = allAreasMap[link.toId].mapY;
+      toX = toArea.mapX;
+      toY = toArea.mapY;
     } else {
       modifiedLink.label = link.localToLabel;
       modifiedLink.labelFontSize = link.localToLabelFontSize;
@@ -533,8 +587,8 @@
       modifiedLink.lineWidth = link.localToLineWidth;
       toX = link.localToX;
       toY = link.localToY;
-      fromX = allAreasMap[link.fromId].mapX;
-      fromY = allAreasMap[link.fromId].mapY;
+      fromX = fromArea.mapX;
+      fromY = fromArea.mapY;
     }
 
     return buildPathFromLink(link, fromX, fromY, toX, toY);
@@ -768,12 +822,29 @@
         return (
           area.id != "" &&
           areasMap[area.id] != undefined &&
-          area.mapId == chosenMap.id
+          area.mapId == chosenMap.id &&
+          area.id != areaUnderConstruction.id
         );
       })
       .map((area) => {
         return buildRectFromArea(area);
       });
+  }
+
+  $: highlightsForNewIntraMapAreas =
+    mapSelected && areasMap != undefined && areaUnderConstruction.id != ""
+      ? buildHighlightsForNewIntraMapAreas()
+      : [];
+
+  function buildHighlightsForNewIntraMapAreas() {
+    const area = { ...areaUnderConstruction };
+    area.mapSize = area.mapSize + 3;
+    area.borderColor = highlightColor;
+    area.color = highlightColor;
+    area.borderWidth = Math.max(3, area.borderWidth + 1);
+    area.id = `${area.id}-highlight`;
+
+    return [buildRectFromArea(area)];
   }
 
   $: highlightsForExistingIntraMapAreas =
@@ -786,7 +857,8 @@
       .filter((areaId) => {
         return (
           areasMap[areaId] != undefined &&
-          areasMap[areaId].mapId == chosenMap.id
+          areasMap[areaId].mapId == chosenMap.id &&
+          areaId != areaUnderConstruction.id
         );
       })
       .map((areaId) => {
@@ -938,6 +1010,8 @@
             ...highlightsForExistingIntraMapLinks,
             ...highlightsForExistingInterMapLinks,
             ...highlightsForExistingIntraMapAreas,
+            ...highlightsForNewIntraMapAreas,
+            ...existingIntraMapLinksForAreaUnderConstruction,
             ...existingIntraMapLinks,
             ...existingInterMapLinks,
             ...newIntraMapLinks,
