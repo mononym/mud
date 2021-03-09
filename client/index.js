@@ -2,9 +2,12 @@ const { app, BrowserWindow, screen } = require('electron');
 
 app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
 app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
-require('electron-reload')(__dirname, {
-    electron: require(`${__dirname}/node_modules/electron`)
-});
+
+if (!app.isPackaged) {
+    require('electron-reload')(__dirname, {
+        electron: require(`${__dirname}/node_modules/electron`)
+    });
+}
 
 const createWindow = () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -16,10 +19,11 @@ const createWindow = () => {
             nodeIntegration: true,
             enableRemoteModule: true
         },
-        
     });
 
-    window.webContents.openDevTools()
+    if (!app.isPackaged) {
+        window.webContents.openDevTools()
+    }
     window.loadFile('public/index.html');
 };
 
