@@ -1,9 +1,9 @@
 const { app, BrowserWindow, screen } = require('electron');
 
-app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
-app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
 
 if (!app.isPackaged) {
+    app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+    app.commandLine.appendSwitch('allow-insecure-localhost', 'true');
     require('electron-reload')(__dirname, {
         electron: require(`${__dirname}/node_modules/electron`)
     });

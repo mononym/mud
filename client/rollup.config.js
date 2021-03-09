@@ -43,6 +43,7 @@ export default {
 	},
 	plugins: [
 		replace({
+			preventAssignment: true,
 			'BASE_URL': production ? 'https://gameserver.unnamedmud.com' : 'https://localhost:4000',
 			'BASE_WEBSOCKET_URL': production ? 'wss://gameserver.unnamedmud.com/socket' : 'wss://localhost:4000/socket'
 		}),
@@ -53,8 +54,7 @@ export default {
 			compilerOptions: {
 				// enable run-time checks when not in production
 				dev: !production
-			},
-			dev: !production
+			}
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
