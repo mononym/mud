@@ -158,10 +158,10 @@ defmodule Mud.Engine.Map do
     # All rooms character knows about or are public
     known_or_public_areas_query = base_known_character_areas_query(character_id, map_id)
 
-    known_or_public_areas = known_or_public_areas_query |> Repo.all()
+    known_or_public_areas = known_or_public_areas_query |> Repo.all() |> Repo.preload([:flags])
 
     permanently_explored_area_ids =
-      Stream.filter(known_or_public_areas, & &1.permanently_explored) |> Enum.map(& &1.id)
+      Stream.filter(known_or_public_areas, & &1.flags.permanently_explored) |> Enum.map(& &1.id)
 
     known_area_ids = Enum.map(known_or_public_areas, & &1.id)
 
@@ -358,9 +358,11 @@ defmodule Mud.Engine.Map do
       area in Area,
       left_join: character_area in Mud.Engine.CharactersAreas,
       on: character_area.area_id == area.id,
+      inner_join: area_flags in Area.Flags,
+      on: area.id == area_flags.area_id,
       where:
         area.map_id == ^map_id and
-          (character_area.character_id == ^character_id or area.permanently_explored)
+          (character_area.character_id == ^character_id or area_flags.permanently_explored)
     )
   end
 

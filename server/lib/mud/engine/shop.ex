@@ -80,9 +80,9 @@ defmodule Mud.Engine.Shop do
   """
   def list_with_products_from_permanently_explored_areas() do
     from(shop in __MODULE__,
-      inner_join: area in Mud.Engine.Area,
-      on: shop.area_id == area.id,
-      where: area.permanently_explored == true,
+      inner_join: area_flags in Mud.Engine.Area.Flags,
+      on: shop.area_id == area_flags.area_id,
+      where: area_flags.permanently_explored == true,
       select: shop
     )
     |> Repo.all()

@@ -196,7 +196,7 @@ defmodule Mud.Engine.Character do
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
     # Just grab something random for Alpha, as long as it is permanently explored
-    area = Area.list_all() |> Enum.filter(& &1.permanently_explored) |> Enum.random()
+    area = Area.list_all() |> Enum.filter(& &1.flags.permanently_explored) |> Enum.random()
 
     Logger.debug(inspect(area))
     Logger.debug(inspect(attrs))

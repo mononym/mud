@@ -23,8 +23,7 @@ defmodule Mud.Engine.Area do
              :border_color,
              :color,
              :inserted_at,
-             :updated_at,
-             :permanently_explored
+             :updated_at
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "areas" do
@@ -43,7 +42,6 @@ defmodule Mud.Engine.Area do
     field(:map_y, :integer, default: 0)
     field(:map_size, :integer, default: 21)
     field(:map_corners, :integer, default: 5)
-    field(:permanently_explored, :boolean, default: false)
 
     belongs_to(:map, Engine.Map, type: :binary_id)
 
@@ -231,13 +229,13 @@ defmodule Mud.Engine.Area do
   """
   def has_been_explored?(new_area_id, character_id) do
     Mud.Repo.one(
-      from(area in Mud.Engine.Area,
+      from(area_flags in Mud.Engine.Area.Flags,
         left_join: character_area in Mud.Engine.CharactersAreas,
-        on: character_area.area_id == area.id,
+        on: character_area.area_id == area_flags.area_id,
         where:
-          area.id == ^new_area_id and
-            (character_area.character_id == ^character_id or area.permanently_explored),
-        select: count(area.id)
+          area_flags.area_id == ^new_area_id and
+            (character_area.character_id == ^character_id or area_flags.permanently_explored),
+        select: count(area_flags.id)
       )
     ) == 1
   end
@@ -267,10 +265,10 @@ defmodule Mud.Engine.Area do
     explored_ids =
       CharactersAreas.explored_ids_from_area_ids_subquery(to_area_ids_query, character_id)
 
-    from(area in base_area_query(),
+    from([flags: flags] in base_area_query(),
       where:
-        area.id in subquery(to_area_ids_query) and area.permanently_explored == false and
-          area.id not in subquery(explored_ids)
+        flags.area_id in subquery(to_area_ids_query) and flags.permanently_explored == false and
+          flags.area_id not in subquery(explored_ids)
     )
     |> Repo.all()
     |> Repo.preload([:flags])
@@ -306,7 +304,6 @@ defmodule Mud.Engine.Area do
       :border_color,
       :border_width,
       :color,
-      :permanently_explored
     ])
     |> validate_required([
       :name,
@@ -365,7 +362,10 @@ defmodule Mud.Engine.Area do
   Basic query for finding areas. Nothing fancy, no preloads.
   """
   def base_area_query do
-    from(area in __MODULE__)
+    from(area in __MODULE__,
+      left_join: flags in assoc(area, :flags),
+      as: :flags
+    )
   end
 
   @doc """

@@ -155,15 +155,27 @@
           />
         </div>
         <div class="col-span-2">
-          <label
-            for="showDescription"
-            class="block text-sm font-medium text-gray-300">Is Bank</label
+          <label for="isBank" class="block text-sm font-medium text-gray-300"
+            >Is Bank</label
           >
           <input
             bind:checked={$areaUnderConstruction.flags.bank}
             type="checkbox"
-            name="showDescription"
-            id="showDescription"
+            name="isBank"
+            id="isBank"
+          />
+        </div>
+        <div class="col-span-2">
+          <label
+            for="isPermExplored"
+            class="block text-sm font-medium text-gray-300"
+            >Is Permanently Explored</label
+          >
+          <input
+            bind:checked={$areaUnderConstruction.flags.permanently_explored}
+            type="checkbox"
+            name="isPermExplored"
+            id="isPermExplored"
           />
         </div>
       </div>
