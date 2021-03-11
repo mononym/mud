@@ -6,17 +6,16 @@ defmodule Mud.Engine.Command.Look do
   """
   use Mud.Engine.Command.Callback
 
-  alias Mud.Engine.Area
   alias Mud.Engine.Search
-  alias Mud.Engine.Character
+  alias Mud.Engine.Area
   alias Mud.Engine.Item
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
-  alias Mud.Engine.Command.AstUtil
+  alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Message
-  alias Mud.Engine.Command.SingleTargetCallback
+  alias Mud.Engine.Event.Client.{UpdateArea}
 
   require Logger
 
@@ -26,254 +25,286 @@ defmodule Mud.Engine.Command.Look do
               data: nil
   end
 
+  @spec build_ast([Mud.Engine.Command.AstNode.t(), ...]) ::
+          Mud.Engine.Command.AstNode.ThingAndPlace.t()
   def build_ast(ast_nodes) do
-    AstUtil.build_tap_ast(ast_nodes)
-  end
-
-  @impl true
-  def continue(context) do
-    match = Util.refresh_thing(context.input.match)
-    look_in_or_at(context, match)
+    Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
   end
 
   @impl true
   def execute(context) do
-    Logger.debug(inspect(context.command.ast))
-
+    Logger.debug("Executing Look command")
+    Logger.debug(inspect(context))
     ast = context.command.ast
 
-    case ast do
-      %TAP{thing: nil} ->
-        description =
-          Area.long_description_to_story_output(context.character.area_id, context.character)
+    if is_nil(ast.thing) do
+      Logger.debug("Look command entered without input. Looking at area.")
 
-        context
-        |> Context.append_message(description)
+      description =
+        Area.long_description_to_story_output(context.character.area_id, context.character)
 
-      %TAP{place: nil, thing: %Thing{personal: false}} ->
-        look_area_then_worn(context)
+      context
+      |> Context.append_message(description)
+    else
+      # A UUID was passed in which means the look command is being attempted on a specific item.
+      # This sort of command should only be triggered by the UI.
+      if Util.is_uuid4(context.command.ast.thing.input) do
+        Logger.debug("Look command provided with uuid: #{context.command.ast.thing.input}")
 
+        case Item.get(context.command.ast.thing.input) do
+          {:ok, item} ->
+            look_item(context, List.first(Search.things_to_match(item)))
+
+          _ ->
+            Util.dave_error_v2(context)
+        end
+      else
+        Logger.debug("Provided input was not a uuid: #{context.command.ast.thing.input}")
+
+        # If there is input but that input is not a UUID, that means the player typed text in. Go searching for the item.
+        find_thing_to_look(context)
+      end
+    end
+  end
+
+  defp find_thing_to_look(context = %Mud.Engine.Command.Context{}) do
+    case context.command.ast do
+      # Look thing from in character
       %TAP{place: nil, thing: %Thing{personal: true}} ->
-        look_worn(context)
+        look_item_in_inventory(context)
 
+      # This thing is on its own and might not be on the character
+      %TAP{place: nil, thing: %Thing{personal: false}} ->
+        look_item_in_area_or_inventory(context)
+
+      # This thing will be in a place, but that place might not be on the character
+      %TAP{place: %Place{personal: false}, thing: %Thing{personal: false}} ->
+        look_item_with_place(context)
+
+      # look thing in container on character
       %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}} when place or thing ->
-        look_worn(context)
-
-      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing}}
-      when not place and not thing ->
-        look_area_then_worn(context)
+        look_item_with_personal_place(context)
     end
   end
 
-  defp look_area_then_worn(context) do
-    ast = context.command.ast
+  defp look_item_in_inventory(context) do
+    results =
+      Search.find_matches_in_inventory(
+        context.character.id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
 
-    if is_nil(ast.place) do
-      result =
-        Search.find_matches_on_ground(
-          context.character.area_id,
-          ast.thing.input
-        )
-
-      case result do
-        {:ok, [match]} ->
-          look_in_or_at(context, match)
-
-        {:ok, _matches} ->
-          Context.append_message(
-            context,
-            Message.new_story_output(
-              context.character.id,
-              "Multiple items were found, please be more specific.",
-              "system_warning"
-            )
-          )
-
-        # SingleTargetCallback.handle_multiple_matches(
-        #   context,
-        #   matches,
-        #   "What were you trying to look at?",
-        #   "Please be more specific."
-        # )
-
-        _error ->
-          look_worn(context)
-      end
-    else
-      items = Item.list_in_area(context.character.area_id)
-
-      case follow_path(context, ast.place, items) do
-        {:ok, items} ->
-          look_items(context, items)
-
-        {:error, _error} ->
-          look_worn(context)
-
-        result ->
-          result
-      end
-    end
-  end
-
-  # May or may not have place specified
-  defp look_worn(context) do
-    ast = context.command.ast
-
-    held_items = Character.list_held_items(context.character)
-    worn_items = Character.list_worn_items(context.character)
-    all_personal_items = held_items ++ worn_items
-
-    if is_nil(ast.place) do
-      look_items(context, all_personal_items)
-    else
-      case follow_path(context, ast.place, all_personal_items) do
-        {:ok, items} ->
-          look_items(context, items)
-
-        {:error, _error} ->
-          Context.append_output(
-            context,
-            context.character.id,
-            "Could not find what you were looking for.",
-            "error"
-          )
-
-        result ->
-          result
-      end
-    end
-  end
-
-  defp look_items(context, items) do
-    ast = context.command.ast
-
-    case Search.generate_matches(items, ast.thing.input, ast.thing.which) do
-      {:ok, [match]} ->
-        look_in_or_at(context, match)
-
+    case results do
       {:ok, matches} ->
-        SingleTargetCallback.handle_multiple_matches(
-          context,
-          matches,
-          "What were you trying to look at?",
-          "Please be more specific."
-        )
+        sorted_results = CallbackUtil.sort_matches(matches)
 
-      _error ->
-        Context.append_output(
-          context,
-          context.character.id,
-          "Could not find what you were looking for.",
-          "error"
-        )
+        # then just handle results as normal
+        handle_search_results(context, {:ok, sorted_results})
+
+      _ ->
+        handle_search_results(context, results)
     end
   end
 
-  # given a place, which may or may not have nested children, and a set of items to test against, dig through the stack
-  # to see if there is a match.
-  defp follow_path(context, place, items) do
-    ast = context.command.ast
-
-    case Search.generate_matches(items, place.input, ast.place.which) do
+  defp handle_search_results(context, results) do
+    case results do
       {:ok, [match]} ->
-        if is_nil(place.path) do
-          {:ok, list_relative_items(place.where, match.match)}
-        else
-          items = list_relative_items(place.where, match.match)
-          follow_path(context, place.path, items)
+        look_item(context, match)
+
+      {:ok, all_matches = [match | matches]} ->
+        case context.command.ast do
+          # If which is greater than 0, then more than one match was anticipated.
+          # Make sure provided selection is not more than the number of items that were found
+          %TAP{thing: %Thing{which: which}}
+          when is_integer(which) and which > 0 and which <= length(all_matches) ->
+            look_item(context, Enum.at(matches, which - 1))
+
+          # If the user provided a number but it is greater than the number of items found,
+          %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
+            Util.not_found_error(context)
+
+          _ ->
+            # Determine what to do based on character preferences when it comes to multiple potential matches.
+            case context.character.settings.commands.multiple_matches_mode do
+              "silent" ->
+                # If their choice is "silent" that means just drop the extras so it is like they don't exist
+                look_item(context, match, [])
+
+              key when key in ["item only", "full path"] ->
+                # If their choice is "full path" or "item only" that means pass everything through for generating messages later
+                look_item(context, match, matches)
+
+              "choose" ->
+                Context.append_message(
+                  context,
+                  Message.new_story_output(
+                    context.character.id,
+                    "Multiple places to put things were found, please be more specific.",
+                    "system_alert"
+                  )
+                )
+            end
         end
 
-      {:ok, matches} ->
-        SingleTargetCallback.handle_multiple_matches(
-          context,
-          matches,
-          "Which of these containers did you mean?",
-          "Please be more specific."
-        )
-
-      error ->
-        error
+      _ ->
+        Util.not_found_error(context)
     end
   end
 
-  defp list_relative_items("in", item) do
-    Item.list_contained_items(item.id)
+  defp look_item_with_place(context) do
+    # look for place on ground on in hands or worn
+    area_results =
+      Search.find_matches_relative_to_place_in_area(
+        context.character.area_id,
+        context.command.ast.thing,
+        context.command.ast.place,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+
+      _ ->
+        look_item_with_personal_place(context)
+    end
   end
 
-  @spec look_in_or_at(Context.t(), Mud.Engine.Search.Match.t()) ::
-          Context.t()
-  defp look_in_or_at(context, match) do
-    ast = context.command.ast
+  defp look_item_with_personal_place(context) do
+    # look for the item you are trying to look, such as a rock, somewhere inside the inventory and make sure to only find something that actually has the right parents
+    results =
+      Search.find_matches_relative_to_place_in_inventory(
+        context.character.id,
+        context.command.ast.thing,
+        context.command.ast.place,
+        context.character.settings.commands.search_mode,
+        false
+      )
+
+    handle_search_results(context, results)
+  end
+
+  defp look_item_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_in_area(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+
+      _ ->
+        look_item_in_inventory(context)
+    end
+  end
+
+  defp look_item(context, thing = %Search.Match{}, _other_matches \\ []) do
+    item = thing.match
+    in_area = Item.in_area?(item.id, context.character.area_id)
+    in_inventory = Item.in_inventory?(item.id, context.character.id)
+    parent_containers_open = Item.parent_containers_open?(item)
 
     cond do
-      ast.thing.where == "in" ->
-        thing = match.match
+      parent_containers_open and (in_area or in_inventory) ->
+        where = context.command.ast.thing.where
 
         cond do
-          thing.is_container and thing.container_open ->
-            # get things in container and look at them
-            thing = Mud.Repo.preload(thing, :container_items)
-
-            items_description =
-              Stream.map(thing.container_items, & &1.description.short)
-              |> Enum.join("{{/item}}, {{item}}")
-
-            container_desc = String.capitalize(match.description.short)
-
-            if length(thing.container_items) > 0 do
-              Context.append_message(
-                context,
-                Message.new_output(
-                  context.character.id,
-                  "{{item}}#{container_desc}{{/item}} contains: {{item}}#{items_description}{{/item}}.",
-                  "info"
-                )
+          where in ["@", "at", nil] or (where == ">" and not item.flags.container) ->
+            # get desc for item and spit it out
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                Util.upcase_first(item.description.long),
+                Mud.Engine.Util.get_item_type(item)
               )
-            else
-              Context.append_message(
-                context,
-                Message.new_output(
-                  context.character.id,
-                  "{{item}}#{container_desc}{{/item}} is empty.",
-                  "info"
+
+            # |> Message.append_text(".", "base")
+
+            Context.append_message(context, self_msg)
+
+          where == "in" or (where == ">" and item.flags.container) ->
+            items = Item.list_immediate_children(item)
+
+            case items do
+              [] ->
+                self_msg =
+                  context.character.id
+                  |> Message.new_story_output()
+                  |> Message.append_text(
+                    Util.upcase_first(item.description.short),
+                    Mud.Engine.Util.get_item_type(item)
+                  )
+                  |> Message.append_text(" is empty.", "base")
+
+                Context.append_message(context, self_msg)
+
+              items ->
+                self_msg =
+                  context.character.id
+                  |> Message.new_story_output()
+                  |> Message.append_text(
+                    "You",
+                    "character"
+                  )
+                  |> Message.append_text(
+                    " see: ",
+                    "base"
+                  )
+
+                self_msg =
+                  Enum.reduce(items, self_msg, fn itm, msg ->
+                    msg
+                    |> Message.append_text(
+                      itm.description.short,
+                      Mud.Engine.Util.get_item_type(itm)
+                    )
+                    |> Message.append_text(
+                      ", ",
+                      "base"
+                    )
+                  end)
+                  |> Message.drop_last_text()
+
+                Context.append_message(context, self_msg)
+                |> Context.append_event(
+                  context.character_id,
+                  UpdateArea.new(%{action: :add, items: items})
                 )
-              )
             end
-
-          thing.is_container and not thing.container_open ->
-            Context.append_message(
-              context,
-              Message.new_output(
-                context.character.id,
-                String.capitalize(
-                  "{{item}}#{match.description.short}{{/item}} must be opened first."
-                ),
-                "info"
-              )
-            )
-
-          not thing.is_container ->
-            Context.append_message(
-              context,
-              Message.new_output(
-                context.character.id,
-                "You cannot look inside {{item}}#{match.description.short}{{/item}}.",
-                "info"
-              )
-            )
         end
 
-      true ->
-        Context.append_message(
-          context,
+      item.flags.container and not item.container.open ->
+        msg =
           Message.new_story_output(
             context.character.id,
-            match.long_description,
-            "base"
+            "#{String.capitalize(item.description.short)} ",
+            Util.get_item_type(item)
           )
+          |> Message.append_text("must be opened first.", "base")
+
+        Context.append_message(
+          context,
+          msg
+        )
+
+      not item.flags.container ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You", "character")
+          |> Message.append_text(" cannot look inside ", "base")
+          |> Message.append_text(item.description.short, Util.get_item_type(item))
+          |> Message.append_text(".", "base")
+
+        Context.append_message(
+          context,
+          self_msg
         )
     end
   end
-
-  defp target_types(), do: [:character, :item, :link]
 end

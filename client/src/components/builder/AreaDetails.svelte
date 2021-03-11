@@ -5,6 +5,7 @@
   const { areasMap } = AreasStore;
   import { WorldBuilderStore } from "./state";
   import LinkList from "./LinkList.svelte";
+  import ItemList from "./items/ItemList.svelte";
   const {
     areaSelected,
     selectedArea,
@@ -17,7 +18,13 @@
     attachShop,
     selectedAreaShops,
     detachShop,
+    itemsForSelectedArea,
+    view,
+    mode,
+    createNewItem,
   } = WorldBuilderStore;
+
+  $: newItemButtonDisabled = !($view == "details" && $mode == "area");
 
   function attachAShop(event) {
     const shopToAttachId = event.target.shops.value;
@@ -30,7 +37,7 @@
 </script>
 
 {#if $areaSelected}
-  <div class="h-full w-full flex flex-col p-1 place-content-center">
+  <div class="h-full w-full flex flex-col p-1 overflow-y-auto">
     <h2 class="text-center text-gray-300">{$selectedArea.name}</h2>
     <p class="text-center text-gray-300">{$selectedArea.description}</p>
     <p class="text-center text-gray-300">
@@ -71,6 +78,24 @@
           />
         </div>
       </div>
+    </div>
+    <h2 class="text-center border-b-2 border-black flex-shrink text-gray-300">
+      Items in the Area
+    </h2>
+    <div class="">
+      <ItemList items={$itemsForSelectedArea} />
+    </div>
+    <div class="flex-shrink flex">
+      <button
+        on:click={createNewItem}
+        disabled={newItemButtonDisabled}
+        type="button"
+        class="flex-1 rounded-l-md {newItemButtonDisabled
+          ? 'text-gray-600 bg-gray-500'
+          : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {newItemButtonDisabled
+          ? 'cursor-not-allowed'
+          : 'cursor-pointer'}">New Item</button
+      >
     </div>
     <div class="flex flex-col">
       <h2 class="text-center text-gray-300 flex-shrink">Shops</h2>

@@ -4,6 +4,8 @@ import MapState, { MapInterface } from "../../models/map";
 import MapLabelState, { MapLabelInterface } from "../../models/mapLabel";
 import TemplateState, { TemplateInterface } from "../../models/template";
 import AreaState, { AreaInterface } from "../../models/area";
+import type { ItemInterface } from "../../models/item";
+import ItemState from "../../models/item";
 import LinkState from "../../models/link";
 import ShopState from "../../models/shop";
 import ShopProductState, {
@@ -26,6 +28,9 @@ import {
   updateTemplate,
   deleteTemplate as delTemplate,
   listTemplates,
+  createItem,
+  updateItem,
+  loadItemsForArea as loadItems,
 } from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
@@ -706,6 +711,92 @@ export function createWorldBuilderStore() {
 
   //
   //
+  // Item type stuff
+  //
+  //
+
+  const itemsForSelectedArea = writable([]);
+  const itemUnderConstruction = writable({ ...ItemState });
+  const selectedItem = writable({ ...ItemState });
+  const savingItem = writable(false);
+  const itemSelected = derived(
+    selectedItem,
+    ($selectedItem) => $selectedItem.id != ""
+  );
+  const loadingItemsForArea = writable(false);
+
+  async function loadItemsForArea(area_id) {
+    loadingItemsForArea.set(true);
+    const items = (await loadItems(area_id)).data;
+    itemsForSelectedArea.set(items);
+    loadingItemsForArea.set(false);
+  }
+
+  async function selectItem(item: ItemInterface) {
+    selectedItem.set(item);
+  }
+
+  async function cancelEditItem() {
+    view.set("details");
+    itemUnderConstruction.set({ ...ItemState });
+  }
+
+  async function editItem(item: ItemInterface) {
+    selectedItem.set(item);
+    itemUnderConstruction.set({ ...item });
+    view.set("edit_item");
+  }
+
+  async function saveItemUnderConstructionAsAreaItem() {
+    itemUnderConstruction.update(function (item) {
+      item.location.on_ground = true;
+      item.location.area_id = get(selectedArea).id;
+      return item;
+    });
+
+    saveItem();
+  }
+
+  async function saveItem() {
+    const item = get(itemUnderConstruction);
+    savingItem.set(true);
+    const isNew = item.id == "";
+
+    let res: ItemInterface;
+
+    if (isNew) {
+      res = (await createItem(item)).data;
+      itemsForSelectedArea.update(function (items) {
+        items.push(res);
+        return items;
+      });
+    } else {
+      res = (await updateItem(item.id, item)).data;
+      itemsForSelectedArea.update(function (items) {
+        const itms = items.map(function (item) {
+          if (item.id == res.id) {
+            return res;
+          } else {
+            return item;
+          }
+        });
+        return itms;
+      });
+    }
+
+    itemUnderConstruction.set({ ...ItemState });
+    savingItem.set(false);
+    selectedItem.set(res);
+    view.set("details");
+  }
+
+  async function createNewItem() {
+    itemUnderConstruction.set({ ...ItemState });
+    view.set("edit_item");
+  }
+
+  //
+  //
   // Area type stuff
   //
   //
@@ -836,9 +927,11 @@ export function createWorldBuilderStore() {
       if (area.mapId != get(selectedMap).id) {
         selectedMap.set(get(mapsMap)[area.mapId]);
         selectedArea.set({ ...AreaState });
+        loadItemsForArea(area.id);
         loadAllMapData(area.mapId);
       } else {
         selectedArea.set(area);
+        loadItemsForArea(area.id);
         await tick();
         document.getElementById(`AreaList:${area.id}`).scrollIntoView();
       }
@@ -1117,6 +1210,19 @@ export function createWorldBuilderStore() {
     mapAtMaxZoom,
     zoomMapIn,
     zoomMapOut,
+    // Item Stuff
+    itemsForSelectedArea,
+    itemUnderConstruction,
+    selectedItem,
+    itemSelected,
+    savingItem,
+    selectItem,
+    cancelEditItem,
+    editItem,
+    saveItem,
+    loadItemsForArea,
+    createNewItem,
+    saveItemUnderConstructionAsAreaItem,
     // Shops stuff
     shops,
     selectedShop,

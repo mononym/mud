@@ -71,6 +71,7 @@ defmodule Mud.Engine.Item do
 
   def create_from_template_for_area(template, args, area_id) do
     create(Mud.Engine.ItemTemplate.build_template_for_area(template, args, area_id))
+    |> preload()
   end
 
   def create(attrs \\ %{}) do
@@ -89,6 +90,7 @@ defmodule Mud.Engine.Item do
       |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
       # Description should be very last since it might actually build up a description based on everything else having been filled in
       |> maybe_setup_optional_component(normalized_attrs, :description, Description)
+      |> preload()
     end)
   end
 
@@ -155,6 +157,13 @@ defmodule Mud.Engine.Item do
 
     keys_to_keep =
       if Map.has_key?(attrs[:flags], :material) and attrs[:flags][:material] do
+        keys_to_keep ++ [:description]
+      else
+        keys_to_keep
+      end
+
+    keys_to_keep =
+      if Map.has_key?(attrs[:flags], :scenery) and attrs[:flags][:scenery] do
         keys_to_keep ++ [:description]
       else
         keys_to_keep
@@ -240,16 +249,19 @@ defmodule Mud.Engine.Item do
       |> Repo.update_all(set: keywords)
       |> elem(1)
       |> List.first()
-      |> Repo.preload(:location)
 
-    item
+    update_item_components(attrs)
+
+    preload(item)
   end
 
   def update!(item, attrs) do
+    update_item_components(attrs)
+
     item
     |> changeset(attrs)
     |> Repo.update!()
-    |> Repo.preload(:location)
+    |> preload()
   end
 
   def update(item, attrs) do
@@ -260,7 +272,8 @@ defmodule Mud.Engine.Item do
 
     case result do
       {:ok, item} ->
-        {:ok, Repo.preload(item, :location)}
+        update_item_components(attrs)
+        {:ok, preload(item)}
 
       error ->
         error
@@ -355,6 +368,7 @@ defmodule Mud.Engine.Item do
     )
     |> Repo.update_all([])
     |> elem(1)
+    |> preload()
     |> List.first()
   end
 
@@ -386,6 +400,7 @@ defmodule Mud.Engine.Item do
     else
       results
     end
+    |> preload()
   end
 
   @doc """
@@ -409,6 +424,7 @@ defmodule Mud.Engine.Item do
     |> items_to_ids()
     |> list_all_recursive_child_query(include_items)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -427,6 +443,7 @@ defmodule Mud.Engine.Item do
     |> items_to_ids()
     |> list_all_recursive_parent_query(true)
     |> Repo.all()
+    |> preload()
   end
 
   def list_all_parents(items) do
@@ -434,6 +451,7 @@ defmodule Mud.Engine.Item do
     # IO.inspect(ids, label: :list_all_parents)
 
     Repo.all(list_all_recursive_parent_query(ids, true))
+    |> preload()
   end
 
   @doc """
@@ -445,6 +463,7 @@ defmodule Mud.Engine.Item do
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -456,6 +475,7 @@ defmodule Mud.Engine.Item do
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -476,6 +496,7 @@ defmodule Mud.Engine.Item do
       order_by: item.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @spec list_scenery_in_area(id) :: [%__MODULE__{}]
@@ -491,6 +512,7 @@ defmodule Mud.Engine.Item do
     |> held_or_worn_and_children_query()
     |> order_by([i], i.moved_at)
     |> Repo.all()
+    |> preload()
   end
 
   def list_contained_items(container_id) do
@@ -500,6 +522,7 @@ defmodule Mud.Engine.Item do
       order_by: item.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -584,7 +607,7 @@ defmodule Mud.Engine.Item do
   """
   def search_worn_containers(character_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable and
@@ -592,6 +615,7 @@ defmodule Mud.Engine.Item do
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -601,6 +625,7 @@ defmodule Mud.Engine.Item do
   def search_held(character_id, search_string) do
     search_held_query(character_id, search_string)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -610,6 +635,7 @@ defmodule Mud.Engine.Item do
   def search_inventory(character_id, search_string) do
     search_inventory_query(character_id, search_string)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -619,6 +645,7 @@ defmodule Mud.Engine.Item do
   def search_inventory_for_containers(character_id, search_string) do
     search_inventory_for_containers_query(character_id, search_string)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -628,6 +655,7 @@ defmodule Mud.Engine.Item do
   def search_inside_inventory(character_id, search_string) do
     search_inside_inventory_query(character_id, search_string)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -637,6 +665,7 @@ defmodule Mud.Engine.Item do
   def search_area(area_id, search_string) do
     search_area_query(area_id, search_string)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -644,13 +673,14 @@ defmodule Mud.Engine.Item do
   """
   def search_worn_items(character_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and flags.wearable and
           like(description.short, ^search_string),
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -668,7 +698,7 @@ defmodule Mud.Engine.Item do
         Search.input_to_wildcard_string(initial_path.input, mode)
       )
 
-    IO.inspect(initial_query, label: "search_relative_to_item_in_area")
+    # IO.inspect(initial_query, label: "search_relative_to_item_in_area")
 
     build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
   end
@@ -754,6 +784,7 @@ defmodule Mud.Engine.Item do
     # IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
 
     Repo.all(final_query)
+    |> preload()
   end
 
   defp build_nested_relative_query(previous_query, []) do
@@ -798,13 +829,14 @@ defmodule Mud.Engine.Item do
   """
   def search_on_ground(area_id, search_string) do
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_for_description_and_location(),
       where:
         location.area_id == ^area_id and location.on_ground and
           like(description.short, ^search_string),
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -813,7 +845,7 @@ defmodule Mud.Engine.Item do
   @spec search_on_ground_or_worn_items(String.t(), String.t(), String.t()) :: [Item.t()]
   def search_on_ground_or_worn_items(area_id, character_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         (location.area_id == ^area_id and location.on_ground and
            like(description.short, ^search_string)) or
@@ -824,6 +856,7 @@ defmodule Mud.Engine.Item do
       order_by: fragment("CASE i1.on_ground WHEN true THEN 0 ELSE 1 END")
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -832,7 +865,7 @@ defmodule Mud.Engine.Item do
   @spec search_on_ground_or_worn_or_held_items(String.t(), String.t(), String.t()) :: [Item.t()]
   def search_on_ground_or_worn_or_held_items(area_id, character_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         (location.area_id == ^area_id and location.on_ground and
            like(description.short, ^search_string)) or
@@ -846,6 +879,7 @@ defmodule Mud.Engine.Item do
         )
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -854,7 +888,7 @@ defmodule Mud.Engine.Item do
   @spec search_relative_to_items([String.t()], String.t(), String.t()) :: [Item.t()]
   def search_relative_to_items(item_ids, relation, search_string) do
     from(
-      [container: container, description: description, location: location, flags: flags] in base_query_with_preload(),
+      [container: container, description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.relative_item_id in ^items_to_ids(item_ids) and location.relative_to_item and
           location.relation == ^relation and
@@ -862,28 +896,31 @@ defmodule Mud.Engine.Item do
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   def list_worn_gem_pouches(character_id) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable and flags.gem_pouch,
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   def list_worn_containers(character_id) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable,
       order_by: location.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -1063,6 +1100,42 @@ defmodule Mud.Engine.Item do
   # Helper functions
   #
   #
+
+  def base_query_for_description_and_location_and_flags_and_container() do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: description in assoc(item, :description),
+      as: :description,
+      left_join: flags in assoc(item, :flags),
+      as: :flags,
+      left_join: container in assoc(item, :container),
+      as: :container
+    )
+  end
+
+  def base_query_for_description_and_location_and_flags() do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: description in assoc(item, :description),
+      as: :description,
+      left_join: flags in assoc(item, :flags),
+      as: :flags
+    )
+  end
+
+  def base_query_for_description_and_location() do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: description in assoc(item, :description),
+      as: :description
+    )
+  end
 
   def base_query_without_preload() do
     from(
@@ -1459,7 +1532,7 @@ defmodule Mud.Engine.Item do
 
   def search_inventory_query(character_id, search_string) do
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_for_description_and_location(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
           like(description.short, ^search_string),
@@ -1469,7 +1542,7 @@ defmodule Mud.Engine.Item do
 
   def search_inventory_for_containers_query(character_id, search_string) do
     from(
-      [description: description, location: location, flags: flags] in base_query_with_preload(),
+      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
           like(description.short, ^search_string) and flags.container,
@@ -1479,7 +1552,7 @@ defmodule Mud.Engine.Item do
 
   def search_held_query(character_id, search_string) do
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_for_description_and_location(),
       where:
         description.item_id in subquery(base_query_for_held_item_ids(character_id)) and
           like(description.short, ^search_string),
@@ -1489,7 +1562,7 @@ defmodule Mud.Engine.Item do
 
   def search_area_query(area_id, search_string) do
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_for_description_and_location(),
       where:
         description.item_id in subquery(base_query_for_all_area_item_ids(area_id)) and
           like(description.short, ^search_string),
@@ -1519,17 +1592,60 @@ defmodule Mud.Engine.Item do
     end)
   end
 
-  defp preload(results) do
-    Repo.preload(results, [
-      :container,
-      :description,
-      :flags,
-      :location,
-      :physics,
-      :coin,
-      :gem,
-      :furniture,
-      :wearable
-    ])
+  defp update_item_components(attrs) do
+    Enum.each(attrs, fn {key, val} ->
+      if not is_nil(val) and key != "id" do
+        update_item_component(key, val)
+      end
+    end)
+  end
+
+  defp update_item_component(key, attrs) do
+    case key do
+      "coin" ->
+        Coin.get!(attrs["id"]) |> Coin.update!(attrs)
+
+      "container" ->
+        Container.get!(attrs["id"]) |> Container.update!(attrs)
+
+      "description" ->
+        Description.get!(attrs["id"]) |> Description.update!(attrs)
+
+      "flags" ->
+        Flags.get!(attrs["id"]) |> Flags.update!(attrs)
+
+      "location" ->
+        Location.get!(attrs["id"]) |> Location.update!(attrs)
+
+      "physics" ->
+        Physics.get!(attrs["id"]) |> Physics.update!(attrs)
+
+      "gem" ->
+        Gem.get!(attrs["id"]) |> Gem.update!(attrs)
+
+      "furniture" ->
+        Furniture.get!(attrs["id"]) |> Furniture.update!(attrs)
+
+      "wearable" ->
+        Wearable.get!(attrs["id"]) |> Wearable.update!(attrs)
+    end
+  end
+
+  def preload(results) do
+    Repo.preload(
+      results,
+      [
+        :container,
+        :description,
+        :flags,
+        :location,
+        :physics,
+        :coin,
+        :gem,
+        :furniture,
+        :wearable
+      ],
+      force: true
+    )
   end
 end

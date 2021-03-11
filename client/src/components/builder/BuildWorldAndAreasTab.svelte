@@ -2,6 +2,7 @@
   import ConfirmWithInput from "../ConfirmWithInput.svelte";
   import AreaEditor from "./AreaEditor.svelte";
   import MapEditor from "./MapEditor.svelte";
+  import ItemEditor from "./items/ItemEditor.svelte";
   import MapLabelEditor from "./MapLabelEditor.svelte";
   import LinkEditor from "./LinkEditor.svelte";
   import MapDetails from "./MapDetails.svelte";
@@ -14,10 +15,10 @@
   import { AreasStore } from "../../stores/areas.ts";
   import { LinksStore } from "../../stores/links.ts";
   import { Circle2 } from "svelte-loading-spinners";
+  import { WorldBuilderStore } from "./state";
   const { loadingMaps, mapsMap } = MapsStore;
   const { areas, areasMap } = AreasStore;
   const { links } = LinksStore;
-  import { WorldBuilderStore } from "./state";
   const {
     buildingArea,
     buildingLink,
@@ -46,6 +47,7 @@
     mapAtMaxZoom,
     mapAtMinZoom,
     loadShops,
+    saveItemUnderConstructionAsAreaItem,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -199,8 +201,12 @@
         {:else if $mode == "area"}
           {#if $view == "details"}
             <AreaDetails />
-          {:else}
+          {:else if $view == "edit"}
             <AreaEditor />
+          {:else if $view == "edit_item"}
+            <ItemEditor
+              saveItemCallback={saveItemUnderConstructionAsAreaItem}
+            />
           {/if}
         {:else}
           <div class="h-full w-full flex flex-col">

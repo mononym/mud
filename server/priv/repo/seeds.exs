@@ -51,7 +51,7 @@ alias Mud.Engine
     name: "Water Fountain",
     description:
       "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors.",
-    flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, east_room} =
@@ -63,7 +63,7 @@ alias Mud.Engine
     name: "East Garden Path",
     description:
       "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, west_room} =
@@ -75,7 +75,7 @@ alias Mud.Engine
     name: "West Garden Path",
     description:
       "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, north_room} =
@@ -87,7 +87,7 @@ alias Mud.Engine
     name: "North Garden Path",
     description:
       "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, south_room} =
@@ -99,7 +99,7 @@ alias Mud.Engine
     name: "South Garden Path",
     description:
       "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, northeast_room} =
@@ -111,7 +111,7 @@ alias Mud.Engine
     name: "NorthEast Garden Path",
     description:
       "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, southeast_room} =
@@ -123,7 +123,7 @@ alias Mud.Engine
     name: "SouthEast Garden Path",
     description:
       "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, northwest_room} =
@@ -135,7 +135,7 @@ alias Mud.Engine
     name: "NorthWest Garden Path",
     description:
       "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 {:ok, southwest_room} =
@@ -147,7 +147,7 @@ alias Mud.Engine
     name: "SouthWest Garden Path",
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-      flags: %{ permanently_explored: true }
+    flags: %{permanently_explored: true}
   })
 
 # Maze
@@ -2118,9 +2118,15 @@ Mud.Engine.Item.create(%{
   flags: %{
     hidden: true,
     look: true,
-    scenery: true
+    scenery: true,
+    furniture: true
   },
-  location: %{area_id: center_room.id, on_ground: true}
+  location: %{area_id: center_room.id, on_ground: true},
+  furniture: %{
+    has_external_surface: true,
+    external_surface_can_hold_characters: true,
+    external_surface_size: 6
+  }
 })
 
 Mud.Engine.Item.create(%{

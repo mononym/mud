@@ -1,225 +1,190 @@
 <script>
   import { onMount } from "svelte";
   import { WorldBuilderStore } from "../state";
-  const {
-    templateUnderConstruction,
-    saveTemplate,
-    cancelEditTemplate,
-  } = WorldBuilderStore;
+  const { itemUnderConstruction, saveItem, cancelEditItem } = WorldBuilderStore;
+
+  export let saveItemCallback = saveItem;
 
   $: disableArmorCheckbox =
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableClothingCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableCoinCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableContainerCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableFurnitureCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableGemCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableInstrumentCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableJewelryCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableMaterialCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableSceneryCheckbox = false;
 
   $: disableShieldCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.weapon;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.weapon;
 
   $: disableWeaponCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.jewelry ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield;
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield;
 
   $: disableGemPouchCheckbox =
-    !$templateUnderConstruction.template.flags.container ||
-    !$templateUnderConstruction.template.flags.wearable;
+    !$itemUnderConstruction.flags.container ||
+    !$itemUnderConstruction.flags.wearable;
 
-  $: disableHiddenCheckbox = !$templateUnderConstruction.template.flags.scenery;
+  $: disableHiddenCheckbox = !$itemUnderConstruction.flags.scenery;
 
-  $: disableShopDisplayCheckbox = !$templateUnderConstruction.template.flags
-    .furniture;
+  $: disableShopDisplayCheckbox = !$itemUnderConstruction.flags.furniture;
 
-  $: disableWearableCheckbox = !$templateUnderConstruction.template.flags
-    .container;
+  $: disableWearableCheckbox = !$itemUnderConstruction.flags.container;
 
-  $: disableCloseCheckbox = !$templateUnderConstruction.template.flags
-    .container;
+  $: disableCloseCheckbox = !$itemUnderConstruction.flags.container;
 
-  $: disableDropCheckbox = !$templateUnderConstruction.template.flags.hold;
+  $: disableDropCheckbox = !$itemUnderConstruction.flags.hold;
 
-  $: disableHoldCheckbox = $templateUnderConstruction.template.flags.scenery;
+  $: disableHoldCheckbox = $itemUnderConstruction.flags.scenery;
 
   $: disableLookCheckbox = false;
 
-  $: disableOpenCheckbox = !$templateUnderConstruction.template.flags.container;
+  $: disableOpenCheckbox = !$itemUnderConstruction.flags.container;
 
-  $: disableRemoveCheckbox = !$templateUnderConstruction.template.flags
-    .wearable;
+  $: disableRemoveCheckbox = !$itemUnderConstruction.flags.wearable;
 
-  $: disableStoreCheckbox = $templateUnderConstruction.template.flags.scenery;
+  $: disableStoreCheckbox = $itemUnderConstruction.flags.scenery;
 
   $: disableTrashCheckbox =
-    $templateUnderConstruction.template.flags.scenery ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.coin;
+    $itemUnderConstruction.flags.scenery ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.coin;
 
-  $: disableWearCheckbox = !$templateUnderConstruction.template.flags.wearable;
+  $: disableWearCheckbox = !$itemUnderConstruction.flags.wearable;
 
   onMount(() => {
     console.log("onMount");
-    console.log($templateUnderConstruction);
+    console.log($itemUnderConstruction);
   });
 </script>
 
 <form
   class="h-full flex flex-col place-content-center"
-  on:submit|preventDefault={saveTemplate}
+  on:submit|preventDefault={saveItemCallback}
 >
   <div class="overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">Template Details</h2>
-        </div>
-        <div class="col-span-6">
-          <label for="name" class="block text-sm font-medium text-gray-300"
-            >Template Name</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.name}
-            type="text"
-            name="name"
-            id="name"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
-        <div class="col-span-6">
-          <label
-            for="description"
-            class="block text-sm font-medium text-gray-300"
-            >Template Description</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.description}
-            type="text"
-            name="description"
-            id="description"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
         <div class="col-span-12">
           <h2 class="text-gray-300 text-center">Item Description</h2>
         </div>
@@ -230,7 +195,7 @@
             >Item Short Description</label
           >
           <input
-            bind:value={$templateUnderConstruction.template.description.short}
+            bind:value={$itemUnderConstruction.description.short}
             type="textarea"
             name="itemShortDescription"
             id="itemShortDescription"
@@ -244,7 +209,7 @@
             >Item Long Description</label
           >
           <input
-            bind:value={$templateUnderConstruction.template.description.long}
+            bind:value={$itemUnderConstruction.description.long}
             type="textarea"
             name="itemLongDescription"
             id="itemLongDescription"
@@ -259,7 +224,7 @@
             >Armor</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.armor}
+            bind:checked={$itemUnderConstruction.flags.armor}
             type="checkbox"
             name="isArmor"
             id="isArmor"
@@ -272,7 +237,7 @@
             class="block text-sm font-medium text-gray-300">Clothing</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.clothing}
+            bind:checked={$itemUnderConstruction.flags.clothing}
             type="checkbox"
             name="isClothing"
             id="isClothing"
@@ -284,7 +249,7 @@
             >Coin</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.coin}
+            bind:checked={$itemUnderConstruction.flags.coin}
             type="checkbox"
             name="isCoin"
             id="isCoin"
@@ -297,7 +262,7 @@
             class="block text-sm font-medium text-gray-300">Container</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.container}
+            bind:checked={$itemUnderConstruction.flags.container}
             type="checkbox"
             name="isContainer"
             id="isContainer"
@@ -310,7 +275,7 @@
             class="block text-sm font-medium text-gray-300">Furniture</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.furniture}
+            bind:checked={$itemUnderConstruction.flags.furniture}
             type="checkbox"
             name="isFurniture"
             id="isFurniture"
@@ -322,7 +287,7 @@
             >Gem</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.gem}
+            bind:checked={$itemUnderConstruction.flags.gem}
             type="checkbox"
             name="isGem"
             id="isGem"
@@ -335,7 +300,7 @@
             class="block text-sm font-medium text-gray-300">Instrument</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.instrument}
+            bind:checked={$itemUnderConstruction.flags.instrument}
             type="checkbox"
             name="isInstrument"
             id="isInstrument"
@@ -347,7 +312,7 @@
             >Jewelry</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.jewelry}
+            bind:checked={$itemUnderConstruction.flags.jewelry}
             type="checkbox"
             name="isJewelry"
             id="isJewelry"
@@ -360,7 +325,7 @@
             class="block text-sm font-medium text-gray-300">Material</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.material}
+            bind:checked={$itemUnderConstruction.flags.material}
             type="checkbox"
             name="isMaterial"
             id="isMaterial"
@@ -372,7 +337,7 @@
             >Scenery</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.scenery}
+            bind:checked={$itemUnderConstruction.flags.scenery}
             type="checkbox"
             name="isScenery"
             id="isScenery"
@@ -384,7 +349,7 @@
             >Shield</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.shield}
+            bind:checked={$itemUnderConstruction.flags.shield}
             type="checkbox"
             name="isShield"
             id="isShield"
@@ -396,7 +361,7 @@
             >Weapon</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.weapon}
+            bind:checked={$itemUnderConstruction.flags.weapon}
             type="checkbox"
             name="isWeapon"
             id="isWeapon"
@@ -414,7 +379,7 @@
             class="block text-sm font-medium text-gray-300">Gem Pouch</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.gem_pouch}
+            bind:checked={$itemUnderConstruction.flags.gem_pouch}
             type="checkbox"
             name="isGemPouch"
             id="isGemPouch"
@@ -426,7 +391,7 @@
             >Hidden</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.hidden}
+            bind:checked={$itemUnderConstruction.flags.hidden}
             type="checkbox"
             name="isHidden"
             id="isHidden"
@@ -439,8 +404,7 @@
             class="block text-sm font-medium text-gray-300">Shop Display</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags
-              .shop_display}
+            bind:checked={$itemUnderConstruction.flags.shop_display}
             type="checkbox"
             name="isShopDisplay"
             id="isShopDisplay"
@@ -453,7 +417,7 @@
             class="block text-sm font-medium text-gray-300">Wearable</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.wearable}
+            bind:checked={$itemUnderConstruction.flags.wearable}
             type="checkbox"
             name="isWearable"
             id="isWearable"
@@ -470,7 +434,7 @@
             >Close</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.close}
+            bind:checked={$itemUnderConstruction.flags.close}
             type="checkbox"
             name="canClose"
             id="canClose"
@@ -482,7 +446,7 @@
             >Drop</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.drop}
+            bind:checked={$itemUnderConstruction.flags.drop}
             type="checkbox"
             name="canDrop"
             id="canDrop"
@@ -494,7 +458,7 @@
             >Hold</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.hold}
+            bind:checked={$itemUnderConstruction.flags.hold}
             type="checkbox"
             name="canHold"
             id="canHold"
@@ -506,7 +470,7 @@
             >Look</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.look}
+            bind:checked={$itemUnderConstruction.flags.look}
             type="checkbox"
             name="canLook"
             id="canLook"
@@ -518,7 +482,7 @@
             >Open</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.open}
+            bind:checked={$itemUnderConstruction.flags.open}
             type="checkbox"
             name="canOpen"
             id="canOpen"
@@ -530,7 +494,7 @@
             >Remove</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.remove}
+            bind:checked={$itemUnderConstruction.flags.remove}
             type="checkbox"
             name="canRemove"
             id="canRemove"
@@ -542,7 +506,7 @@
             >Store</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.store}
+            bind:checked={$itemUnderConstruction.flags.store}
             type="checkbox"
             name="canStore"
             id="canStore"
@@ -554,7 +518,7 @@
             >Trash</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.trash}
+            bind:checked={$itemUnderConstruction.flags.trash}
             type="checkbox"
             name="canTrash"
             id="canTrash"
@@ -566,7 +530,7 @@
             >Wear</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.wear}
+            bind:checked={$itemUnderConstruction.flags.wear}
             type="checkbox"
             name="canWear"
             id="canWear"
@@ -574,71 +538,76 @@
           />
         </div>
 
-        <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">Physical Properties</h2>
-        </div>
-        <div class="col-span-2">
-          <label
-            for="itemWeight"
-            class="block text-sm font-medium text-gray-300"
-            >Weight in grams</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.template.physics.weight}
-            type="number"
-            min="0"
-            max="1000000000000000"
-            name="itemWeight"
-            id="itemWeight"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
-        <div class="col-span-2">
-          <label
-            for="itemHeight"
-            class="block text-sm font-medium text-gray-300">Height in cm</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.template.physics.height}
-            type="number"
-            min="0"
-            max="1000000000000000"
-            name="itemHeight"
-            id="itemHeight"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
-        <div class="col-span-2">
-          <label
-            for="itemLength"
-            class="block text-sm font-medium text-gray-300">Length in cm</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.template.physics.length}
-            type="number"
-            min="0"
-            max="1000000000000000"
-            name="itemLength"
-            id="itemLength"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
-        <div class="col-span-2">
-          <label for="itemWidth" class="block text-sm font-medium text-gray-300"
-            >Width in cm</label
-          >
-          <input
-            bind:value={$templateUnderConstruction.template.physics.width}
-            type="number"
-            min="0"
-            max="1000000000000000"
-            name="itemWidth"
-            id="itemWidth"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
+        {#if $itemUnderConstruction.physics}
+          <div class="col-span-12">
+            <h2 class="text-gray-300 text-center">Physical Properties</h2>
+          </div>
+          <div class="col-span-2">
+            <label
+              for="itemWeight"
+              class="block text-sm font-medium text-gray-300"
+              >Weight in grams</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.physics.weight}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemWeight"
+              id="itemWeight"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="itemHeight"
+              class="block text-sm font-medium text-gray-300"
+              >Height in cm</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.physics.height}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemHeight"
+              id="itemHeight"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="itemLength"
+              class="block text-sm font-medium text-gray-300"
+              >Length in cm</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.physics.length}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemLength"
+              id="itemLength"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="itemWidth"
+              class="block text-sm font-medium text-gray-300">Width in cm</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.physics.width}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemWidth"
+              id="itemWidth"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+        {/if}
 
-        {#if $templateUnderConstruction.template.flags.container}
+        {#if $itemUnderConstruction.flags.container}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Container Properties</h2>
           </div>
@@ -649,8 +618,7 @@
               >Capacity in grams</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.container
-                .capacity}
+              bind:value={$itemUnderConstruction.container.capacity}
               type="number"
               min="0"
               max="1000000000000000"
@@ -666,7 +634,7 @@
               >Internal height in cm</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.container.height}
+              bind:value={$itemUnderConstruction.container.height}
               type="number"
               min="0"
               max="1000000000000000"
@@ -682,7 +650,7 @@
               >Internal length in cm</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.container.length}
+              bind:value={$itemUnderConstruction.container.length}
               type="number"
               min="0"
               max="1000000000000000"
@@ -698,7 +666,7 @@
               >Internal width in cm</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.container.width}
+              bind:value={$itemUnderConstruction.container.width}
               type="number"
               min="0"
               max="1000000000000000"
@@ -709,7 +677,7 @@
           </div>
         {/if}
 
-        {#if $templateUnderConstruction.template.flags.furniture}
+        {#if $itemUnderConstruction.flags.furniture}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Furniture Properties</h2>
           </div>
@@ -720,7 +688,7 @@
               >Has external surface?</label
             >
             <input
-              bind:checked={$templateUnderConstruction.template.furniture
+              bind:checked={$itemUnderConstruction.furniture
                 .has_external_surface}
               type="checkbox"
               name="furnitureHasExternalSurface"
@@ -734,7 +702,7 @@
               >External surface can hold characters?</label
             >
             <input
-              bind:checked={$templateUnderConstruction.template.furniture
+              bind:checked={$itemUnderConstruction.furniture
                 .external_surface_can_hold_characters}
               type="checkbox"
               name="furnitureExternalSurfaceCanHoldCharacters"
@@ -748,7 +716,8 @@
               >External surface size</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.furniture.external_surface_size}
+              bind:value={$itemUnderConstruction.furniture
+                .external_surface_size}
               type="number"
               min="0"
               max="1000000000000000"
@@ -764,7 +733,7 @@
               >Has internal surface?</label
             >
             <input
-              bind:checked={$templateUnderConstruction.template.furniture
+              bind:checked={$itemUnderConstruction.furniture
                 .has_internal_surface}
               type="checkbox"
               name="furnitureHasInternalSurface"
@@ -778,7 +747,7 @@
               >Internal surface can hold characters?</label
             >
             <input
-              bind:checked={$templateUnderConstruction.template.furniture
+              bind:checked={$itemUnderConstruction.furniture
                 .internal_surface_can_hold_characters}
               type="checkbox"
               name="furnitureInternalSurfaceCanHoldCharacters"
@@ -792,7 +761,8 @@
               >Internal surface size</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.furniture.internal_surface_size}
+              bind:value={$itemUnderConstruction.furniture
+                .internal_surface_size}
               type="number"
               min="0"
               max="1000000000000000"
@@ -803,7 +773,7 @@
           </div>
         {/if}
 
-        {#if $templateUnderConstruction.template.flags.wearable}
+        {#if $itemUnderConstruction.flags.wearable}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Wearable Properties</h2>
           </div>
@@ -813,7 +783,7 @@
             >
             <select
               id="gemType"
-              bind:value={$templateUnderConstruction.template.wearable.slot}
+              bind:value={$itemUnderConstruction.wearable.slot}
               name="gemType"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
@@ -842,7 +812,7 @@
           </div>
         {/if}
 
-        {#if $templateUnderConstruction.template.flags.gem}
+        {#if $itemUnderConstruction.flags.gem}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Gem Properties</h2>
           </div>
@@ -852,7 +822,7 @@
             >
             <select
               id="gemType"
-              bind:value={$templateUnderConstruction.template.gem.type}
+              bind:value={$itemUnderConstruction.gem.type}
               name="gemType"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
@@ -870,7 +840,7 @@
             >
             <select
               id="gemCutType"
-              bind:value={$templateUnderConstruction.template.gem.cut_type}
+              bind:value={$itemUnderConstruction.gem.cut_type}
               name="gemCutType"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
@@ -890,7 +860,7 @@
               >Cut quality (1-100)</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.gem.cut_quality}
+              bind:value={$itemUnderConstruction.gem.cut_quality}
               type="number"
               min="1"
               max="100"
@@ -906,7 +876,7 @@
               >Carats (1-10,000)</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.gem.carat}
+              bind:value={$itemUnderConstruction.gem.carat}
               type="number"
               min="1"
               max="10000"
@@ -922,7 +892,7 @@
               >Clarity (1-10)</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.gem.clarity}
+              bind:value={$itemUnderConstruction.gem.clarity}
               type="number"
               min="1"
               max="10"
@@ -938,7 +908,7 @@
               >Saturation (1-10, 5-6 Ideal)</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.gem.saturation}
+              bind:value={$itemUnderConstruction.gem.saturation}
               type="number"
               min="1"
               max="10"
@@ -952,7 +922,7 @@
               >Tone (1-10, 5-6 Ideal)</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.gem.saturation}
+              bind:value={$itemUnderConstruction.gem.saturation}
               type="number"
               min="1"
               max="10"
@@ -972,7 +942,7 @@
         Save
       </button>
       <button
-        on:click={cancelEditTemplate}
+        on:click={cancelEditItem}
         class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
       >
         Cancel

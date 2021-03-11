@@ -434,7 +434,7 @@ defmodule Mud.Engine.Command.Move do
 
   defp construct_departure_message(character, link, others) do
     message =
-      [character | others]
+      others
       |> Message.new_story_output()
 
     cond do
@@ -473,9 +473,7 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp construct_arrival_message(character, link, others) do
-    message =
-      [character | others]
-      |> Message.new_story_output()
+    message = others |> Message.new_story_output()
 
     cond do
       # Heading through the closed thing, so craft message about it being opened as character goes through

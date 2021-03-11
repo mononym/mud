@@ -4,6 +4,7 @@ import type { CharacterInterface } from "../models/character";
 import type { CharacterSettingsInterface } from "../models/characterSettings";
 import type { PlayerInterface } from "../models/player";
 import type { MapInterface } from "../models/map";
+import type { ItemInterface } from "../models/item";
 import type { LinkInterface } from "../models/link";
 import type { AreaInterface } from "../models/area";
 import type { ShopInterface } from "../models/shop";
@@ -302,6 +303,45 @@ export async function deleteShopProduct(
 ): Promise<AxiosResponse<string>> {
   return await (<Promise<AxiosResponse<string>>>(
     Api.delete("/shops/products/" + shopProductId, "")
+  ));
+}
+
+//
+//
+// Items stuff
+//
+//
+
+export async function loadItemsForArea(
+  area_id: string
+): Promise<AxiosResponse<ItemInterface[]>> {
+  return await (<Promise<AxiosResponse<ItemInterface[]>>>(
+    Api.get(`/items/area/` + area_id)
+  ));
+}
+
+export async function createItem(
+  params: ItemInterface
+): Promise<AxiosResponse<ItemInterface>> {
+  return await (<Promise<AxiosResponse<ItemInterface>>>(
+    Api.post("/items/create", { item: params })
+  ));
+}
+
+export async function updateItem(
+  id: string,
+  params: ItemInterface
+): Promise<AxiosResponse<ItemInterface>> {
+  return await (<Promise<AxiosResponse<ItemInterface>>>(
+    Api.patch("/items/" + id, { item: params })
+  ));
+}
+
+export async function deleteItem(
+  itemId: string
+): Promise<AxiosResponse<string>> {
+  return await (<Promise<AxiosResponse<string>>>(
+    Api.delete("/items/" + itemId, "")
   ));
 }
 

@@ -21,7 +21,7 @@ defmodule MudWeb.ItemView do
   end
 
   def render("show.json", %{item: item}) do
-    render_one(item, ItemView, "map.json")
+    render_one(item, ItemView, "item.json")
   end
 
   def render("item.json", %{item: item}) do

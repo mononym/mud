@@ -122,6 +122,12 @@ defmodule MudWeb.Router do
     # Commands stuff
     resources("/commands", CommandController, except: [:new, :edit])
 
+    # Items stuff
+    get("/items/area/:area_id", ItemController, :load_items_for_area)
+    post("/items/create", ItemController, :create)
+    patch("/items/:item_id", ItemController, :update)
+    delete("/items/:item_id", ItemController, :delete)
+
     # Shops stuff
     get("/shops", ShopController, :index)
     get("/shops/builder", ShopController, :load_shops_for_builder)

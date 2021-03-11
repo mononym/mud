@@ -53,6 +53,24 @@ defmodule Mud.Engine.Message do
 
   @spec drop_last_text(Mud.Engine.Message.StoryOutput.t()) ::
           Mud.Engine.Message.StoryOutput.t()
+  def replace_second_to_last_text(output = %StoryOutput{}, text, type) do
+    # Only do the replacement if there are 3 or more entries
+    if length(output.segments) > 2 do
+      %{
+        output
+        | segments:
+            List.insert_at(output.segments, length(output.segments) - 2, %Segment{
+              text: text,
+              type: type
+            })
+      }
+    else
+      output
+    end
+  end
+
+  @spec drop_last_text(Mud.Engine.Message.StoryOutput.t()) ::
+          Mud.Engine.Message.StoryOutput.t()
   def drop_last_text(output = %StoryOutput{}) do
     %{output | segments: tl(output.segments)}
   end

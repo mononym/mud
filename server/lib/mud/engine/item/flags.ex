@@ -137,10 +137,6 @@ defmodule Mud.Engine.Item.Flags do
     |> Repo.insert!()
   end
 
-  @spec update!(
-          {map, any} | %{__struct__: atom | %{__changeset__: any}},
-          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
-        ) :: any
   def update!(flags, attrs) do
     flags
     |> changeset(attrs)

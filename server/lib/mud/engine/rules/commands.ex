@@ -983,7 +983,7 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp define_look_command do
     %Definition{
-      callback_module: Command.LookV2,
+      callback_module: Command.Look,
       parts: [
         %Part{
           matches: ["l", "look"],
