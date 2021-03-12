@@ -257,8 +257,9 @@
 
   // These are your already existing links between rooms, within a single map. One or more of them could be highlighted.
   function buildExistingUnexploredIntraMapLinks() {
-    console.log("buildExistingIntraMapLinks");
+    console.log("buildExistingUnexploredIntraMapLinks");
     console.log(exploredAreas);
+    console.log(areasMap);
 
     return links
       .filter((link) => {
@@ -273,6 +274,13 @@
         );
       })
       .map((link) => {
+        console.log(link);
+        console.log(areasMap[link.fromId]);
+        console.log(areasMap[link.fromId].mapX);
+        console.log(areasMap[link.fromId].mapY);
+        console.log(areasMap[link.toId]);
+        console.log(areasMap[link.toId].mapX);
+        console.log(areasMap[link.toId].mapY);
         return buildUnexploredPathFromLink(
           link,
           areasMap[link.fromId].mapX,
@@ -537,13 +545,9 @@
     let y1 = -fromY * gridSize + viewSize / 2;
     let x2 = toX * gridSize + viewSize / 2;
     let y2 = -toY * gridSize + viewSize / 2;
-    let distanceBetweenEndPoints = Math.sqrt(
-      Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)
-    );
-    let desiredDistance = gridSize * 0.5;
 
-    let x3 = x1 + (desiredDistance / distanceBetweenEndPoints) * (x2 - x1);
-    let y3 = y1 + (desiredDistance / distanceBetweenEndPoints) * (y2 - y1);
+    let x3 = (x1 + x2) / 2;
+    let y3 = (y1 + y2) / 2;
 
     return {
       id: link.id,
@@ -656,6 +660,28 @@
     let cls = svgMapAllowIntraMapAreaSelection
       ? "cursor-pointer"
       : "cursor-auto";
+
+    console.log({
+      id: area.id,
+      type: "rect",
+      x:
+        area.mapX * chosenMap.gridSize +
+        chosenMap.viewSize / 2 -
+        area.mapSize / 2,
+      y:
+        -area.mapY * chosenMap.gridSize +
+        chosenMap.viewSize / 2 -
+        area.mapSize / 2,
+      width: area.mapSize,
+      height: area.mapSize,
+      corners: area.mapCorners,
+      fill: area.color,
+      name: area.name,
+      area: area,
+      cls: cls,
+      borderColor: area.borderColor,
+      borderWidth: area.borderWidth,
+    });
 
     return {
       id: area.id,
