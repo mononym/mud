@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w",
+    "dev": "NODE_ENV=development rollup -c -w",
     "start": "electron .",
     "validate": "svelte-check",
     "pack": "electron-builder --dir",

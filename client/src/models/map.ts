@@ -9,6 +9,7 @@ export interface MapInterface {
   labels: MapLabelInterface[];
   minimumZoomIndex: number;
   maximumZoomIndex: number;
+  permanently_explored: boolean;
 }
 
 const state: MapInterface = {
@@ -20,6 +21,7 @@ const state: MapInterface = {
   labels: [],
   minimumZoomIndex: 5,
   maximumZoomIndex: 11,
+  permanently_explored: false,
 };
 
 export default state;

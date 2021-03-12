@@ -22,6 +22,7 @@ defmodule MudWeb.MapView do
       labels: map.labels,
       minimumZoomIndex: map.minimum_zoom_index,
       maximumZoomIndex: map.maximum_zoom_index,
+      permanently_explored: map.permanently_explored,
       inserted_at: map.inserted_at,
       updated_at: map.updated_at
     }

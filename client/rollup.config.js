@@ -9,7 +9,9 @@ import css from 'rollup-plugin-css-only';
 import scss from 'rollup-plugin-scss'
 import replace from "@rollup/plugin-replace";
 
-const production = !process.env.ROLLUP_WATCH;
+// const production = !process.env.ROLLUP_WATCH;
+var environment = process.env.NODE_ENV
+var production = environment !== 'development'
 
 function serve() {
 	let server;
@@ -71,7 +73,7 @@ export default {
 		}),
 		commonjs(),
 		typescript({
-			sourceMap: !production,
+			sourceMap: true,
 			inlineSources: !production
 		}),
 
