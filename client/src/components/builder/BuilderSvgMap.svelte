@@ -44,9 +44,10 @@
   // All of the links that need to be drawn on the map
   export let links = [];
 
-  // The area, if any, that should be the central focus of the map. If this is not set, the center of the map will be used instead
-  export let focusAreaId = "";
-  $: focusOnArea = focusAreaId != "";
+  // This will be the new hotness for focusing on an area. If an area is to be focused on have that set explictly from outside and set
+  // the area itself from outside so the x/y can be grabbed as normal.
+  export let focusArea;
+  export let focusOnArea = false;
 
   // Whether or not the data for the chosen map is loading. This would be the links, areasMap, and areas
   export let loadingMapData = false;
@@ -88,10 +89,10 @@
 
   // Viewbox sizing
   $: xCenterPoint = focusOnArea
-    ? areasMap[focusAreaId].mapX * chosenMap.gridSize + chosenMap.viewSize / 2
+    ? focusArea.mapX * chosenMap.gridSize + chosenMap.viewSize / 2
     : chosenMap.viewSize / 2;
   $: yCenterPoint = focusOnArea
-    ? -areasMap[focusAreaId].mapY * chosenMap.gridSize + chosenMap.viewSize / 2
+    ? -focusArea.mapY * chosenMap.gridSize + chosenMap.viewSize / 2
     : chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultiplier;
   $: viewBoxYSize = Math.max(

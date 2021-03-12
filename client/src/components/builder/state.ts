@@ -44,6 +44,12 @@ const { areasMap } = AreasStore;
 const { links, linksMap } = LinksStore;
 
 export function createWorldBuilderStore() {
+  // what do I need to manage all UI state for world builder from the store?
+  // mode: map, area, link
+  const mode = writable("map");
+  // view: details, edit
+  const view = writable("details");
+
   const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
   const mapDataLoaded = writable(false);
@@ -505,12 +511,6 @@ export function createWorldBuilderStore() {
     }
   }
 
-  // what do I need to manage all UI state for world builder from the store?
-  // mode: map, area, link
-  const mode = writable("map");
-  // view: details, edit
-  const view = writable("details");
-
   // The ID of the area for which the link is being previewed
   // This is not the area that is being linked from/to in the interface, but the 'other' area
   const linkPreviewAreaId = derived(
@@ -529,6 +529,11 @@ export function createWorldBuilderStore() {
         return "";
       }
     }
+  );
+
+  const linkIsUnderConstruction = derived(
+    [mode, view],
+    ([$mode, $view]) => $mode == "link" && $view == "edit"
   );
 
   // previewLink: boolean
@@ -818,6 +823,11 @@ export function createWorldBuilderStore() {
     mode.set("area");
     view.set("edit");
   }
+
+  const areaIsUnderConstruction = derived(
+    [view, mode],
+    ([$view, $mode]) => $mode == "area" && $view == "edit"
+  );
 
   async function cancelEditArea() {
     areaUnderConstruction.set({ ...AreaState });
@@ -1182,6 +1192,7 @@ export function createWorldBuilderStore() {
     areasForLinkEditorMap,
     areasForLinkEditorFilteredMap,
     areasForLinkEditorFiltered,
+    areaIsUnderConstruction,
     // Links stuff
     buildingLink,
     linkUnderConstruction,
@@ -1196,6 +1207,7 @@ export function createWorldBuilderStore() {
     incomingLinksForSelectedArea,
     outgoingLinksForSelectedArea,
     deletingLink,
+    linkIsUnderConstruction,
     // Map stuff
     loadingMapData,
     mapDataLoaded,

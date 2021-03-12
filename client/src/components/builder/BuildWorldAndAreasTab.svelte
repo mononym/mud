@@ -13,6 +13,7 @@
   import { onMount } from "svelte";
   import { MapsStore } from "../../stores/maps.ts";
   import { AreasStore } from "../../stores/areas.ts";
+  import AreaState from "../../models/area.ts";
   import { LinksStore } from "../../stores/links.ts";
   import { Circle2 } from "svelte-loading-spinners";
   import { WorldBuilderStore } from "./state";
@@ -48,6 +49,8 @@
     mapAtMinZoom,
     loadShops,
     saveItemUnderConstructionAsAreaItem,
+    areaIsUnderConstruction,
+    linkIsUnderConstruction,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -111,7 +114,11 @@
               svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
               highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
               highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
-              focusAreaId={$selectedArea.id}
+              focusArea={$areaIsUnderConstruction
+                ? $areaUnderConstruction
+                : $selectedArea}
+              focusOnArea={$areaIsUnderConstruction ||
+                $areaSelected}
               areaUnderConstruction={$areaUnderConstruction}
               buildingArea={$buildingArea}
               buildingLink={$buildingLink}
@@ -223,9 +230,10 @@
                   svgMapAllowIntraMapAreaSelection={true}
                   highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
                   highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
-                  focusAreaId={$linkUnderConstruction.toId == $selectedArea.id
-                    ? $linkUnderConstruction.fromId
-                    : $linkUnderConstruction.toId}
+                  focusArea={$linkUnderConstruction.toId == $selectedArea.id
+                    ? $areasMap[$linkUnderConstruction.fromId]
+                    : $areasMap[$linkUnderConstruction.toId]}
+                  focusOnArea={true}
                   zoomMultiplier={$mapZoomMultipliers[$mapZoomMultiplierIndex]}
                   areaUnderConstruction={$areaUnderConstruction}
                   buildingArea={false}
@@ -234,7 +242,7 @@
                 />
               </div>
             {:else}
-              <div class="flex-1"></div>
+              <div class="flex-1" />
             {/if}
             <div class="flex-1">
               <LinkEditor />
