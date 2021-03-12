@@ -5,6 +5,14 @@
 
   const state = getContext(key);
 
+  function handleMouseWheelScrollOverMap(event) {
+    if (event.deltaY < 0) {
+      zoomMapIn();
+    } else {
+      zoomMapOut();
+    }
+  }
+
   const {
     selectedCharacter,
     knownMapsIndex,
@@ -23,7 +31,10 @@
   let svgMap;
 </script>
 
-<div class="h-full w-full flex flex-col">
+<div
+  on:mousewheel={handleMouseWheelScrollOverMap}
+  class="h-full w-full flex flex-col"
+>
   <div style="height:calc(100% - 40px)" class="w-full">
     <ClientSvgMap
       bind:this={svgMap}

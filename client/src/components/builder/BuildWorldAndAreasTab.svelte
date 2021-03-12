@@ -80,6 +80,14 @@
     }
   }
 
+  function handleMouseWheelScrollOverMap(event) {
+    if (event.deltaY < 0) {
+      zoomMapIn();
+    } else {
+      zoomMapOut();
+    }
+  }
+
   // Area stuff
 
   function createArea() {
@@ -100,7 +108,10 @@
   {:else}
     <div class="h-full flex flex-1">
       <div class="h-full max-h-full flex-1">
-        <div class="h-1/2 max-h-1/2 w-full">
+        <div
+          on:mousewheel={handleMouseWheelScrollOverMap}
+          class="h-1/2 max-h-1/2 w-full"
+        >
           <div style="height:calc(100% - 40px)" class="w-full">
             <BuilderSvgMap
               bind:this={primaryMap}
@@ -117,8 +128,7 @@
               focusArea={$areaIsUnderConstruction
                 ? $areaUnderConstruction
                 : $selectedArea}
-              focusOnArea={$areaIsUnderConstruction ||
-                $areaSelected}
+              focusOnArea={$areaIsUnderConstruction || $areaSelected}
               areaUnderConstruction={$areaUnderConstruction}
               buildingArea={$buildingArea}
               buildingLink={$buildingLink}
