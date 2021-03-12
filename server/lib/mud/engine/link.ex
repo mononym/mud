@@ -173,6 +173,7 @@ defmodule Mud.Engine.Link do
         distinct: true
       )
     )
+    |> preload()
   end
 
   @doc """
@@ -197,6 +198,7 @@ defmodule Mud.Engine.Link do
         where: link.from_id in ^from_area_ids and link.to_id in ^to_area_ids
       )
     )
+    |> preload()
   end
 
   @doc """
@@ -217,6 +219,7 @@ defmodule Mud.Engine.Link do
             (flags.direction or flags.portal or flags.object or flags.closable)
       )
     )
+    |> preload()
   end
 
   @doc """
@@ -240,6 +243,7 @@ defmodule Mud.Engine.Link do
         where: link.from_id == ^area_id
       )
     )
+    |> preload()
   end
 
   @doc """
@@ -307,7 +311,7 @@ defmodule Mud.Engine.Link do
       {:ok, link} ->
         update_link_components(attrs)
 
-        {:ok, Repo.preload(link, [:closable, :flags])}
+        {:ok, preload(link)}
 
       _ ->
         result
@@ -342,7 +346,7 @@ defmodule Mud.Engine.Link do
   def search_exits(area_id, search_string) do
     search_exits_query(area_id, search_string)
     |> Repo.all()
-    |> Repo.preload([:closable, :flags])
+    |> preload()
   end
 
   defp search_exits_query(area_id, search_string) do
@@ -392,7 +396,9 @@ defmodule Mud.Engine.Link do
         {:error, :not_found}
 
       link ->
-        {:ok, link}
+        {:ok,
+         link
+         |> preload()}
     end
   end
 
@@ -415,6 +421,7 @@ defmodule Mud.Engine.Link do
         where: link.id == ^link_id
       )
     )
+    |> preload()
   end
 
   def get(from_id, to_id) do
@@ -423,6 +430,7 @@ defmodule Mud.Engine.Link do
         where: link.from_id == ^from_id and link.to_id == ^to_id
       )
     )
+    |> preload()
   end
 
   def get!(from_id, to_id) do
@@ -431,6 +439,7 @@ defmodule Mud.Engine.Link do
         where: link.from_id == ^from_id and link.to_id == ^to_id
       )
     )
+    |> preload()
   end
 
   def short_description(link, _looking_character) do

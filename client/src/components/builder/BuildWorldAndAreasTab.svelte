@@ -234,7 +234,7 @@
                 />
               </div>
             {:else}
-              <div class="flex-1">foo</div>
+              <div class="flex-1"></div>
             {/if}
             <div class="flex-1">
               <LinkEditor />
