@@ -256,26 +256,30 @@ defmodule Mud.Engine.Link do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
+    IO.inspect(attrs)
+
     Repo.transaction(fn ->
       %__MODULE__{}
       |> __MODULE__.changeset(attrs)
       |> Repo.insert!()
-      |> setup_required_component(attrs, :flags, Flags)
-      |> maybe_setup_optional_component(attrs, :closable, Closable)
+      |> setup_required_component(attrs, "flags", Flags)
+      |> maybe_setup_optional_component(attrs, "closable", Closable)
       |> preload()
+      |> IO.inspect()
     end)
   end
 
   defp setup_required_component(link, attrs, key, callback) do
-    thing = callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
+    callback.create(Map.put(Map.get(attrs, key, %{}), "link_id", link.id))
 
-    %{link | key => thing}
+    link
   end
 
   defp maybe_setup_optional_component(link, attrs, key, callback) do
     if Map.has_key?(attrs, key) do
-      thing = callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
-      %{link | key => thing}
+      callback.create(Map.put(Map.get(attrs, key, %{}), "link_id", link.id))
+
+      link
     else
       link
     end
@@ -301,10 +305,33 @@ defmodule Mud.Engine.Link do
 
     case result do
       {:ok, link} ->
+        update_link_components(attrs)
+
         {:ok, Repo.preload(link, [:closable, :flags])}
 
       _ ->
         result
+    end
+  end
+
+  defp update_link_components(attrs) do
+    Enum.each(attrs, fn {key, val} ->
+      if not is_nil(val) and key != "id" do
+        update_link_component(key, val)
+      end
+    end)
+  end
+
+  defp update_link_component(key, attrs) do
+    case key do
+      "flags" ->
+        Flags.get!(attrs["id"]) |> Flags.update!(attrs)
+
+      "closable" ->
+        Closable.get!(attrs["id"]) |> Closable.update!(attrs)
+
+      _ ->
+        :ok
     end
   end
 
@@ -476,9 +503,13 @@ defmodule Mud.Engine.Link do
   end
 
   defp preload(results) do
-    Repo.preload(results, [
-      :closable,
-      :flags
-    ])
+    Repo.preload(
+      results,
+      [
+        :closable,
+        :flags
+      ],
+      force: true
+    )
   end
 end

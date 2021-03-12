@@ -175,7 +175,7 @@ export async function loadCharacterCreationData(
 
 export async function updateLink(
   id: string,
-  params: LinkInterface
+  params: unknown
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
     Api.patch("/links/" + id, { link: params })
@@ -199,7 +199,7 @@ export async function loadLinksForMap(
 }
 
 export async function createLink(
-  params: LinkInterface
+  params: unknown
 ): Promise<AxiosResponse<LinkInterface>> {
   return await (<Promise<AxiosResponse<LinkInterface>>>(
     Api.post("/links", { link: params })

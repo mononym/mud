@@ -57,6 +57,9 @@ function createMapsStore() {
     let oldData;
     const isNew = map.id == "";
 
+    console.log("saveMap");
+    console.log(map);
+
     const props = {
       id: map.id,
       name: map.name,
@@ -64,7 +67,9 @@ function createMapsStore() {
       view_size: map.viewSize,
       grid_size: map.gridSize,
       labels: map.labels,
+      permanently_explored: map.permanently_explored,
     };
+    console.log(props);
 
     try {
       if (!isNew) {

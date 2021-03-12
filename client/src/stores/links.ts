@@ -48,6 +48,7 @@ function createLinksStore() {
     saving.set(true);
     let oldData;
     const isNew = link.id == "";
+    console.log(link);
 
     const props = {
       icon: link.icon,
@@ -86,6 +87,7 @@ function createLinksStore() {
       to_id: link.toId,
       from_id: link.fromId,
       type: link.type,
+      flags: link.flags,
     };
 
     try {
@@ -97,9 +99,9 @@ function createLinksStore() {
       let res: LinkInterface;
 
       if (isNew) {
-        res = (await createLink(link)).data;
+        res = (await createLink(props)).data;
       } else {
-        res = (await updateLink(link.id, link)).data;
+        res = (await updateLink(link.id, props)).data;
       }
 
       linksMap.update(function (mm) {

@@ -409,7 +409,7 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(".", "base")
 
-      link.flags.closable and link.closable.open ->
+      (link.flags.closable and link.closable.open) or link.flags.object ->
         message
         |> Message.append_text("You ", "character")
         |> Message.append_text("head #{link.departure_text} ", "base")
@@ -449,7 +449,7 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(".", "base")
 
-      link.flags.closable and link.closable.open ->
+      (link.flags.closable and link.closable.open) or link.flags.object ->
         message
         |> Message.append_text(character.name, "character")
         |> Message.append_text(" went #{link.departure_text} ", "base")
@@ -487,7 +487,7 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(" which just opened.", "base")
 
-      link.flags.closable and link.closable.open ->
+      (link.flags.closable and link.closable.open) or link.flags.object ->
         message
         |> Message.append_text(character.name, "character")
         |> Message.append_text(" arrived #{link.arrival_text} ", "base")

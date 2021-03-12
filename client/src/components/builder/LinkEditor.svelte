@@ -757,9 +757,8 @@
             class="block text-sm font-medium text-gray-300">Is Direction</label
           >
           <input
-            bind={$linkUnderConstruction.flags.direction}
-            type="radio"
-            group="linkType"
+            bind:checked={$linkUnderConstruction.flags.direction}
+            type="checkbox"
             name="isDirection"
             id="isDirection"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -772,9 +771,8 @@
             class="block text-sm font-medium text-gray-300">Is Closable</label
           >
           <input
-            bind={$linkUnderConstruction.flags.closable}
-            type="radio"
-            group="linkType"
+            bind:checked={$linkUnderConstruction.flags.closable}
+            type="checkbox"
             name="isClosable"
             id="isClosable"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -786,9 +784,8 @@
             >Is Portal</label
           >
           <input
-            bind={$linkUnderConstruction.flags.portal}
-            type="radio"
-            group="linkType"
+            bind:checked={$linkUnderConstruction.flags.portal}
+            type="checkbox"
             name="isPortal"
             id="isPortal"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -800,9 +797,8 @@
             >Is Object</label
           >
           <input
-            bind={$linkUnderConstruction.flags.object}
-            type="radio"
-            group="linkType"
+            bind:checked={$linkUnderConstruction.flags.object}
+            type="checkbox"
             name="isObject"
             id="isObject"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
