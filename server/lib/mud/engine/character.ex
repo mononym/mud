@@ -233,7 +233,7 @@ defmodule Mud.Engine.Character do
 
         # setup_default_items(character)
 
-        {:ok, character}
+        {:ok, character |> preload()}
 
       error ->
         error
@@ -367,6 +367,7 @@ defmodule Mud.Engine.Character do
       like(character.name, ^"#{partial_name}%")
     )
     |> Repo.all()
+    |> preload()
   end
 
   def list_worn_containers(character) when is_struct(character) do
@@ -407,6 +408,7 @@ defmodule Mud.Engine.Character do
     base_no_skills_query()
     |> where([character], character.id in ^list_of_ids)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -420,7 +422,7 @@ defmodule Mud.Engine.Character do
   """
   @spec list_all :: [%__MODULE__{}]
   def list_all do
-    Repo.all(__MODULE__)
+    Repo.all(__MODULE__) |> preload()
   end
 
   @doc """
@@ -441,6 +443,7 @@ defmodule Mud.Engine.Character do
       where: character.player_id == ^player_id
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -460,6 +463,7 @@ defmodule Mud.Engine.Character do
     base_no_skills_query()
     |> where([character], character.area_id == ^area_id)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -481,6 +485,7 @@ defmodule Mud.Engine.Character do
     base_no_skills_query()
     |> where([character], character.active == true and character.area_id in ^area_ids)
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -506,6 +511,7 @@ defmodule Mud.Engine.Character do
         char.id != ^character_id
     )
     |> Repo.all()
+    |> preload()
   end
 
   @spec list_others_active_in_areas(Ecto.Multi.t(), atom(), String.t(), String.t() | [String.t()]) ::
@@ -521,18 +527,19 @@ defmodule Mud.Engine.Character do
           char.id != ^character_id
       )
       |> repo.all()
+      |> preload()
       |> (&{:ok, &1}).()
     end)
   end
 
   @spec get_by_name(String.t()) :: %__MODULE__{} | nil
   def get_by_name(name) do
-    Repo.get_by(__MODULE__, name: name)
+    Repo.get_by(__MODULE__, name: name) |> preload()
   end
 
   @spec get_by_id(String.t()) :: %__MODULE__{} | nil
   def get_by_id(character_id) do
-    Repo.get(__MODULE__, character_id)
+    Repo.get(__MODULE__, character_id) |> preload()
   end
 
   @doc """
@@ -552,6 +559,7 @@ defmodule Mud.Engine.Character do
   @spec get_by_id!(String.t()) :: %__MODULE__{} | nil
   def get_by_id!(character_id) do
     Repo.one!(from(character in base_query_with_preload(), where: character.id == ^character_id))
+    |> preload()
   end
 
   @doc """
@@ -571,6 +579,7 @@ defmodule Mud.Engine.Character do
   @spec get_by_slug!(String.t()) :: %__MODULE__{} | nil
   def get_by_slug!(character_slug) do
     Repo.one!(from(character in __MODULE__, where: character.slug == ^character_slug))
+    |> preload()
   end
 
   @doc """
@@ -589,7 +598,7 @@ defmodule Mud.Engine.Character do
   """
   @spec get_with_skills_by_id!(String.t()) :: %__MODULE__{} | nil
   def get_with_skills_by_id!(character_id) do
-    Repo.one!(base_skills_query(character_id))
+    Repo.one!(base_skills_query(character_id)) |> preload()
   end
 
   @spec list_known_shops(String.t()) :: [%__MODULE__{}]
@@ -626,7 +635,7 @@ defmodule Mud.Engine.Character do
 
     case resp do
       {:ok, character} ->
-        {:ok, Repo.preload(character, :settings)}
+        {:ok, preload(character)}
 
       error ->
         error
@@ -647,7 +656,7 @@ defmodule Mud.Engine.Character do
 
     Util.notify_subscribers(character, @topic, :updated)
 
-    character
+    character |> preload()
   end
 
   @doc """
@@ -669,6 +678,7 @@ defmodule Mud.Engine.Character do
     character
     |> changeset(attrs)
     |> Repo.update!()
+    |> preload()
   end
 
   @doc """
@@ -758,5 +768,9 @@ defmodule Mud.Engine.Character do
       where: character.id == ^character_id,
       preload: [skills: skills]
     )
+  end
+
+  defp preload(character) do
+    Repo.preload(character, [:bank, :containers, :settings, :slots, :status, :wealth], force: true)
   end
 end
