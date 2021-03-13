@@ -87,10 +87,10 @@ defmodule Mud.Engine.Command.Executor do
           :error ->
             context
             |> Context.append_message(
-              Message.new_output(
+              Message.new_story_output(
                 context.character_id,
                 "Selection not recognized. Executing input as is instead.",
-                "warning"
+                "system_warning"
               )
             )
             |> Context.clear_continuation()
@@ -145,10 +145,12 @@ defmodule Mud.Engine.Command.Executor do
 
         context =
           context
-          |> Context.append_output(
-            context.character_id,
-            "No matching commands were found. Please try again.",
-            "error"
+          |> Context.append_message(
+            Message.new_story_output(
+              context.character_id,
+              "No matching commands were found. Please try again.",
+              "system_alert"
+            )
           )
 
         process_events(context)

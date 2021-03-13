@@ -452,12 +452,7 @@ defmodule Mud.Engine.Command.Move do
       (link.flags.closable and link.closable.open) or link.flags.object ->
         message
         |> Message.append_text(character.name, "character")
-        |> Message.append_text(" went #{link.departure_text} ", "base")
-        |> Message.append_text(
-          link.short_description,
-          Mud.Engine.Util.get_link_type(link)
-        )
-        |> Message.append_text(".", "base")
+        |> Message.append_text(" went #{link.departure_text}.", "base")
 
       # Everything else is assumed to be a direction or open.
       link.flags.direction ->
