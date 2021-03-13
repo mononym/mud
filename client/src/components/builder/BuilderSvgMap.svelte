@@ -883,13 +883,15 @@
       ? "cursor-pointer"
       : "cursor-auto";
 
-      const x = area.mapX * chosenMap.gridSize +
-        chosenMap.viewSize / 2 -
-        area.mapSize / 2
+    const x =
+      area.mapX * chosenMap.gridSize +
+      chosenMap.viewSize / 2 -
+      area.mapSize / 2;
 
-      const y = -area.mapY * chosenMap.gridSize +
-        chosenMap.viewSize / 2 -
-        area.mapSize / 2
+    const y =
+      -area.mapY * chosenMap.gridSize +
+      chosenMap.viewSize / 2 -
+      area.mapSize / 2;
 
     return {
       id: area.id,
@@ -1013,6 +1015,7 @@
       <div class="flex-1 overflow-hidden">
         <Svg
           {viewBox}
+          showGrid={true}
           shapes={[
             ...highlightsForExistingIntraMapLinks,
             ...highlightsForExistingInterMapLinks,
