@@ -633,7 +633,9 @@
           generatedArea.mapY = link.localFromY;
           generatedArea.name = `${
             mapsMap[allAreasMap[link.fromId].mapId].name
-          }, ${allAreasMap[link.fromId].name}`;
+          }, ${allAreasMap[link.fromId].name} (${link.localFromX},${
+            link.localFromY
+          })`;
         } else if (allAreasMap[link.fromId].mapId == chosenMap.id) {
           generatedArea.color = link.localToColor;
           generatedArea.borderColor = link.localToBorderColor;
@@ -644,7 +646,9 @@
           generatedArea.mapY = link.localToY;
           generatedArea.name = `${
             mapsMap[allAreasMap[link.toId].mapId].name
-          }, ${allAreasMap[link.toId].name}`;
+          }, ${allAreasMap[link.toId].name} (${link.localToX},${
+            link.localToY
+          })`;
         }
 
         return buildRectFromArea(generatedArea);
@@ -879,22 +883,24 @@
       ? "cursor-pointer"
       : "cursor-auto";
 
+      const x = area.mapX * chosenMap.gridSize +
+        chosenMap.viewSize / 2 -
+        area.mapSize / 2
+
+      const y = -area.mapY * chosenMap.gridSize +
+        chosenMap.viewSize / 2 -
+        area.mapSize / 2
+
     return {
       id: area.id,
       type: "rect",
-      x:
-        area.mapX * chosenMap.gridSize +
-        chosenMap.viewSize / 2 -
-        area.mapSize / 2,
-      y:
-        -area.mapY * chosenMap.gridSize +
-        chosenMap.viewSize / 2 -
-        area.mapSize / 2,
+      x: x,
+      y: y,
       width: area.mapSize,
       height: area.mapSize,
       corners: area.mapCorners,
       fill: area.color,
-      name: area.name,
+      name: `${area.name} (${area.mapX},${-area.mapY})`,
       area: area,
       cls: cls,
       borderColor: area.borderColor,
