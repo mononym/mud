@@ -34,6 +34,14 @@
     }
   }
 
+  function copySelectedTextToClipboard() {
+    if (window.getSelection().toString() != "") {
+      document.execCommand("copy");
+    }
+
+    document.getElementById("cli").focus()
+  }
+
   // Scrolling the main window upwards should trigger the display of the history window.
   async function handleHistoryWindowCurrentViewScrollEvent(event) {
     var newScrollTop = historyStoryWindowDiv.scrollTop;
@@ -100,7 +108,10 @@
   }
 </script>
 
-<div class="h-full w-full flex flex-col relative">
+<div
+  class="h-full w-full flex flex-col relative"
+  on:mouseup={copySelectedTextToClipboard}
+>
   {#if $storyWindowView == "history"}
     <i
       on:click={toggleHistoryView}

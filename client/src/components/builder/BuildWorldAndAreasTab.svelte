@@ -50,7 +50,7 @@
     loadShops,
     saveItemUnderConstructionAsAreaItem,
     areaIsUnderConstruction,
-    linkIsUnderConstruction,
+    itemsForSelectedAreaMap,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -223,6 +223,8 @@
           {:else if $view == "edit_item"}
             <ItemEditor
               saveItemCallback={saveItemUnderConstructionAsAreaItem}
+              allowRelativePlacement={true}
+              otherItemsForRelativePlacement={$itemsForSelectedAreaMap}
             />
           {/if}
         {:else}

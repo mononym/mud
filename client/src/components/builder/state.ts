@@ -721,6 +721,19 @@ export function createWorldBuilderStore() {
   //
 
   const itemsForSelectedArea = writable([]);
+  const itemsForSelectedAreaMap = derived(
+    itemsForSelectedArea,
+    ($itemsForSelectedArea) => {
+      var result = {};
+      for (var i = 0; i < $itemsForSelectedArea.length; i++) {
+        result[$itemsForSelectedArea[i].id] = $itemsForSelectedArea[i];
+      }
+      console.log("itemsForSelectedAreaMap");
+      console.log(result);
+      return result;
+    }
+  );
+
   const itemUnderConstruction = writable({ ...ItemState });
   const selectedItem = writable({ ...ItemState });
   const savingItem = writable(false);
@@ -1224,6 +1237,7 @@ export function createWorldBuilderStore() {
     zoomMapOut,
     // Item Stuff
     itemsForSelectedArea,
+    itemsForSelectedAreaMap,
     itemUnderConstruction,
     selectedItem,
     itemSelected,

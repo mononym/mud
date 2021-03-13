@@ -3,6 +3,8 @@
   import { WorldBuilderStore } from "../state";
   const { itemUnderConstruction, saveItem, cancelEditItem } = WorldBuilderStore;
 
+  export let allowRelativePlacement = false;
+  export let otherItemsForRelativePlacement = {};
   export let saveItemCallback = saveItem;
 
   $: disableArmorCheckbox =
@@ -171,6 +173,49 @@
     $itemUnderConstruction.flags.coin;
 
   $: disableWearCheckbox = !$itemUnderConstruction.flags.wearable;
+
+  $: disableRelationSelect = $itemUnderConstruction.location.relative_item_id == ""
+
+  function handleOtherItemChange() {
+    // if other id is blank make sure it the rest of the flags are not set for it to be relative to an item
+    // if other item id is not blank make sure flags are set for it to be relative
+    if ($itemUnderConstruction.location.relative_item_id != "") {
+      $itemUnderConstruction.location.on_ground = false;
+      $itemUnderConstruction.location.relative_to_item = true;
+    } else {
+      $itemUnderConstruction.location.on_ground = true;
+      $itemUnderConstruction.location.relative_to_item = false;
+    }
+
+    if (
+      otherItemsForRelativePlacement[
+        $itemUnderConstruction.location.relative_item_id
+      ].flags.furniture &&
+      otherItemsForRelativePlacement[
+        $itemUnderConstruction.location.relative_item_id
+      ].furniture.has_external_surface
+    ) {
+      const vals = ["on"];
+      if (!vals.includes($itemUnderConstruction.location.relation)) {
+        $itemUnderConstruction.location.relation = "on";
+      }
+    } else if (
+      otherItemsForRelativePlacement[
+        $itemUnderConstruction.location.relative_item_id
+      ].flags.container ||
+      (otherItemsForRelativePlacement[
+        $itemUnderConstruction.location.relative_item_id
+      ].flags.furniture &&
+        otherItemsForRelativePlacement[
+          $itemUnderConstruction.location.relative_item_id
+        ].furniture.has_internal_surface)
+    ) {
+      const vals = ["in"];
+      if (!vals.includes($itemUnderConstruction.location.relation)) {
+        $itemUnderConstruction.location.relation = "in";
+      }
+    }
+  }
 
   onMount(() => {
     console.log("onMount");
@@ -930,6 +975,56 @@
               id="gemTone"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
+          </div>
+        {/if}
+
+        {#if allowRelativePlacement && Object.values(otherItemsForRelativePlacement).length > 0}
+          <div class="col-span-12">
+            <h2 class="text-gray-300 text-center">
+              Placement Relative to Other Item
+            </h2>
+          </div>
+          <div class="col-span-2">
+            <label
+              for="otherItem"
+              class="block text-sm font-medium text-gray-300"
+              >Item to place relative to</label
+            >
+            <select
+              id="otherItem"
+              on:blur={handleOtherItemChange}
+              bind:value={$itemUnderConstruction.location.relative_item_id}
+              name="otherItem"
+              class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="">none</option>
+              {#each Object.values(otherItemsForRelativePlacement) as otherItem}
+                <option value={otherItem.id}
+                  >{otherItem.description.short}</option
+                >
+              {/each}
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label
+              for="relationToOtherItem"
+              class="block text-sm font-medium text-gray-300"
+              >Position to place item relative to other</label
+            >
+            <select
+              id="relationToOtherItem"
+              bind:value={$itemUnderConstruction.location.relation}
+              disabled={disableRelationSelect}
+              name="relationToOtherItem"
+              class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.furniture && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].furniture.has_external_surface}
+                <option value="on">on</option>
+              {/if}
+              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && (otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.container || (otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.furniture && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].furniture.has_internal_surface))}
+                <option value="in">in</option>
+              {/if}
+            </select>
           </div>
         {/if}
       </div>
