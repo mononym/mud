@@ -30,6 +30,7 @@ defmodule Mud.Engine.Command.Executor do
   """
   @spec string_to_command(String.t()) :: {:error, :no_match} | {:ok, Mud.Engine.Command.t()}
   def string_to_command(input) do
+    input = String.trim(input)
     # Split the input and keep all the spaces for use/dropping later
     [first | rest] = Regex.split(~r/\s+/, input, include_captures: true)
     split_input = [String.downcase(first) | rest]
