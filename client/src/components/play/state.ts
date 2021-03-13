@@ -863,7 +863,7 @@ export function createState() {
         resetToi();
         resetOnGround();
         removeExits(msg.exits);
-        removeOtherCharacters(msg.items);
+        removeOtherCharacters(msg.otherCharacters);
       }
     });
 
