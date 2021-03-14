@@ -52,6 +52,9 @@ export function createWorldBuilderStore() {
 
   const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
+  const mapManuallyScrolled = writable(false);
+  const mapManualScrollX = writable(0);
+  const mapManualScrollY = writable(0);
   const mapDataLoaded = writable(false);
   const selectedMap = writable({ ...MapState });
   const mapSelected = derived(
@@ -65,6 +68,27 @@ export function createWorldBuilderStore() {
   );
 
   const mapUnderConstruction = writable(<MapInterface>{ ...MapState });
+
+  function setMapManuallyScrolled(value) {
+    if (value) {
+      const points = get(mapFocusPoints);
+      mapManualScrollX.set(points.x);
+      mapManualScrollY.set(points.y);
+    }
+
+    mapManuallyScrolled.set(value);
+  }
+
+  function scrollMapByDelta(delta) {
+    mapManualScrollX.set(
+      get(mapManualScrollX) +
+        delta.x * get(mapZoomMultipliers)[get(mapZoomMultiplierIndex)]
+    );
+    mapManualScrollY.set(
+      get(mapManualScrollY) +
+        delta.y * get(mapZoomMultipliers)[get(mapZoomMultiplierIndex)]
+    );
+  }
 
   // Links stuff
   const incomingLinksForSelectedArea = derived(
@@ -1195,6 +1219,60 @@ export function createWorldBuilderStore() {
     }
   }
 
+  const mapFocusPoints = derived(
+    [
+      selectedArea,
+      areaSelected,
+      areaIsUnderConstruction,
+      areaUnderConstruction,
+      mapManuallyScrolled,
+      mapManualScrollX,
+      mapManualScrollY,
+      selectedMap,
+    ],
+    ([
+      $selectedArea,
+      $areaSelected,
+      $areaIsUnderConstruction,
+      $areaUnderConstruction,
+      $mapManuallyScrolled,
+      $mapManualScrollX,
+      $mapManualScrollY,
+      $selectedMap,
+    ]) => {
+      console.log("derived");
+      if ($mapManuallyScrolled) {
+        console.log("mapManuallyScrolled");
+        return { x: $mapManualScrollX, y: $mapManualScrollY };
+      } else if ($areaIsUnderConstruction) {
+        console.log("areaIsUnderConstruction");
+        return {
+          x: localToMapCoordinate($areaUnderConstruction.mapX),
+          y: localToMapCoordinate(-$areaUnderConstruction.mapY),
+        };
+      } else if ($areaSelected) {
+        console.log("areaSelected");
+        return {
+          x: localToMapCoordinate($selectedArea.mapX),
+          y: localToMapCoordinate(-$selectedArea.mapY),
+        };
+      } else {
+        console.log("default");
+        return { x: localToMapCoordinate(0), y: localToMapCoordinate(0) };
+      }
+    }
+  );
+
+  function localToMapCoordinate(localCoordinate) {
+    const map = get(selectedMap);
+
+    const size = localCoordinate * map.gridSize + map.viewSize / 2;
+    console.log("localToMapCoordinate");
+    console.log(localCoordinate);
+    console.log(size);
+    return size;
+  }
+
   return {
     // Area stuff
     buildingArea,
@@ -1222,6 +1300,7 @@ export function createWorldBuilderStore() {
     deletingLink,
     linkIsUnderConstruction,
     // Map stuff
+    mapFocusPoints,
     loadingMapData,
     mapDataLoaded,
     selectedMap,
@@ -1235,6 +1314,8 @@ export function createWorldBuilderStore() {
     mapAtMaxZoom,
     zoomMapIn,
     zoomMapOut,
+    setMapManuallyScrolled,
+    scrollMapByDelta,
     // Item Stuff
     itemsForSelectedArea,
     itemsForSelectedAreaMap,
@@ -1333,6 +1414,7 @@ export function createWorldBuilderStore() {
     saveMapLabel,
     deleteMapLabel,
     addLabelToMap,
+    localToMapCoordinate,
   };
 }
 

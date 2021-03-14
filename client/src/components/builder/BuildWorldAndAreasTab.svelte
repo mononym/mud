@@ -51,6 +51,7 @@
     saveItemUnderConstructionAsAreaItem,
     areaIsUnderConstruction,
     itemsForSelectedAreaMap,
+    mapFocusPoints,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -125,10 +126,9 @@
               svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}
               highlightedAreaIds={$areaSelected ? [$selectedArea.id] : []}
               highlightedLinkIds={$linkSelected ? [$selectedLink.id] : []}
-              focusArea={$areaIsUnderConstruction
-                ? $areaUnderConstruction
-                : $selectedArea}
-              focusOnArea={$areaIsUnderConstruction || $areaSelected}
+              mapFocusPoints={$mapFocusPoints}
+              mapFocusPointsX={$mapFocusPoints.x}
+              mapFocusPointsY={$mapFocusPoints.y}
               areaUnderConstruction={$areaUnderConstruction}
               buildingArea={$buildingArea}
               buildingLink={$buildingLink}

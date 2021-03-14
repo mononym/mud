@@ -6,6 +6,8 @@
   import MapLabelState from "../../models/mapLabel";
   import { WorldBuilderStore } from "./state";
 
+  const { localToMapCoordinate } = WorldBuilderStore;
+
   // This map can be in one of two modes.
   // Primary mode
   //    It is the main map in the builder
@@ -44,11 +46,6 @@
   // All of the links that need to be drawn on the map
   export let links = [];
 
-  // This will be the new hotness for focusing on an area. If an area is to be focused on have that set explictly from outside and set
-  // the area itself from outside so the x/y can be grabbed as normal.
-  export let focusArea;
-  export let focusOnArea = false;
-
   // Whether or not the data for the chosen map is loading. This would be the links, areasMap, and areas
   export let loadingMapData = false;
 
@@ -76,6 +73,9 @@
   export let svgMapAllowIntraMapAreaSelection = false;
   export let svgMapAllowInterMapAreaSelection = false;
 
+  export let mapFocusPointsX = 0;
+  export let mapFocusPointsY = 0;
+
   $: allAreasMap = Object.assign(areasMap, areasMapForOtherMap);
 
   const highlightColor = "#ff6600";
@@ -87,13 +87,6 @@
   let svgWrapperWidth = 16;
   let svgWrapperHeight = 9;
 
-  // Viewbox sizing
-  $: xCenterPoint = focusOnArea
-    ? focusArea.mapX * chosenMap.gridSize + chosenMap.viewSize / 2
-    : chosenMap.viewSize / 2;
-  $: yCenterPoint = focusOnArea
-    ? -focusArea.mapY * chosenMap.gridSize + chosenMap.viewSize / 2
-    : chosenMap.viewSize / 2;
   $: viewBoxXSize = chosenMap.viewSize * zoomMultiplier;
   $: viewBoxYSize = Math.max(
     chosenMap.viewSize *
@@ -101,8 +94,8 @@
       zoomMultiplier,
     0
   );
-  $: viewBoxX = xCenterPoint - viewBoxXSize / 2;
-  $: viewBoxY = yCenterPoint - viewBoxYSize / 2;
+  $: viewBoxX = mapFocusPointsX - viewBoxXSize / 2;
+  $: viewBoxY = mapFocusPointsY - viewBoxYSize / 2;
   $: viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxXSize} ${viewBoxYSize}`;
 
   $: newMapLabels =
@@ -883,15 +876,9 @@
       ? "cursor-pointer"
       : "cursor-auto";
 
-    const x =
-      area.mapX * chosenMap.gridSize +
-      chosenMap.viewSize / 2 -
-      area.mapSize / 2;
+    const x = localToMapCoordinate(area.mapX) - area.mapSize / 2;
 
-    const y =
-      -area.mapY * chosenMap.gridSize +
-      chosenMap.viewSize / 2 -
-      area.mapSize / 2;
+    const y = localToMapCoordinate(-area.mapY) - area.mapSize / 2;
 
     return {
       id: area.id,
@@ -982,12 +969,22 @@
       });
   }
 
+  function handleStartDragMap() {
+    WorldBuilderStore.setMapManuallyScrolled(true);
+  }
+
+  function handleDragMap(event) {
+    WorldBuilderStore.scrollMapByDelta(event.detail);
+  }
+
   function handleSelectArea(event) {
+    
     if (
       (svgMapAllowIntraMapAreaSelection &&
-        event.detail.mapId == chosenMap.id) ||
+      event.detail.mapId == chosenMap.id) ||
       (svgMapAllowInterMapAreaSelection && event.detail.mapId != chosenMap.id)
-    ) {
+      ) {
+      WorldBuilderStore.setMapManuallyScrolled(false);
       WorldBuilderStore.selectArea(event.detail);
     }
   }
@@ -1037,6 +1034,8 @@
             ...existingMapLabels,
             ...newMapLabels,
           ].flat(2)}
+          on:dragMap={handleStartDragMap}
+          on:dragMap={handleDragMap}
           on:selectArea={handleSelectArea}
         />
       </div>

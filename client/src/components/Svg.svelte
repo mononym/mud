@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from "svelte";
-  import { beforeUpdate } from "svelte";
+  import interact from "interactjs";
 
   const dispatch = createEventDispatcher();
 
@@ -13,12 +13,44 @@
   export let gridLargeStrokeWidth = "1";
   export let showGrid = false;
 
+  let mapX;
+  let mapY;
+  let mapHeight;
+  let mapWidth;
+
+  interact(".draggableSvg").draggable({
+    inertia: true,
+    listeners: {
+      start(event) {
+        console.log("start");
+        console.log(event);
+        console.log(event.type, event.target);
+        mapX = event.target.viewBox.baseVal.x;
+        mapY = event.target.viewBox.baseVal.y;
+        mapHeight = event.target.viewBox.baseVal.height;
+        mapWidth = event.target.viewBox.baseVal.width;
+        dispatch("startDragMap");
+      },
+      move(event) {
+        console.log("move");
+        console.log(event.target.viewBox);
+        // const newx = (mapX -= event.dx * zoomMultiplier); // multiply delta by zoom level?
+        // const newy = (mapY -= event.dy * zoomMultiplier);
+        // console.log(newx);
+        // console.log(newy);
+        // console.log(mapHeight);
+        // console.log(mapWidth);
+        dispatch("dragMap", { x: -event.dx, y: -event.dy });
+      },
+    },
+  });
+
   function selectArea(area) {
     dispatch("selectArea", area);
   }
 </script>
 
-<svg class="h-full w-full" {viewBox} {preserveAspectRatio}>
+<svg class="draggableSvg h-full w-full" {viewBox} {preserveAspectRatio}>
   <defs>
     <pattern
       id="smallGrid"
@@ -38,6 +70,7 @@
       width={gridSize * 10}
       height={gridSize * 10}
       patternUnits="userSpaceOnUse"
+      patternTransform="translate({gridSize * 5},{gridSize * 5})"
     >
       <rect
         width={gridSize * 10}
