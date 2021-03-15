@@ -52,6 +52,7 @@
     areaIsUnderConstruction,
     itemsForSelectedAreaMap,
     mapFocusPoints,
+    viewingAreaDetails
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
@@ -121,6 +122,7 @@
               areasMap={$areasMap}
               links={$links}
               areas={$areas}
+              allowDragArea={$viewingAreaDetails || $areaIsUnderConstruction}
               linkUnderConstruction={$linkUnderConstruction}
               svgMapAllowInterMapAreaSelection={$svgMapAllowInterMapAreaSelection}
               svgMapAllowIntraMapAreaSelection={$svgMapAllowIntraMapAreaSelection}

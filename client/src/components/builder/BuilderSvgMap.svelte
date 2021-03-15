@@ -76,6 +76,8 @@
   export let mapFocusPointsX = 0;
   export let mapFocusPointsY = 0;
 
+  export let allowDragArea = false;
+
   $: allAreasMap = Object.assign(areasMap, areasMapForOtherMap);
 
   const highlightColor = "#ff6600";
@@ -969,6 +971,28 @@
       });
   }
 
+  function handleStartDragArea(event) {
+    WorldBuilderStore.selectArea(areasMap[event.detail]);
+    WorldBuilderStore.setAreaBeingManuallyDragged(true);
+    console.log("handleStartDragArea");
+    console.log(event);
+    console.log(event.detail);
+    console.log(areasMap);
+    console.log(areasMap[event.detail]);
+    // WorldBuilderStore.areaUnderConstruction.set(areasMap[event.detail]);
+    WorldBuilderStore.editArea(areasMap[event.detail]);
+  }
+
+  function handleDragArea(event) {
+    WorldBuilderStore.scrollAreaUnderConstructionByDelta(event.detail);
+  }
+
+  function handleEndDragArea() {
+    WorldBuilderStore.setAreaBeingManuallyDragged(false);
+    WorldBuilderStore.saveArea();
+    // WorldBuilderStore.cancelEditArea();
+  }
+
   function handleStartDragMap() {
     WorldBuilderStore.setMapManuallyScrolled(true);
   }
@@ -978,12 +1002,11 @@
   }
 
   function handleSelectArea(event) {
-    
     if (
       (svgMapAllowIntraMapAreaSelection &&
-      event.detail.mapId == chosenMap.id) ||
+        event.detail.mapId == chosenMap.id) ||
       (svgMapAllowInterMapAreaSelection && event.detail.mapId != chosenMap.id)
-      ) {
+    ) {
       WorldBuilderStore.setMapManuallyScrolled(false);
       WorldBuilderStore.selectArea(event.detail);
     }
@@ -1013,6 +1036,8 @@
         <Svg
           {viewBox}
           showGrid={true}
+          {allowDragArea}
+          gridSize={chosenMap.gridSize}
           shapes={[
             ...highlightsForExistingIntraMapLinks,
             ...highlightsForExistingInterMapLinks,
@@ -1034,7 +1059,10 @@
             ...existingMapLabels,
             ...newMapLabels,
           ].flat(2)}
-          on:dragMap={handleStartDragMap}
+          on:startDragArea={handleStartDragArea}
+          on:dragArea={handleDragArea}
+          on:endDragArea={handleEndDragArea}
+          on:startDragMap={handleStartDragMap}
           on:dragMap={handleDragMap}
           on:selectArea={handleSelectArea}
         />

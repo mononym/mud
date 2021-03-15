@@ -50,6 +50,10 @@ export function createWorldBuilderStore() {
   // view: details, edit
   const view = writable("details");
 
+  const viewingAreaDetails = derived(
+    [mode, view],
+    ([$mode, $view]) => $mode == "area" && $view == "details"
+  );
   const areaUnderConstruction = writable({ ...AreaState });
   const loadingMapData = writable(false);
   const mapManuallyScrolled = writable(false);
@@ -272,14 +276,7 @@ export function createWorldBuilderStore() {
   }
 
   async function deleteShopProduct(product: ShopProductInterface) {
-    console.log("deleteShopProduct");
-    console.log(product);
-    console.log("allShopsIndex");
-    console.log({ ...get(allShopsIndex) });
     const res = await delShopProduct(product.id);
-    console.log(res);
-    console.log("allShopsIndex");
-    console.log({ ...get(allShopsIndex) });
 
     selectedShopProduct.set({ ...ShopProductState });
     shopProductUnderConstruction.set({ ...ShopProductState });
@@ -287,20 +284,13 @@ export function createWorldBuilderStore() {
     let products;
 
     allShopsIndex.update(function (index) {
-      console.log("update");
-      console.log(index);
       const shop = index[product.shop_id];
-      console.log(shop);
       shop.products = products = shop.products.filter(
         (prod) => prod.id != product.id
       );
-      console.log(shop);
       index[product.shop_id] = shop;
-      console.log(index);
       return index;
     });
-    console.log("allShopsIndex");
-    console.log({ ...get(allShopsIndex) });
 
     if (product.shop_id == get(selectedShop).id) {
       selectedShop.update(function (shop) {
@@ -390,11 +380,8 @@ export function createWorldBuilderStore() {
   }
 
   async function viewShopFromArea(shop) {
-    console.log(shop);
     shopview.set("details");
-    console.log(get(builderTab));
     selectBuilderTabShops();
-    console.log(get(builderTab));
     await tick();
     selectedShop.set({ ...shop });
   }
@@ -752,8 +739,6 @@ export function createWorldBuilderStore() {
       for (var i = 0; i < $itemsForSelectedArea.length; i++) {
         result[$itemsForSelectedArea[i].id] = $itemsForSelectedArea[i];
       }
-      console.log("itemsForSelectedAreaMap");
-      console.log(result);
       return result;
     }
   );
@@ -843,6 +828,20 @@ export function createWorldBuilderStore() {
   //
   //
 
+  const areaBeingManuallyDragged = writable(false);
+
+  function setAreaBeingManuallyDragged(value) {
+    areaBeingManuallyDragged.set(value);
+  }
+
+  function scrollAreaUnderConstructionByDelta(delta) {
+    areaUnderConstruction.update(function (area) {
+      area.mapX += delta.x;
+      area.mapY += delta.y;
+      return area;
+    });
+  }
+
   const buildingArea = derived(
     [mode, view],
     ([$mode, $view]) => $mode == "area" && $view == "edit"
@@ -882,10 +881,13 @@ export function createWorldBuilderStore() {
     view.set("edit");
   }
 
+  async function silentlySaveAreaUnderConstruction() {
+    const newArea = await AreasStore.saveArea(get(areaUnderConstruction));
+    areaUnderConstruction.set({ ...AreaState });
+  }
+
   async function saveArea() {
     const newArea = await AreasStore.saveArea(get(areaUnderConstruction));
-    console.log("saveArea new area coming back");
-    console.log(newArea);
     selectedArea.set(newArea);
     areaUnderConstruction.set({ ...AreaState });
     mode.set("area");
@@ -1219,6 +1221,9 @@ export function createWorldBuilderStore() {
     }
   }
 
+  let lastFocusPoint;
+  let currentFocusPoint = { x: 0, y: 0 };
+
   const mapFocusPoints = derived(
     [
       selectedArea,
@@ -1229,6 +1234,7 @@ export function createWorldBuilderStore() {
       mapManualScrollX,
       mapManualScrollY,
       selectedMap,
+      areaBeingManuallyDragged,
     ],
     ([
       $selectedArea,
@@ -1239,27 +1245,44 @@ export function createWorldBuilderStore() {
       $mapManualScrollX,
       $mapManualScrollY,
       $selectedMap,
+      $areaBeingManuallyDragged,
     ]) => {
-      console.log("derived");
+      let value;
+
       if ($mapManuallyScrolled) {
-        console.log("mapManuallyScrolled");
-        return { x: $mapManualScrollX, y: $mapManualScrollY };
-      } else if ($areaIsUnderConstruction) {
-        console.log("areaIsUnderConstruction");
+        value = { x: $mapManualScrollX, y: $mapManualScrollY };
+      } else if ($areaBeingManuallyDragged) {
+        lastFocusPoint = { ...currentFocusPoint };
         return {
+          x: lastFocusPoint.x,
+          y: lastFocusPoint.y,
+        };
+      } else if ($areaIsUnderConstruction) {
+        value = {
           x: localToMapCoordinate($areaUnderConstruction.mapX),
           y: localToMapCoordinate(-$areaUnderConstruction.mapY),
         };
       } else if ($areaSelected) {
-        console.log("areaSelected");
-        return {
+        value = {
           x: localToMapCoordinate($selectedArea.mapX),
           y: localToMapCoordinate(-$selectedArea.mapY),
         };
       } else {
-        console.log("default");
-        return { x: localToMapCoordinate(0), y: localToMapCoordinate(0) };
+        value = {
+          x: localToMapCoordinate(0),
+          y: localToMapCoordinate(0),
+        };
       }
+
+      if (lastFocusPoint == undefined || lastFocusPoint == null) {
+        lastFocusPoint = { ...value };
+      } else {
+        lastFocusPoint = { ...currentFocusPoint };
+      }
+
+      currentFocusPoint = { ...value };
+
+      return value;
     }
   );
 
@@ -1267,9 +1290,6 @@ export function createWorldBuilderStore() {
     const map = get(selectedMap);
 
     const size = localCoordinate * map.gridSize + map.viewSize / 2;
-    console.log("localToMapCoordinate");
-    console.log(localCoordinate);
-    console.log(size);
     return size;
   }
 
@@ -1284,6 +1304,17 @@ export function createWorldBuilderStore() {
     areasForLinkEditorFilteredMap,
     areasForLinkEditorFiltered,
     areaIsUnderConstruction,
+    deleteArea,
+    createArea,
+    cancelEditArea,
+    saveArea,
+    selectArea,
+    editArea,
+    viewingAreaDetails,
+    scrollAreaUnderConstructionByDelta,
+    silentlySaveAreaUnderConstruction,
+    setAreaBeingManuallyDragged,
+    areaBeingManuallyDragged,
     // Links stuff
     buildingLink,
     linkUnderConstruction,
@@ -1389,13 +1420,6 @@ export function createWorldBuilderStore() {
     linkArea,
     cancelLinkArea,
     selectLink,
-    // Area stuff
-    deleteArea,
-    createArea,
-    cancelEditArea,
-    saveArea,
-    selectArea,
-    editArea,
     // Map stuff
     editMap,
     buildMap,

@@ -1,5 +1,5 @@
 <script>
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import interact from "interactjs";
 
   const dispatch = createEventDispatcher();
@@ -12,45 +12,75 @@
   export let gridSmallStrokeWidth = "0.5";
   export let gridLargeStrokeWidth = "1";
   export let showGrid = false;
-
-  let mapX;
-  let mapY;
-  let mapHeight;
-  let mapWidth;
-
-  interact(".draggableSvg").draggable({
-    inertia: true,
-    listeners: {
-      start(event) {
-        console.log("start");
-        console.log(event);
-        console.log(event.type, event.target);
-        mapX = event.target.viewBox.baseVal.x;
-        mapY = event.target.viewBox.baseVal.y;
-        mapHeight = event.target.viewBox.baseVal.height;
-        mapWidth = event.target.viewBox.baseVal.width;
-        dispatch("startDragMap");
-      },
-      move(event) {
-        console.log("move");
-        console.log(event.target.viewBox);
-        // const newx = (mapX -= event.dx * zoomMultiplier); // multiply delta by zoom level?
-        // const newy = (mapY -= event.dy * zoomMultiplier);
-        // console.log(newx);
-        // console.log(newy);
-        // console.log(mapHeight);
-        // console.log(mapWidth);
-        dispatch("dragMap", { x: -event.dx, y: -event.dy });
-      },
-    },
-  });
+  export let allowDragArea = false;
+  let draggingArea = false;
+  let svgElement;
 
   function selectArea(area) {
     dispatch("selectArea", area);
   }
+
+  onMount(() => {
+    // Drag map for pan
+    interact(".draggableSvg").draggable({
+      inertia: true,
+      listeners: {
+        start(event) {
+          dispatch("startDragMap");
+        },
+        move(event) {
+          dispatch("dragMap", { x: -event.dx, y: -event.dy });
+        },
+      },
+    });
+    
+    var gridTarget = interact.snappers.grid({
+      // can be a pair of x and y, left and top,
+      // right and bottom, or width, and height
+      x: gridSize,
+      y: gridSize,
+    });
+
+    interact(".draggableArea").draggable({
+      modifiers: [
+        interact.modifiers.snap({
+          targets: [gridTarget],
+          relativePoints: [
+            { x: 0.5, y: 0.5 }, // to the center
+          ],
+        }),
+      ],
+      inertia: true,
+      listeners: {
+        start(event) {
+          if (allowDragArea && event.shiftKey) {
+            draggingArea = true;
+            dispatch("startDragArea", event.target.id);
+          }
+        },
+        move(event) {
+          if (draggingArea) {
+            dispatch("dragArea", {
+              x: Math.round(event.dx / gridSize),
+              y: -Math.round(event.dy / gridSize),
+            });
+          }
+        },
+        end(event) {
+          dispatch("endDragArea");
+          draggingArea = false;
+        },
+      },
+    });
+  });
 </script>
 
-<svg class="draggableSvg h-full w-full" {viewBox} {preserveAspectRatio}>
+<svg
+  bind:this={svgElement}
+  class="draggableSvg h-full w-full"
+  {viewBox}
+  {preserveAspectRatio}
+>
   <defs>
     <pattern
       id="smallGrid"
@@ -150,7 +180,7 @@
       {/if}
     {:else if shape.type == "rect"}
       <rect
-        on:click={selectArea(shape.area)}
+        on:mouseup={selectArea(shape.area)}
         x={shape.x}
         y={shape.y}
         width={shape.width}
@@ -159,7 +189,7 @@
         fill={shape.fill}
         stroke-width={shape.borderWidth}
         stroke={shape.borderColor}
-        class={shape.cls}
+        class="{shape.cls} draggableArea"
         id={shape.area.id}
       >
         <title>{shape.name}</title>
