@@ -1,11 +1,16 @@
 <script>
-  import ConfirmWithInput from "../ConfirmWithInput.svelte";
+  import Confirm from "../Confirm.svelte";
   import { createEventDispatcher } from "svelte";
 
   const dispatch = createEventDispatcher();
 
   import { WorldBuilderStore } from "./state";
-  const { selectedArea, selectedMap, view } = WorldBuilderStore;
+  const {
+    areaUnderConstruction,
+    selectedArea,
+    selectedMap,
+    view,
+  } = WorldBuilderStore;
   import { AreasStore } from "../../stores/areas";
   const { areas } = AreasStore;
   let showDeletePrompt = false;
@@ -25,6 +30,15 @@
 
   function editArea(area) {
     WorldBuilderStore.editArea(area);
+  }
+
+  function clone(area) {
+    const newArea = { ...area };
+    newArea.id = "";
+    newArea.name = `${newArea.name} (copy)`;
+
+    $areaUnderConstruction = newArea;
+    WorldBuilderStore.saveArea();
   }
 
   function linkArea(area) {
@@ -148,13 +162,24 @@
               <i class="fas fa-trash" />
               Delete
             </button>
+            <button
+              on:click|stopPropagation={clone(area)}
+              class="{$view == 'edit'
+                ? 'cursor-not-allowed'
+                : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              type="button"
+              style="transition: all .15s ease"
+            >
+              <i class="fas fa-copy" />
+              Clone
+            </button>
           </td>
         </tr>
       {/each}
     </tbody>
   </table>
 
-  <ConfirmWithInput
+  <Confirm
     bind:show={showDeletePrompt}
     callback={deleteCallback}
     matchString={deleteMatchString}

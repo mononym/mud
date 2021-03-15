@@ -10,8 +10,15 @@ defmodule MudWeb.LinkController do
            Link.create(Recase.Enumerable.convert_keys(link_params, &Recase.to_snake/1)) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.link_path(conn, :show, link))
       |> render("show.json", link: link)
+    else
+      {:error, :duplicate_link} ->
+        conn
+        |> send_resp(409, "Link already exists between two areas with the same type.")
+
+      {:error, :unknown} ->
+        conn
+        |> send_resp(400, "Unknown error while creating Link. Zelda will not be pleased.")
     end
   end
 

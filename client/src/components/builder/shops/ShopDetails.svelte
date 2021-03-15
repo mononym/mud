@@ -1,5 +1,5 @@
 <script>
-  import ConfirmWithInput from "../../ConfirmWithInput.svelte";
+  import Confirm from "../../Confirm.svelte";
   import { WorldBuilderStore } from "../state";
   const {
     createNewShopProduct,
@@ -119,7 +119,7 @@
           : 'cursor-pointer'}">New Product</button
       >
     </div>
-    <ConfirmWithInput
+    <Confirm
       bind:show={showDeletePrompt}
       callback={deleteCallback}
       matchString={deleteMatchString}

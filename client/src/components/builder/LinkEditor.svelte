@@ -15,6 +15,10 @@
   import { AreasStore } from "../../stores/areas";
   const { areasMap } = AreasStore;
   import { onMount } from "svelte";
+  import { Snackbar } from "smelte";
+  let showSnackbar = false;
+
+  let snackbarMessage = "";
 
   let direction;
 
@@ -37,6 +41,30 @@
         $linkUnderConstruction.shortDescription;
       $linkUnderConstruction.longDescription =
         $linkUnderConstruction.shortDescription;
+      $linkUnderConstruction.arrivalText = directionExitToOppositeEntry(
+        $linkUnderConstruction.shortDescription
+      );
+    }
+  }
+
+  function directionExitToOppositeEntry(direction) {
+    switch (direction) {
+      case "north":
+        return "the south";
+      case "south":
+        return "the north";
+      case "east":
+        return "the west";
+      case "west":
+        return "the east";
+      case "northwest":
+        return "the southeast";
+      case "northeast":
+        return "the southwest";
+      case "southwest":
+        return "the northeast";
+      case "southeast":
+        return "the northwest";
     }
   }
 
@@ -56,6 +84,10 @@
     direction = "outgoing";
   }
 
+  function trySavingLink() {
+    WorldBuilderStore.saveLink()
+  }
+
   onMount(async () => {
     if ($linkUnderConstruction.id == "") {
       setOutgoing();
@@ -69,8 +101,11 @@
 
 <form
   class="h-full flex flex-col place-content-center"
-  on:submit|preventDefault={WorldBuilderStore.saveLink}
+  on:submit|preventDefault={trySavingLink}
 >
+  <Snackbar color="error" timeout={5000}>
+    <div>{snackbarMessage}</div>
+  </Snackbar>
   <div class="overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-12 gap-6">

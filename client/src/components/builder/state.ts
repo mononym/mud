@@ -576,7 +576,7 @@ export function createWorldBuilderStore() {
     view.set("edit");
   }
 
-  async function saveLink() {
+  function saveLink() {
     LinksStore.saveLink(get(linkUnderConstruction));
     selectedLink.set(get(linkUnderConstruction));
     linkUnderConstruction.set({ ...LinkState });

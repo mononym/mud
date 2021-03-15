@@ -1269,14 +1269,39 @@
       <div class="col-span-4">
         <label
           for="unexploredLinkColor"
-          style="color:{$characterSettings.mapWindow.unexplored_link_color}"
-          class="block text-sm font-medium">Unexplored Link Color</label
+          class="block text-sm font-medium text-white">Unexplored Link Color</label
         >
         <input
           bind:value={$characterSettings.mapWindow.unexplored_link_color}
           type="color"
           name="unexploredLinkColor"
           id="unexploredLinkColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="highlightedAreaColor"
+          class="block text-sm font-medium text-white">Highlighted Area Color</label
+        >
+        <input
+          bind:value={$characterSettings.mapWindow.highlighted_area_color}
+          type="color"
+          name="highlightedAreaColor"
+          id="highlightedAreaColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="backgroundColor"
+          class="block text-sm font-medium text-white">Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.mapWindow.background_color}
+          type="color"
+          name="backgroundColor"
+          id="backgroundColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>

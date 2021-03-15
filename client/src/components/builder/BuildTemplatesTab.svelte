@@ -1,5 +1,5 @@
 <script language="typescript">
-  import ConfirmWithInput from "../ConfirmWithInput.svelte";
+  import Confirm from "../Confirm.svelte";
   import TemplateList from "./templates/TemplateList.svelte";
   import TemplateDetails from "./templates/TemplateDetails.svelte";
   import TemplateEditor from "./templates/TemplateEditor.svelte";
@@ -63,7 +63,7 @@
           <TemplateEditor />
         {/if}
       </div>
-      <ConfirmWithInput
+      <Confirm
         show={showDeletePrompt}
         callback={deleteCallback}
         matchString={deleteMatchString}

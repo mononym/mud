@@ -33,7 +33,7 @@
         },
       },
     });
-    
+
     var gridTarget = interact.snappers.grid({
       // can be a pair of x and y, left and top,
       // right and bottom, or width, and height
@@ -53,7 +53,7 @@
       inertia: true,
       listeners: {
         start(event) {
-          if (allowDragArea && event.shiftKey) {
+          if (allowDragArea && event.shiftKey && event.target != undefined) {
             draggingArea = true;
             dispatch("startDragArea", event.target.id);
           }
@@ -67,7 +67,9 @@
           }
         },
         end(event) {
-          dispatch("endDragArea");
+          if (draggingArea) {
+            dispatch("endDragArea");
+          }
           draggingArea = false;
         },
       },

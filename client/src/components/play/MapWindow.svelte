@@ -34,6 +34,9 @@
 <div
   on:mousewheel={handleMouseWheelScrollOverMap}
   class="h-full w-full flex flex-col"
+  style="background-color:{$selectedCharacter.settings.mapWindow[
+    'background_color'
+  ]}"
 >
   <div style="height:calc(100% - 40px)" class="w-full">
     <ClientSvgMap

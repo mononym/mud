@@ -1,5 +1,5 @@
 <script>
-  import ConfirmWithInput from "../../ConfirmWithInput.svelte";
+  import Confirm from "../../Confirm.svelte";
 
   import { WorldBuilderStore } from "../state";
   const {
@@ -68,7 +68,9 @@
                   <div class="text-sm text-gray-100">{template.name}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div class="text-sm text-gray-100">{template.description}</div>
+                  <div class="text-sm text-gray-100">
+                    {template.description}
+                  </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <button
@@ -98,7 +100,7 @@
     </div>
   </div>
 
-  <ConfirmWithInput
+  <Confirm
     bind:show={showDeletePrompt}
     callback={deleteCallback}
     matchString={deleteMatchString}

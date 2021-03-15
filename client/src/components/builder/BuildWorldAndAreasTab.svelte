@@ -1,5 +1,5 @@
 <script language="typescript">
-  import ConfirmWithInput from "../ConfirmWithInput.svelte";
+  import Confirm from "../Confirm.svelte";
   import AreaEditor from "./AreaEditor.svelte";
   import MapEditor from "./MapEditor.svelte";
   import ItemEditor from "./items/ItemEditor.svelte";
@@ -52,14 +52,13 @@
     areaIsUnderConstruction,
     itemsForSelectedAreaMap,
     mapFocusPoints,
-    viewingAreaDetails
+    viewingAreaDetails,
   } = WorldBuilderStore;
   import areaState from "../../models/area.ts";
   import linkState from "../../models/link.ts";
 
   let showDeletePrompt = false;
   let deleteCallback;
-  let deleteMatchString = "";
   $: backToMapViewButtonDisabled = !($view == "details" && $mode == "area");
   $: createNewAreaButtonDisabled = !($view == "details" && $mode == "area");
   $: newMapButtonDisabled = !($view == "details" && $mode == "map");
@@ -264,11 +263,7 @@
           </div>
         {/if}
       </div>
-      <ConfirmWithInput
-        show={showDeletePrompt}
-        callback={deleteCallback}
-        matchString={deleteMatchString}
-      />
+      <Confirm show={showDeletePrompt} callback={deleteCallback} />
     </div>
   {/if}
 </div>

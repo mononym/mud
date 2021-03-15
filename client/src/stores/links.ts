@@ -1,11 +1,7 @@
 import { derived, writable } from "svelte/store";
-import {
-  loadLinksForMap,
-  createLink,
-  updateLink,
-  deleteLink as delLink,
-} from "../api/server";
+import { createLink, updateLink, deleteLink as delLink } from "../api/server";
 import type { LinkInterface } from "../models/link";
+import { notifier } from "smelte";
 
 function createLinksStore() {
   const loaded = writable(false);
@@ -114,7 +110,11 @@ function createLinksStore() {
       if (!isNew) {
         linksMap[link.id] = oldData;
       }
-      alert(e.message);
+
+      console.log(e);
+      console.log(e.response);
+
+      notifier.error(e.response.data);
     } finally {
       saving.set(false);
     }

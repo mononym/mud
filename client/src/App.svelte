@@ -7,6 +7,8 @@
   import Tailwindcss from "./Tailwind.svelte";
   const { authenticated, isSyncing } = AuthStore;
   import { push } from "svelte-spa-router";
+  import "smelte/src/tailwind.css";
+  import { Notifications } from "smelte";
 
   onMount(async () => {
     AuthStore.sync().then(() => {
@@ -19,7 +21,8 @@
   <Tailwindcss />
   {#if $isSyncing}
     <div
-      class="h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      class="h-full flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+    >
       <Circle2 />
       <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-500">
         Syncing session with server
@@ -28,4 +31,5 @@
   {:else}
     <Router {routes} />
   {/if}
+  <Notifications />
 </main>

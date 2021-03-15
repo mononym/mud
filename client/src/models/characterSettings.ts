@@ -59,6 +59,8 @@ export interface CharacterSettingsInterface {
   mapWindow: {
     id: string;
     unexplored_link_color: string;
+    background_color: string;
+    highlighted_area_color: string;
   };
   presetHotkeys: {
     id: string;
@@ -182,6 +184,8 @@ const state: CharacterSettingsInterface = {
   mapWindow: {
     id: "",
     unexplored_link_color: "",
+    background_color: "",
+    highlighted_area_color: "",
   },
   inventoryWindow: {
     id: "",

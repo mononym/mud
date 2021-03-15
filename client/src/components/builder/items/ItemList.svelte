@@ -1,5 +1,5 @@
 <script>
-  import ConfirmWithInput from "../../ConfirmWithInput.svelte";
+  import Confirm from "../../Confirm.svelte";
 
   import { WorldBuilderStore } from "../state";
   const { selectedItem, view } = WorldBuilderStore;
@@ -103,7 +103,7 @@
       {/each}
     </tbody>
   </table>
-  <ConfirmWithInput
+  <Confirm
     bind:show={showDeletePrompt}
     callback={deleteCallback}
     matchString={deleteMatchString}

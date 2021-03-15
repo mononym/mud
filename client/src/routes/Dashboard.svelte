@@ -1,5 +1,5 @@
 <script language="typescript">
-  import ConfirmWithInput from "../components/ConfirmWithInput.svelte";
+  import Confirm from "../components/Confirm.svelte";
   import { Circle2 } from "svelte-loading-spinners";
   import { player } from "../stores/player";
   import { CharactersStore } from "../stores/characters";
@@ -87,7 +87,7 @@
     </div>
   {/if}
 
-  <ConfirmWithInput
+  <Confirm
     bind:show={showDeletePrompt}
     callback={deleteCallback}
     matchString={deleteMatchString}

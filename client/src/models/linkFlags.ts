@@ -12,7 +12,7 @@ const state: LinkFlagsInterface = {
   link_id: "",
   closable: false,
   portal: false,
-  direction: false,
+  direction: true,
   object: false,
 };
 

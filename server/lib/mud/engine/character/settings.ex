@@ -21,7 +21,9 @@ defmodule Mud.Engine.Character.Settings do
     embeds_one :map_window, MapWindow, on_replace: :delete do
       @derive Jason.Encoder
 
-      field(:unexplored_link_color, :string, default: "#5bc0de")
+      field(:unexplored_link_color, :string, default: "#CF3078")
+      field(:background_color, :string, default: "#28282D")
+      field(:highlighted_area_color, :string, default: "#788DF2")
     end
 
     embeds_one :area_window, AreaWindow, on_replace: :delete do
@@ -264,7 +266,9 @@ defmodule Mud.Engine.Character.Settings do
     schema
     |> cast(params, [
       :id,
-      :unexplored_link_color
+      :unexplored_link_color,
+      :background_color,
+      :highlighted_area_color
     ])
     |> validate_required([])
   end

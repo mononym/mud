@@ -462,7 +462,7 @@
         areasMap[link.toId].mapId == areasMap[link.fromId].mapId &&
         areasMap[link.toId].mapId == chosenMap.id
       ) {
-        link.lineColor = highlightColor;
+        link.lineColor = mapSettings.highlighted_area_color;
         link.lineWidth = link.lineWidth + 6;
         link.label = "";
         link.hasMarker = false;
@@ -645,10 +645,10 @@
       })
       .map((areaId) => {
         const area = { ...areasMap[areaId] };
-        area.mapSize = area.mapSize + 3;
-        area.borderColor = highlightColor;
-        area.color = highlightColor;
-        area.borderWidth = Math.max(3, area.borderWidth + 1);
+        area.mapSize = area.mapSize + 5;
+        area.borderColor =  mapSettings.highlighted_area_color;
+        area.color =  mapSettings.highlighted_area_color;
+        area.borderWidth = Math.max(5, area.borderWidth + 2);
         area.id = `${area.id}-highlight`;
 
         return buildRectFromArea(area);

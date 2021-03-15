@@ -255,21 +255,35 @@ defmodule Mud.Engine.Link do
       {:ok, %__MODULE__{}}
 
       iex> create(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
+      {:error, :duplicate_link}
 
   """
-  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, :duplicate_link | :unknown}
   def create(attrs \\ %{}) do
-    IO.inspect(attrs)
-
     Repo.transaction(fn ->
-      %__MODULE__{}
-      |> __MODULE__.changeset(attrs)
-      |> Repo.insert!()
-      |> setup_required_component(attrs, "flags", Flags)
-      |> maybe_setup_optional_component(attrs, "closable", Closable)
-      |> preload()
-      |> IO.inspect()
+      insert_result =
+        %__MODULE__{}
+        |> __MODULE__.changeset(attrs)
+        |> Repo.insert()
+
+      IO.inspect(insert_result, label: :insert_result)
+
+      case insert_result do
+        {:ok, link} ->
+          link
+          |> setup_required_component(attrs, "flags", Flags)
+          |> maybe_setup_optional_component(attrs, "closable", Closable)
+          |> preload()
+
+        {:error, changeset} ->
+          IO.inspect(Keyword.get(changeset.errors, :type, false), label: :insert_result)
+
+          if Keyword.get(changeset.errors, :type, false) != false do
+            Repo.rollback(:duplicate_link)
+          else
+            Repo.rollback(:unknown)
+          end
+      end
     end)
   end
 

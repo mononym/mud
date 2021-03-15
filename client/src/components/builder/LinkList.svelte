@@ -1,5 +1,5 @@
 <script>
-  import ConfirmWithInput from "../ConfirmWithInput.svelte";
+  import Confirm from "../Confirm.svelte";
 
   import { WorldBuilderStore } from "./state";
   const { selectedArea, selectedLink, view } = WorldBuilderStore;
@@ -44,26 +44,30 @@
       <tr>
         <th
           scope="col"
-          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
           Other Area
         </th>
         {#if showExit}
           <th
             scope="col"
-            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
             Exit
           </th>
         {/if}
         {#if showArrival}
           <th
             scope="col"
-            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+          >
             Arrival Text
           </th>
         {/if}
         <th
           scope="col"
-          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+        >
           Actions
         </th>
       </tr>
@@ -72,8 +76,15 @@
       {#each links as link, i}
         <tr
           id={link.id}
-          class="{$selectedLink.id == link.id ? 'bg-gray-900' : i % 2 == 0 ? 'bg-gray-500 hover:bg-gray-700' : 'bg-gray-600 hover:bg-gray-700'} {$selectedLink.id == link.id ? 'cursor-not-allowed' : 'cursor-pointer'}"
-          on:click={selectLink(link)}>
+          class="{$selectedLink.id == link.id
+            ? 'bg-gray-900'
+            : i % 2 == 0
+            ? 'bg-gray-500 hover:bg-gray-700'
+            : 'bg-gray-600 hover:bg-gray-700'} {$selectedLink.id == link.id
+            ? 'cursor-not-allowed'
+            : 'cursor-pointer'}"
+          on:click={selectLink(link)}
+        >
           <td class="px-4 py-4 whitespace-nowrap">
             {#if link.toId == $selectedArea.id && areasMap[link.fromId].mapId != $selectedArea.mapId}
               <div class="text-sm text-gray-100">
@@ -110,26 +121,35 @@
           <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
             <button
               on:click|stopPropagation={editLink(link)}
-              class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              class="{$view == 'edit'
+                ? 'cursor-not-allowed'
+                : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"
-              title="Edit">
+              title="Edit"
+            >
               <i class="fas fa-edit" />
             </button>
             <button
               on:click|stopPropagation={promptForDeleteLink(link)}
-              class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              class="{$view == 'edit'
+                ? 'cursor-not-allowed'
+                : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"
-              title="Delete">
+              title="Delete"
+            >
               <i class="fas fa-trash" />
             </button>
             <button
               on:click|stopPropagation={followLink(link)}
-              class="{$view == 'edit' ? 'cursor-not-allowed' : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              class="{$view == 'edit'
+                ? 'cursor-not-allowed'
+                : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
               type="button"
               style="transition: all .15s ease"
-              title="Follow Link">
+              title="Follow Link"
+            >
               <i class="fas fa-external-link" />
             </button>
           </td>
@@ -137,8 +157,9 @@
       {/each}
     </tbody>
   </table>
-  <ConfirmWithInput
+  <Confirm
     bind:show={showDeletePrompt}
     callback={deleteCallback}
-    matchString={deleteMatchString} />
+    matchString={deleteMatchString}
+  />
 </div>
