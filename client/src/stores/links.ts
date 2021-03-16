@@ -1,7 +1,6 @@
 import { derived, writable } from "svelte/store";
 import { createLink, updateLink, deleteLink as delLink } from "../api/server";
 import type { LinkInterface } from "../models/link";
-import { notifier } from "smelte";
 
 function createLinksStore() {
   const loaded = writable(false);
@@ -114,7 +113,9 @@ function createLinksStore() {
       console.log(e);
       console.log(e.response);
 
-      notifier.error(e.response.data);
+      alert(e.response.data);
+
+      // notifier.error(e.response.data);
     } finally {
       saving.set(false);
     }

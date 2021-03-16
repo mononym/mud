@@ -7,8 +7,6 @@
   import Tailwindcss from "./Tailwind.svelte";
   const { authenticated, isSyncing } = AuthStore;
   import { push } from "svelte-spa-router";
-  import "smelte/src/tailwind.css";
-  import { Notifications } from "smelte";
 
   onMount(async () => {
     AuthStore.sync().then(() => {
@@ -31,5 +29,4 @@
   {:else}
     <Router {routes} />
   {/if}
-  <Notifications />
 </main>

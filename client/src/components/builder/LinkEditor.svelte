@@ -15,8 +15,6 @@
   import { AreasStore } from "../../stores/areas";
   const { areasMap } = AreasStore;
   import { onMount } from "svelte";
-  import { Snackbar } from "smelte";
-  let showSnackbar = false;
 
   let snackbarMessage = "";
 
@@ -85,7 +83,7 @@
   }
 
   function trySavingLink() {
-    WorldBuilderStore.saveLink()
+    WorldBuilderStore.saveLink();
   }
 
   onMount(async () => {
@@ -103,9 +101,6 @@
   class="h-full flex flex-col place-content-center"
   on:submit|preventDefault={trySavingLink}
 >
-  <Snackbar color="error" timeout={5000}>
-    <div>{snackbarMessage}</div>
-  </Snackbar>
   <div class="overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-12 gap-6">
