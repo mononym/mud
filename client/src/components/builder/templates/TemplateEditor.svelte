@@ -194,7 +194,7 @@
         <div class="col-span-12">
           <h2 class="text-gray-300 text-center">Template Details</h2>
         </div>
-        <div class="col-span-6">
+        <div class="col-span-3">
           <label for="name" class="block text-sm font-medium text-gray-300"
             >Template Name</label
           >
@@ -206,7 +206,7 @@
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
-        <div class="col-span-6">
+        <div class="col-span-9">
           <label
             for="description"
             class="block text-sm font-medium text-gray-300"
@@ -748,7 +748,8 @@
               >External surface size</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.furniture.external_surface_size}
+              bind:value={$templateUnderConstruction.template.furniture
+                .external_surface_size}
               type="number"
               min="0"
               max="1000000000000000"
@@ -792,7 +793,8 @@
               >Internal surface size</label
             >
             <input
-              bind:value={$templateUnderConstruction.template.furniture.internal_surface_size}
+              bind:value={$templateUnderConstruction.template.furniture
+                .internal_surface_size}
               type="number"
               min="0"
               max="1000000000000000"

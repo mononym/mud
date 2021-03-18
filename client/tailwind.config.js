@@ -16,6 +16,7 @@ module.exports = {
       red: colors.red,
       blue: colors.blue,
       yellow: colors.amber,
+      fuchsia: colors.fuchsia,
       accent: {
         light: '#f2e7c3',
         DEFAULT: '#d4af37',

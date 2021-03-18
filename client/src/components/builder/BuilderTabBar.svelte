@@ -16,7 +16,7 @@
     <button
       on:click={selectBuilderTabMapsAndAreas}
       class="px-3 py-2 text-sm font-medium {$builderTab == 'mapsAndAreas'
-        ? 'text-white bg-gray-600 border-primary border-b-2 focus:outline-none'
+        ? 'text-white bg-gray-600 border-fuchia-700 border-b-2 focus:outline-none'
         : 'text-gray-300 hover:text-white hover:bg-gray-700'} "
       >Maps and Areas</button
     >
@@ -24,14 +24,14 @@
     <button
       on:click={selectBuilderTabShops}
       class="px-3 py-2 text-sm font-medium {$builderTab == 'shops'
-        ? 'text-white bg-gray-600 border-primary border-b-2 focus:outline-none'
+        ? 'text-white bg-gray-600 border-fuchia-700 border-b-2 focus:outline-none'
         : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Shops</button
     >
 
     <button
       on:click={selectBuilderTabItems}
       class="px-3 py-2 text-sm font-medium {$builderTab == 'items'
-        ? 'text-white bg-gray-600 border-primary border-b-2 focus:outline-none'
+        ? 'text-white bg-gray-600 border-fuchia-700 border-b-2 focus:outline-none'
         : 'text-gray-300 hover:text-white hover:bg-gray-700'}">Items</button
     >
   </div>

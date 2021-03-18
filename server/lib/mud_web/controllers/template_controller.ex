@@ -29,7 +29,7 @@ defmodule MudWeb.TemplateController do
 
     with {:ok, %Template{} = template} <-
            Template.update(template, template_params) do
-      render(conn, "show.json", shop: template)
+      render(conn, "show.json", template: template)
     end
   end
 
