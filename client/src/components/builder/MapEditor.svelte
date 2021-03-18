@@ -61,12 +61,84 @@
             type="number"
             min="10"
             max="100"
-            step="2"
             name="gridSize"
             id="gridSize"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
+
+        <div class="col-span-2">
+          <label for="minZoom" class="block text-sm font-medium text-gray-300"
+            >Minimum Zoom Index</label
+          >
+
+          <select
+            id="minZoom"
+            bind:value={$mapUnderConstruction.minimumZoomIndex}
+            name="minZoom"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option
+              value="4"
+              selected={$mapUnderConstruction.minimumZoomIndex == 4}>1x</option
+            >
+            <option
+              value="5"
+              selected={$mapUnderConstruction.minimumZoomIndex == 5}
+              >1/2x</option
+            >
+            <option
+              value="6"
+              selected={$mapUnderConstruction.minimumZoomIndex == 6}
+              >1/4x</option
+            >
+            <option
+              value="7"
+              selected={$mapUnderConstruction.minimumZoomIndex == 7}
+              >1/8x</option
+            >
+            <option
+              value="8"
+              selected={$mapUnderConstruction.minimumZoomIndex == 8}
+              >1/16x</option
+            >
+          </select>
+        </div>
+
+        <div class="col-span-2">
+          <label for="maxZoom" class="block text-sm font-medium text-gray-300"
+            >Maximum Zoom Index</label
+          >
+
+          <select
+            id="maxZoom"
+            bind:value={$mapUnderConstruction.maximumZoomIndex}
+            name="maxZoom"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            <option
+              value="4"
+              selected={$mapUnderConstruction.maximumZoomIndex == 4}>1x</option
+            >
+            <option
+              value="3"
+              selected={$mapUnderConstruction.maximumZoomIndex == 3}>2x</option
+            >
+            <option
+              value="2"
+              selected={$mapUnderConstruction.maximumZoomIndex == 2}>4x</option
+            >
+            <option
+              value="1"
+              selected={$mapUnderConstruction.maximumZoomIndex == 1}>8x</option
+            >
+            <option
+              value="0"
+              selected={$mapUnderConstruction.maximumZoomIndex == 0}>16x</option
+            >
+          </select>
+        </div>
+
         <div class="col-span-2">
           <label
             for="isPermExplored"

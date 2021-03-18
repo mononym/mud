@@ -68,6 +68,8 @@ function createMapsStore() {
       grid_size: map.gridSize,
       labels: map.labels,
       permanently_explored: map.permanently_explored,
+      minimum_zoom_index: map.minimumZoomIndex,
+      maximum_zoom_index: map.maximumZoomIndex,
     };
     console.log(props);
 

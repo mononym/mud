@@ -16,11 +16,11 @@ const state: MapInterface = {
   id: "",
   description: "",
   name: "",
-  viewSize: 5000,
+  viewSize: 200,
   gridSize: 10,
   labels: [],
-  minimumZoomIndex: 5,
-  maximumZoomIndex: 11,
+  minimumZoomIndex: 3,
+  maximumZoomIndex: 5,
   permanently_explored: false,
 };
 

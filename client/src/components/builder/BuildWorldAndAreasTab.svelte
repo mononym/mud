@@ -142,21 +142,21 @@
             {#if $mapSelected}
               <button
                 on:click={zoomMapIn}
-                disabled={$mapAtMinZoom}
-                type="button"
-                class="flex-1 {$mapAtMinZoom
-                  ? 'text-gray-600 bg-gray-500'
-                  : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {$mapAtMinZoom
-                  ? 'cursor-not-allowed'
-                  : 'cursor-pointer'}"><i class="fas fa-plus" /></button
-              >
-              <button
-                on:click={zoomMapOut}
                 disabled={$mapAtMaxZoom}
                 type="button"
                 class="flex-1 {$mapAtMaxZoom
                   ? 'text-gray-600 bg-gray-500'
                   : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {$mapAtMaxZoom
+                  ? 'cursor-not-allowed'
+                  : 'cursor-pointer'}"><i class="fas fa-plus" /></button
+              >
+              <button
+                on:click={zoomMapOut}
+                disabled={$mapAtMinZoom}
+                type="button"
+                class="flex-1 {$mapAtMinZoom
+                  ? 'text-gray-600 bg-gray-500'
+                  : 'bg-gray-300 text-black hover:text-gray-500 hover:bg-gray-400'} p-2 focus:outline-none {$mapAtMinZoom
                   ? 'cursor-not-allowed'
                   : 'cursor-pointer'}"><i class="fas fa-minus" /></button
               >

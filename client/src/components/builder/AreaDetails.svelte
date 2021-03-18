@@ -39,7 +39,9 @@
 {#if $areaSelected}
   <div class="h-full w-full flex flex-col p-1 overflow-y-auto">
     <h2 class="text-center text-gray-300">{$selectedArea.name}</h2>
-    <p class="text-center text-gray-300">{$selectedArea.description}</p>
+    <p class="text-left text-gray-300 whitespace-pre-wrap">
+      {$selectedArea.description}
+    </p>
     <p class="text-center text-gray-300">
       Map X Coordinate:
       {$selectedArea.mapX}

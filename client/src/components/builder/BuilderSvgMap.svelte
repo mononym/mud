@@ -165,7 +165,10 @@
   }
 
   $: existingIntraMapLinkText =
-    mapSelected && links != undefined && areasMap != undefined
+    mapSelected &&
+    chosenMap != undefined &&
+    links != undefined &&
+    areasMap != undefined
       ? buildExistingIntraMapLinkText()
       : [];
 
@@ -291,6 +294,7 @@
 
   $: existingInterMapLinkText =
     mapSelected &&
+    chosenMap != undefined &&
     links != undefined &&
     allAreasMap != undefined &&
     linkUnderConstruction != undefined
@@ -386,6 +390,7 @@
 
   $: existingIntraMapLinksForAreaUnderConstruction =
     mapSelected &&
+    chosenMap != undefined &&
     links != undefined &&
     areasMap != undefined &&
     linkUnderConstruction != undefined &&
@@ -429,6 +434,7 @@
 
   $: existingIntraMapLinks =
     mapSelected &&
+    chosenMap != undefined &&
     links != undefined &&
     areasMap != undefined &&
     linkUnderConstruction != undefined &&
@@ -465,6 +471,7 @@
   $: newIntraMapLinks =
     mapSelected &&
     buildingLink &&
+    chosenMap != undefined &&
     areasMap != undefined &&
     linkUnderConstruction != undefined
       ? buildNewIntraMapLinks()
@@ -493,7 +500,10 @@
   }
 
   $: existingInterMapLinks =
-    mapSelected && links != undefined && allAreasMap != undefined
+    mapSelected &&
+    chosenMap != undefined &&
+    links != undefined &&
+    allAreasMap != undefined
       ? buildExistingInterMapLinks()
       : [];
 
@@ -651,7 +661,10 @@
   }
 
   $: highlightsForExistingIntraMapLinks =
-    mapSelected && areasMap != undefined && highlightedLinkIds.length > 0
+    mapSelected &&
+    chosenMap != undefined &&
+    areasMap != undefined &&
+    highlightedLinkIds.length > 0
       ? buildHighlightsForExistingIntraMapLinks()
       : [];
 
@@ -811,6 +824,7 @@
     mapSelected &&
     areas != undefined &&
     areasMap != undefined &&
+    chosenMap != undefined &&
     svgMapAllowIntraMapAreaSelection != undefined &&
     svgMapAllowInterMapAreaSelection != undefined
       ? buildExistingIntraMapAreas()
@@ -832,7 +846,11 @@
   }
 
   $: highlightsForNewIntraMapAreas =
-    mapSelected && areasMap != undefined && areaUnderConstruction.id != ""
+    mapSelected &&
+    areaUnderConstruction != undefined &&
+    chosenMap != undefined &&
+    areasMap != undefined &&
+    areaUnderConstruction.id != ""
       ? buildHighlightsForNewIntraMapAreas()
       : [];
 
@@ -848,7 +866,11 @@
   }
 
   $: highlightsForExistingIntraMapAreas =
-    mapSelected && areasMap != undefined && highlightedAreaIds.length > 0
+    mapSelected &&
+    areaUnderConstruction != undefined &&
+    chosenMap != undefined &&
+    areasMap != undefined &&
+    highlightedAreaIds.length > 0
       ? buildHighlightsForExistingIntraMapAreas()
       : [];
 

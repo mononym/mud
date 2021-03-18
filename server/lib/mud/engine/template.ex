@@ -20,7 +20,7 @@ defmodule Mud.Engine.Template do
   end
 
   @doc """
-  Returns the list of areas.
+  Returns the list of templates.
 
   ## Examples
 
@@ -35,7 +35,7 @@ defmodule Mud.Engine.Template do
   end
 
   @doc """
-  Gets a single area.
+  Gets a single template.
 
   Raises `Ecto.NoResultsError` if the Area does not exist.
 
@@ -52,7 +52,7 @@ defmodule Mud.Engine.Template do
   def get!(id), do: Repo.get!(__MODULE__, id)
 
   @doc """
-  Creates a area.
+  Creates a template.
 
   ## Examples
 
@@ -71,49 +71,40 @@ defmodule Mud.Engine.Template do
   end
 
   @doc """
-  Updates a area.
+  Updates a template.
 
   ## Examples
 
-      iex> update(area, %{field: new_value})
+      iex> update(template, %{field: new_value})
       {:ok, %__MODULE__{}}
 
-      iex> update(area, %{field: bad_value})
+      iex> update(template, %{field: bad_value})
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec update(area :: %__MODULE__{}, attributes :: map()) ::
+  @spec update(template :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def update(area, attrs) do
-    res =
-      area
-      |> changeset(attrs)
-      |> Repo.update()
-
-    case res do
-      {:ok, template} ->
-        {:ok, Repo.preload(template, [:products])}
-
-      error ->
-        error
-    end
+  def update(template, attrs) do
+    template
+    |> changeset(attrs)
+    |> Repo.update()
   end
 
   @doc """
-  Deletes a area.
+  Deletes a template.
 
   ## Examples
 
-      iex> delete(area)
+      iex> delete(template)
       {:ok, %__MODULE__{}}
 
-      iex> delete(area)
+      iex> delete(template)
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec delete(area :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def delete(area) do
-    Repo.delete(area)
+  @spec delete(template :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  def delete(template) do
+    Repo.delete(template)
   end
 
   #
@@ -121,9 +112,9 @@ defmodule Mud.Engine.Template do
   #
 
   @doc false
-  @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
-  defp changeset(area, attrs) do
-    area
+  @spec changeset(template :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
+  defp changeset(template, attrs) do
+    template
     |> cast(attrs, [
       :name,
       :description,
@@ -134,7 +125,7 @@ defmodule Mud.Engine.Template do
       :description,
       :template
     ])
-    |> foreign_key_constraint(:area_id)
+    |> foreign_key_constraint(:template_id)
   end
 
   #
@@ -147,7 +138,7 @@ defmodule Mud.Engine.Template do
   Basic query for finding templates. Nothing fancy, no preloads.
   """
   def base_template_query do
-    from(area in __MODULE__)
+    from(template in __MODULE__)
   end
 
   @doc """

@@ -3,6 +3,8 @@
   const dispatch = createEventDispatcher();
   import { WorldBuilderStore } from "./state";
   const { area, areaUnderConstruction, saveArea } = WorldBuilderStore;
+  import { MapsStore } from "../../stores/maps";
+  const { maps } = MapsStore;
 
   function save() {
     saveArea($areaUnderConstruction);
@@ -24,7 +26,27 @@
   <div class="overflow-hidden sm:rounded-md">
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-6 gap-6">
-        <div class="col-span-3">
+        <div class="col-span-1">
+          <label for="areaMap" class="block text-sm font-medium text-gray-300"
+            >Map</label
+          >
+
+          <select
+            id="areaMap"
+            bind:value={$areaUnderConstruction.mapId}
+            name="areaMap"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
+            {#each $maps as map}
+              <option
+                value={map.id}
+                selected={map.id == $areaUnderConstruction.mapId}
+                >{map.name}</option
+              >
+            {/each}
+          </select>
+        </div>
+        <div class="col-span-1">
           <label for="name" class="block text-sm font-medium text-gray-300"
             >Name</label
           >
@@ -37,7 +59,7 @@
           />
         </div>
 
-        <div class="col-span-3">
+        <div class="col-span-4">
           <label
             for="description"
             class="block text-sm font-medium text-gray-300">Description</label
@@ -46,7 +68,7 @@
             bind:value={$areaUnderConstruction.description}
             name="description"
             id="description"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md whitespace-pre-wrap text-left"
           />
         </div>
 

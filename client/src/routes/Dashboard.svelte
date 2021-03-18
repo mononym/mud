@@ -61,26 +61,31 @@
         <!-- <div class="flex-shrink flex flex-col justify-center"> -->
         <!-- card -->
         <div class="flex flex-col justify-center">
-          <img
-            src="https://d148p4q18vviek.cloudfront.net/{character.race}.jpg"
-            alt={character.name}
-            style="height:200px;width:200px;object-fit:cover"
-          />
-          <p class="text-center text-white">{character.name}</p>
+          <div class="bg-gray-800 flex-shrink flex flex-col">
+            <h2 class="text-center text-gray-300">{character.name}</h2>
+            <img
+              src="https://d148p4q18vviek.cloudfront.net/{character.race}.jpg"
+              alt={character.name}
+              style="height:200px;width:200px;object-fit:cover"
+            />
+  
+            <div class="flex w-full">
+              <button
+                on:click={playCharacter(character)}
+                type="button"
+                class="flex-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-accent text-base font-medium text-black hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                >Play
+              </button>
+              <button
+                on:click|stopPropagation={promptForDeleteCharacter(character)}
+                class="flex-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-500 text-base font-medium text-black hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
+                type="button"
+              >
+                <i class="fas fa-trash" />
+              </button>
+            </div>
 
-          <button
-            on:click={playCharacter(character)}
-            type="button"
-            class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
-            >Play
-          </button>
-          <button
-            on:click|stopPropagation={promptForDeleteCharacter(character)}
-            class="rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm"
-            type="button"
-          >
-            <i class="fas fa-trash" />
-          </button>
+          </div>
         </div>
         <!-- </div> -->
       {/each}

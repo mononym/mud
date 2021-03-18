@@ -14,8 +14,8 @@ defmodule Mud.Engine.Map do
     field(:name, :string)
     field(:view_size, :integer, default: 250)
     field(:grid_size, :integer, default: 50)
-    field(:minimum_zoom_index, :integer, default: 5)
-    field(:maximum_zoom_index, :integer, default: 11)
+    field(:minimum_zoom_index, :integer, default: 4)
+    field(:maximum_zoom_index, :integer, default: 8)
     field(:permanently_explored, :boolean, default: false)
 
     embeds_many :labels, Label, on_replace: :delete do
@@ -62,7 +62,7 @@ defmodule Mud.Engine.Map do
     Repo.all(
       from(
         map in __MODULE__,
-        order_by: [asc: map.updated_at]
+        order_by: [desc: map.updated_at]
       )
     )
   end
@@ -316,7 +316,8 @@ defmodule Mud.Engine.Map do
       :view_size,
       :grid_size,
       :maximum_zoom_index,
-      :minimum_zoom_index
+      :minimum_zoom_index,
+      :permanently_explored
     ])
     |> cast_embed(:labels, with: &labels_changeset/2)
   end

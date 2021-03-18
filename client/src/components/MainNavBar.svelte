@@ -48,12 +48,12 @@
         <div class="flex items-baseline space-x-4">
           <a
             href="#/dashboard"
-            use:active={{ path: '/dashboard', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
+            use:active={{ path: '/dashboard', className: 'text-white bg-gray-600', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
             class="px-3 py-2 rounded-md text-sm font-medium">Dashboard</a>
 
           <a
             href="#/build/world"
-            use:active={{ path: '/build/*', className: 'text-white bg-gray-900', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
+            use:active={{ path: '/build/*', className: 'text-white bg-gray-600', inactiveClassName: 'text-gray-300 hover:text-white hover:bg-gray-700' }}
             class="px-3 py-2 rounded-md text-sm font-medium">Build</a>
         </div>
       </div>

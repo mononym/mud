@@ -227,7 +227,6 @@
               id="mtsize"
               min="1"
               max="999"
-              step="2"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -442,7 +441,6 @@
               id="mfsize"
               min="1"
               max="999"
-              step="2"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>

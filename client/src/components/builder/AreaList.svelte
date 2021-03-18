@@ -117,7 +117,9 @@
             <div class="text-sm text-gray-100">{area.name}</div>
           </td>
           <td class="px-6 py-4">
-            <p class="text-sm text-gray-100">{area.description}</p>
+            <p class="text-sm text-gray-100 whitespace-pre-wrap">
+              {area.description}
+            </p>
           </td>
           <td class="px-6 py-4 whitespace-nowrap">
             <div class="text-sm text-gray-100">{area.mapX}</div>
