@@ -12,13 +12,14 @@ defmodule Mud.Engine.Item do
 
   alias Mud.Engine.Item.{
     Coin,
+    Container,
+    Description,
     Flags,
     Furniture,
     Gem,
     Location,
     Physics,
-    Description,
-    Container,
+    Surface,
     Wearable
   }
 
@@ -37,6 +38,7 @@ defmodule Mud.Engine.Item do
     has_one(:gem, Gem)
     has_one(:location, Location)
     has_one(:physics, Physics)
+    has_one(:surface, Surface)
     has_one(:wearable, Wearable)
 
     timestamps()
@@ -71,12 +73,14 @@ defmodule Mud.Engine.Item do
 
   def create_from_template_for_area(template, args, area_id) do
     create(Mud.Engine.ItemTemplate.build_template_for_area(template, args, area_id))
-    |> preload()
   end
 
   def create(attrs \\ %{}) do
-    IO.inspect(attrs, label: :create)
+    Logger.debug("Creating item with attrs: #{inspect(attrs)}")
+
     normalized_attrs = normalize_attrs(attrs)
+
+    Logger.debug("Normalized attrs: #{inspect(normalized_attrs)}")
 
     Repo.transaction(fn ->
       insert_new()
@@ -87,6 +91,7 @@ defmodule Mud.Engine.Item do
       |> maybe_setup_optional_component(normalized_attrs, :furniture, Furniture)
       |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
       |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
+      |> maybe_setup_optional_component(normalized_attrs, :surface, Surface)
       |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
       # Description should be very last since it might actually build up a description based on everything else having been filled in
       |> maybe_setup_optional_component(normalized_attrs, :description, Description)
@@ -120,65 +125,44 @@ defmodule Mud.Engine.Item do
   defp normalize_attrs(attrs) do
     attrs = template_keys_to_atoms(attrs)
 
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :gem) and attrs[:flags][:gem] do
-        [:gem]
-      else
-        []
-      end
+    keys_map = %{
+      coin: [:coin],
+      container: [:container, :description],
+      furniture: [:furniture, :description],
+      material: [:description],
+      scenery: [:description],
+      gem: [:gem],
+      wearable: [:wearable],
+      has_surface: [:surface],
+      is_equipment: [:equipment],
+      has_pocket: [:pocket]
+    }
 
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :coin) and attrs[:flags][:coin] do
-        keys_to_keep ++ [:coin]
-      else
-        keys_to_keep
-      end
+    base_keys_to_keep = [:location, :physics, :flags]
 
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :container) and attrs[:flags][:container] do
-        keys_to_keep ++ [:container, :description]
-      else
-        keys_to_keep
-      end
+    final_keys_to_keep =
+      Enum.reduce(keys_map, base_keys_to_keep, fn {key, ktk}, keys_tk ->
+        Logger.debug("Checking key: #{inspect(key)}")
 
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :furniture) and attrs[:flags][:furniture] do
-        keys_to_keep ++ [:furniture, :description]
-      else
-        keys_to_keep
-      end
+        if Map.has_key?(attrs[:flags], key) and attrs[:flags][key] do
+          ktk ++ keys_tk
+        else
+          keys_tk
+        end
+      end)
 
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :wearable) and attrs[:flags][:wearable] do
-        keys_to_keep ++ [:wearable]
-      else
-        keys_to_keep
-      end
-
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :material) and attrs[:flags][:material] do
-        keys_to_keep ++ [:description]
-      else
-        keys_to_keep
-      end
-
-    keys_to_keep =
-      if Map.has_key?(attrs[:flags], :scenery) and attrs[:flags][:scenery] do
-        keys_to_keep ++ [:description]
-      else
-        keys_to_keep
-      end
-
-    keys_to_keep = [:location, :physics, :flags] ++ keys_to_keep
+    Logger.debug("Keeping keys: #{inspect(final_keys_to_keep)}")
 
     purged_attrs =
       Enum.reduce(Map.keys(attrs), attrs, fn key, attr ->
-        if key in keys_to_keep do
+        if key in final_keys_to_keep do
           attr
         else
           Map.delete(attr, key)
         end
       end)
+
+    Logger.debug("Purged attributes: #{inspect(purged_attrs)}")
 
     # Make sure the item is described
     cond do
@@ -284,23 +268,25 @@ defmodule Mud.Engine.Item do
   def list(ids) do
     ids = List.wrap(ids)
 
-    from([item] in base_query_with_preload(),
+    from([item] in base_query_without_preload(),
       where: item.id in ^ids
     )
     |> Repo.all()
+    |> preload()
   end
 
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
-    from([item] in base_query_with_preload(),
+    from([item] in base_query_without_preload(),
       where: item.id == ^id
     )
     |> Repo.one!()
+    |> preload()
   end
 
   @spec get(id :: binary) :: {:ok, %__MODULE__{}} | {:error, :not_found}
   def get(id) when is_binary(id) do
-    from([item] in base_query_with_preload(),
+    from([item] in base_query_without_preload(),
       where: item.id == ^id
     )
     |> Repo.one()
@@ -309,26 +295,28 @@ defmodule Mud.Engine.Item do
         {:error, :not_found}
 
       item ->
-        {:ok, item}
+        {:ok, item |> preload()}
     end
   end
 
   def get_item_in_hand_as_list(character_id, hand) do
     from(
-      [item, location: location] in base_query_with_preload(),
+      [item, location: location] in base_query_without_preload(),
       where:
         location.hand == ^hand and
           item.id in subquery(base_query_for_held_item_ids(character_id))
     )
     |> Repo.all()
+    |> preload()
   end
 
   def list_items_in_hands(character_id) do
     from(
-      item in base_query_with_preload(),
+      item in base_query_without_preload(),
       where: item.id in subquery(base_query_for_held_item_ids(character_id))
     )
     |> Repo.all()
+    |> preload()
   end
 
   @doc """
@@ -479,6 +467,19 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
+  List all items in an Area, those on the ground and scenery included.
+  """
+  @spec list_visible_in_area(id) :: [%__MODULE__{}]
+  def list_visible_in_area(area_id) do
+    from([flags: flags, location: location] in all_in_area_query(area_id),
+      where: flags.hidden == false,
+      order_by: location.moved_at
+    )
+    |> Repo.all()
+    |> preload()
+  end
+
+  @doc """
   List all furniture in an Area.
   """
   @spec list_furniture_in_area(id) :: [%__MODULE__{}]
@@ -497,6 +498,67 @@ defmodule Mud.Engine.Item do
     )
     |> Repo.all()
     |> preload()
+  end
+
+  @spec list_items_in_area_and_nested_visible_items(id) :: [%__MODULE__{}]
+  def list_items_in_area_and_nested_visible_items(area_id) do
+    everything_and_nested_items =
+      everything_and_nested_items_in_area_query(area_id)
+      |> Repo.all()
+      |> preload()
+
+    # go through items and build up parent/child index
+    item_index = build_item_index(everything_and_nested_items)
+    # maps item id to the id of the parent
+    parent_index = build_parent_index(everything_and_nested_items)
+
+    IO.inspect(everything_and_nested_items, label: :everything_and_nested_items)
+
+    Enum.filter(everything_and_nested_items, fn item ->
+      is_visible_item(item, item_index, parent_index)
+    end)
+  end
+
+  @spec list_scenery_in_area_and_nested_visible_items(id) :: [%__MODULE__{}]
+  def list_scenery_in_area_and_nested_visible_items(area_id) do
+    scenery_and_nested_items =
+      scenery_and_nested_items_in_area_query(area_id)
+      |> Repo.all()
+      |> preload()
+
+    # go through items and build up parent/child index
+    item_index = build_item_index(scenery_and_nested_items)
+    # maps item id to the id of the parent
+    parent_index = build_parent_index(scenery_and_nested_items)
+
+    Enum.filter(scenery_and_nested_items, fn item ->
+      is_visible_item(item, item_index, parent_index)
+    end)
+  end
+
+  defp is_visible_item(
+         _item = %{flags: %{hidden: false}, location: %{on_ground: true}},
+         _item_index,
+         _parent_index
+       ) do
+    true
+  end
+
+  defp is_visible_item(
+         _item = %{location: %{relative_to_item: true, relation: "on", item_id: parent}},
+         item_index,
+         parent_index
+       ) do
+    if item_index[parent_index[parent]].flags.has_surface and
+         item_index[parent_index[parent]].surface.show_item_contents do
+      is_visible_item(item_index[parent_index[parent]], item_index, parent_index)
+    else
+      false
+    end
+  end
+
+  defp is_visible_item(_, _, _) do
+    false
   end
 
   @spec list_scenery_in_area(id) :: [%__MODULE__{}]
@@ -1140,22 +1202,24 @@ defmodule Mud.Engine.Item do
   def base_query_without_preload() do
     from(
       item in __MODULE__,
-      left_join: location in assoc(item, :location),
-      as: :location,
+      left_join: coin in assoc(item, :coin),
+      as: :coin,
       left_join: container in assoc(item, :container),
       as: :container,
       left_join: description in assoc(item, :description),
       as: :description,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      left_join: physics in assoc(item, :physics),
-      as: :physics,
-      left_join: coin in assoc(item, :coin),
-      as: :coin,
-      left_join: gem in assoc(item, :gem),
-      as: :gem,
       left_join: furniture in assoc(item, :furniture),
       as: :furniture,
+      left_join: gem in assoc(item, :gem),
+      as: :gem,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: physics in assoc(item, :physics),
+      as: :physics,
+      left_join: surface in assoc(item, :surface),
+      as: :surface,
       left_join: wearable in assoc(item, :wearable),
       as: :wearable
     )
@@ -1164,33 +1228,36 @@ defmodule Mud.Engine.Item do
   def base_query_with_preload() do
     from(
       item in __MODULE__,
-      left_join: location in assoc(item, :location),
-      as: :location,
+      left_join: coin in assoc(item, :coin),
+      as: :coin,
       left_join: container in assoc(item, :container),
       as: :container,
       left_join: description in assoc(item, :description),
       as: :description,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      left_join: physics in assoc(item, :physics),
-      as: :physics,
-      left_join: coin in assoc(item, :coin),
-      as: :coin,
-      left_join: gem in assoc(item, :gem),
-      as: :gem,
       left_join: furniture in assoc(item, :furniture),
       as: :furniture,
+      left_join: gem in assoc(item, :gem),
+      as: :gem,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: physics in assoc(item, :physics),
+      as: :physics,
+      left_join: surface in assoc(item, :surface),
+      as: :surface,
       left_join: wearable in assoc(item, :wearable),
       as: :wearable,
       preload: [
+        coin: coin,
         container: container,
         description: description,
         flags: flags,
+        furniture: furniture,
+        gem: gem,
         location: location,
         physics: physics,
-        coin: coin,
-        gem: gem,
-        furniture: furniture,
+        surface: surface,
         wearable: wearable
       ]
     )
@@ -1225,9 +1292,25 @@ defmodule Mud.Engine.Item do
     )
   end
 
+  def everything_and_nested_items_in_area_query(area_id) do
+    area_item_id_query = base_query_for_root_area_item_ids(area_id)
+
+    from(item in base_query_without_preload(),
+      where: item.id in subquery(recursive_child_ids_query(area_item_id_query, true))
+    )
+  end
+
+  def scenery_and_nested_items_in_area_query(area_id) do
+    scenery_id_query = base_query_for_root_scenery_item_ids(area_id)
+
+    from(item in base_query_without_preload(),
+      where: item.id in subquery(recursive_child_ids_query(scenery_id_query, true))
+    )
+  end
+
   defp all_in_area_query(area_id) do
     from(
-      [location: location] in base_query_with_preload(),
+      [location: location] in base_query_without_preload(),
       where: location.area_id == ^area_id
     )
   end
@@ -1472,6 +1555,10 @@ defmodule Mud.Engine.Item do
     |> modify_query_select_item_id()
   end
 
+  def base_query_for_all_scenery_and_nested_items(area_id) do
+    recursive_child_query(base_query_for_root_area_item_ids(area_id), true)
+  end
+
   def base_query_for_all_area_items(area_id) do
     recursive_child_query(base_query_for_root_area_item_ids(area_id), true)
   end
@@ -1479,6 +1566,22 @@ defmodule Mud.Engine.Item do
   @spec base_query_for_all_inventory(any) :: Ecto.Query.t()
   def base_query_for_all_inventory(character_id) do
     recursive_child_query(base_query_for_root_inventory_ids(character_id), true)
+  end
+
+  def base_query_for_root_scenery_item_ids(area_id) do
+    base_query_for_scenery_area_items(area_id)
+    |> modify_query_select_id()
+  end
+
+  defp base_query_for_scenery_area_items(area_id) do
+    from(
+      item in __MODULE__,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: flags in assoc(item, :flags),
+      as: :flags,
+      where: location.area_id == ^area_id and flags.scenery
+    )
   end
 
   def base_query_for_root_area_item_ids(area_id) do
@@ -1601,48 +1704,37 @@ defmodule Mud.Engine.Item do
   end
 
   defp update_item_component(key, attrs) do
-    case key do
-      "coin" ->
-        Coin.get!(attrs["id"]) |> Coin.update!(attrs)
+    key_callback_map = %{
+      "coin" => Coin,
+      "container" => Container,
+      "description" => Description,
+      "flags" => Flags,
+      "furniture" => Furniture,
+      "gem" => Gem,
+      "location" => Location,
+      "physics" => Physics,
+      "surface" => Surface,
+      "wearable" => Wearable
+    }
 
-      "container" ->
-        Container.get!(attrs["id"]) |> Container.update!(attrs)
+    callback = key_callback_map[key]
 
-      "description" ->
-        Description.get!(attrs["id"]) |> Description.update!(attrs)
-
-      "flags" ->
-        Flags.get!(attrs["id"]) |> Flags.update!(attrs)
-
-      "location" ->
-        Location.get!(attrs["id"]) |> Location.update!(attrs)
-
-      "physics" ->
-        Physics.get!(attrs["id"]) |> Physics.update!(attrs)
-
-      "gem" ->
-        Gem.get!(attrs["id"]) |> Gem.update!(attrs)
-
-      "furniture" ->
-        Furniture.get!(attrs["id"]) |> Furniture.update!(attrs)
-
-      "wearable" ->
-        Wearable.get!(attrs["id"]) |> Wearable.update!(attrs)
-    end
+    callback.get!(attrs["id"]) |> callback.update!(attrs)
   end
 
   def preload(results) do
     Repo.preload(
       results,
       [
+        :coin,
         :container,
         :description,
         :flags,
+        :furniture,
+        :gem,
         :location,
         :physics,
-        :coin,
-        :gem,
-        :furniture,
+        :surface,
         :wearable
       ],
       force: true

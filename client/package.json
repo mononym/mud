@@ -1,6 +1,6 @@
 {
   "name": "unnamedmud",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A MUD client",
   "author": "Chris Hicks",
   "build": {

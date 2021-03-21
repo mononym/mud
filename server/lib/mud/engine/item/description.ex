@@ -37,9 +37,10 @@ defmodule Mud.Engine.Item.Description do
   end
 
   def create(attrs \\ %{}) do
+    Logger.debug("Creating item description with attrs: #{inspect(attrs)}")
+
     %__MODULE__{}
     |> changeset(attrs)
-    |> changeset(Map.put(attrs, :moved_at, DateTime.utc_now()))
     |> Repo.insert!()
   end
 

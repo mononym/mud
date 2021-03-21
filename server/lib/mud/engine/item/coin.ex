@@ -15,7 +15,7 @@ defmodule Mud.Engine.Item.Coin do
              :copper,
              :bronze,
              :silver,
-             :gold,
+             :gold
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_coins" do
@@ -37,15 +37,16 @@ defmodule Mud.Engine.Item.Coin do
       :copper,
       :bronze,
       :silver,
-      :gold,
+      :gold
     ])
     |> foreign_key_constraint(:item_id)
   end
 
   def create(attrs \\ %{}) do
+    Logger.debug("Creating item coin with attrs: #{inspect(attrs)}")
+
     %__MODULE__{}
     |> changeset(attrs)
-    |> changeset(Map.put(attrs, :moved_at, DateTime.utc_now()))
     |> Repo.insert!()
   end
 

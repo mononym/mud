@@ -24,6 +24,11 @@
   function dispatchContextMenuEvent(event) {
     dispatch("showContextMenu", { event: event, item: item });
   }
+  // Things of Interest are handled differently from other items in the area
+  // For something to appear as a ToI it has to be a piece of scenery, or in some way related to (on, in, whatever) a piece of scenery AND be visible VIA that scenery
+  // 
+  // 
+  // 
 </script>
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>

@@ -82,7 +82,9 @@ defmodule Mud.Engine.Area do
 
   """
   def list_by_map(map_id, include_linked) do
+    # Whether or not to also grab areas that are linked to, but not a part of, the set of areas that belong to a map
     if include_linked do
+      # Internal areas which belong to a map
       internal_areas =
         Repo.all(
           from(
@@ -91,8 +93,10 @@ defmodule Mud.Engine.Area do
           )
         )
 
+      # The id's for the areas internal to the map
       internal_ids = Enum.map(internal_areas, & &1.id)
 
+      # Get all links that have anything to do, either going to or from, any of the internal areas
       links =
         Repo.all(
           from(
@@ -101,12 +105,14 @@ defmodule Mud.Engine.Area do
           )
         )
 
+      # Get the id's of all areas that are linked to areas which belong to the map
       external_ids =
         links
         |> Stream.flat_map(&[&1.to_id, &1.from_id])
         |> Stream.uniq()
         |> Enum.filter(&(&1 not in internal_ids))
 
+      # Get the external areas for the map
       external_areas =
         Repo.all(
           from(
@@ -240,6 +246,9 @@ defmodule Mud.Engine.Area do
     ) == 1
   end
 
+  @doc """
+  Mark an area as having been explored by a character
+  """
   def mark_as_explored(area_id, character_id) do
     change(%Mud.Engine.CharactersAreas{}, %{
       character_id: character_id,
@@ -272,51 +281,6 @@ defmodule Mud.Engine.Area do
     )
     |> Repo.all()
     |> Repo.preload([:flags])
-
-    # Mud.Repo.one(
-    #   from(area in Mud.Engine.Area,
-    #     left_join: character_area in Mud.Engine.CharactersAreas,
-    #     on: character_area.area_id == area.id,
-    #     where:
-    #       area.id == ^new_area_id and
-    #         (character_area.character_id == ^character_id or area.permanently_explored),
-    #     select: count(area.id)
-    #   )
-    # ) == 1
-  end
-
-  #
-  # Private Functions
-  #
-
-  @doc false
-  @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
-  defp changeset(area, attrs) do
-    area
-    |> cast(attrs, [
-      :name,
-      :description,
-      :map_id,
-      :map_x,
-      :map_y,
-      :map_size,
-      :map_corners,
-      :border_color,
-      :border_width,
-      :color,
-    ])
-    |> validate_required([
-      :name,
-      :description,
-      :map_id,
-      :map_x,
-      :map_y,
-      :map_size,
-      :map_corners,
-      :border_width,
-      :border_color,
-      :color
-    ])
   end
 
   # TODO: Revisit this and streamline it. Only hit DB once and pull back more data
@@ -410,41 +374,85 @@ defmodule Mud.Engine.Area do
   #
   #
 
+  @doc false
+  @spec changeset(area :: %__MODULE__{}, attributes :: map()) :: %Ecto.Changeset{}
+  defp changeset(area, attrs) do
+    area
+    |> cast(attrs, [
+      :name,
+      :description,
+      :map_id,
+      :map_x,
+      :map_y,
+      :map_size,
+      :map_corners,
+      :border_color,
+      :border_width,
+      :color
+    ])
+    |> validate_required([
+      :name,
+      :description,
+      :map_id,
+      :map_x,
+      :map_y,
+      :map_size,
+      :map_corners,
+      :border_width,
+      :border_color,
+      :color
+    ])
+  end
+
   defp build_area_name(story_output, area) do
+    Logger.debug("Building area name")
     Message.append_text(story_output, "[#{area.name}]\n", "area_name")
   end
 
   defp build_area_desc(story_output, area) do
+    Logger.debug("Building area description")
     Message.append_text(story_output, "#{area.description}\n", "area_description")
   end
 
   defp maybe_build_hostiles(text, _area) do
+    Logger.debug("Building area hostiles")
     # <> "{{hostiles}}Hostiles: #{player_characters}{{/hostiles}}\n"
     text
   end
 
   defp maybe_build_denizens(text, _area) do
+    Logger.debug("Building area denizens")
     # <> "{{denizens}}Denizens: #{player_characters}{{/denizens}}\n"
     text
   end
 
   defp maybe_build_things_of_interest(story_output, area) do
+    Logger.debug("Building area toi")
+    # Grab all the things of interest.
     things_of_interest =
       area.id
-      |> Item.list_scenery_in_area()
+      |> Item.list_scenery_in_area_and_nested_visible_items()
+      # Hidden scenery does not show up when looking at the area
       |> Enum.filter(&(&1.flags.hidden != true))
 
-    if things_of_interest == [] do
+    grouped_toi = Enum.group_by(things_of_interest, fn item -> item.location.on_ground end)
+
+    if grouped_toi[true] == nil do
       story_output
     else
       story_output = Message.append_text(story_output, "Things of Interest: ", "toi_label")
 
-      things_of_interest
+      root_items = grouped_toi[true] || []
+      nested_items = grouped_toi[false] || []
+      child_index = build_child_index(nested_items)
+      item_index = build_item_index(things_of_interest)
+
+      root_items
       |> Enum.reduce(
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.description.short, Engine.Util.get_item_type(item))
+          |> build_toi_item_description(item, child_index, item_index)
           |> Message.append_text(", ", "base")
         end
       )
@@ -453,7 +461,81 @@ defmodule Mud.Engine.Area do
     end
   end
 
+  # This is a surface which is marked to show contents, so have to do some checking here as the text could be more
+  # complex
+  defp build_toi_item_description(
+         message,
+         item = %{flags: %{has_surface: true}, surface: %{show_item_contents: true}},
+         child_index,
+         item_index
+       ) do
+    # First thing first, append the description of the item
+    message =
+      if item.location.on_ground or
+           item_index[item.location.relative_item_id].surface.show_detailed_items == false do
+        Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
+      else
+        Message.append_text(message, item.description.long, Engine.Util.get_item_type(item))
+      end
+
+    # If the item being currently build up has children enter this logic, because we need more than a single item
+    # description.
+    if Map.has_key?(child_index, item.id) do
+      message = Message.append_text(message, " on which sits ", "base")
+
+      # Pull out the actual children to display, and then also flag whether or not there were too many
+      {children, too_many_children_to_display} =
+        if length(child_index[item.id]) > item.surface.item_count_limit do
+          {Enum.take(child_index[item.id], item.surface.item_count_limit), true}
+        else
+          {child_index[item.id], false}
+        end
+
+      message =
+        Enum.reduce(children, message, fn child, message ->
+          # For each child recurse so we can display things arbitrary levels deep
+          build_toi_item_description(message, child, child_index, item_index)
+          |> Message.append_text(", ", "base")
+        end)
+        |> Message.drop_last_text()
+
+      # If there were too many children to display for this level, make sure to call it out explicitly
+      if too_many_children_to_display do
+        message
+        |> Message.maybe_add_oxford_comma()
+        |> Message.append_text(" among other things", "base")
+      else
+        Message.maybe_add_oxford_comma(message)
+      end
+
+      # If there are no children the only thing that needs to happen has already happened.
+    else
+      message
+    end
+  end
+
+  # If there is no surface, or some other thing to display in any way other than the item description itself, just do
+  # the simple thing and add the item description
+  defp build_toi_item_description(message, item, _child_index, item_index) do
+    # If this is a child item rather than a root piece of scenery check to see if the parent wants the short or
+    # detailed description of the item
+    if item.location.on_ground or
+         item_index[item.location.relative_item_id].surface.show_detailed_items == false do
+      Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
+    else
+      Message.append_text(message, item.description.long, Engine.Util.get_item_type(item))
+    end
+  end
+
+  defp build_child_index(items) do
+    Enum.reduce(items, %{}, fn item, map ->
+      existing_children = Map.get(map, item.location.relative_item_id, [])
+      Map.put(map, item.location.relative_item_id, [item | existing_children])
+    end)
+  end
+
   defp maybe_build_on_ground(story_output, area) do
+    Logger.debug("Building area on ground")
     items_on_ground = Item.list_on_ground(area.id)
 
     if items_on_ground == [] do
@@ -476,6 +558,8 @@ defmodule Mud.Engine.Area do
   end
 
   defp maybe_build_also_present(story_output, area, character) do
+    Logger.debug("Building area also present")
+
     also_present =
       Mud.Engine.Character.list_active_in_areas(area.id)
       # filter out self
@@ -504,6 +588,7 @@ defmodule Mud.Engine.Area do
   end
 
   defp maybe_build_exits(story_output, area) do
+    Logger.debug("Building area exits")
     links = Mud.Engine.Link.list_obvious_exits_in_area(area.id)
 
     if links == [] do
@@ -536,5 +621,9 @@ defmodule Mud.Engine.Area do
       |> Message.drop_last_text()
       |> Message.append_text("\n", "base")
     end
+  end
+
+  defp build_item_index(parents) do
+    Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
   end
 end

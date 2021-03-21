@@ -16,8 +16,6 @@
   }
 
   function editItem(item) {
-    console.log("editItem");
-    console.log(item);
     WorldBuilderStore.editItem({ ...item });
   }
 
@@ -28,7 +26,7 @@
   }
 
   function deleteCallback() {
-    WorldBuilderStore.deleteItem(itemForDeleting);
+    WorldBuilderStore.deleteItemForArea(itemForDeleting);
   }
 </script>
 

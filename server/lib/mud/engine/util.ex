@@ -987,4 +987,23 @@ defmodule Mud.Engine.Util do
         {"on", "body"}
     end
   end
+
+  @doc """
+  Given a map turn any keys for it, and any nested maps, to existing atoms
+  """
+  @spec map_keys_to_atoms(map) :: map
+  def map_keys_to_atoms(template) do
+    Map.new(template, fn {k, v} ->
+      {if is_binary(k) do
+         String.to_existing_atom(k)
+       else
+         k
+       end,
+       if is_map(v) do
+         map_keys_to_atoms(v)
+       else
+         v
+       end}
+    end)
+  end
 end

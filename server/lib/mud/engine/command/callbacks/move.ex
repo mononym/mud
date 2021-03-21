@@ -292,12 +292,8 @@ defmodule Mud.Engine.Command.Move do
         context
       end
 
-    # Split out scenery and non scenery
-    items_in_area =
-      Item.list_in_area(area.id)
-      |> Stream.filter(fn item ->
-        item.flags.hidden != true
-      end)
+    # Grab all items and visible nested items
+    items_in_area = Item.list_items_in_area_and_nested_visible_items(area.id)
 
     # List all the characters that need to be informed of a move
     characters_by_area =
@@ -307,7 +303,7 @@ defmodule Mud.Engine.Command.Move do
         char.area_id
       end)
 
-    # Grab minimum info necessary to display other characters in area. Do not expose 'private' character info like stats and settings
+    # Grab minimum info necessary to display other characters in area. TODO: Do not expose 'private' character info like stats and settings
     others_in_new_area = characters_by_area[link.to_id] || []
     others_in_old_area = characters_by_area[link.from_id] || []
 
@@ -391,6 +387,8 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp construct_personal_departure_message(character, link) do
+    Logger.debug("Constructing departure message for link: #{inspect(link)}")
+
     message =
       character.id
       |> Message.new_story_output()

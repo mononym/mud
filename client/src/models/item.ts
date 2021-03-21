@@ -19,30 +19,35 @@ import ItemGemState from "./itemGem";
 import type { ItemWearableInterface } from "./itemWearable";
 import ItemWearableState from "./itemWearable";
 
-import type { ItemFurnitureInterface } from "./ItemFurniture";
-import ItemFurnitureState from "./ItemFurniture";
+import type { ItemFurnitureInterface } from "./itemFurniture";
+import ItemFurnitureState from "./itemFurniture";
+
+import type { ItemSurfaceInterface } from "./itemSurface";
+import ItemSurfaceState from "./itemSurface";
 
 export interface ItemInterface {
   id: string;
+  container: ItemContainerInterface;
+  description: ItemDescriptionInterface;
+  flags: ItemFlagsInterface;
+  furniture: ItemFurnitureInterface;
+  gem: ItemGemInterface;
   location: ItemLocationInterface;
   physics: ItemPhysicsInterface;
-  flags: ItemFlagsInterface;
-  description: ItemDescriptionInterface;
-  container: ItemContainerInterface;
-  gem: ItemGemInterface;
-  furniture: ItemFurnitureInterface;
+  surface: ItemSurfaceInterface;
   wearable: ItemWearableInterface;
 }
 
 const state: ItemInterface = {
   id: "",
-  physics: { ...ItemPhysicsState },
-  flags: { ...ItemFlagsState },
-  description: { ...ItemDescriptionState },
   container: { ...ItemContainerState },
-  location: { ...ItemLocationState },
-  gem: { ...ItemGemState },
+  description: { ...ItemDescriptionState },
+  flags: { ...ItemFlagsState },
   furniture: { ...ItemFurnitureState },
+  gem: { ...ItemGemState },
+  location: { ...ItemLocationState },
+  physics: { ...ItemPhysicsState },
+  surface: { ...ItemSurfaceState },
   wearable: { ...ItemWearableState },
 };
 

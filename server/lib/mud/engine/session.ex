@@ -50,7 +50,7 @@ defmodule Mud.Engine.Session do
 
     Enum.each(to, fn dest ->
       msg = %{message_or_event | to: dest}
-      IO.inspect(msg, label: "cast_message_or_event/1")
+      # IO.inspect(msg, label: "cast_message_or_event/1")
       GenServer.cast(via(dest), msg)
     end)
   end

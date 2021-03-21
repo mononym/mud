@@ -31,6 +31,8 @@ defmodule Mud.Engine.Item.Wearable do
   end
 
   def create(attrs \\ %{}) do
+    Logger.debug("Creating item wearable with attrs: #{inspect(attrs)}")
+
     %__MODULE__{}
     |> changeset(attrs)
     |> Repo.insert!()

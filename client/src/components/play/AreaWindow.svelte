@@ -20,6 +20,7 @@
     exitsInArea,
     rightHandHasItem,
     leftHandHasItem,
+    areaItemsParentChildIndex,
   } = state;
 
   $: otherCharactersAreInArea = $otherCharactersInArea.length > 0;
@@ -337,7 +338,14 @@
     {#if showToi}
       <div class="pl-2">
         {#each $toiInArea as item}
-          <AreaItem {item} on:showContextMenu={showRightClickMenu} />
+          <AreaItem
+            {item}
+            settings={$selectedCharacter.settings.colors}
+            itemsParentChildIndex={$areaItemsParentChildIndex}
+            on:showContextMenu={showRightClickMenu}
+            showQuickActions={$selectedCharacter.settings.areaWindow
+              .show_quick_actions}
+          />
         {/each}
       </div>
     {/if}
@@ -356,6 +364,8 @@
         {#each $onGroundInArea as item}
           <AreaItem
             {item}
+            settings={$selectedCharacter.settings.colors}
+            itemsParentChildIndex={$areaItemsParentChildIndex}
             on:showContextMenu={showRightClickMenu}
             showQuickActions={$selectedCharacter.settings.areaWindow
               .show_quick_actions}

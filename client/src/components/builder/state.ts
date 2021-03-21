@@ -30,12 +30,14 @@ import {
   listTemplates,
   createItem,
   updateItem,
+  deleteItem as delItem,
   loadItemsForArea as loadItems,
 } from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
 import { LinksStore } from "../../stores/links";
 import { tick } from "svelte";
+import * as _ from "lodash";
 
 export const key = {};
 
@@ -752,6 +754,14 @@ export function createWorldBuilderStore() {
   );
   const loadingItemsForArea = writable(false);
 
+  async function deleteItemForArea(item: ItemInterface) {
+    delItem(item.id);
+
+    itemsForSelectedArea.update(function (items) {
+      return items.filter((it) => it.id != item.id);
+    });
+  }
+
   async function loadItemsForArea(area_id) {
     loadingItemsForArea.set(true);
     const items = (await loadItems(area_id)).data;
@@ -776,8 +786,9 @@ export function createWorldBuilderStore() {
 
   async function saveItemUnderConstructionAsAreaItem() {
     itemUnderConstruction.update(function (item) {
-      item.location.on_ground = true;
-      item.location.area_id = get(selectedArea).id;
+      if (item.location.on_ground == true) {
+        item.location.area_id = get(selectedArea).id;
+      }
       return item;
     });
 
@@ -811,14 +822,19 @@ export function createWorldBuilderStore() {
       });
     }
 
-    itemUnderConstruction.set({ ...ItemState });
+    const newItem = _.cloneDeep(ItemState);
+    itemUnderConstruction.set(newItem);
     savingItem.set(false);
     selectedItem.set(res);
     view.set("details");
   }
 
   async function createNewItem() {
-    itemUnderConstruction.set({ ...ItemState });
+    const newItem = _.cloneDeep(ItemState);
+    console.log("createNewItem");
+    console.log(newItem);
+    selectedItem.set(newItem);
+    itemUnderConstruction.set(newItem);
     view.set("edit_item");
   }
 
@@ -1372,6 +1388,7 @@ export function createWorldBuilderStore() {
     loadItemsForArea,
     createNewItem,
     saveItemUnderConstructionAsAreaItem,
+    deleteItemForArea,
     // Shops stuff
     shops,
     selectedShop,

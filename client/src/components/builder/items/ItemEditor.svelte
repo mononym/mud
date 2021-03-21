@@ -1,8 +1,8 @@
 <script>
-  import { onMount } from "svelte";
   import { WorldBuilderStore } from "../state";
   const { itemUnderConstruction, saveItem, cancelEditItem } = WorldBuilderStore;
 
+  const allowRelativeToCharacterPlacement = false;
   export let allowRelativePlacement = false;
   export let otherItemsForRelativePlacement = {};
   export let saveItemCallback = saveItem;
@@ -17,6 +17,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableClothingCheckbox =
@@ -29,6 +30,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableCoinCheckbox =
@@ -41,6 +43,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableContainerCheckbox =
@@ -53,6 +56,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableFurnitureCheckbox =
@@ -65,6 +69,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableGemCheckbox =
@@ -78,6 +83,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableInstrumentCheckbox =
@@ -90,6 +96,7 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableJewelryCheckbox =
@@ -102,6 +109,7 @@
     $itemUnderConstruction.flags.instrument ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableMaterialCheckbox =
@@ -113,8 +121,9 @@
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
     $itemUnderConstruction.flags.jewelry ||
-    $itemUnderConstruction.flags.shield ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.surface ||
+    $itemUnderConstruction.flags.shield;
+  $itemUnderConstruction.flags.weapon;
 
   $: disableSceneryCheckbox = false;
 
@@ -128,6 +137,7 @@
     $itemUnderConstruction.flags.instrument ||
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableWeaponCheckbox =
@@ -140,6 +150,7 @@
     $itemUnderConstruction.flags.instrument ||
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.shield;
 
   $: disableGemPouchCheckbox =
@@ -151,6 +162,23 @@
   $: disableShopDisplayCheckbox = !$itemUnderConstruction.flags.furniture;
 
   $: disableWearableCheckbox = !$itemUnderConstruction.flags.container;
+
+  $: disablePocketCheckbox =
+    $itemUnderConstruction.flags.armor ||
+    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.weapon;
+
+  $: disableSurfaceCheckbox =
+    !$itemUnderConstruction.flags.furniture &&
+    !$itemUnderConstruction.flags.scenery;
 
   $: disableCloseCheckbox = !$itemUnderConstruction.flags.container;
 
@@ -174,7 +202,28 @@
 
   $: disableWearCheckbox = !$itemUnderConstruction.flags.wearable;
 
-  $: disableRelationSelect = $itemUnderConstruction.location.relative_item_id == ""
+  $: disableRelationSelect =
+    $itemUnderConstruction.location.relative_item_id == "";
+
+  $: disableOnGroundCheckbox =
+    $itemUnderConstruction.location.relative_to_item ||
+    $itemUnderConstruction.location.held_in_hand ||
+    $itemUnderConstruction.location.worn_on_character;
+
+  $: disableHeldInHandCheckbox =
+    $itemUnderConstruction.location.relative_to_item ||
+    $itemUnderConstruction.location.on_ground ||
+    $itemUnderConstruction.location.worn_on_character;
+
+  $: disableRelativeToItemCheckbox =
+    $itemUnderConstruction.location.on_ground ||
+    $itemUnderConstruction.location.held_in_hand ||
+    $itemUnderConstruction.location.worn_on_character;
+
+  $: disableWornOnCharacterCheckbox =
+    $itemUnderConstruction.location.relative_to_item ||
+    $itemUnderConstruction.location.on_ground ||
+    $itemUnderConstruction.location.held_in_hand;
 
   function handleOtherItemChange() {
     // if other id is blank make sure it the rest of the flags are not set for it to be relative to an item
@@ -216,11 +265,6 @@
       }
     }
   }
-
-  onMount(() => {
-    console.log("onMount");
-    console.log($itemUnderConstruction);
-  });
 </script>
 
 <form
@@ -378,18 +422,6 @@
           />
         </div>
         <div class="col-span-1">
-          <label for="isScenery" class="block text-sm font-medium text-gray-300"
-            >Scenery</label
-          >
-          <input
-            bind:checked={$itemUnderConstruction.flags.scenery}
-            type="checkbox"
-            name="isScenery"
-            id="isScenery"
-            disabled={disableSceneryCheckbox}
-          />
-        </div>
-        <div class="col-span-1">
           <label for="isShield" class="block text-sm font-medium text-gray-300"
             >Shield</label
           >
@@ -467,6 +499,43 @@
             name="isWearable"
             id="isWearable"
             disabled={disableWearableCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label for="hasPocket" class="block text-sm font-medium text-gray-300"
+            >Has Pocket</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.has_pocket}
+            type="checkbox"
+            name="hasPocket"
+            id="hasPocket"
+            disabled={disablePocketCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label
+            for="hasSurface"
+            class="block text-sm font-medium text-gray-300">Surface</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.has_surface}
+            type="checkbox"
+            name="hasSurface"
+            id="hasSurface"
+            disabled={disableSurfaceCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label for="isScenery" class="block text-sm font-medium text-gray-300"
+            >Scenery</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.scenery}
+            type="checkbox"
+            name="isScenery"
+            id="isScenery"
+            disabled={disableSceneryCheckbox}
           />
         </div>
         <div class="col-span-12">
@@ -583,7 +652,68 @@
           />
         </div>
 
-        {#if $itemUnderConstruction.physics}
+        <div class="col-span-12">
+          <h2 class="text-gray-300 text-center">Location</h2>
+        </div>
+        <div class="col-span-1">
+          <label for="onGround" class="block text-sm font-medium text-gray-300"
+            >On Ground</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.location.on_ground}
+            type="checkbox"
+            name="onGround"
+            id="onGround"
+            disabled={disableOnGroundCheckbox}
+          />
+        </div>
+
+        {#if allowRelativeToCharacterPlacement}
+          <div class="col-span-1">
+            <label
+              for="heldInHand"
+              class="block text-sm font-medium text-gray-300"
+              >Held In Hand</label
+            >
+            <input
+              bind:checked={$itemUnderConstruction.location.held_in_hand}
+              type="checkbox"
+              name="heldInHand"
+              id="heldInHand"
+              disabled={disableHeldInHandCheckbox}
+            />
+          </div>
+          <div class="col-span-1">
+            <label
+              for="wornOnCharacter"
+              class="block text-sm font-medium text-gray-300"
+              >Worn On Character</label
+            >
+            <input
+              bind:checked={$itemUnderConstruction.location.worn_on_character}
+              type="checkbox"
+              name="wornOnCharacter"
+              id="wornOnCharacter"
+              disabled={disableWornOnCharacterCheckbox}
+            />
+          </div>
+        {/if}
+        <div class="col-span-1">
+          <label
+            for="relativeToItem"
+            class="block text-sm font-medium text-gray-300"
+            >Relative To Item</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.location.relative_to_item}
+            type="checkbox"
+            name="relativeToItem"
+            id="relativeToItem"
+            disabled={disableRelativeToItemCheckbox}
+          />
+        </div>
+
+        {#if $itemUnderConstruction.flags.physics}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Physical Properties</h2>
           </div>
@@ -652,6 +782,120 @@
           </div>
         {/if}
 
+        {#if $itemUnderConstruction.flags.has_surface}
+          <div class="col-span-12">
+            <h2 class="text-gray-300 text-center">Surface Properties</h2>
+          </div>
+          <div class="col-span-1">
+            <label
+              for="showItemContents"
+              class="block text-sm font-medium text-gray-300"
+              >Show Item Contents</label
+            >
+            <input
+              bind:checked={$itemUnderConstruction.surface.show_item_contents}
+              type="checkbox"
+              name="showItemContents"
+              id="showItemContents"
+            />
+          </div>
+          {#if $itemUnderConstruction.surface.show_item_contents}
+            <div class="col-span-1">
+              <label
+                for="showDetailedItems"
+                class="block text-sm font-medium text-gray-300"
+                >Show Detailed Items</label
+              >
+              <input
+                bind:checked={$itemUnderConstruction.surface
+                  .show_detailed_items}
+                type="checkbox"
+                name="showDetailedItems"
+                id="showDetailedItems"
+              />
+            </div>
+            <div class="col-span-2">
+              <label
+                for="showItemLimit"
+                class="block text-sm font-medium text-gray-300"
+                >Show Item Limit</label
+              >
+              <input
+                bind:value={$itemUnderConstruction.surface.show_item_limit}
+                type="number"
+                min="0"
+                max="1000000000000000"
+                name="showItemLimit"
+                id="showItemLimit"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          {/if}
+          <div class="col-span-2">
+            <label
+              for="itemCountLimit"
+              class="block text-sm font-medium text-gray-300"
+              >Item Count Limit</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.surface.item_count_limit}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemCountLimit"
+              id="itemCountLimit"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-2">
+            <label
+              for="itemWeightLimit"
+              class="block text-sm font-medium text-gray-300"
+              >Item Weight Limit</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.surface.item_weight_limit}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="itemWeightLimit"
+              id="itemWeightLimit"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div class="col-span-1">
+            <label
+              for="canHoldCharacters"
+              class="block text-sm font-medium text-gray-300"
+              >Can Hold Characters</label
+            >
+            <input
+              bind:checked={$itemUnderConstruction.surface.can_hold_characters}
+              type="checkbox"
+              name="canHoldCharacters"
+              id="canHoldCharacters"
+            />
+          </div>
+          {#if $itemUnderConstruction.surface.can_hold_characters}
+            <div class="col-span-2">
+              <label
+                for="characterLimit"
+                class="block text-sm font-medium text-gray-300"
+                >Character Limit</label
+              >
+              <input
+                bind:value={$itemUnderConstruction.surface.character_limit}
+                type="number"
+                min="0"
+                max="1000000000000000"
+                name="characterLimit"
+                id="characterLimit"
+                class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+              />
+            </div>
+          {/if}
+        {/if}
+
         {#if $itemUnderConstruction.flags.container}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Container Properties</h2>
@@ -717,102 +961,6 @@
               max="1000000000000000"
               name="containerWidth"
               id="containerWidth"
-              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
-          </div>
-        {/if}
-
-        {#if $itemUnderConstruction.flags.furniture}
-          <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Furniture Properties</h2>
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureHasExternalSurface"
-              class="block text-sm font-medium text-gray-300"
-              >Has external surface?</label
-            >
-            <input
-              bind:checked={$itemUnderConstruction.furniture
-                .has_external_surface}
-              type="checkbox"
-              name="furnitureHasExternalSurface"
-              id="furnitureHasExternalSurface"
-            />
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureExternalSurfaceCanHoldCharacters"
-              class="block text-sm font-medium text-gray-300"
-              >External surface can hold characters?</label
-            >
-            <input
-              bind:checked={$itemUnderConstruction.furniture
-                .external_surface_can_hold_characters}
-              type="checkbox"
-              name="furnitureExternalSurfaceCanHoldCharacters"
-              id="furnitureExternalSurfaceCanHoldCharacters"
-            />
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureExternalSurfaceSize"
-              class="block text-sm font-medium text-gray-300"
-              >External surface size</label
-            >
-            <input
-              bind:value={$itemUnderConstruction.furniture
-                .external_surface_size}
-              type="number"
-              min="0"
-              max="1000000000000000"
-              name="furnitureExternalSurfaceSize"
-              id="furnitureExternalSurfaceSize"
-              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureHasInternalSurface"
-              class="block text-sm font-medium text-gray-300"
-              >Has internal surface?</label
-            >
-            <input
-              bind:checked={$itemUnderConstruction.furniture
-                .has_internal_surface}
-              type="checkbox"
-              name="furnitureHasInternalSurface"
-              id="furnitureHasInternalSurface"
-            />
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureInternalSurfaceCanHoldCharacters"
-              class="block text-sm font-medium text-gray-300"
-              >Internal surface can hold characters?</label
-            >
-            <input
-              bind:checked={$itemUnderConstruction.furniture
-                .internal_surface_can_hold_characters}
-              type="checkbox"
-              name="furnitureInternalSurfaceCanHoldCharacters"
-              id="furnitureInternalSurfaceCanHoldCharacters"
-            />
-          </div>
-          <div class="col-span-2">
-            <label
-              for="furnitureInternalSurfaceSize"
-              class="block text-sm font-medium text-gray-300"
-              >Internal surface size</label
-            >
-            <input
-              bind:value={$itemUnderConstruction.furniture
-                .internal_surface_size}
-              type="number"
-              min="0"
-              max="1000000000000000"
-              name="furnitureInternalSurfaceSize"
-              id="furnitureInternalSurfaceSize"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -978,7 +1126,7 @@
           </div>
         {/if}
 
-        {#if allowRelativePlacement && Object.values(otherItemsForRelativePlacement).length > 0}
+        {#if allowRelativePlacement && Object.values(otherItemsForRelativePlacement).length > 0 && $itemUnderConstruction.location.relative_to_item}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">
               Placement Relative to Other Item
@@ -1018,10 +1166,15 @@
               name="relationToOtherItem"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.furniture && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].furniture.has_external_surface}
+              {#if $itemUnderConstruction.location.relation == ""}
+                <option value="" selected disabled
+                  >Select Relative Location</option
+                >
+              {/if}
+              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_surface}
                 <option value="on">on</option>
               {/if}
-              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && (otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.container || (otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.furniture && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].furniture.has_internal_surface))}
+              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.container}
                 <option value="in">in</option>
               {/if}
             </select>

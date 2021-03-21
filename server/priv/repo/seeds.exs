@@ -2119,13 +2119,16 @@ Mud.Engine.Item.create(%{
     hidden: true,
     look: true,
     scenery: true,
-    furniture: true
+    has_surface: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  furniture: %{
-    has_external_surface: true,
-    external_surface_can_hold_characters: true,
-    external_surface_size: 6
+  surface: %{
+    can_hold_characters: true,
+    character_limit: 200,
+    item_count_limit: 200,
+    item_weight_limit: 0,
+    show_item_contents: true,
+    show_item_limit: 5
   }
 })
 
@@ -2139,13 +2142,18 @@ Mud.Engine.Item.create(%{
   flags: %{
     look: true,
     furniture: true,
-    scenery: true
+    scenery: true,
+    has_surface: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  furniture: %{
-    has_external_surface: true,
-    external_surface_can_hold_characters: true,
-    external_surface_size: 6
+  furniture: %{},
+  surface: %{
+    can_hold_characters: true,
+    character_limit: 4,
+    item_count_limit: 20,
+    item_weight_limit: 0,
+    show_item_contents: true,
+    show_item_limit: 5
   }
 })
 
@@ -2159,13 +2167,18 @@ Mud.Engine.Item.create(%{
   flags: %{
     look: true,
     furniture: true,
-    scenery: true
+    scenery: true,
+    has_surface: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  furniture: %{
-    has_external_surface: true,
-    external_surface_can_hold_characters: true,
-    external_surface_size: 6
+  furniture: %{},
+  surface: %{
+    can_hold_characters: true,
+    character_limit: 4,
+    item_count_limit: 20,
+    item_weight_limit: 0,
+    show_item_contents: true,
+    show_item_limit: 5
   }
 })
 
@@ -2179,13 +2192,18 @@ Mud.Engine.Item.create(%{
   flags: %{
     look: true,
     furniture: true,
-    scenery: true
+    scenery: true,
+    has_surface: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  furniture: %{
-    has_external_surface: true,
-    external_surface_can_hold_characters: true,
-    external_surface_size: 6
+  furniture: %{},
+  surface: %{
+    can_hold_characters: true,
+    character_limit: 4,
+    item_count_limit: 20,
+    item_weight_limit: 0,
+    show_item_contents: true,
+    show_item_limit: 5
   }
 })
 
@@ -2199,13 +2217,18 @@ Mud.Engine.Item.create(%{
   flags: %{
     look: true,
     furniture: true,
-    scenery: true
+    scenery: true,
+    has_surface: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  furniture: %{
-    has_external_surface: true,
-    external_surface_can_hold_characters: true,
-    external_surface_size: 6
+  furniture: %{},
+  surface: %{
+    can_hold_characters: true,
+    character_limit: 4,
+    item_count_limit: 20,
+    item_weight_limit: 0,
+    show_item_contents: true,
+    show_item_limit: 5
   }
 })
 

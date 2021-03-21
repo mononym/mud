@@ -15,6 +15,7 @@ export interface ItemFlagsInterface {
   coin: boolean;
   container: boolean;
   furniture: boolean;
+  is_equipment: boolean;
   gem: boolean;
   gem_pouch: boolean;
   hidden: boolean;
@@ -26,6 +27,8 @@ export interface ItemFlagsInterface {
   shop_display: boolean;
   weapon: boolean;
   wearable: boolean;
+  has_surface: boolean;
+  has_pocket: boolean;
 }
 
 const state: ItemFlagsInterface = {
@@ -56,6 +59,9 @@ const state: ItemFlagsInterface = {
   shop_display: false,
   weapon: false,
   wearable: false,
+  is_equipment: false,
+  has_surface: false,
+  has_pocket: false,
 };
 
 export default state;

@@ -51,17 +51,31 @@ defmodule Mud.Engine.Message do
     %{output | segments: [%Segment{text: text, type: type} | output.segments]}
   end
 
-  @spec drop_last_text(Mud.Engine.Message.StoryOutput.t()) ::
-          Mud.Engine.Message.StoryOutput.t()
   def replace_second_to_last_text(output = %StoryOutput{}, text, type) do
     # Only do the replacement if there are 3 or more entries
     if length(output.segments) > 2 do
       %{
         output
         | segments:
-            List.insert_at(output.segments, length(output.segments) - 2, %Segment{
+            List.insert_at(output.segments, 1, %Segment{
               text: text,
               type: type
+            })
+      }
+    else
+      output
+    end
+  end
+
+  def maybe_add_oxford_comma(output = %StoryOutput{}) do
+    # Only do the replacement if there are 3 or more entries
+    if length(output.segments) > 2 and Enum.at(output.segments, 1).text == ", " do
+      %{
+        output
+        | segments:
+            List.replace_at(output.segments, 1, %Segment{
+              text: ", and ",
+              type: "base"
             })
       }
     else

@@ -11,6 +11,7 @@ defmodule MudWeb.ItemView do
     ItemDescriptionView,
     ItemFurnitureView,
     ItemCoinView,
+    ItemSurfaceView,
     ItemWearableView
   }
 
@@ -38,6 +39,7 @@ defmodule MudWeb.ItemView do
         coin: render_one(item.coin, ItemCoinView, "item_coin.json"),
         gem: render_one(item.gem, ItemGemView, "item_gem.json"),
         furniture: render_one(item.furniture, ItemFurnitureView, "item_furniture.json"),
+        surface: render_one(item.surface, ItemSurfaceView, "item_surface.json"),
         wearable: render_one(item.wearable, ItemWearableView, "item_wearable.json")
       }
     end

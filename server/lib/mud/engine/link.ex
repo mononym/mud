@@ -11,7 +11,7 @@ defmodule Mud.Engine.Link do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.{Area}
+  alias Mud.Engine.{Area, Util}
   alias Mud.Engine.Link.{Closable, Flags}
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -260,10 +260,12 @@ defmodule Mud.Engine.Link do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, :duplicate_link | :unknown}
   def create(attrs \\ %{}) do
+    normalized_attrs = Util.map_keys_to_atoms(attrs)
+
     Repo.transaction(fn ->
       insert_result =
         %__MODULE__{}
-        |> __MODULE__.changeset(attrs)
+        |> __MODULE__.changeset(normalized_attrs)
         |> Repo.insert()
 
       IO.inspect(insert_result, label: :insert_result)
@@ -271,8 +273,8 @@ defmodule Mud.Engine.Link do
       case insert_result do
         {:ok, link} ->
           link
-          |> setup_required_component(attrs, "flags", Flags)
-          |> maybe_setup_optional_component(attrs, "closable", Closable)
+          |> setup_required_component(normalized_attrs, :flags, Flags)
+          |> maybe_setup_optional_component(normalized_attrs, :closable, Closable)
           |> preload()
 
         {:error, changeset} ->
@@ -288,14 +290,14 @@ defmodule Mud.Engine.Link do
   end
 
   defp setup_required_component(link, attrs, key, callback) do
-    callback.create(Map.put(Map.get(attrs, key, %{}), "link_id", link.id))
+    callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
 
     link
   end
 
   defp maybe_setup_optional_component(link, attrs, key, callback) do
     if Map.has_key?(attrs, key) do
-      callback.create(Map.put(Map.get(attrs, key, %{}), "link_id", link.id))
+      callback.create(Map.put(Map.get(attrs, key, %{}), :link_id, link.id))
 
       link
     else
