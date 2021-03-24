@@ -2,8 +2,8 @@
   import { AuthStore } from "../stores/auth";
   import { scale } from "svelte/transition";
   import { cubicIn, cubicOut } from "svelte/easing";
-  import { push } from "svelte-spa-router";
   import active from "svelte-spa-router/active";
+  import { location, push } from "svelte-spa-router";
 
   let email = "";
   let menuOpen = false;
@@ -24,6 +24,8 @@
     };
 
     function update({ enabled }) {
+      console.log("update");
+      console.log($location);
       if (enabled) {
         window.addEventListener("click", handleOutsideClick);
       } else {
@@ -43,27 +45,28 @@
 
 <nav class="bg-gray-800 flex-shrink">
   <div class="mx-auto px-2">
-    <div class="flex items-center justify-between h-16">
+    <div class="flex items-center justify-between">
       <div class="flex">
         <div class="flex items-baseline space-x-4">
-          <a
-            href="#/dashboard"
-            use:active={{
-              path: "/dashboard",
-              className: "text-black bg-accent",
-              inactiveClassName: "bg-accent-dark text-black hover:bg-accent",
-            }}
-            class="px-3 py-2 rounded-md text-sm font-medium">Dashboard</a
+
+          <button
+            on:click={() => push("/dashboard")}
+            class="px-3 py-2 text-sm font-medium {$location.includes(
+              '/dashboard'
+            )
+              ? 'text-white border-accent border-b-2 focus:outline-none'
+              : 'text-gray-300 hover:text-white hover:bg-gray-700'} "
+            >Dashboard</button
           >
 
-          <a
-            href="#/build/world"
-            use:active={{
-              path: "/build/*",
-              className: "text-black bg-accent",
-              inactiveClassName: "bg-accent-dark text-black hover:bg-accent",
-            }}
-            class="px-3 py-2 rounded-md text-sm font-medium">Build</a
+          <button
+            on:click={() => push("/build/world")}
+            class="px-3 py-2 text-sm font-medium {$location.includes(
+              '/build/world'
+            )
+              ? 'text-white border-accent border-b-2 focus:outline-none'
+              : 'text-gray-300 hover:text-white hover:bg-gray-700'} "
+            >Build</button
           >
         </div>
       </div>

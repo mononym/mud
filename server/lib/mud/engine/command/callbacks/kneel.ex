@@ -22,7 +22,7 @@ defmodule Mud.Engine.Command.Kneel do
   alias Mud.Engine.Message
   alias Mud.Engine.Search
   alias Mud.Engine.Util
-  alias Mud.Engine.Item.Furniture
+  alias Mud.Engine.Item.Surface
 
   require Logger
 
@@ -72,7 +72,7 @@ defmodule Mud.Engine.Command.Kneel do
     ast = context.command.ast
 
     area_results =
-      Search.find_furniture_in_area(
+      Search.find_matches_on_ground(
         context.character.area_id,
         ast.thing.input,
         context.character.settings.commands.search_mode
@@ -104,7 +104,7 @@ defmodule Mud.Engine.Command.Kneel do
         context,
         Message.new_story_output(
           context.character.id,
-          "You must stand before you can move to another piece of furniture.",
+          "You must stand before you can move elsewhere.",
           "system_info"
         )
       )
@@ -124,9 +124,9 @@ defmodule Mud.Engine.Command.Kneel do
          relative_place,
          other_matches \\ []
        ) do
-    furniture_slots_used = Furniture.slots_used(thing.match.id, context.character.id)
+    furniture_slots_used = Surface.character_slots_used(thing.match.id, context.character.id)
 
-    if furniture_slots_used + 1 > thing.match.furniture.external_surface_size do
+    if furniture_slots_used + 1 > thing.match.surface.character_limit do
       CallbackUtil.furniture_full_error(context, thing.match, relative_place)
     else
       original_status = context.character.status
