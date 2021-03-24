@@ -189,7 +189,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         handle_search_results(context, {:ok, sorted_results})
 
@@ -212,7 +212,7 @@ defmodule Mud.Engine.Command.Stow do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            stow_item(context, Enum.at(matches, which - 1))
+            stow_item(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -288,7 +288,7 @@ defmodule Mud.Engine.Command.Stow do
 
         case area_results do
           {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
           _ ->
             # look for place on ground on in hands or worn
@@ -325,7 +325,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
       _ ->
         stow_item_in_hands(context)
@@ -339,7 +339,7 @@ defmodule Mud.Engine.Command.Stow do
       {:ok, matches} ->
         # IO.inspect("found matches")
         # IO.inspect(matches)
-        [match | matches] = CallbackUtil.sort_matches(matches)
+        [match | matches] = CallbackUtil.sort_matches(matches, false)
         # IO.inspect([match | matches])
         location = Location.update_stow_home!(original_item.location, match.match.id)
 

@@ -353,11 +353,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:put, :thing_where, :thing_personal],
           matches: [~r/^\d$/],
-          key: :thing_number,
+          key: :thing_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:thing_number, :put, :thing_personal],
+          must_follow: [:thing_which, :put, :thing_personal],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
@@ -380,11 +380,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:place_personal, :place_where],
           matches: [~r/^\d$/],
-          key: :place_number,
+          key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:place_number, :place_where, :place_personal],
+          must_follow: [:place_which, :place_where, :place_personal],
           matches: [~r/.*/],
           key: :place,
           greedy: true,
@@ -546,11 +546,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:path, :thing],
           matches: [~r/^\d$/],
-          key: :place_number,
+          key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:path, :thing, :place_number],
+          must_follow: [:path, :thing, :place_which],
           matches: [~r/.*/],
           key: :place,
           transformer: &join_with_space_downcase/1
@@ -992,7 +992,7 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:look],
-          matches: ["@", "at", "in", ">"],
+          matches: ["@", "at", "in", "on"],
           key: :thing_where,
           greedy: true,
           transformer: &List.first/1
@@ -1007,11 +1007,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:look, :thing_where, :thing_personal],
           matches: [~r/^\d$/],
-          key: :thing_number,
+          key: :thing_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:thing_number, :look, :thing_personal, :thing_where],
+          must_follow: [:thing_which, :look, :thing_personal, :thing_where],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
@@ -1034,11 +1034,11 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:place_personal, :place_where],
           matches: [~r/^\d$/],
-          key: :place_number,
+          key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:place_number, :place_where, :place_personal],
+          must_follow: [:place_which, :place_where, :place_personal],
           matches: [~r/.*/],
           key: :place,
           greedy: true,

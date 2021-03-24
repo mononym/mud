@@ -132,7 +132,12 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
+              Util.append_assumption_text(
+                self_msg,
+                link,
+                other_links,
+                context.character.settings.commands.multiple_matches_mode
+              )
             else
               self_msg
             end
@@ -161,7 +166,12 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
+              Util.append_assumption_text(
+                self_msg,
+                link,
+                other_links,
+                context.character.settings.commands.multiple_matches_mode
+              )
             else
               self_msg
             end
@@ -187,7 +197,12 @@ defmodule Mud.Engine.Command.Open do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(self_msg, link, other_links, context.character.settings.commands.multiple_matches_mode)
+              Util.append_assumption_text(
+                self_msg,
+                link,
+                other_links,
+                context.character.settings.commands.multiple_matches_mode
+              )
             else
               self_msg
             end
@@ -237,7 +252,7 @@ defmodule Mud.Engine.Command.Open do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -258,7 +273,7 @@ defmodule Mud.Engine.Command.Open do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            open_item(context, Enum.at(matches, which - 1))
+            open_item(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -301,7 +316,7 @@ defmodule Mud.Engine.Command.Open do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
       _ ->
         open_item_with_personal_place(context)
@@ -309,13 +324,13 @@ defmodule Mud.Engine.Command.Open do
   end
 
   defp open_item_with_personal_place(context) do
-    # look for place on ground on in hands or worn
     results =
       Search.find_matches_relative_to_place_in_inventory(
         context.character.id,
         context.command.ast.thing,
         context.command.ast.place,
-        context.character.settings.commands.search_mode
+        context.character.settings.commands.search_mode,
+        false
       )
 
     handle_search_results(context, results)
@@ -336,7 +351,7 @@ defmodule Mud.Engine.Command.Open do
 
         case area_results do
           {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
           _ ->
             open_item_in_inventory(context)
@@ -394,7 +409,12 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, item, other_items, context.character.settings.commands.multiple_matches_mode)
+                Util.append_assumption_text(
+                  self_msg,
+                  item,
+                  other_items,
+                  context.character.settings.commands.multiple_matches_mode
+                )
               else
                 self_msg
               end
@@ -437,7 +457,12 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, thing.match, other_items, context.character.settings.commands.multiple_matches_mode)
+                Util.append_assumption_text(
+                  self_msg,
+                  thing.match,
+                  other_items,
+                  context.character.settings.commands.multiple_matches_mode
+                )
               else
                 self_msg
               end
@@ -459,7 +484,12 @@ defmodule Mud.Engine.Command.Open do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(self_msg, thing.match, other_items, context.character.settings.commands.multiple_matches_mode)
+                Util.append_assumption_text(
+                  self_msg,
+                  thing.match,
+                  other_items,
+                  context.character.settings.commands.multiple_matches_mode
+                )
               else
                 self_msg
               end

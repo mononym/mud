@@ -29,6 +29,14 @@ defmodule Mud.Engine.Item.Surface do
     field(:show_item_limit, :integer, default: 1)
   end
 
+  @spec changeset(
+          {map, any}
+          | %{
+              :__struct__ => atom | %{:__changeset__ => any, optional(any) => any},
+              optional(any) => any
+            },
+          :invalid | %{optional(:__struct__) => none, optional(atom | binary) => any}
+        ) :: Ecto.Changeset.t()
   @doc false
   def changeset(surface, attrs) do
     surface
@@ -85,5 +93,21 @@ defmodule Mud.Engine.Item.Surface do
       where: surface.id == ^id
     )
     |> Repo.one()
+  end
+
+  def character_slots_used(item_id, character_id) do
+    characters =
+      Mud.Engine.Character.Status.list_all_relative_to_item(item_id)
+      |> Enum.filter(&(&1.character_id != character_id))
+
+    length(characters)
+
+    # Enum.reduce(characters, 0, fn char, slots_used ->
+    #   if char.position == "lying" do
+    #     slots_used + 3
+    #   else
+    #     slots_used + 1
+    #   end
+    # end)
   end
 end

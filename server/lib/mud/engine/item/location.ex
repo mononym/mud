@@ -84,6 +84,15 @@ defmodule Mud.Engine.Item.Location do
     |> Repo.update()
   end
 
+  @spec get_by_item_id!(item_id :: binary) :: %__MODULE__{}
+  def get_by_item_id!(item_id) when is_binary(item_id) do
+    from(
+      location in __MODULE__,
+      where: location.item_id == ^item_id
+    )
+    |> Repo.one!()
+  end
+
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
@@ -111,7 +120,8 @@ defmodule Mud.Engine.Item.Location do
       relative_item_id: item_id,
       relative_to_item: true,
       relation: relation,
-      worn_on_character: false
+      worn_on_character: false,
+      moved_at: DateTime.utc_now()
     })
   end
 
@@ -124,7 +134,8 @@ defmodule Mud.Engine.Item.Location do
       character_id: character_id,
       relative_item_id: nil,
       relative_to_item: false,
-      worn_on_character: false
+      worn_on_character: false,
+      moved_at: DateTime.utc_now()
     })
   end
 
@@ -136,7 +147,8 @@ defmodule Mud.Engine.Item.Location do
       character_id: nil,
       relative_item_id: nil,
       relative_to_item: false,
-      worn_on_character: false
+      worn_on_character: false,
+      moved_at: DateTime.utc_now()
     })
   end
 
@@ -154,7 +166,8 @@ defmodule Mud.Engine.Item.Location do
       character_id: character_id,
       relative_item_id: nil,
       relative_to_item: false,
-      worn_on_character: true
+      worn_on_character: true,
+      moved_at: DateTime.utc_now()
     })
   end
 end

@@ -21,7 +21,7 @@ defmodule Mud.Engine.Command.Sit do
   alias Mud.Engine.Search
   alias Mud.Engine.Message
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter}
-  alias Mud.Engine.Item.Furniture
+  alias Mud.Engine.Item.Surface
 
   require Logger
 
@@ -71,7 +71,7 @@ defmodule Mud.Engine.Command.Sit do
     ast = context.command.ast
 
     area_results =
-      Search.find_furniture_in_area(
+      Search.find_matches_on_ground(
         context.character.area_id,
         ast.thing.input,
         context.character.settings.commands.search_mode
@@ -79,6 +79,8 @@ defmodule Mud.Engine.Command.Sit do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
+        area_matches = CallbackUtil.sort_matches(area_matches, true)
+
         maybe_sit_relative_to_item(
           context,
           List.first(area_matches),
@@ -97,23 +99,42 @@ defmodule Mud.Engine.Command.Sit do
          relative_place,
          other_matches \\ []
        ) do
-    if context.character.status.position_relative_to_item and
-         context.character.status.item_id != thing.match.id do
-      Context.append_message(
-        context,
-        Message.new_story_output(
-          context.character.id,
-          "You must stand before you can move to another piece of furniture.",
-          "system_info"
+    cond do
+      thing.match.flags.has_surface and thing.match.surface.can_hold_characters and
+          not context.character.status.position_relative_to_item ->
+        sit_relative_to_item(
+          context,
+          thing,
+          relative_place,
+          other_matches
         )
-      )
-    else
-      sit_relative_to_item(
-        context,
-        thing,
-        relative_place,
-        other_matches
-      )
+
+      thing.match.flags.has_surface and thing.match.surface.can_hold_characters and
+        context.character.status.position_relative_to_item and
+          context.character.status.item_id != thing.match.id ->
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "You must stand before you can move to another piece of furniture.",
+            "system_info"
+          )
+        )
+
+      not thing.match.flags.has_surface or
+          (thing.match.flags.has_surface and not thing.match.surface.can_hold_characters) ->
+        message =
+          Message.new_story_output(context.character.id)
+          |> Message.append_text(
+            Util.upcase_first(thing.match.description.short),
+            Util.get_item_type(thing.match)
+          )
+          |> Message.append_text(" cannot be sat on.", "system_alert")
+
+        Context.append_message(
+          context,
+          message
+        )
     end
   end
 
@@ -123,9 +144,9 @@ defmodule Mud.Engine.Command.Sit do
          relative_place,
          other_matches \\ []
        ) do
-    furniture_slots_used = Furniture.slots_used(thing.match.id, context.character.id)
+    furniture_slots_used = Surface.character_slots_used(thing.match.id, context.character.id)
 
-    if furniture_slots_used + 1 > thing.match.furniture.external_surface_size do
+    if furniture_slots_used + 1 > thing.match.surface.character_limit do
       CallbackUtil.furniture_full_error(context, thing.match, relative_place)
     else
       original_status = context.character.status

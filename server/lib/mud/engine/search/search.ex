@@ -3,7 +3,7 @@ defmodule Mud.Engine.Search do
   Utilities to help with searching during autocomplete.
   """
 
-  alias Mud.Engine.{Character, Item, Link}
+  alias Mud.Engine.{Character, Item, Link, ItemSearch}
   require Logger
 
   defmodule Match do
@@ -84,7 +84,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_inventory(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_inventory(character_id, search_string)
+    items = ItemSearch.search_inventory(character_id, search_string)
 
     case things_to_match(items) do
       [] ->
@@ -237,7 +237,30 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in worn items.
+  Find matches that are on a surface which are visible from the perspective of an Area.
+
+  Visible matches are item on the ground, or on surfaces all the way down to the item
+  """
+  @spec find_matches_on_visible_surfaces(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_on_visible_surfaces(area_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+    items = ItemSearch.search_on_visible_surfaces_in_area(area_id, search_string)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches on the ground of an area
   """
   @spec find_matches_on_ground(
           String.t(),
@@ -258,7 +281,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in worn items.
+  Find matches either on the ground or in worn items.
   """
   @spec find_matches_on_ground_or_worn_items(
           String.t(),

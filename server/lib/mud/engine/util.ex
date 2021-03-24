@@ -603,7 +603,7 @@ defmodule Mud.Engine.Util do
     # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
     # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
 
-    build_self_parent_string(message, item, parent_index, location, target_item)
+    build_parent_string(message, item, parent_index, location, target_item, "you")
   end
 
   def construct_stow_item_location_message_for_self(
@@ -621,7 +621,8 @@ defmodule Mud.Engine.Util do
     # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
     # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
 
-    origin_message = build_self_parent_string(message, original_item, parent_index, "from", true)
+    origin_message =
+      build_parent_string(message, original_item, parent_index, "from", true, "you")
 
     origin_message =
       Message.append_text(
@@ -639,12 +640,13 @@ defmodule Mud.Engine.Util do
         possible_parent.flags.container or possible_parent.id == stowed_item.id
       end)
 
-    build_self_parent_string(
+    build_parent_string(
       origin_message,
       outermost_item,
       stowed_parent_index,
       "in",
-      false
+      false,
+      "you"
     )
   end
 
@@ -785,14 +787,19 @@ defmodule Mud.Engine.Util do
 
   def construct_nested_item_location_message_for_others(
         character,
-        message,
+        original_message,
         item,
         path,
         item_in_area,
         location
       ) do
+    in_container =
+      Enum.any?(path, fn item_in_path ->
+        item_in_path.flags.container and not (item_in_path.id == item.id)
+      end)
+
     message =
-      message
+      original_message
       |> Message.append_text(
         item.description.short,
         get_item_type(item)
@@ -806,11 +813,13 @@ defmodule Mud.Engine.Util do
           "base"
         )
 
-      # if item isn't on ground but in area, it means the container it is in is somewhere in the area, adjust message
-      item_in_area ->
+      # if item isn't on ground but in the area and in a container, it means the container it is in is somewhere in the area, adjust message
+      item_in_area and in_container ->
         outermost_item =
           Enum.find(path, fn possible_parent ->
-            possible_parent.flags.container or possible_parent.id == item.id
+            (possible_parent.location.on_ground and
+               (possible_parent.flags.container or possible_parent.flags.has_surface)) or
+              possible_parent.id == item.id
           end)
 
         if outermost_item.location.on_ground do
@@ -838,7 +847,14 @@ defmodule Mud.Engine.Util do
           )
         end
 
-      item.location.relative_to_item and not item_in_area ->
+      # The item is on a visible surface somewhere and the full path should be described to everyone
+      item_in_area and not in_container ->
+        parent_index = build_item_index(path)
+        build_parent_string(original_message, item, parent_index, "on", true, character.name)
+
+      # If the item is relative to another item, but it is not in the area, assume it is on the character in their inventory
+      # It *SHOULD* be in a container
+      item.location.relative_to_item and in_container and not item_in_area ->
         outermost_item =
           Enum.find(path, fn possible_parent ->
             possible_parent.flags.container or possible_parent.id == item.id
@@ -882,12 +898,13 @@ defmodule Mud.Engine.Util do
     end
   end
 
-  defp build_self_parent_string(
+  defp build_parent_string(
          message,
          item,
          parent_index,
          location,
-         target_item
+         target_item,
+         who
        ) do
     cond do
       item.location.relative_to_item ->
@@ -900,28 +917,30 @@ defmodule Mud.Engine.Util do
           " #{location} ",
           "base"
         )
-        |> build_self_parent_string(
+        |> build_parent_string(
           parent_index[item.location.relative_item_id],
           parent_index,
           location,
-          false
+          false,
+          who
         )
 
-      item.location.on_ground ->
+      item.location.on_ground and target_item ->
         message
         |> Message.append_text(
           item.description.short,
           get_item_type(item)
         )
         |> Message.append_text(
-          " which #{
-            if target_item do
-              "was"
-            else
-              "is"
-            end
-          } on the ground",
+          " which was on the ground",
           "base"
+        )
+
+      item.location.on_ground and not target_item ->
+        message
+        |> Message.append_text(
+          item.description.short,
+          get_item_type(item)
         )
 
       item.location.worn_on_character ->
@@ -935,7 +954,7 @@ defmodule Mud.Engine.Util do
           "base"
         )
         |> Message.append_text(
-          " you",
+          " #{who}",
           "character"
         )
         |> Message.append_text(
@@ -960,7 +979,7 @@ defmodule Mud.Engine.Util do
           "base"
         )
         |> Message.append_text(
-          " you",
+          " #{who}",
           "character"
         )
         |> Message.append_text(

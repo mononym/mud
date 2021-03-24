@@ -225,6 +225,8 @@
     $itemUnderConstruction.location.on_ground ||
     $itemUnderConstruction.location.held_in_hand;
 
+  let customizeLongDescription = false
+
   function handleOtherItemChange() {
     // if other id is blank make sure it the rest of the flags are not set for it to be relative to an item
     // if other item id is not blank make sure flags are set for it to be relative
@@ -291,6 +293,21 @@
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
+
+        <div class="col-span-1">
+          <label
+            for="customizeLongDescription"
+            class="block text-sm font-medium text-gray-300"
+            >Customize Long Description</label
+          >
+          <input
+            bind:checked={customizeLongDescription}
+            type="checkbox"
+            name="customizeLongDescription"
+            id="customizeLongDescription"
+          />
+        </div>
+        {#if customizeLongDescription}
         <div class="col-span-9">
           <label
             for="itemLongDescription"
@@ -305,6 +322,7 @@
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
+        {/if}
         <div class="col-span-12">
           <h2 class="text-gray-300 text-center">Item Type (Pick One)</h2>
         </div>

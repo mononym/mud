@@ -19,6 +19,10 @@
     WorldBuilderStore.editItem({ ...item });
   }
 
+  function updateItemMovedAt(item) {
+    WorldBuilderStore.updateItemMovedAt(item);
+  }
+
   function promptForDeleteItem(item) {
     deleteMatchString = "delete";
     itemForDeleting = item;
@@ -84,6 +88,17 @@
               title="Edit"
             >
               <i class="fas fa-edit" />
+            </button>
+            <button
+              on:click|stopPropagation={updateItemMovedAt(item)}
+              class="{$view == 'edit'
+                ? 'cursor-not-allowed'
+                : 'hover:bg-gray-400 hover:text-white'} text-gray-200 bg-transparent border border-solid border-gray-400 active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 rounded outline-none focus:outline-none mr-1 mb-1"
+              type="button"
+              style="transition: all .15s ease"
+              title="Update Moved At"
+            >
+              <i class="fas fa-stopwatch" />
             </button>
             <button
               on:click|stopPropagation={promptForDeleteItem(item)}

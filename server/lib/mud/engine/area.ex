@@ -5,6 +5,8 @@ defmodule Mud.Engine.Area do
   alias Mud.Engine.{Character, CharactersAreas, Link, Item, Message, Shop}
   alias Mud.Engine.Message.StoryOutput
   alias Mud.Engine
+  alias Mud.Engine.Command.CallbackUtil
+  alias Mud.Engine.ItemUtil
   alias Mud.Engine.Area.{Flags}
   import Ecto.Query
   require Logger
@@ -431,29 +433,30 @@ defmodule Mud.Engine.Area do
     # Grab all the things of interest.
     things_of_interest =
       area.id
-      |> Item.list_scenery_in_area_and_nested_visible_items()
+      |> Item.list_scenery_in_area()
       # Hidden scenery does not show up when looking at the area
       |> Enum.filter(&(&1.flags.hidden != true))
+      |> CallbackUtil.sort_items(true)
 
-    grouped_toi = Enum.group_by(things_of_interest, fn item -> item.location.on_ground end)
+    # grouped_toi = Enum.group_by(things_of_interest, fn item -> item.location.on_ground end)
 
-    if grouped_toi[true] == nil do
+    if things_of_interest == [] do
       story_output
     else
       story_output = Message.append_text(story_output, "Things of Interest: ", "toi_label")
 
-      root_items = grouped_toi[true] || []
-      nested_items = grouped_toi[false] || []
-      child_index = build_child_index(nested_items)
-      item_index = build_item_index(things_of_interest)
+      # root_items = grouped_toi[true] || []
+      # nested_items = grouped_toi[false] || []
+      # child_index = ItemUtil.build_child_index(nested_items)
+      # item_index = ItemUtil.build_item_index(things_of_interest)
 
-      root_items
+      things_of_interest
       |> Enum.reduce(
         story_output,
         fn item, message ->
           message
-          |> build_toi_item_description(item, child_index, item_index)
-          |> Message.append_text(", ", "base")
+          |> ItemUtil.build_item_description(item)
+          |> Message.append_text("; ", "base")
         end
       )
       |> Message.drop_last_text()
@@ -461,82 +464,12 @@ defmodule Mud.Engine.Area do
     end
   end
 
-  # This is a surface which is marked to show contents, so have to do some checking here as the text could be more
-  # complex
-  defp build_toi_item_description(
-         message,
-         item = %{flags: %{has_surface: true}, surface: %{show_item_contents: true}},
-         child_index,
-         item_index
-       ) do
-    # First thing first, append the description of the item
-    message =
-      if item.location.on_ground or
-           item_index[item.location.relative_item_id].surface.show_detailed_items == false do
-        Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
-      else
-        Message.append_text(message, item.description.long, Engine.Util.get_item_type(item))
-      end
-
-    # If the item being currently build up has children enter this logic, because we need more than a single item
-    # description.
-    if Map.has_key?(child_index, item.id) do
-      message = Message.append_text(message, " on which sits ", "base")
-
-      # Pull out the actual children to display, and then also flag whether or not there were too many
-      {children, too_many_children_to_display} =
-        if length(child_index[item.id]) > item.surface.item_count_limit do
-          {Enum.take(child_index[item.id], item.surface.item_count_limit), true}
-        else
-          {child_index[item.id], false}
-        end
-
-      message =
-        Enum.reduce(children, message, fn child, message ->
-          # For each child recurse so we can display things arbitrary levels deep
-          build_toi_item_description(message, child, child_index, item_index)
-          |> Message.append_text(", ", "base")
-        end)
-        |> Message.drop_last_text()
-
-      # If there were too many children to display for this level, make sure to call it out explicitly
-      if too_many_children_to_display do
-        message
-        |> Message.maybe_add_oxford_comma()
-        |> Message.append_text(" among other things", "base")
-      else
-        Message.maybe_add_oxford_comma(message)
-      end
-
-      # If there are no children the only thing that needs to happen has already happened.
-    else
-      message
-    end
-  end
-
-  # If there is no surface, or some other thing to display in any way other than the item description itself, just do
-  # the simple thing and add the item description
-  defp build_toi_item_description(message, item, _child_index, item_index) do
-    # If this is a child item rather than a root piece of scenery check to see if the parent wants the short or
-    # detailed description of the item
-    if item.location.on_ground or
-         item_index[item.location.relative_item_id].surface.show_detailed_items == false do
-      Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
-    else
-      Message.append_text(message, item.description.long, Engine.Util.get_item_type(item))
-    end
-  end
-
-  defp build_child_index(items) do
-    Enum.reduce(items, %{}, fn item, map ->
-      existing_children = Map.get(map, item.location.relative_item_id, [])
-      Map.put(map, item.location.relative_item_id, [item | existing_children])
-    end)
-  end
-
   defp maybe_build_on_ground(story_output, area) do
     Logger.debug("Building area on ground")
-    items_on_ground = Item.list_on_ground(area.id)
+
+    items_on_ground =
+      Item.list_on_ground(area.id)
+      |> CallbackUtil.sort_items(true)
 
     if items_on_ground == [] do
       story_output
@@ -549,7 +482,7 @@ defmodule Mud.Engine.Area do
         fn item, message ->
           message
           |> Message.append_text(item.description.short, Engine.Util.get_item_type(item))
-          |> Message.append_text(", ", "base")
+          |> Message.append_text("; ", "base")
         end
       )
       |> Message.drop_last_text()
@@ -579,7 +512,7 @@ defmodule Mud.Engine.Area do
         fn character, message ->
           message
           |> Message.append_text(character.name, "character")
-          |> Message.append_text(", ", "base")
+          |> Message.append_text("; ", "base")
         end
       )
       |> Message.drop_last_text()
@@ -589,7 +522,10 @@ defmodule Mud.Engine.Area do
 
   defp maybe_build_exits(story_output, area) do
     Logger.debug("Building area exits")
-    links = Mud.Engine.Link.list_obvious_exits_in_area(area.id)
+
+    links =
+      Mud.Engine.Link.list_obvious_exits_in_area(area.id)
+      |> Enum.sort(&(&1.short_description <= &2.short_description))
 
     if links == [] do
       story_output
@@ -615,15 +551,11 @@ defmodule Mud.Engine.Area do
 
           message
           |> Message.append_text(desc, Engine.Util.get_link_type(link))
-          |> Message.append_text(", ", "base")
+          |> Message.append_text("; ", "base")
         end
       )
       |> Message.drop_last_text()
       |> Message.append_text("\n", "base")
     end
-  end
-
-  defp build_item_index(parents) do
-    Enum.reduce(parents, %{}, fn item, map -> Map.put(map, item.id, item) end)
   end
 end

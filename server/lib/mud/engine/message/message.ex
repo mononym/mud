@@ -69,12 +69,12 @@ defmodule Mud.Engine.Message do
 
   def maybe_add_oxford_comma(output = %StoryOutput{}) do
     # Only do the replacement if there are 3 or more entries
-    if length(output.segments) > 2 and Enum.at(output.segments, 1).text == ", " do
+    if length(output.segments) > 2 and Enum.at(output.segments, 1).text in [", ", "; "] do
       %{
         output
         | segments:
             List.replace_at(output.segments, 1, %Segment{
-              text: ", and ",
+              text: "#{String.first(Enum.at(output.segments, 1).text)} and ",
               type: "base"
             })
       }

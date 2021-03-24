@@ -118,7 +118,7 @@ defmodule Mud.Engine.Command.Close do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -139,7 +139,7 @@ defmodule Mud.Engine.Command.Close do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            close_item(context, Enum.at(matches, which - 1))
+            close_item(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -182,7 +182,7 @@ defmodule Mud.Engine.Command.Close do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
       _ ->
         close_item_with_personal_place(context)
@@ -217,7 +217,7 @@ defmodule Mud.Engine.Command.Close do
 
         case area_results do
           {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
 
           _ ->
             close_item_in_inventory(context)

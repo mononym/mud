@@ -32,6 +32,7 @@ import {
   updateItem,
   deleteItem as delItem,
   loadItemsForArea as loadItems,
+  updateItemMovedAt as updateMovedAt,
 } from "../../api/server";
 import { AreasStore } from "../../stores/areas";
 import { MapsStore } from "../../stores/maps";
@@ -784,11 +785,31 @@ export function createWorldBuilderStore() {
     view.set("edit_item");
   }
 
+  async function updateItemMovedAt(item: ItemInterface) {
+    const res = (await updateMovedAt(item.id)).data;
+
+    itemsForSelectedArea.update(function (items) {
+      const itms = items.map(function (item) {
+        if (item.id == res.id) {
+          return res;
+        } else {
+          return item;
+        }
+      });
+      return itms;
+    });
+  }
+
   async function saveItemUnderConstructionAsAreaItem() {
     itemUnderConstruction.update(function (item) {
       if (item.location.on_ground == true) {
         item.location.area_id = get(selectedArea).id;
       }
+
+      if (item.description.long == "") {
+        item.description.long = item.description.short;
+      }
+
       return item;
     });
 
@@ -1389,6 +1410,7 @@ export function createWorldBuilderStore() {
     createNewItem,
     saveItemUnderConstructionAsAreaItem,
     deleteItemForArea,
+    updateItemMovedAt,
     // Shops stuff
     shops,
     selectedShop,

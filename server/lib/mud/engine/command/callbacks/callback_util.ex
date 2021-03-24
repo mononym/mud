@@ -267,10 +267,9 @@ defmodule Mud.Engine.Command.CallbackUtil do
   Given that items can only have one "relative" place for items to be put in relation to them, this works simply.
   """
   def relative_location_from_item(item) do
-    # IO.inspect(item, label: :relative_location_from_item)
-
     cond do
       item.flags.container -> "in"
+      item.flags.has_surface -> "on"
     end
   end
 
@@ -311,8 +310,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
     unnest_place_path(place_path, [%{place | path: nil} | path])
   end
 
-  def sort_matches(matches) do
-    items = Enum.map(matches, & &1.match)
+  def sort_items(items, oldest_move_first) do
     ancestors = Item.list_all_parents(items)
 
     # create ancestor tree index
@@ -380,13 +378,22 @@ defmodule Mud.Engine.Command.CallbackUtil do
             # both on the same root layer, so can go by when they were last moved
             Enum.find_index(roots, &(&1 == parent_index[item1.id])) ==
                 Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
-              item1.location.moved_at <= item2.location.moved_at
+              if oldest_move_first do
+                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
+              else
+                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+              end
           end
 
+        # both items are at the same layer, which is not the root
         layer_index[item1.id] == layer_index[item2.id] ->
           if item1.location.relative_item_id == item2.location.relative_item_id do
             # same layer same parent go by own sort order
-            item1.location.moved_at <= item2.location.moved_at
+            if oldest_move_first do
+              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
+            else
+              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+            end
           else
             # same layer different parents go by parents sort order
             parent_move_index[item1.location.relative_item_id] <=
@@ -394,7 +401,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
           end
 
         # different layers go by layer order
-        layer_index[item1.id] < layer_index[item2.id] ->
+        layer_index[item1.id] <= layer_index[item2.id] ->
           true
 
         # different layers go by layer order
@@ -402,6 +409,11 @@ defmodule Mud.Engine.Command.CallbackUtil do
           false
       end
     end)
+  end
+
+  def sort_matches(matches, oldest_move_first) do
+    Enum.map(matches, & &1.match)
+    |> sort_items(oldest_move_first)
     |> Mud.Engine.Search.things_to_match()
   end
 

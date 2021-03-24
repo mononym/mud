@@ -337,6 +337,14 @@ export async function updateItem(
   ));
 }
 
+export async function updateItemMovedAt(
+  id: string
+): Promise<AxiosResponse<ItemInterface>> {
+  return await (<Promise<AxiosResponse<ItemInterface>>>(
+    Api.post("/items/update_moved_at/" + id, {})
+  ));
+}
+
 export async function deleteItem(
   itemId: string
 ): Promise<AxiosResponse<string>> {

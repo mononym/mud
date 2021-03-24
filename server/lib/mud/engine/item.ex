@@ -221,7 +221,6 @@ defmodule Mud.Engine.Item do
     end
   end
 
-  @spec update!(String.t(), map()) :: %__MODULE__{}
   def update!(item_id, attrs) when is_binary(item_id) do
     keywords =
       attrs
@@ -391,6 +390,34 @@ defmodule Mud.Engine.Item do
     |> preload()
   end
 
+  def list_immediate_children_with_relationship(items, relationship)
+
+  def list_immediate_children_with_relationship([], _relationship) do
+    []
+  end
+
+  def list_immediate_children_with_relationship(items, relationship) do
+    items
+    |> items_to_ids()
+    |> list_all_immediate_children_with_relationship_query(relationship)
+    |> Repo.all()
+    |> preload()
+  end
+
+  @doc """
+  Given one or more items, return their children, and their children's children, all the way down as long as every item
+  in the chain has a surface and the children are on said surface, or is itself a "leaf" node in which case no
+  surface is required.
+  """
+  def list_nested_surface_children(items) do
+    items
+    |> items_to_ids()
+    |> recursive_surface_child_query()
+    |> Repo.all()
+    |> preload()
+    |> Enum.sort_by(& &1.location.moved_at)
+  end
+
   @doc """
   Given one or more items, return all of their children and optionally them
   """
@@ -448,7 +475,7 @@ defmodule Mud.Engine.Item do
   @spec list_on_ground(id) :: [%__MODULE__{}]
   def list_on_ground(area_id) do
     from([location: location] in items_on_ground_query(area_id),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -460,41 +487,7 @@ defmodule Mud.Engine.Item do
   @spec list_in_area(id) :: [%__MODULE__{}]
   def list_in_area(area_id) do
     from([location: location] in all_in_area_query(area_id),
-      order_by: location.moved_at
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  List all items in an Area, those on the ground and scenery included.
-  """
-  @spec list_visible_in_area(id) :: [%__MODULE__{}]
-  def list_visible_in_area(area_id) do
-    from([flags: flags, location: location] in all_in_area_query(area_id),
-      where: flags.hidden == false,
-      order_by: location.moved_at
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  List all furniture in an Area.
-  """
-  @spec list_furniture_in_area(id) :: [%__MODULE__{}]
-  def list_furniture_in_area(area_id) do
-    furniture_in_area_query(area_id)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @spec list_visible_scenery_in_area(id) :: [%__MODULE__{}]
-  def list_visible_scenery_in_area(area_id) do
-    from(
-      item in __MODULE__,
-      where: item.area_id == ^area_id and item.is_scenery == true and item.is_hidden == false,
-      order_by: item.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -511,8 +504,6 @@ defmodule Mud.Engine.Item do
     item_index = build_item_index(everything_and_nested_items)
     # maps item id to the id of the parent
     parent_index = build_parent_index(everything_and_nested_items)
-
-    IO.inspect(everything_and_nested_items, label: :everything_and_nested_items)
 
     Enum.filter(everything_and_nested_items, fn item ->
       is_visible_item(item, item_index, parent_index)
@@ -674,7 +665,7 @@ defmodule Mud.Engine.Item do
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable and
           like(description.short, ^search_string),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -686,16 +677,6 @@ defmodule Mud.Engine.Item do
   @spec search_held(String.t(), String.t()) :: [%__MODULE__{}]
   def search_held(character_id, search_string) do
     search_held_query(character_id, search_string)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  All inventory items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_inventory(String.t(), String.t()) :: [%__MODULE__{}]
-  def search_inventory(character_id, search_string) do
-    search_inventory_query(character_id, search_string)
     |> Repo.all()
     |> preload()
   end
@@ -739,7 +720,7 @@ defmodule Mud.Engine.Item do
       where:
         location.character_id == ^character_id and location.worn_on_character and flags.wearable and
           like(description.short, ^search_string),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -880,7 +861,7 @@ defmodule Mud.Engine.Item do
       left_join: description in assoc(item, :description),
       as: :description,
       where: like(description.short, ^search_string),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -895,7 +876,7 @@ defmodule Mud.Engine.Item do
       where:
         location.area_id == ^area_id and location.on_ground and
           like(description.short, ^search_string),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -914,7 +895,7 @@ defmodule Mud.Engine.Item do
           (location.character_id == ^character_id and location.worn_on_character and
              flags.wearable and
              like(description.short, ^search_string)),
-      order_by: location.moved_at,
+      order_by: [desc: location.moved_at],
       order_by: fragment("CASE i1.on_ground WHEN true THEN 0 ELSE 1 END")
     )
     |> Repo.all()
@@ -934,7 +915,7 @@ defmodule Mud.Engine.Item do
           (location.character_id == ^character_id and
              (location.worn_on_character or location.held_in_hand) and
              like(description.short, ^search_string)),
-      order_by: location.moved_at,
+      order_by: [desc: location.moved_at],
       order_by:
         fragment(
           "CASE WHEN i1.on_ground THEN 0 WHEN i1.held_in_hand OR i1.worn_on_character THEN 1 ELSE 2 END"
@@ -955,7 +936,7 @@ defmodule Mud.Engine.Item do
         location.relative_item_id in ^items_to_ids(item_ids) and location.relative_to_item and
           location.relation == ^relation and
           like(description.short, ^search_string),
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -967,7 +948,7 @@ defmodule Mud.Engine.Item do
       where:
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable and flags.gem_pouch,
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -979,7 +960,7 @@ defmodule Mud.Engine.Item do
       where:
         location.character_id == ^character_id and location.worn_on_character and
           flags.container == true and flags.wearable,
-      order_by: location.moved_at
+      order_by: [desc: location.moved_at]
     )
     |> Repo.all()
     |> preload()
@@ -1067,10 +1048,11 @@ defmodule Mud.Engine.Item do
 
   def list_sorted_parent_containers(item = %__MODULE__{}) do
     parents =
-      from([container: container] in base_query_with_preload(),
+      from([container: container] in base_query_without_preload(),
         where: container.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id)))
       )
       |> Repo.all()
+      |> preload()
 
     item_index = build_item_index(parents)
     parent_index = build_parent_index(parents)
@@ -1145,7 +1127,7 @@ defmodule Mud.Engine.Item do
       |> with_cte("location_tree", as: ^item_tree_query)
       |> select([l], l.item_id)
 
-    from(item in base_query_with_preload(), where: item.id in subquery(all_item_ids))
+    from(item in base_query_without_preload(), where: item.id in subquery(all_item_ids))
   end
 
   def build_from_template_and_place_in_character_hand(template, character_id, hand) do
@@ -1225,48 +1207,11 @@ defmodule Mud.Engine.Item do
     )
   end
 
-  def base_query_with_preload() do
-    from(
-      item in __MODULE__,
-      left_join: coin in assoc(item, :coin),
-      as: :coin,
-      left_join: container in assoc(item, :container),
-      as: :container,
-      left_join: description in assoc(item, :description),
-      as: :description,
-      left_join: flags in assoc(item, :flags),
-      as: :flags,
-      left_join: furniture in assoc(item, :furniture),
-      as: :furniture,
-      left_join: gem in assoc(item, :gem),
-      as: :gem,
-      left_join: location in assoc(item, :location),
-      as: :location,
-      left_join: physics in assoc(item, :physics),
-      as: :physics,
-      left_join: surface in assoc(item, :surface),
-      as: :surface,
-      left_join: wearable in assoc(item, :wearable),
-      as: :wearable,
-      preload: [
-        coin: coin,
-        container: container,
-        description: description,
-        flags: flags,
-        furniture: furniture,
-        gem: gem,
-        location: location,
-        physics: physics,
-        surface: surface,
-        wearable: wearable
-      ]
-    )
-  end
-
   defp items_on_ground_query(area_id) do
     from(
-      [item, location: location, flags: flags] in base_query_with_preload(),
-      where: location.on_ground == true and location.area_id == ^area_id and not flags.scenery
+      [item, location: location, flags: flags] in base_query_without_preload(),
+      where: location.on_ground == true and location.area_id == ^area_id and not flags.scenery,
+      order_by: [desc: location.moved_at]
     )
   end
 
@@ -1277,7 +1222,8 @@ defmodule Mud.Engine.Item do
       as: :location,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      where: location.area_id == ^area_id and flags.furniture
+      where: location.area_id == ^area_id and flags.furniture,
+      order_by: [desc: location.moved_at]
     )
   end
 
@@ -1288,23 +1234,27 @@ defmodule Mud.Engine.Item do
       as: :location,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      where: location.area_id == ^area_id and flags.scenery
+      where: location.area_id == ^area_id and flags.scenery,
+      order_by: [desc: location.moved_at]
     )
   end
 
+  @spec everything_and_nested_items_in_area_query(any) :: Ecto.Query.t()
   def everything_and_nested_items_in_area_query(area_id) do
     area_item_id_query = base_query_for_root_area_item_ids(area_id)
 
-    from(item in base_query_without_preload(),
-      where: item.id in subquery(recursive_child_ids_query(area_item_id_query, true))
+    from([item, location: location] in base_query_without_preload(),
+      where: item.id in subquery(recursive_child_ids_query(area_item_id_query, true)),
+      order_by: [desc: location.moved_at]
     )
   end
 
   def scenery_and_nested_items_in_area_query(area_id) do
     scenery_id_query = base_query_for_root_scenery_item_ids(area_id)
 
-    from(item in base_query_without_preload(),
-      where: item.id in subquery(recursive_child_ids_query(scenery_id_query, true))
+    from([item, location: location] in base_query_without_preload(),
+      where: item.id in subquery(recursive_child_ids_query(scenery_id_query, true)),
+      order_by: [desc: location.moved_at]
     )
   end
 
@@ -1320,13 +1270,21 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_immediate_children_query(ids) do
-    from(item in base_query_with_preload(),
-      where: item.id in subquery(child_ids_query(ids))
+    from([item, location: location] in base_query_without_preload(),
+      where: item.id in subquery(child_ids_query(ids)),
+      order_by: [desc: location.moved_at]
+    )
+  end
+
+  def list_all_immediate_children_with_relationship_query(ids, relationship) do
+    from([item, location: location] in base_query_without_preload(),
+      where: item.id in subquery(child_ids_query(ids)) and location.relation == ^relationship,
+      order_by: [desc: location.moved_at]
     )
   end
 
   def list_all_recursive_child_query(ids, include_self \\ false) do
-    from(item in base_query_with_preload(),
+    from(item in base_query_without_preload(),
       where: item.id in subquery(recursive_child_ids_query(ids, include_self))
     )
   end
@@ -1336,7 +1294,7 @@ defmodule Mud.Engine.Item do
   end
 
   def list_all_recursive_parent_query(ids, include_self \\ false) do
-    from(item in base_query_with_preload(),
+    from(item in base_query_without_preload(),
       where: item.id in subquery(recursive_parent_ids_query(ids, include_self))
     )
   end
@@ -1439,7 +1397,7 @@ defmodule Mud.Engine.Item do
       end
 
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_without_preload(),
       where:
         location.relative_to_item and
           location.item_id in subquery(query) and
@@ -1490,6 +1448,54 @@ defmodule Mud.Engine.Item do
         from(item in final_query, where: item.item_id not in subquery(maybe_subqry))
       end
     end
+  end
+
+  def list_all_recursive_surface_children(items) do
+    ids = items_to_ids(items)
+
+    from(item in base_query_without_preload(),
+      where: item.id in subquery(recursive_surface_child_ids_query(ids))
+    )
+    |> Repo.all()
+    |> preload()
+  end
+
+  defp recursive_surface_child_ids_query(ids) do
+    from(location in recursive_surface_child_query(ids), select: location.item_id)
+  end
+
+  defp recursive_surface_child_query(maybe_subqry) do
+    item_tree_initial_query =
+      if is_list(maybe_subqry) do
+        Location
+        |> where(
+          [l],
+          l.item_id in ^maybe_subqry
+        )
+      else
+        Location
+        |> where(
+          [l],
+          l.item_id in subquery(maybe_subqry)
+        )
+      end
+
+    item_tree_recursion_query =
+      Location
+      |> join(
+        :inner,
+        [location],
+        lt in "location_tree",
+        on: location.relative_item_id == lt.item_id and location.relation == "on"
+      )
+
+    item_tree_query =
+      item_tree_initial_query
+      |> union_all(^item_tree_recursion_query)
+
+    {"location_tree", Location}
+    |> recursive_ctes(true)
+    |> with_cte("location_tree", as: ^item_tree_query)
   end
 
   defp recursive_child_query(maybe_subqry, _include_self) do
@@ -1624,7 +1630,7 @@ defmodule Mud.Engine.Item do
 
   def search_inside_inventory_query(character_id, search_string) do
     from(
-      [description: description, location: location] in base_query_with_preload(),
+      [description: description, location: location] in base_query_without_preload(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
           like(description.short, ^search_string) and not location.held_in_hand and
@@ -1668,7 +1674,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location] in base_query_for_description_and_location(),
       where:
         description.item_id in subquery(base_query_for_all_area_item_ids(area_id)) and
-          like(description.short, ^search_string),
+          (like(description.short, ^search_string) or like(description.long, ^search_string)),
       order_by: [desc: location.moved_at]
     )
   end

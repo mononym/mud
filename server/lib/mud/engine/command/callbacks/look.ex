@@ -10,6 +10,7 @@ defmodule Mud.Engine.Command.Look do
   alias Mud.Engine.Area
   alias Mud.Engine.Item
   alias Mud.Engine.Command.Context
+  alias Mud.Engine.ItemUtil
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
@@ -34,7 +35,7 @@ defmodule Mud.Engine.Command.Look do
   @impl true
   def execute(context) do
     Logger.debug("Executing Look command")
-    Logger.debug(inspect(context))
+    Logger.debug(inspect(context.command.ast))
     ast = context.command.ast
 
     if is_nil(ast.thing) do
@@ -97,7 +98,7 @@ defmodule Mud.Engine.Command.Look do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, true)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -113,12 +114,14 @@ defmodule Mud.Engine.Command.Look do
         look_item(context, match)
 
       {:ok, all_matches = [match | matches]} ->
+        IO.inspect(context.command.ast, label: :handle_search_results)
+
         case context.command.ast do
           # If which is greater than 0, then more than one match was anticipated.
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            look_item(context, Enum.at(matches, which - 1))
+            look_item(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -164,7 +167,7 @@ defmodule Mud.Engine.Command.Look do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
       _ ->
         look_item_with_personal_place(context)
@@ -195,7 +198,7 @@ defmodule Mud.Engine.Command.Look do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
       _ ->
         look_item_in_inventory(context)
@@ -203,17 +206,19 @@ defmodule Mud.Engine.Command.Look do
   end
 
   defp look_item(context, thing = %Search.Match{}, _other_matches \\ []) do
+    Logger.debug("Looking at thing: #{inspect(thing)}")
+    Logger.debug("Ast for thing: #{inspect(context.command.ast.thing)}")
     item = thing.match
     in_area = Item.in_area?(item.id, context.character.area_id)
     in_inventory = Item.in_inventory?(item.id, context.character.id)
-    parent_containers_open = Item.parent_containers_open?(item)
+    is_visible = ItemUtil.is_available_for_look?(item)
 
     cond do
-      parent_containers_open and (in_area or in_inventory) ->
+      is_visible and (in_area or in_inventory) ->
         where = context.command.ast.thing.where
 
         cond do
-          where in ["@", "at", nil] or (where == ">" and not item.flags.container) ->
+          where in ["@", "at", nil] ->
             # get desc for item and spit it out
             self_msg =
               context.character.id
@@ -223,12 +228,10 @@ defmodule Mud.Engine.Command.Look do
                 Mud.Engine.Util.get_item_type(item)
               )
 
-            # |> Message.append_text(".", "base")
-
             Context.append_message(context, self_msg)
 
-          where == "in" or (where == ">" and item.flags.container) ->
-            items = Item.list_immediate_children(item)
+          where == "in" and item.flags.container ->
+            items = Item.list_immediate_children_with_relationship(item, "in")
 
             case items do
               [] ->
@@ -264,11 +267,12 @@ defmodule Mud.Engine.Command.Look do
                       Mud.Engine.Util.get_item_type(itm)
                     )
                     |> Message.append_text(
-                      ", ",
+                      "; ",
                       "base"
                     )
                   end)
                   |> Message.drop_last_text()
+                  |> Message.maybe_add_oxford_comma()
 
                 Context.append_message(context, self_msg)
                 |> Context.append_event(
@@ -276,6 +280,60 @@ defmodule Mud.Engine.Command.Look do
                   UpdateArea.new(%{action: :add, items: items})
                 )
             end
+
+          where == "on" and item.flags.has_surface ->
+            items = Item.list_immediate_children_with_relationship(item, "on")
+
+            case items do
+              [] ->
+                self_msg =
+                  context.character.id
+                  |> Message.new_story_output()
+                  |> Message.append_text(
+                    Util.upcase_first(item.description.short),
+                    Mud.Engine.Util.get_item_type(item)
+                  )
+                  |> Message.append_text(" has nothing on it.", "base")
+
+                Context.append_message(context, self_msg)
+
+              items ->
+                self_msg =
+                  context.character.id
+                  |> Message.new_story_output()
+                  |> Message.append_text(
+                    "You",
+                    "character"
+                  )
+                  |> Message.append_text(
+                    " see: ",
+                    "base"
+                  )
+
+                self_msg =
+                  Enum.reduce(items, self_msg, fn itm, msg ->
+                    msg
+                    |> Message.append_text(
+                      itm.description.short,
+                      Mud.Engine.Util.get_item_type(itm)
+                    )
+                    |> Message.append_text(
+                      "; ",
+                      "base"
+                    )
+                  end)
+                  |> Message.drop_last_text()
+                  |> Message.maybe_add_oxford_comma()
+
+                Context.append_message(context, self_msg)
+                |> Context.append_event(
+                  context.character_id,
+                  UpdateArea.new(%{action: :add, items: items})
+                )
+            end
+
+          true ->
+            Util.dave_error_v2(context)
         end
 
       item.flags.container and not item.container.open ->

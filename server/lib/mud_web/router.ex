@@ -127,6 +127,7 @@ defmodule MudWeb.Router do
     post("/items/create", ItemController, :create)
     patch("/items/:item_id", ItemController, :update)
     delete("/items/:item_id", ItemController, :delete)
+    post("/items/update_moved_at/:item_id", ItemController, :update_moved_at)
 
     # Shops stuff
     get("/shops", ShopController, :index)

@@ -142,7 +142,7 @@ defmodule Mud.Engine.Command.Get do
     case results do
       {:ok, matches} ->
         # Make sure the results are sorted for consistent behavior
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, true)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -168,7 +168,7 @@ defmodule Mud.Engine.Command.Get do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            get_item(context, Enum.at(matches, which - 1))
+            get_item(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -218,7 +218,7 @@ defmodule Mud.Engine.Command.Get do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
       _ ->
         get_item_with_personal_place(context)
@@ -251,7 +251,25 @@ defmodule Mud.Engine.Command.Get do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+
+      _ ->
+        get_item_on_visible_surfaces_in_area_or_inventory(context)
+    end
+  end
+
+  # Checks the area for an item and if nothing is found moves on to the inventory
+  defp get_item_on_visible_surfaces_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_on_visible_surfaces(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
       _ ->
         get_item_in_inventory(context)
@@ -273,11 +291,19 @@ defmodule Mud.Engine.Command.Get do
       # an appropriate place. This closes the security hole of UUID's along with other potential ones as well.
       in_area = Item.in_area?(original_item.id, context.character.area_id)
       in_inventory = Item.in_inventory?(original_item.id, context.character.id)
-      parent_containers_open = Item.parent_containers_open?(original_item)
+
+      # TODO: This assumes anything not in a container is on a surface all the way down. Is this good enough? Does this
+      # need a more intense check? Investigate.
+      available =
+        if original_item.location.relative_to_item and original_item.location.relation == "on" do
+          true
+        else
+          Item.parent_containers_open?(original_item)
+        end
 
       cond do
         # This is the happy case where the item is where it is supposed to be and it is not inside any closed containers
-        parent_containers_open and
+        available and
             (in_area or
                (in_inventory and
                   not (original_item.location.held_in_hand or
@@ -291,7 +317,7 @@ defmodule Mud.Engine.Command.Get do
           )
 
         # Not as happy, but the only problem is that one of the parent containers is closed
-        not parent_containers_open and
+        not available and
             (in_area or
                (in_inventory and
                   not (original_item.location.held_in_hand or

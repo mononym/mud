@@ -126,7 +126,7 @@ defmodule Mud.Engine.Command.Put do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         handle_search_results(context, {:ok, sorted_results}, thing, other_thing_matches)
 
@@ -166,7 +166,7 @@ defmodule Mud.Engine.Command.Put do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results}, thing, other_thing_matches)
@@ -191,12 +191,12 @@ defmodule Mud.Engine.Command.Put do
       {:ok, matches} ->
         case context.character.settings.commands.multiple_matches_mode do
           "silent" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches)
+            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, false)
 
             find_place_to_put_thing(context, match, other_thing_matches)
 
           "full path" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches)
+            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, false)
 
             find_place_to_put_thing(context, match, other_thing_matches)
 
@@ -229,7 +229,7 @@ defmodule Mud.Engine.Command.Put do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{place: %Place{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            put_item(context, thing, other_thing_matches, Enum.at(matches, which - 1), [])
+            put_item(context, thing, other_thing_matches, Enum.at(all_matches, which - 1), [])
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{place: %Place{which: which}} when which > 0 and which > length(all_matches) ->
@@ -270,33 +270,18 @@ defmodule Mud.Engine.Command.Put do
     original_item = thing.match
     destination = place.match
 
-    # IO.inspect("original_item")
-    # IO.inspect(original_item)
-    # IO.inspect("destination")
-    # IO.inspect(destination)
-
     relative_location = CallbackUtil.relative_location_from_item(destination)
-    # IO.inspect("relative_location")
-    # IO.inspect(relative_location)
 
     location =
       Location.update_relative_to_item!(original_item.location, destination.id, relative_location)
 
-    # IO.inspect("location")
-    # IO.inspect(location)
-
     item = Map.put(original_item, :location, location)
-    # IO.inspect("item")
-    # IO.inspect(item)
 
     destination_in_area = Item.in_area?(destination.id, context.character.area_id)
-    # IO.inspect("destination_in_area")
-    # IO.inspect(destination_in_area)
 
     # if item.location.held_in_hand and item.location.character_id == context.character.id do
     #   # NEED TO KNOW WHERE THE HELL TO PUT IT
     items_in_path = Item.list_full_path(destination)
-    # IO.inspect(items_in_path, label: :items_in_path)
 
     others =
       Character.list_others_active_in_areas(
@@ -309,8 +294,6 @@ defmodule Mud.Engine.Command.Put do
       |> Message.new_story_output()
       |> Message.append_text("#{context.character.name}", "character")
       |> Message.append_text(" put ", "base")
-
-    # |> Message.append_text(original_item.description.short, Util.get_item_type(original_item))
 
     other_msg =
       Util.construct_nested_item_location_message_for_others(
@@ -387,7 +370,6 @@ defmodule Mud.Engine.Command.Put do
         else
           context
         end
-
       else
         Context.append_event(
           context,

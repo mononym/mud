@@ -291,7 +291,7 @@ defmodule Mud.Engine.Command.Store do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches)
+        sorted_results = CallbackUtil.sort_matches(matches, false)
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -312,7 +312,7 @@ defmodule Mud.Engine.Command.Store do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{place: %Place{which: which}, thing: %Thing{input: input}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            save_setting(context, input, Enum.at(matches, which - 1))
+            save_setting(context, input, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{place: %Place{which: which}} when which > 0 and which > length(all_matches) ->

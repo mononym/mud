@@ -164,12 +164,7 @@ defmodule Mud.Engine.Command.Drop do
     if original_item.location.held_in_hand and
          original_item.location.character_id == context.character.id do
       location =
-        Location.update!(original_item.location, %{
-          held_in_hand: false,
-          on_ground: true,
-          character_id: nil,
-          area_id: context.character.area_id
-        })
+        Location.update_on_ground_item!(original_item.location, context.character.area_id)
 
       item = %{original_item | location: location}
 
