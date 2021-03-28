@@ -13,7 +13,9 @@ defmodule Mud.Engine.Item.Surface do
     :character_limit,
     :show_item_contents,
     :show_detailed_items,
-    :show_item_limit
+    :items_must_fit,
+    :length,
+    :width
   ]
 
   @derive {Jason.Encoder, only: [:id | @all_fields]}
@@ -21,12 +23,15 @@ defmodule Mud.Engine.Item.Surface do
   schema "item_surface" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
     field(:can_hold_characters, :boolean, default: false)
-    field(:character_limit, :integer, default: 1)
-    field(:item_count_limit, :integer, default: 1)
-    field(:item_weight_limit, :integer, default: 1)
+    field(:character_limit, :integer, default: 0)
+    field(:item_count_limit, :integer, default: 0)
+    field(:item_weight_limit, :integer, default: 0)
     field(:show_item_contents, :boolean, default: true)
     field(:show_detailed_items, :boolean, default: false)
-    field(:show_item_limit, :integer, default: 1)
+    field(:show_item_limit, :integer, default: 0)
+    field(:items_must_fit, :boolean, default: false)
+    field(:length, :integer, default: 0)
+    field(:width, :integer, default: 0)
   end
 
   @spec changeset(
@@ -47,6 +52,8 @@ defmodule Mud.Engine.Item.Surface do
     |> validate_number(:item_count_limit, greater_than_or_equal_to: 0)
     |> validate_number(:item_weight_limit, greater_than_or_equal_to: 0)
     |> validate_number(:show_item_limit, greater_than_or_equal_to: 0)
+    |> validate_number(:length, greater_than_or_equal_to: 0)
+    |> validate_number(:width, greater_than_or_equal_to: 0)
   end
 
   def create(attrs \\ %{}) do
@@ -101,13 +108,5 @@ defmodule Mud.Engine.Item.Surface do
       |> Enum.filter(&(&1.character_id != character_id))
 
     length(characters)
-
-    # Enum.reduce(characters, 0, fn char, slots_used ->
-    #   if char.position == "lying" do
-    #     slots_used + 3
-    #   else
-    #     slots_used + 1
-    #   end
-    # end)
   end
 end

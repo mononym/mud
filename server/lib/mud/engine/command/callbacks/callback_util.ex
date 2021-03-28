@@ -202,7 +202,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
     |> Stream.map(fn item ->
       if item.location.relative_to_item do
         "#{item.description.short} (#{
-          if item.container.open do
+          if item.pocket.open do
             "open"
           else
             "closed"
@@ -210,7 +210,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
         }) #{item.location.relation}"
       else
         "#{item.description.short} (#{
-          if item.container.open do
+          if item.pocket.open do
             "open"
           else
             "closed"
@@ -268,7 +268,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
   """
   def relative_location_from_item(item) do
     cond do
-      item.flags.container -> "in"
+      item.flags.has_pocket -> "in"
       item.flags.has_surface -> "on"
     end
   end

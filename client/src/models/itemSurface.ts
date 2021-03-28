@@ -8,18 +8,24 @@ export interface ItemSurfaceInterface {
   show_item_contents: boolean;
   show_detailed_items: boolean;
   show_item_limit: number;
+  items_must_fit: boolean;
+  length: number;
+  width: number;
 }
 
 const state: ItemSurfaceInterface = {
   id: "",
   item_id: "",
   can_hold_characters: false,
-  item_weight_limit: 1,
-  item_count_limit: 1,
-  character_limit: 1,
+  item_weight_limit: 0,
+  item_count_limit: 0,
+  character_limit: 0,
   show_item_contents: false,
   show_detailed_items: false,
-  show_item_limit: 1,
+  show_item_limit: 0,
+  items_must_fit: false,
+  length: 0,
+  width: 0,
 };
 
 export default state;

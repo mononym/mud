@@ -205,8 +205,41 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
+
+
+
+
+
+
+
+  # THIS IS WHAT YOU ARE DOING!!!!!!!!!!!!!!!!!!!!
+
+  # getting only works with 'from' right now
+  # update to work with 'in' and 'on' because have surfaces and pockets now
+  # maybe 'from' could not care whether the item is in/on something but just looks
+  # for an immediate child, while 'in' and 'on' are more specific645
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   # The command entered was something like: get chest from pack
   defp get_item_with_place(context) do
+    IO.inspect(context.command.ast.thing, label: :get_item_with_place)
+
     # look for place on ground in hands or worn
     area_results =
       Search.find_matches_relative_to_place_in_area(
@@ -434,13 +467,12 @@ defmodule Mud.Engine.Command.Get do
 
     # For other characters, they only end up seeing the outermost item in the chain of nested items, if there is any.
     other_msg =
-      Util.construct_nested_item_location_message_for_others(
+      Util.construct_nested_item_previous_location_message_for_others(
         context.character,
         other_msg,
         original_item,
         items_in_path,
-        in_area,
-        "from"
+        in_area
       )
       |> Message.append_text(".", "base")
 
@@ -454,10 +486,9 @@ defmodule Mud.Engine.Command.Get do
     # The whole chain of containers, assuming there is a nested chain of containers, to where the item being 'gotten' is
     # will be used to generate the message.
     self_msg =
-      Util.construct_nested_item_location_message_for_self(
+      Util.construct_nested_item_previous_location_message_for_self(
         self_msg,
         original_item,
-        "from",
         true
       )
       |> Message.append_text(".", "base")

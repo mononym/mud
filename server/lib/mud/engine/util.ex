@@ -252,7 +252,7 @@ defmodule Mud.Engine.Util do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> construct_nested_item_location_message_for_self(item, "in", true)
+      |> construct_nested_item_previous_location_message_for_self(item, true)
       # |> Message.append_text(
       #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
       #   get_item_type(item)
@@ -277,7 +277,7 @@ defmodule Mud.Engine.Util do
       msg =
         case mode do
           "full path" ->
-            construct_nested_item_location_message_for_self(msg, item, "in", false)
+            construct_nested_item_previous_location_message_for_self(msg, item, false)
 
           "item only" ->
             Message.append_text(
@@ -396,54 +396,6 @@ defmodule Mud.Engine.Util do
     )
   end
 
-  def maybe_update_primary_container(context, false) do
-    context
-  end
-
-  def maybe_update_primary_container(context, true) do
-    new_container =
-      context.character_id
-      |> Item.list_worn_containers()
-      |> Enum.sort(&(&1.container_capacity <= &2.container_capacity))
-      |> List.first()
-
-    case new_container do
-      nil ->
-        context
-
-      new_primary ->
-        {:ok, new_primary} = Item.update(new_primary, %{container_primary: true})
-
-        Context.append_event(
-          context,
-          context.character_id,
-          UpdateInventory.new(:update, new_primary)
-        )
-    end
-  end
-
-  def is_item_on_character?(item, character) do
-    items = Item.list_all_parents(item)
-    parent = Enum.find(items, &is_nil(&1.container_id))
-
-    parent.wearable_worn_by_id == character.id or parent.holdable_held_by_id == character.id
-  end
-
-  def is_item_on_character_or_in_area?(item, character) do
-    items = Item.list_all_parents(item)
-    parent = Enum.find(items, &is_nil(&1.container_id))
-
-    parent.wearable_worn_by_id == character.id or parent.holdable_held_by_id == character.id or
-      parent.area_id == character.area_id
-  end
-
-  def is_item_in_character_area?(item, character) do
-    items = Item.list_all_parents(item)
-    parent = Enum.find(items, &is_nil(&1.container_id))
-
-    parent.area_id == character.area_id
-  end
-
   # Check to see if the gzip header is present, and if it is gunzip first.
   def unpack_term(<<31::size(8), 139::size(8), 8::size(8), _rest::binary>> = bin) do
     try do
@@ -511,10 +463,10 @@ defmodule Mud.Engine.Util do
   """
   def get_item_type(item, default) when is_struct(item) do
     cond do
-      item.flags.container and item.flags.wearable ->
+      item.flags.has_pocket and item.flags.wearable ->
         "worn_container"
 
-      item.flags.container ->
+      item.flags.has_pocket ->
         "container"
 
       item.flags.gem ->
@@ -594,7 +546,7 @@ defmodule Mud.Engine.Util do
     Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
   end
 
-  def construct_nested_item_location_message_for_self(message, item, location, target_item) do
+  def construct_nested_item_previous_location_message_for_self(message, item, target_item) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
@@ -602,8 +554,31 @@ defmodule Mud.Engine.Util do
     # IO.inspect(items, label: :construct_nested_item_location_message_for_self_items)
     # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
     # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
+    message =
+      message
+      |> Message.append_text(
+        item.description.short,
+        Mud.Engine.Util.get_item_type(item)
+      )
 
-    build_parent_string(message, item, parent_index, location, target_item, "you")
+    # The parents query returns the item itself and this is expected, so to check if there are any parents check for
+    # length greater than 1 rather than against an empty list
+    if length(parents) > 1 do
+      message
+      |> Message.append_text(" from ", "base")
+      |> build_parent_string(
+        parent_index[item.location.relative_item_id],
+        parent_index,
+        target_item,
+        "you"
+      )
+    else
+      message
+      |> Message.append_text(
+        " which was on the ground",
+        "base"
+      )
+    end
   end
 
   def construct_stow_item_location_message_for_self(
@@ -622,7 +597,8 @@ defmodule Mud.Engine.Util do
     # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
 
     origin_message =
-      build_parent_string(message, original_item, parent_index, "from", true, "you")
+      Message.append_text(message, " from ", "base")
+      |> build_parent_string(original_item, parent_index, true, "you")
 
     origin_message =
       Message.append_text(
@@ -637,14 +613,13 @@ defmodule Mud.Engine.Util do
 
     outermost_item =
       Enum.find(stowed_path, fn possible_parent ->
-        possible_parent.flags.container or possible_parent.id == stowed_item.id
+        possible_parent.flags.has_pocket or possible_parent.id == stowed_item.id
       end)
 
     build_parent_string(
       origin_message,
       outermost_item,
       stowed_parent_index,
-      "in",
       false,
       "you"
     )
@@ -694,7 +669,7 @@ defmodule Mud.Engine.Util do
           # Item being stowed was originally relative to another item
           outermost_item =
             Enum.find(original_path, fn possible_parent ->
-              possible_parent.flags.container or possible_parent.id == original_item.id
+              possible_parent.flags.has_pocket or possible_parent.id == original_item.id
             end)
 
           cond do
@@ -750,7 +725,7 @@ defmodule Mud.Engine.Util do
 
     outermost_item =
       Enum.find(stowed_path, fn possible_parent ->
-        possible_parent.flags.container or possible_parent.id == stowed_item.id
+        possible_parent.flags.has_pocket or possible_parent.id == stowed_item.id
       end)
 
     are_or_is =
@@ -785,17 +760,16 @@ defmodule Mud.Engine.Util do
     )
   end
 
-  def construct_nested_item_location_message_for_others(
+  def construct_nested_item_previous_location_message_for_others(
         character,
         original_message,
         item,
         path,
-        item_in_area,
-        location
+        item_in_area
       ) do
     in_container =
       Enum.any?(path, fn item_in_path ->
-        item_in_path.flags.container and not (item_in_path.id == item.id)
+        item_in_path.flags.has_pocket and not (item_in_path.id == item.id)
       end)
 
     message =
@@ -818,12 +792,12 @@ defmodule Mud.Engine.Util do
         outermost_item =
           Enum.find(path, fn possible_parent ->
             (possible_parent.location.on_ground and
-               (possible_parent.flags.container or possible_parent.flags.has_surface)) or
+               (possible_parent.flags.has_pocket or possible_parent.flags.has_surface)) or
               possible_parent.id == item.id
           end)
 
         if outermost_item.location.on_ground do
-          Message.append_text(message, " #{location} ", "base")
+          Message.append_text(message, " from ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
@@ -835,7 +809,7 @@ defmodule Mud.Engine.Util do
         else
           outermost_object = Item.get!(outermost_item.location.relative_item_id)
 
-          Message.append_text(message, " #{location} ", "base")
+          Message.append_text(message, " from ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
@@ -849,19 +823,28 @@ defmodule Mud.Engine.Util do
 
       # The item is on a visible surface somewhere and the full path should be described to everyone
       item_in_area and not in_container ->
+        message = Message.append_text(message, " from ", "base")
+
         parent_index = build_item_index(path)
-        build_parent_string(original_message, item, parent_index, "on", true, character.name)
+
+        build_parent_string(
+          message,
+          parent_index[item.location.relative_item_id],
+          parent_index,
+          true,
+          character.name
+        )
 
       # If the item is relative to another item, but it is not in the area, assume it is on the character in their inventory
       # It *SHOULD* be in a container
       item.location.relative_to_item and in_container and not item_in_area ->
         outermost_item =
           Enum.find(path, fn possible_parent ->
-            possible_parent.flags.container or possible_parent.id == item.id
+            possible_parent.flags.has_pocket or possible_parent.id == item.id
           end)
 
         message =
-          Message.append_text(message, " #{location} ", "base")
+          Message.append_text(message, " from ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             get_item_type(outermost_item)
@@ -902,7 +885,6 @@ defmodule Mud.Engine.Util do
          message,
          item,
          parent_index,
-         location,
          target_item,
          who
        ) do
@@ -914,13 +896,12 @@ defmodule Mud.Engine.Util do
           get_item_type(item)
         )
         |> Message.append_text(
-          " #{location} ",
+          " #{item.location.relation} ",
           "base"
         )
         |> build_parent_string(
           parent_index[item.location.relative_item_id],
           parent_index,
-          location,
           false,
           who
         )

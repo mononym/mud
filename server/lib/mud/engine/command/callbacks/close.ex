@@ -401,9 +401,9 @@ defmodule Mud.Engine.Command.Close do
       parent_containers_open and (in_area or in_inventory) ->
         cond do
           # Is container and container is open, meaning it can be closed
-          thing.match.flags.container and thing.match.container.open ->
+          thing.match.flags.has_pocket and thing.match.pocket.open ->
             container =
-              Container.update!(thing.match.container, %{
+              Container.update!(thing.match.pocket, %{
                 open: false
               })
 
@@ -476,7 +476,7 @@ defmodule Mud.Engine.Command.Close do
             |> Context.append_message(self_msg)
 
           # It is a container but the container is close,
-          thing.match.flags.container and not thing.match.container.open ->
+          thing.match.flags.has_pocket and not thing.match.pocket.open ->
             self_msg =
               context.character.id
               |> Message.new_story_output()

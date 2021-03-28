@@ -62,7 +62,7 @@ defmodule Mud.Engine.ItemUtil do
           true
 
         item.location.relation == "in" and
-            item_index[item.location.relative_item_id].container.open ->
+            item_index[item.location.relative_item_id].pocket.open ->
           true
 
         true ->

@@ -734,7 +734,7 @@ defmodule Mud.Engine.Command.Stow do
 
   defp find_largest_worn_container(character_id) do
     Character.list_worn_containers(character_id)
-    |> Enum.sort(&(&1.container.capacity >= &2.container.capacity))
+    |> Enum.sort(&(&1.pocket.capacity >= &2.pocket.capacity))
     |> List.first()
   end
 

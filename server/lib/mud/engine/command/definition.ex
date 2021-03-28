@@ -1,19 +1,6 @@
 defmodule Mud.Engine.Command.Definition do
   @moduledoc false
 
-  # defmodule Segment do
-  #   @moduledoc false
-
-  #   use TypedStruct
-
-  #   typedstruct do
-  #     # type will be one of item, text, sigils, command
-  #     field(:type, String.t(), required: true)
-  #     # type will be one of item, text, sigils, command
-  #     field(:type, String.t(), required: true)
-  #   end
-  # end
-
   defmodule Part do
     @moduledoc false
 

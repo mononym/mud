@@ -18,7 +18,7 @@ defmodule Mud.Engine.Command.Open do
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character, Item, Link}
-  alias Item.{Container}
+  alias Item.{Pocket}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Link.Closable
@@ -368,13 +368,13 @@ defmodule Mud.Engine.Command.Open do
       parent_containers_open and (in_area or in_inventory) ->
         cond do
           # Is container and container is closed, meaning it can be opened
-          thing.match.flags.container and not thing.match.container.open ->
-            container =
-              Container.update!(thing.match.container, %{
+          thing.match.flags.has_pocket and not thing.match.pocket.open ->
+            pocket =
+              Pocket.update!(thing.match.pocket, %{
                 open: true
               })
 
-            item = Map.put(thing.match, :container, container)
+            item = Map.put(thing.match, :pocket, pocket)
 
             others =
               Character.list_others_active_in_areas(
@@ -443,7 +443,7 @@ defmodule Mud.Engine.Command.Open do
             |> Context.append_message(self_msg)
 
           # It is a container but the container is open,
-          thing.match.flags.container and thing.match.container.open ->
+          thing.match.flags.has_pocket and thing.match.pocket.open ->
             self_msg =
               context.character.id
               |> Message.new_story_output()

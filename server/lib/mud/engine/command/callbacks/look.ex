@@ -190,7 +190,25 @@ defmodule Mud.Engine.Command.Look do
 
   defp look_item_in_area_or_inventory(context) do
     area_results =
-      Search.find_matches_in_area(
+      Search.find_matches_on_ground(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+
+      _ ->
+        look_item_on_visible_surfaces_in_area_or_inventory(context)
+    end
+  end
+
+  # Checks the area for an item and if nothing is found moves on to the inventory
+  defp look_item_on_visible_surfaces_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_on_visible_surfaces(
         context.character.area_id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
@@ -230,7 +248,7 @@ defmodule Mud.Engine.Command.Look do
 
             Context.append_message(context, self_msg)
 
-          where == "in" and item.flags.container ->
+          where == "in" and item.flags.has_pocket ->
             items = Item.list_immediate_children_with_relationship(item, "in")
 
             case items do
@@ -336,7 +354,7 @@ defmodule Mud.Engine.Command.Look do
             Util.dave_error_v2(context)
         end
 
-      item.flags.container and not item.container.open ->
+      item.flags.has_pocket and not item.pocket.open ->
         msg =
           Message.new_story_output(
             context.character.id,
@@ -350,7 +368,7 @@ defmodule Mud.Engine.Command.Look do
           msg
         )
 
-      not item.flags.container ->
+      not item.flags.has_pocket ->
         self_msg =
           context.character.id
           |> Message.new_story_output()

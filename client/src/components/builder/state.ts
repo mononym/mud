@@ -780,8 +780,23 @@ export function createWorldBuilderStore() {
   }
 
   async function editItem(item: ItemInterface) {
+    const removeFalsy = (obj) => {
+      let newObj = {};
+      Object.keys(obj).forEach((prop) => {
+        if (obj[prop]) {
+          newObj[prop] = obj[prop];
+        }
+      });
+      return newObj;
+    };
+
     selectedItem.set(item);
-    itemUnderConstruction.set({ ...item });
+    console.log("edit item");
+    console.log(item);
+    const strippedItem = removeFalsy({ ...item });
+    console.log(strippedItem);
+    console.log({ ...ItemState, ...strippedItem });
+    itemUnderConstruction.set({ ...ItemState, ...strippedItem });
     view.set("edit_item");
   }
 

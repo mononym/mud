@@ -11,14 +11,16 @@ defmodule Mud.Engine.Item do
   alias Mud.Engine.{Area, Character, Search}
 
   alias Mud.Engine.Item.{
+    Closable,
     Coin,
-    Container,
     Description,
     Flags,
     Furniture,
     Gem,
     Location,
+    Lockable,
     Physics,
+    Pocket,
     Surface,
     Wearable
   }
@@ -30,14 +32,16 @@ defmodule Mud.Engine.Item do
   @derive Jason.Encoder
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "items" do
+    has_one(:closable, Closable)
     has_one(:coin, Coin)
-    has_one(:container, Container)
     has_one(:description, Description)
     has_one(:flags, Flags)
     has_one(:furniture, Furniture)
     has_one(:gem, Gem)
     has_one(:location, Location)
+    has_one(:lockable, Lockable)
     has_one(:physics, Physics)
+    has_one(:pocket, Pocket)
     has_one(:surface, Surface)
     has_one(:wearable, Wearable)
 
@@ -86,11 +90,13 @@ defmodule Mud.Engine.Item do
       insert_new()
       |> setup_required_component(normalized_attrs, :flags, Flags)
       |> setup_required_component(normalized_attrs, :location, Location)
+      |> maybe_setup_optional_component(normalized_attrs, :closable, Closable)
       |> maybe_setup_optional_component(normalized_attrs, :coin, Coin)
-      |> maybe_setup_optional_component(normalized_attrs, :container, Container)
       |> maybe_setup_optional_component(normalized_attrs, :furniture, Furniture)
       |> maybe_setup_optional_component(normalized_attrs, :gem, Gem)
+      |> maybe_setup_optional_component(normalized_attrs, :lockable, Lockable)
       |> maybe_setup_optional_component(normalized_attrs, :physics, Physics)
+      |> maybe_setup_optional_component(normalized_attrs, :pocket, Pocket)
       |> maybe_setup_optional_component(normalized_attrs, :surface, Surface)
       |> maybe_setup_optional_component(normalized_attrs, :wearable, Wearable)
       # Description should be very last since it might actually build up a description based on everything else having been filled in
@@ -126,19 +132,20 @@ defmodule Mud.Engine.Item do
     attrs = template_keys_to_atoms(attrs)
 
     keys_map = %{
+      closable: [:closable],
       coin: [:coin],
-      container: [:container, :description],
-      furniture: [:furniture, :description],
-      material: [:description],
-      scenery: [:description],
+      furniture: [:furniture],
+      material: [],
+      scenery: [],
       gem: [:gem],
+      lockable: [:lockable],
       wearable: [:wearable],
       has_surface: [:surface],
       is_equipment: [:equipment],
       has_pocket: [:pocket]
     }
 
-    base_keys_to_keep = [:location, :physics, :flags]
+    base_keys_to_keep = [:description, :location, :physics, :flags]
 
     final_keys_to_keep =
       Enum.reduce(keys_map, base_keys_to_keep, fn {key, ktk}, keys_tk ->
@@ -232,14 +239,19 @@ defmodule Mud.Engine.Item do
       |> Repo.update_all(set: keywords)
       |> elem(1)
       |> List.first()
+      |> Repo.preload([:flags])
 
-    update_item_components(attrs)
+    update_item_components(attrs, item.flags)
 
     preload(item)
   end
 
   def update!(item, attrs) do
-    update_item_components(attrs)
+    item =
+      item
+      |> Repo.preload([:flags])
+
+    update_item_components(attrs, item.flags)
 
     item
     |> changeset(attrs)
@@ -255,7 +267,11 @@ defmodule Mud.Engine.Item do
 
     case result do
       {:ok, item} ->
-        update_item_components(attrs)
+        item =
+          item
+          |> Repo.preload([:flags])
+
+        update_item_components(attrs, item.flags)
         {:ok, preload(item)}
 
       error ->
@@ -333,30 +349,6 @@ defmodule Mud.Engine.Item do
   @spec delete(item :: %__MODULE__{}) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def delete(item) do
     Repo.delete(item)
-  end
-
-  def get_primary_container(character_id) when is_binary(character_id) do
-    from(
-      item in __MODULE__,
-      where:
-        item.wearable_worn_by_id == ^character_id and item.is_container and item.container_primary
-    )
-    |> Repo.one()
-  end
-
-  def get_primary_container(character) when is_struct(character),
-    do: get_primary_container(character.id)
-
-  def toggle_container_open(item_id) do
-    from(item in __MODULE__,
-      where: item.id == ^item_id,
-      update: [set: [container_open: not item.container_open]],
-      select: item
-    )
-    |> Repo.update_all([])
-    |> elem(1)
-    |> preload()
-    |> List.first()
   end
 
   @doc """
@@ -493,6 +485,19 @@ defmodule Mud.Engine.Item do
     |> preload()
   end
 
+  @doc """
+  List all items in an Area, those on the ground and scenery included.
+  """
+  @spec list_in_area_and_all_nested(id) :: [%__MODULE__{}]
+  def list_in_area_and_all_nested(area_id) do
+    area_id
+    |> all_in_area_query()
+    |> modify_query_select_id()
+    |> list_all_recursive_child_query(true)
+    |> Repo.all()
+    |> preload()
+  end
+
   @spec list_items_in_area_and_nested_visible_items(id) :: [%__MODULE__{}]
   def list_items_in_area_and_nested_visible_items(area_id) do
     everything_and_nested_items =
@@ -564,16 +569,6 @@ defmodule Mud.Engine.Item do
     character_id
     |> held_or_worn_and_children_query()
     |> order_by([i], i.moved_at)
-    |> Repo.all()
-    |> preload()
-  end
-
-  def list_contained_items(container_id) do
-    from(
-      item in __MODULE__,
-      where: item.container_id == ^container_id,
-      order_by: item.moved_at
-    )
     |> Repo.all()
     |> preload()
   end
@@ -663,7 +658,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
-          flags.container == true and flags.wearable and
+          flags.has_pocket == true and flags.wearable and
           like(description.short, ^search_string),
       order_by: [desc: location.moved_at]
     )
@@ -746,6 +741,12 @@ defmodule Mud.Engine.Item do
     build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
   end
 
+  @spec search_relative_to_hands(
+          any,
+          [atom | %{:input => binary, optional(any) => any}, ...],
+          atom | %{:input => binary, optional(any) => any},
+          <<_::48, _::_*16>>
+        ) :: any
   @doc """
   """
   def search_relative_to_hands(
@@ -925,29 +926,12 @@ defmodule Mud.Engine.Item do
     |> preload()
   end
 
-  @doc """
-  Search items relative to other items
-  """
-  @spec search_relative_to_items([String.t()], String.t(), String.t()) :: [Item.t()]
-  def search_relative_to_items(item_ids, relation, search_string) do
-    from(
-      [container: container, description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
-      where:
-        location.relative_item_id in ^items_to_ids(item_ids) and location.relative_to_item and
-          location.relation == ^relation and
-          like(description.short, ^search_string),
-      order_by: [desc: location.moved_at]
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
   def list_worn_gem_pouches(character_id) do
     from(
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
-          flags.container == true and flags.wearable and flags.gem_pouch,
+          flags.has_pocket == true and flags.wearable and flags.gem_pouch,
       order_by: [desc: location.moved_at]
     )
     |> Repo.all()
@@ -959,7 +943,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
-          flags.container == true and flags.wearable,
+          flags.has_pocket == true and flags.wearable,
       order_by: [desc: location.moved_at]
     )
     |> Repo.all()
@@ -1033,9 +1017,9 @@ defmodule Mud.Engine.Item do
   end
 
   def parent_containers_open?(item = %__MODULE__{}) do
-    from(container in Container,
-      where: container.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id))),
-      select: fragment("bool_and(?)", container.open)
+    from(closable in Closable,
+      where: closable.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id))),
+      select: fragment("bool_and(?)", closable.open)
     )
     |> Repo.one!()
   end
@@ -1043,13 +1027,15 @@ defmodule Mud.Engine.Item do
   def list_closed_parent_containers(item = %__MODULE__{}) do
     sorted_parents = list_sorted_parent_containers(item)
 
-    Enum.filter(sorted_parents, &(not &1.container.open))
+    Enum.filter(sorted_parents, &(not &1.closable.open))
   end
 
   def list_sorted_parent_containers(item = %__MODULE__{}) do
     parents =
-      from([container: container] in base_query_without_preload(),
-        where: container.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id)))
+      from([flags: flags] in base_query_without_preload(),
+        where:
+          flags.item_id in subquery(recursive_parent_ids_query(List.wrap(item.id))) and
+            flags.has_pocket
       )
       |> Repo.all()
       |> preload()
@@ -1145,20 +1131,6 @@ defmodule Mud.Engine.Item do
   #
   #
 
-  def base_query_for_description_and_location_and_flags_and_container() do
-    from(
-      item in __MODULE__,
-      left_join: location in assoc(item, :location),
-      as: :location,
-      left_join: description in assoc(item, :description),
-      as: :description,
-      left_join: flags in assoc(item, :flags),
-      as: :flags,
-      left_join: container in assoc(item, :container),
-      as: :container
-    )
-  end
-
   def base_query_for_description_and_location_and_flags() do
     from(
       item in __MODULE__,
@@ -1186,8 +1158,6 @@ defmodule Mud.Engine.Item do
       item in __MODULE__,
       left_join: coin in assoc(item, :coin),
       as: :coin,
-      left_join: container in assoc(item, :container),
-      as: :container,
       left_join: description in assoc(item, :description),
       as: :description,
       left_join: flags in assoc(item, :flags),
@@ -1654,7 +1624,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         description.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
-          like(description.short, ^search_string) and flags.container,
+          like(description.short, ^search_string) and flags.has_pocket,
       order_by: [desc: location.moved_at]
     )
   end
@@ -1701,49 +1671,75 @@ defmodule Mud.Engine.Item do
     end)
   end
 
-  defp update_item_components(attrs) do
+  defp update_item_components(attrs, flags) do
+    key_to_flags = %{
+      "closable" => :close,
+      "coin" => :coin,
+      "description" => true,
+      "flags" => true,
+      "furniture" => :furniture,
+      "gem" => :gem,
+      "location" => true,
+      "lockable" => false,
+      "physics" => true,
+      "pocket" => :has_pocket,
+      "surface" => :has_surface,
+      "wearable" => :wearable
+    }
+
     Enum.each(attrs, fn {key, val} ->
-      if not is_nil(val) and key != "id" do
-        update_item_component(key, val)
+      if not is_nil(val) and key != "id" and
+           (key_to_flags[key] == true or
+              (key_to_flags[key] != false and Map.get(flags, key_to_flags[key]) == true)) do
+        update_component(key, val, flags.item_id)
       end
     end)
   end
 
-  defp update_item_component(key, attrs) do
+  defp update_component(key, attrs, item_id) do
     key_callback_map = %{
+      "closable" => Closable,
       "coin" => Coin,
-      "container" => Container,
       "description" => Description,
       "flags" => Flags,
       "furniture" => Furniture,
       "gem" => Gem,
       "location" => Location,
+      "lockable" => Lockable,
       "physics" => Physics,
+      "pocket" => Pocket,
       "surface" => Surface,
       "wearable" => Wearable
     }
 
     callback = key_callback_map[key]
 
-    callback.get!(attrs["id"]) |> callback.update!(attrs)
+    if attrs["id"] == "" do
+      callback.create(Map.put(attrs, "item_id", item_id))
+    else
+      callback.get!(attrs["id"]) |> callback.update!(attrs)
+    end
   end
 
   def preload(results) do
     Repo.preload(
       results,
       [
+        :closable,
         :coin,
-        :container,
         :description,
         :flags,
         :furniture,
         :gem,
         :location,
+        :lockable,
         :physics,
+        :pocket,
         :surface,
         :wearable
       ],
       force: true
     )
+    |> IO.inspect(label: :preloaded)
   end
 end

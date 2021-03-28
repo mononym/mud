@@ -104,7 +104,7 @@ defmodule Mud.Engine.Command.Remove do
         container_primary: false
       })
 
-    context = Util.maybe_update_primary_container(context, was_container_primary)
+    # context = Util.maybe_update_primary_container(context, was_container_primary)
 
     others =
       Character.list_others_active_in_areas(context.character.id, context.character.area_id)

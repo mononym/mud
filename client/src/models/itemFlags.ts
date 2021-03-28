@@ -7,7 +7,7 @@ export interface ItemFlagsInterface {
   look: boolean;
   open: boolean;
   remove: boolean;
-  store: boolean;
+  stow: boolean;
   trash: boolean;
   wear: boolean;
   armor: boolean;
@@ -40,7 +40,7 @@ const state: ItemFlagsInterface = {
   look: false,
   open: false,
   remove: false,
-  store: false,
+  stow: false,
   trash: false,
   wear: false,
   armor: false,

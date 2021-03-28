@@ -3,6 +3,7 @@ export interface ItemDescriptionInterface {
   item_id: string;
   short: string;
   long: string;
+  key: string;
 }
 
 const state: ItemDescriptionInterface = {
@@ -10,6 +11,7 @@ const state: ItemDescriptionInterface = {
   item_id: "",
   short: "",
   long: "",
+  key: "",
 };
 
 export default state;

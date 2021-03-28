@@ -1,4 +1,4 @@
-defmodule Mud.Engine.Item.Container do
+defmodule Mud.Engine.Item.Pocket do
   use Mud.Schema
   import Ecto.Changeset
   import Ecto.Query
@@ -14,18 +14,14 @@ defmodule Mud.Engine.Item.Container do
              :capacity,
              :height,
              :length,
-             :locked,
-             :open,
              :width
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
-  schema "item_containers" do
+  schema "item_pockets" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
     field(:capacity, :integer, default: 1)
     field(:height, :integer, default: 1)
     field(:length, :integer, default: 1)
-    field(:locked, :boolean, default: false)
-    field(:open, :boolean, default: true)
     field(:width, :integer, default: 1)
   end
 
@@ -38,8 +34,6 @@ defmodule Mud.Engine.Item.Container do
       :capacity,
       :height,
       :length,
-      :locked,
-      :open,
       :width
     ])
     |> foreign_key_constraint(:item_id)

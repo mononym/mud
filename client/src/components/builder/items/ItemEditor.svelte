@@ -1,4 +1,7 @@
 <script>
+  import { onMount } from "svelte";
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
   import { WorldBuilderStore } from "../state";
   const { itemUnderConstruction, saveItem, cancelEditItem } = WorldBuilderStore;
 
@@ -10,7 +13,7 @@
   $: disableArmorCheckbox =
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -23,7 +26,7 @@
   $: disableClothingCheckbox =
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -36,7 +39,7 @@
   $: disableCoinCheckbox =
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -46,7 +49,7 @@
     $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
-  $: disableContainerCheckbox =
+  $: disableEquipmentCheckbox =
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
@@ -63,7 +66,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
     $itemUnderConstruction.flags.jewelry ||
@@ -76,7 +79,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -90,7 +93,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.jewelry ||
@@ -103,7 +106,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -116,7 +119,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -131,7 +134,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -144,7 +147,7 @@
     $itemUnderConstruction.flags.armor ||
     $itemUnderConstruction.flags.clothing ||
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
+    $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
     $itemUnderConstruction.flags.instrument ||
@@ -154,33 +157,33 @@
     $itemUnderConstruction.flags.shield;
 
   $: disableGemPouchCheckbox =
-    !$itemUnderConstruction.flags.container ||
+    !$itemUnderConstruction.flags.has_pocket ||
     !$itemUnderConstruction.flags.wearable;
 
   $: disableHiddenCheckbox = !$itemUnderConstruction.flags.scenery;
 
   $: disableShopDisplayCheckbox = !$itemUnderConstruction.flags.furniture;
 
-  $: disableWearableCheckbox = !$itemUnderConstruction.flags.container;
-
-  $: disablePocketCheckbox =
-    $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+  $: disableWearableCheckbox =
     $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.container ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
-    $itemUnderConstruction.flags.instrument ||
-    $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
-    $itemUnderConstruction.flags.shield ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.scenery;
+
+  $: disablePocketCheckbox =
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.material;
 
   $: disableSurfaceCheckbox =
     !$itemUnderConstruction.flags.furniture &&
-    !$itemUnderConstruction.flags.scenery;
+    !(
+      $itemUnderConstruction.flags.scenery &&
+      $itemUnderConstruction.flags.equipment
+    );
 
-  $: disableCloseCheckbox = !$itemUnderConstruction.flags.container;
+  $: disableCloseCheckbox = !$itemUnderConstruction.flags.has_pocket;
 
   $: disableDropCheckbox = !$itemUnderConstruction.flags.hold;
 
@@ -188,7 +191,7 @@
 
   $: disableLookCheckbox = false;
 
-  $: disableOpenCheckbox = !$itemUnderConstruction.flags.container;
+  $: disableOpenCheckbox = !$itemUnderConstruction.flags.has_pocket;
 
   $: disableRemoveCheckbox = !$itemUnderConstruction.flags.wearable;
 
@@ -225,7 +228,7 @@
     $itemUnderConstruction.location.on_ground ||
     $itemUnderConstruction.location.held_in_hand;
 
-  let customizeLongDescription = false
+  let customizeLongDescription = false;
 
   function handleOtherItemChange() {
     // if other id is blank make sure it the rest of the flags are not set for it to be relative to an item
@@ -253,7 +256,7 @@
     } else if (
       otherItemsForRelativePlacement[
         $itemUnderConstruction.location.relative_item_id
-      ].flags.container ||
+      ].flags.has_pocket ||
       (otherItemsForRelativePlacement[
         $itemUnderConstruction.location.relative_item_id
       ].flags.furniture &&
@@ -267,6 +270,19 @@
       }
     }
   }
+
+  onMount(() => {
+    tippy("[data-tippy-content]");
+  });
+
+  let customizeLongDescriptionInput;
+
+  function onChangeCustomizeLongDescription(event) {
+    if (!customizeLongDescriptionInput.checked) {
+      $itemUnderConstruction.description.long =
+        $itemUnderConstruction.description.short;
+    }
+  }
 </script>
 
 <form
@@ -277,9 +293,24 @@
     <div class="px-4 py-5 sm:p-6">
       <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">Item Description</h2>
+          <h2 class="text-gray-300 font-bold">Item Description:</h2>
         </div>
-        <div class="col-span-3">
+        <div
+          class="col-span-1"
+          data-tippy-content="The key aids in searching for items, and as such this single word MUST match one of the words in both the short and long description. For example, `a sturdy backpack with red and white piping` would have the key `backpack`."
+        >
+          <label for="itemKey" class="block text-sm font-medium text-gray-300"
+            >Item Key</label
+          >
+          <input
+            bind:value={$itemUnderConstruction.description.key}
+            type="textarea"
+            name="itemKey"
+            id="itemKey"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+        <div class="col-span-2">
           <label
             for="itemShortDescription"
             class="block text-sm font-medium text-gray-300"
@@ -302,31 +333,33 @@
           >
           <input
             bind:checked={customizeLongDescription}
+            on:change={onChangeCustomizeLongDescription}
+            bind:this={customizeLongDescriptionInput}
             type="checkbox"
             name="customizeLongDescription"
             id="customizeLongDescription"
           />
         </div>
         {#if customizeLongDescription}
-        <div class="col-span-9">
-          <label
-            for="itemLongDescription"
-            class="block text-sm font-medium text-gray-300"
-            >Item Long Description</label
-          >
-          <input
-            bind:value={$itemUnderConstruction.description.long}
-            type="textarea"
-            name="itemLongDescription"
-            id="itemLongDescription"
-            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-          />
-        </div>
+          <div class="col-span-8">
+            <label
+              for="itemLongDescription"
+              class="block text-sm font-medium text-gray-300"
+              >Item Long Description</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.description.long}
+              type="textarea"
+              name="itemLongDescription"
+              id="itemLongDescription"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
         {/if}
         <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">Item Type (Pick One)</h2>
+          <h2 class="text-gray-300 font-bold">Item Type (Pick One):</h2>
         </div>
-        <div class="col-span-1">
+        <!-- <div class="col-span-1">
           <label for="isArmor" class="block text-sm font-medium text-gray-300"
             >Armor</label
           >
@@ -350,7 +383,7 @@
             id="isClothing"
             disabled={disableClothingCheckbox}
           />
-        </div>
+        </div> -->
         <div class="col-span-1">
           <label for="isCoin" class="block text-sm font-medium text-gray-300"
             >Coin</label
@@ -363,17 +396,20 @@
             disabled={disableCoinCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="Most things that are not of a special sort, like furniture or armor, end up being equipment. A cup or a platter is equipment as much as a rope is."
+        >
           <label
-            for="isContainer"
-            class="block text-sm font-medium text-gray-300">Container</label
+            for="isEquipment"
+            class="block text-sm font-medium text-gray-300">Equipment</label
           >
           <input
-            bind:checked={$itemUnderConstruction.flags.container}
+            bind:checked={$itemUnderConstruction.flags.is_equipment}
             type="checkbox"
-            name="isContainer"
-            id="isContainer"
-            disabled={disableContainerCheckbox}
+            name="isEquipment"
+            id="isEquipment"
+            disabled={disableEquipmentCheckbox}
           />
         </div>
         <div class="col-span-1">
@@ -401,7 +437,7 @@
             disabled={disableGemCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <!-- <div class="col-span-1">
           <label
             for="isInstrument"
             class="block text-sm font-medium text-gray-300">Instrument</label
@@ -425,10 +461,11 @@
             id="isJewelry"
             disabled={disableJewelryCheckbox}
           />
-        </div>
-        <div class="col-span-1">
+        </div> -->
+        <!-- <div class="col-span-1">
           <label
             for="isMaterial"
+            data-tippy-content="Raw materials used in crafting"
             class="block text-sm font-medium text-gray-300">Material</label
           >
           <input
@@ -438,8 +475,8 @@
             id="isMaterial"
             disabled={disableMaterialCheckbox}
           />
-        </div>
-        <div class="col-span-1">
+        </div> -->
+        <!-- <div class="col-span-1">
           <label for="isShield" class="block text-sm font-medium text-gray-300"
             >Shield</label
           >
@@ -462,13 +499,16 @@
             id="isWeapon"
             disabled={disableWeaponCheckbox}
           />
-        </div>
+        </div> -->
         <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">
-            Item Type Behavior Modifiers
+          <h2 class="text-gray-300 font-bold">
+            Item Type Behavior Modifiers :
           </h2>
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="A gem pouch is a special class of container that is treated differently with some commands. Only apply this to things actually meant to be a gem pouch"
+        >
           <label
             for="isGemPouch"
             class="block text-sm font-medium text-gray-300">Gem Pouch</label
@@ -481,7 +521,10 @@
             disabled={disableGemPouchCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="Should be used together with scenery. Making an item hidden means that while it will exist in the area, it will not show up directly in the list of items to be seen. This lets you do things like reference a fountain in a description and have a hidden item for characters to look at."
+        >
           <label for="isHidden" class="block text-sm font-medium text-gray-300"
             >Hidden</label
           >
@@ -493,7 +536,7 @@
             disabled={disableHiddenCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <!-- <div class="col-span-1">
           <label
             for="isShopDisplay"
             class="block text-sm font-medium text-gray-300">Shop Display</label
@@ -505,8 +548,8 @@
             id="isShopDisplay"
             disabled={disableShopDisplayCheckbox}
           />
-        </div>
-        <div class="col-span-1">
+        </div> -->
+        <div class="col-span-1" data-tippy-content="The item can be worn.">
           <label
             for="isWearable"
             class="block text-sm font-medium text-gray-300">Wearable</label
@@ -519,7 +562,10 @@
             disabled={disableWearableCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="A pocket is a generic 'space' for holding things and can apply equally to a vault as to a packpack as to a pouch."
+        >
           <label for="hasPocket" class="block text-sm font-medium text-gray-300"
             >Has Pocket</label
           >
@@ -531,10 +577,13 @@
             disabled={disablePocketCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="A  generic horizontal surface which can be configured to hold items and characters. Could apply to things like a jewelry box, a table, or a shelf."
+        >
           <label
             for="hasSurface"
-            class="block text-sm font-medium text-gray-300">Surface</label
+            class="block text-sm font-medium text-gray-300">Has Surface</label
           >
           <input
             bind:checked={$itemUnderConstruction.flags.has_surface}
@@ -544,7 +593,10 @@
             disabled={disableSurfaceCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="The item will be part of the background and will show up in the Things of Interest part of an area description. Items that are scenery are expected to be locked down in terms of what characters can do with them."
+        >
           <label for="isScenery" class="block text-sm font-medium text-gray-300"
             >Scenery</label
           >
@@ -557,11 +609,14 @@
           />
         </div>
         <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">
-            Actions which can be taken on an item by a character
+          <h2 class="text-gray-300 font-bold">
+            Actions which can be taken on an item by a character :
           </h2>
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="This generally applies to things with pockets, such as backpacks, but can also apply to books or jewelry, or so on."
+        >
           <label for="canClose" class="block text-sm font-medium text-gray-300"
             >Close</label
           >
@@ -573,7 +628,10 @@
             disabled={disableCloseCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="If a character is holding an item, this determines if it can be dropped/put somewhere. Does not control if the item can be stowed on the character."
+        >
           <label for="canDrop" class="block text-sm font-medium text-gray-300"
             >Drop</label
           >
@@ -585,7 +643,10 @@
             disabled={disableDropCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="Determines if a character can hold an item, which in practice means being able to get or even stow (because to stow you have to 'get') an item."
+        >
           <label for="canHold" class="block text-sm font-medium text-gray-300"
             >Hold</label
           >
@@ -597,8 +658,9 @@
             disabled={disableHoldCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <!-- <div class="col-span-1">
           <label for="canLook" class="block text-sm font-medium text-gray-300"
+          data-tippy-content="If the item can be looked at."
             >Look</label
           >
           <input
@@ -608,8 +670,11 @@
             id="canLook"
             disabled={disableLookCheckbox}
           />
-        </div>
-        <div class="col-span-1">
+        </div> -->
+        <div
+          class="col-span-1"
+          data-tippy-content="If the item is a closable item, controls if you can also open said item."
+        >
           <label for="canOpen" class="block text-sm font-medium text-gray-300"
             >Open</label
           >
@@ -621,7 +686,10 @@
             disabled={disableOpenCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="If an item is a wearable item, this controls if the item can be removed from the character or if they are stuck with it once it is on."
+        >
           <label for="canRemove" class="block text-sm font-medium text-gray-300"
             >Remove</label
           >
@@ -633,20 +701,24 @@
             disabled={disableRemoveCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <div
+          class="col-span-1"
+          data-tippy-content="Controls if an item can be put away into a container on the character."
+        >
           <label for="canStore" class="block text-sm font-medium text-gray-300"
-            >Store</label
+            >Stow</label
           >
           <input
-            bind:checked={$itemUnderConstruction.flags.store}
+            bind:checked={$itemUnderConstruction.flags.stow}
             type="checkbox"
             name="canStore"
             id="canStore"
             disabled={disableStoreCheckbox}
           />
         </div>
-        <div class="col-span-1">
+        <!-- <div class="col-span-1">
           <label for="canTrash" class="block text-sm font-medium text-gray-300"
+          data-tippy-content="A trashed item is simply destroyed."
             >Trash</label
           >
           <input
@@ -656,8 +728,11 @@
             id="canTrash"
             disabled={disableTrashCheckbox}
           />
-        </div>
-        <div class="col-span-1">
+        </div> -->
+        <div
+          class="col-span-1"
+          data-tippy-content="If a character can wear a wearable item."
+        >
           <label for="canWear" class="block text-sm font-medium text-gray-300"
             >Wear</label
           >
@@ -671,7 +746,7 @@
         </div>
 
         <div class="col-span-12">
-          <h2 class="text-gray-300 text-center">Location</h2>
+          <h2 class="text-gray-300 font-bold">Location:</h2>
         </div>
         <div class="col-span-1">
           <label for="onGround" class="block text-sm font-medium text-gray-300"
@@ -733,7 +808,7 @@
 
         {#if $itemUnderConstruction.flags.physics}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Physical Properties</h2>
+            <h2 class="text-gray-300 font-bold">Physical Properties:</h2>
           </div>
           <div class="col-span-2">
             <label
@@ -802,9 +877,12 @@
 
         {#if $itemUnderConstruction.flags.has_surface}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Surface Properties</h2>
+            <h2 class="text-gray-300 font-bold">Surface Properties:</h2>
           </div>
-          <div class="col-span-1">
+          <div
+            class="col-span-1"
+            data-tippy-content="Show items on the surface as part of a generic look action. A table with this on would show the items on it as part of the area description."
+          >
             <label
               for="showItemContents"
               class="block text-sm font-medium text-gray-300"
@@ -818,7 +896,10 @@
             />
           </div>
           {#if $itemUnderConstruction.surface.show_item_contents}
-            <div class="col-span-1">
+            <div
+              class="col-span-1"
+              data-tippy-content="If selected items on the surface will be described using their long description rather than their short."
+            >
               <label
                 for="showDetailedItems"
                 class="block text-sm font-medium text-gray-300"
@@ -832,7 +913,10 @@
                 id="showDetailedItems"
               />
             </div>
-            <div class="col-span-2">
+            <div
+              class="col-span-2"
+              data-tippy-content="When showing items, as in the case of a table in an area during a 'look' action, this determines how many items to actually show before signaling there is more to see with an explicit 'look on table'. O is unlimited."
+            >
               <label
                 for="showItemLimit"
                 class="block text-sm font-medium text-gray-300"
@@ -849,7 +933,10 @@
               />
             </div>
           {/if}
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="Control how many items, seperate from size or weight, a surface can hold. 0 is unlimited."
+          >
             <label
               for="itemCountLimit"
               class="block text-sm font-medium text-gray-300"
@@ -865,7 +952,10 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="How much weight a surface can hold. 0 is unlimited. Only items are taken into account, not characters and the items they are carrying. 0 is unlimited."
+          >
             <label
               for="itemWeightLimit"
               class="block text-sm font-medium text-gray-300"
@@ -881,7 +971,64 @@
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          <div class="col-span-1">
+          <div
+            class="col-span-2"
+            data-tippy-content="The maximum length of the surface available for supporting items. 0 is unlimited."
+          >
+            <label
+              for="surfaceLength"
+              class="block text-sm font-medium text-gray-300"
+              >Surface length in cm</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.surface.length}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="surfaceLength"
+              id="surfaceLength"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div
+            class="col-span-2"
+            data-tippy-content="The maximum width of the surface available for supporting items. 0 is unlimited."
+          >
+            <label
+              for="surfaceWidth"
+              class="block text-sm font-medium text-gray-300"
+              >Surface width in cm</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.surface.width}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="surfaceWidth"
+              id="surfaceWidth"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div
+            class="col-span-1"
+            data-tippy-content="Controls whether or not items will have to fit the length/width of the surface. For example a pedistal might be able to support an item that is much larger than itself."
+          >
+            <label
+              for="surfaceitemsFit"
+              class="block text-sm font-medium text-gray-300"
+              >Items must fit</label
+            >
+            <input
+              bind:checked={$itemUnderConstruction.surface.items_must_fit}
+              type="checkbox"
+              name="surfaceitemsFit"
+              id="surfaceitemsFit"
+            />
+          </div>
+          <div
+            class="col-span-1"
+            data-tippy-content="Whether or not the surface can actually hold characters."
+          >
             <label
               for="canHoldCharacters"
               class="block text-sm font-medium text-gray-300"
@@ -895,7 +1042,10 @@
             />
           </div>
           {#if $itemUnderConstruction.surface.can_hold_characters}
-            <div class="col-span-2">
+            <div
+              class="col-span-2"
+              data-tippy-content="How many characters a surface can hold. 0 is unlimited."
+            >
               <label
                 for="characterLimit"
                 class="block text-sm font-medium text-gray-300"
@@ -914,71 +1064,83 @@
           {/if}
         {/if}
 
-        {#if $itemUnderConstruction.flags.container}
+        {#if $itemUnderConstruction.flags.has_pocket}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Container Properties</h2>
+            <h2 class="text-gray-300 font-bold">Pocket Properties:</h2>
           </div>
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="Total amount of weight the pocket is able to contain. 0 is unlimited."
+          >
             <label
-              for="containerCapacity"
+              for="pocketCapacity"
               class="block text-sm font-medium text-gray-300"
               >Capacity in grams</label
             >
             <input
-              bind:value={$itemUnderConstruction.container.capacity}
+              bind:value={$itemUnderConstruction.pocket.capacity}
               type="number"
               min="0"
               max="1000000000000000"
-              name="containerCapacity"
-              id="containerCapacity"
+              name="pocketCapacity"
+              id="pocketCapacity"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="The maximum internal height of the pocket available for containing items. 0 is unlimited."
+          >
             <label
-              for="containerHeight"
+              for="pocketHeight"
               class="block text-sm font-medium text-gray-300"
               >Internal height in cm</label
             >
             <input
-              bind:value={$itemUnderConstruction.container.height}
+              bind:value={$itemUnderConstruction.pocket.height}
               type="number"
               min="0"
               max="1000000000000000"
-              name="containerHeight"
-              id="containerHeight"
+              name="pocketHeight"
+              id="pocketHeight"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="The maximum internal length of the pocket available for containing items. 0 is unlimited."
+          >
             <label
-              for="containerLength"
+              for="pocketLength"
               class="block text-sm font-medium text-gray-300"
               >Internal length in cm</label
             >
             <input
-              bind:value={$itemUnderConstruction.container.length}
+              bind:value={$itemUnderConstruction.pocket.length}
               type="number"
               min="0"
               max="1000000000000000"
-              name="containerLength"
-              id="containerLength"
+              name="pocketLength"
+              id="pocketLength"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
-          <div class="col-span-2">
+          <div
+            class="col-span-2"
+            data-tippy-content="The maximum internal width of the pocket available for containing items. 0 is unlimited."
+          >
             <label
-              for="containerWidth"
+              for="pocketWidth"
               class="block text-sm font-medium text-gray-300"
               >Internal width in cm</label
             >
             <input
-              bind:value={$itemUnderConstruction.container.width}
+              bind:value={$itemUnderConstruction.pocket.width}
               type="number"
               min="0"
               max="1000000000000000"
-              name="containerWidth"
-              id="containerWidth"
+              name="pocketWidth"
+              id="pocketWidth"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>
@@ -986,16 +1148,20 @@
 
         {#if $itemUnderConstruction.flags.wearable}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Wearable Properties</h2>
+            <h2 class="text-gray-300 font-bold">Wearable Properties:</h2>
           </div>
-          <div class="col-span-2">
-            <label for="gemType" class="block text-sm font-medium text-gray-300"
-              >Slot</label
+          <div
+            class="col-span-2"
+            data-tippy-content="Where on the body the wearable item is actually worn."
+          >
+            <label
+              for="wearableSlot"
+              class="block text-sm font-medium text-gray-300">Slot</label
             >
             <select
-              id="gemType"
+              id="wearableSlot"
               bind:value={$itemUnderConstruction.wearable.slot}
-              name="gemType"
+              name="wearableSlot"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value="on_back">On Back</option>
@@ -1025,7 +1191,7 @@
 
         {#if $itemUnderConstruction.flags.gem}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">Gem Properties</h2>
+            <h2 class="text-gray-300 font-bold">Gem Properties:</h2>
           </div>
           <div class="col-span-2">
             <label for="gemType" class="block text-sm font-medium text-gray-300"
@@ -1084,13 +1250,12 @@
             <label
               for="gemCarats"
               class="block text-sm font-medium text-gray-300"
-              >Carats (1-10,000)</label
+              >Carats (0.05-10,000)</label
             >
             <input
               bind:value={$itemUnderConstruction.gem.carat}
-              type="number"
-              min="1"
-              max="10000"
+              type="text"
+              pattern="^(\d+|\d+\.(\d|\d[05]))$"
               name="gemCarats"
               id="gemCarats"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
@@ -1146,8 +1311,8 @@
 
         {#if allowRelativePlacement && Object.values(otherItemsForRelativePlacement).length > 0 && $itemUnderConstruction.location.relative_to_item}
           <div class="col-span-12">
-            <h2 class="text-gray-300 text-center">
-              Placement Relative to Other Item
+            <h2 class="text-gray-300 font-bold">
+              Placement Relative to Other Item :
             </h2>
           </div>
           <div class="col-span-2">
@@ -1184,7 +1349,7 @@
               name="relationToOtherItem"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              {#if $itemUnderConstruction.location.relation == ""}
+              {#if $itemUnderConstruction.location.relation == "" || ($itemUnderConstruction.location.relation == "in" && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_surface && !otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_pocket) || ($itemUnderConstruction.location.relation == "on" && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_pocket && !otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_surface)}
                 <option value="" selected disabled
                   >Select Relative Location</option
                 >
@@ -1192,7 +1357,7 @@
               {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_surface}
                 <option value="on">on</option>
               {/if}
-              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.container}
+              {#if otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id] && otherItemsForRelativePlacement[$itemUnderConstruction.location.relative_item_id].flags.has_pocket}
                 <option value="in">in</option>
               {/if}
             </select>

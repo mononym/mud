@@ -269,7 +269,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_on_ground(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_on_ground(area_id, search_string)
+    items = ItemSearch.search_on_ground(area_id, search_string)
 
     case things_to_match(items) do
       [] ->
@@ -426,7 +426,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in items in unspecified location
+  Find matches relative to an item in a given area.
   """
   @spec find_matches_relative_to_place_in_area(
           String.t(),
@@ -443,32 +443,16 @@ defmodule Mud.Engine.Search do
         mode \\ "simple",
         thing_is_immediate_child \\ true
       ) do
-    # IO.inspect(thing, label: :find_matches_relative_to_place_in_area_thing)
-    # IO.inspect(place, label: :find_matches_relative_to_place_in_area_place)
     path = unnest_place_path(place, [])
-    # IO.inspect(path, label: :find_matches_relative_to_place_in_area_path)
-
-    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
-    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
-    # path =
-    #   if length(path) >= 2 and Enum.at(path, 1).where == "in" do
-    #     [_ | path] = path
-
-    #     path
-    #   else
-    #     path
-    #   end
 
     items =
-      Item.search_relative_to_item_in_area(
+      ItemSearch.search_relative_to_item_in_area(
         area_id,
         path,
         thing,
         mode,
         thing_is_immediate_child
       )
-
-    # IO.inspect(items, label: :find_matches_relative_to_place_in_inventory_items)
 
     case things_to_match(items) do
       [] ->

@@ -120,7 +120,7 @@ defmodule Mud.Engine.Command.Buy do
               hand
             )
 
-          new_item = Mud.Repo.preload(new_item, [:coin, :description, :gem, :container, :physics])
+          new_item = Item.preload(new_item)
 
           context
           |> Context.append_event(

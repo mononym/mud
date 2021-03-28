@@ -70,21 +70,79 @@ defmodule Mud.Engine.Command.Put do
   defp put_item_in_place_by_uuid(context) do
     case Item.get(context.command.ast.thing.input) do
       {:ok, item} ->
-        if item.location.held_in_hand and item.location.character.id == context.character.id do
-          find_place_to_put_thing(context, List.first(Search.things_to_match(item)), [])
-        else
-          Util.dave_error_v2(context)
-        end
+        # This should only be triggered by a UI action. Don't trust anything though and validate that the item is
+        # actually on the character in question
+        # if item.location.held_in_hand and item.location.character_id == context.character.id do
+        #   find_place_to_put_thing(context, List.first(Search.things_to_match(item)), [])
+        # else
+        #   Util.dave_error_v2(context)
+        # end
+
+        handle_thing_search_results(context, {:ok, Search.things_to_match(item)})
 
       _ ->
         Util.dave_error_v2(context)
     end
   end
 
+  # Handles the logistics around single matches, multiple matches, and allowing the selection of one of a number of
+  # possible matches via the original command. For example, you could type 'put 2 rock on shelf' and it would put the
+  # second item that matched 'rock' instead of the first one as would be normal.
+  defp handle_thing_search_results(context, results) do
+    case results do
+      # There is only a single match and the player did not try and specify a specific item so just roll with that.
+      {:ok, [match]} when context.command.ast.thing.which == 0 ->
+        find_place_to_put_thing(context, match)
+
+      # There are possibly multiple matches, but the player might also have specified a specific item
+      {:ok, all_matches = [match | matches]} ->
+        case context.command.ast do
+          # If which is greater than 0, then more than one match was anticipated and the player entered a number.
+          # Make sure provided selection is not more than the number of items that were found
+          %TAP{thing: %Thing{which: which}}
+          when is_integer(which) and which > 0 and which <= length(all_matches) ->
+            find_place_to_put_thing(context, Enum.at(all_matches, which - 1))
+
+          # If the user provided a number but it is greater than the number of items found,
+          %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
+            Util.not_found_error(context)
+
+          # The user did not preselect an item and we're just dealing with multiple matches. Fall through to the
+          # normal find_place_to_put_thing function.
+          _ ->
+            # Determine what to do based on character preferences when it comes to multiple potential matches.
+            case context.character.settings.commands.multiple_matches_mode do
+              "silent" ->
+                # If their choice is "silent" that means just drop the extras so it is like they don't exist
+                find_place_to_put_thing(context, match, [])
+
+              key when key in ["item only", "full path"] ->
+                # If their choice is "full path" or "item only" that means pass everything through for generating messages later
+                find_place_to_put_thing(context, match, matches)
+
+              "choose" ->
+                Context.append_message(
+                  context,
+                  Message.new_story_output(
+                    context.character.id,
+                    "Multiple places to put things were found, please be more specific.",
+                    "system_alert"
+                  )
+                )
+            end
+        end
+
+      # No results were found so return a standard error.
+      _ ->
+        Util.not_found_error(context)
+    end
+  end
+
+  # Have a thing to put but need a place to put it
   defp find_place_to_put_thing(
          context = %Mud.Engine.Command.Context{},
          thing,
-         other_thing_matches
+         other_thing_matches \\ []
        ) do
     Logger.debug("Finding place to put thing: #{inspect(context.command.ast)}")
 
@@ -93,7 +151,7 @@ defmodule Mud.Engine.Command.Put do
       %TAP{place: %Place{personal: false}} ->
         find_place_in_area_or_inventory_to_put_thing(context, thing, other_thing_matches)
 
-      # This thing will be in a place, but that place might not be on the character
+      # This thing will be in a place that is somewhere in the character's inventory
       %TAP{place: %Place{personal: true}} ->
         find_place_in_inventory_to_put_thing(context, thing, other_thing_matches)
     end
@@ -103,6 +161,8 @@ defmodule Mud.Engine.Command.Put do
     # IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
 
     results =
+      # There is no extended path, ie: in backpack in sack on shelf
+      # So just try to find a thing in the area that can be seen to try and place the item on
       if is_nil(context.command.ast.place.path) do
         Search.find_matches_in_area(
           context.character.area_id,
@@ -110,6 +170,7 @@ defmodule Mud.Engine.Command.Put do
           context.character.settings.commands.search_mode
         )
       else
+        # There is an extended path, ie: in backpack in sack on shelf
         Search.find_matches_relative_to_place_in_area(
           context.character.area_id,
           context.command.ast.place,
@@ -191,12 +252,12 @@ defmodule Mud.Engine.Command.Put do
       {:ok, matches} ->
         case context.character.settings.commands.multiple_matches_mode do
           "silent" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, false)
+            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, true)
 
             find_place_to_put_thing(context, match, other_thing_matches)
 
           "full path" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, false)
+            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, true)
 
             find_place_to_put_thing(context, match, other_thing_matches)
 

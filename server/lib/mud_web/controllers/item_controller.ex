@@ -7,7 +7,7 @@ defmodule MudWeb.ItemController do
   action_fallback(MudWeb.FallbackController)
 
   def load_items_for_area(conn, %{"area_id" => area_id}) do
-    items = Item.list_items_in_area_and_nested_visible_items(area_id)
+    items = Item.list_in_area_and_all_nested(area_id)
     render(conn, "index.json", items: items)
   end
 
