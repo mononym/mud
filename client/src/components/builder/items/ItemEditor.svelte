@@ -1330,9 +1330,11 @@
             >
               <option value="">none</option>
               {#each Object.values(otherItemsForRelativePlacement) as otherItem}
-                <option value={otherItem.id}
-                  >{otherItem.description.short}</option
-                >
+                {#if otherItem.id != $itemUnderConstruction.id}
+                  <option value={otherItem.id}
+                    >{otherItem.description.short}</option
+                  >
+                {/if}
               {/each}
             </select>
           </div>
