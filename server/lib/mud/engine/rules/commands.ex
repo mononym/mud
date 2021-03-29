@@ -1007,52 +1007,59 @@ defmodule Mud.Engine.Rules.Commands do
         %Part{
           must_follow: [:look],
           matches: ["@", "at", "in", "on"],
-          key: :thing_where,
+          key: :thing_switch,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:thing_where, :look],
+          must_follow: [:thing_where, :look, :thing_switch],
           matches: ["my"],
           key: :thing_personal,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:look, :thing_where, :thing_personal],
+          must_follow: [:look, :thing_where, :thing_personal, :thing_switch],
           matches: [~r/^\d$/],
           key: :thing_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:thing_which, :look, :thing_personal, :thing_where],
+          must_follow: [:thing_which, :look, :thing_personal, :thing_where, :thing_switch],
           matches: [~r/.*/],
           key: :thing,
           greedy: true,
           transformer: &join_with_space_downcase/1
         },
         %Part{
-          must_follow: [:place, :thing],
-          matches: [">"],
+          must_follow: [:thing],
+          matches: ["in", "on"],
+          key: :thing_where,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place],
+          matches: ["in", "on"],
           key: :place_where,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:place_where],
+          must_follow: [:place_where, :thing_where],
           matches: ["my"],
           key: :place_personal,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:place_personal, :place_where],
+          must_follow: [:place_personal, :place_where, :thing_where],
           matches: [~r/^\d$/],
           key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:place_which, :place_where, :place_personal],
+          must_follow: [:place_which, :place_where, :place_personal, :thing_where],
           matches: [~r/.*/],
           key: :place,
           greedy: true,

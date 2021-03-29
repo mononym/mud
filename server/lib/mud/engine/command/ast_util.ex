@@ -105,6 +105,9 @@ defmodule Mud.Engine.Command.AstUtil do
       :thing_personal ->
         populate_thing(%{node | personal: true}, rest)
 
+      :thing_switch ->
+        populate_thing(%{node | switch: ast_node.input}, rest)
+
       :thing_which ->
         populate_thing(%{node | which: ast_node.input}, rest)
 

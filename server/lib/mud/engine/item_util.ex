@@ -57,12 +57,13 @@ defmodule Mud.Engine.ItemUtil do
             parent.location.worn_on_character ->
           true
 
-        item.location.relation == "on" and
-            item_index[item.location.relative_item_id].surface.show_item_contents ->
+        parent.location.relative_to_item and parent.location.relation == "on" ->
           true
 
-        item.location.relation == "in" and
-            item_index[item.location.relative_item_id].pocket.open ->
+        parent.location.relative_to_item and parent.location.relation == "in" and
+            (not item_index[parent.location.relative_item_id].flags.is_closable or
+               (item_index[parent.location.relative_item_id].flags.is_closable and
+                  item_index[parent.location.relative_item_id].closable.open)) ->
           true
 
         true ->

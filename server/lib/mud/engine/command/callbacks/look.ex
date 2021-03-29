@@ -230,13 +230,15 @@ defmodule Mud.Engine.Command.Look do
     in_area = Item.in_area?(item.id, context.character.area_id)
     in_inventory = Item.in_inventory?(item.id, context.character.id)
     is_visible = ItemUtil.is_available_for_look?(item)
+    IO.inspect({in_area, in_inventory, is_visible}, label: :look_item)
 
     cond do
       is_visible and (in_area or in_inventory) ->
-        where = context.command.ast.thing.where
+        switch = context.command.ast.thing.switch
+        IO.inspect({item.flags, switch}, label: :look_item)
 
         cond do
-          where in ["@", "at", nil] ->
+          switch in ["@", "at", nil] ->
             # get desc for item and spit it out
             self_msg =
               context.character.id
@@ -248,7 +250,7 @@ defmodule Mud.Engine.Command.Look do
 
             Context.append_message(context, self_msg)
 
-          where == "in" and item.flags.has_pocket ->
+          switch == "in" and item.flags.has_pocket ->
             items = Item.list_immediate_children_with_relationship(item, "in")
 
             case items do
@@ -299,7 +301,7 @@ defmodule Mud.Engine.Command.Look do
                 )
             end
 
-          where == "on" and item.flags.has_surface ->
+          switch == "on" and item.flags.has_surface ->
             items = Item.list_immediate_children_with_relationship(item, "on")
 
             case items do
@@ -354,7 +356,7 @@ defmodule Mud.Engine.Command.Look do
             Util.dave_error_v2(context)
         end
 
-      item.flags.has_pocket and not item.pocket.open ->
+      item.flags.has_pocket and item.flags.is_closable and not item.closable.open ->
         msg =
           Message.new_story_output(
             context.character.id,

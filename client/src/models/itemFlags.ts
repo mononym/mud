@@ -29,6 +29,7 @@ export interface ItemFlagsInterface {
   wearable: boolean;
   has_surface: boolean;
   has_pocket: boolean;
+  is_closable: boolean;
 }
 
 const state: ItemFlagsInterface = {
@@ -62,6 +63,7 @@ const state: ItemFlagsInterface = {
   is_equipment: false,
   has_surface: false,
   has_pocket: false,
+  is_closable: false,
 };
 
 export default state;
