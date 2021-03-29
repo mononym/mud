@@ -306,7 +306,7 @@ defmodule Mud.Engine.Command.Close do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(
+              CallbackUtil.append_assumption_text(
                 self_msg,
                 link,
                 other_links,
@@ -340,7 +340,7 @@ defmodule Mud.Engine.Command.Close do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(
+              CallbackUtil.append_assumption_text(
                 self_msg,
                 link,
                 other_links,
@@ -371,7 +371,7 @@ defmodule Mud.Engine.Command.Close do
             if other_matches != [] do
               other_links = Enum.map(other_matches, & &1.match)
 
-              Util.append_assumption_text(
+              CallbackUtil.append_assumption_text(
                 self_msg,
                 link,
                 other_links,
@@ -430,11 +430,9 @@ defmodule Mud.Engine.Command.Close do
               |> Message.append_text(" close ", "base")
 
             self_msg =
-              Util.construct_nested_item_location_message_for_self(
+              CallbackUtil.construct_item_current_location_message(
                 self_msg,
-                item,
-                "in",
-                true
+                item
               )
               |> Message.append_text(".", "base")
 
@@ -442,7 +440,7 @@ defmodule Mud.Engine.Command.Close do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(
+                CallbackUtil.append_assumption_text(
                   self_msg,
                   item,
                   other_items,
@@ -490,7 +488,7 @@ defmodule Mud.Engine.Command.Close do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(
+                CallbackUtil.append_assumption_text(
                   self_msg,
                   thing.match,
                   other_items,
@@ -517,7 +515,7 @@ defmodule Mud.Engine.Command.Close do
               if other_matches != [] do
                 other_items = Enum.map(other_matches, & &1.match)
 
-                Util.append_assumption_text(
+                CallbackUtil.append_assumption_text(
                   self_msg,
                   thing.match,
                   other_items,

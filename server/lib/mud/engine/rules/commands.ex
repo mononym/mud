@@ -385,20 +385,20 @@ defmodule Mud.Engine.Rules.Commands do
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:place_where],
+          must_follow: [:place_where, :thing_where],
           matches: ["my"],
           key: :place_personal,
           greedy: true,
           transformer: &List.first/1
         },
         %Part{
-          must_follow: [:place_personal, :place_where],
+          must_follow: [:place_personal, :place_where, :thing_where],
           matches: [~r/^\d$/],
           key: :place_which,
           transformer: &string_to_int/1
         },
         %Part{
-          must_follow: [:place_which, :place_where, :place_personal],
+          must_follow: [:place_which, :place_where, :place_personal, :thing_where],
           matches: [~r/.*/],
           key: :place,
           greedy: true,

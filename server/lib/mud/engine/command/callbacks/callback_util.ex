@@ -451,4 +451,260 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
     Context.append_message(context, message)
   end
+
+  def construct_item_current_location_message(message, item) do
+    items = List.wrap(item)
+    parents = Item.list_all_parents(items)
+    parent_index = Util.build_item_index(parents)
+
+    IO.inspect("construct_item_current_location_message")
+    IO.inspect(items, label: :items)
+    IO.inspect(parents, label: :parents)
+
+    message =
+      message
+      |> Message.append_text(
+        item.description.short,
+        Mud.Engine.Util.get_item_type(item)
+      )
+
+    # The parents query returns the item itself and this is expected, so to check if there are any parents check for
+    # length greater than 1 rather than against an empty list
+    if length(parents) > 1 do
+      message
+      |> Message.append_text(" #{item.location.relation} ", "base")
+      |> Util.build_parent_string(
+        parent_index[item.location.relative_item_id],
+        parent_index,
+        true,
+        "you"
+      )
+    else
+      message
+      |> Message.append_text(
+        " on the ground",
+        "base"
+      )
+    end
+  end
+
+  @doc """
+  Given an item, construct its full current location from the perspective of "other" characters.
+
+  An item being put into a container which is itself inside a container will only show the message
+  for the outermost container for other characters, for example.
+  """
+  def construct_item_current_location_movement_message_for_others(
+        character,
+        original_message,
+        item,
+        path,
+        item_in_area
+      ) do
+    in_container =
+      Enum.any?(path, fn item_in_path ->
+        item_in_path.flags.has_pocket and not (item_in_path.id == item.id)
+      end)
+
+    message =
+      original_message
+      |> Message.append_text(
+        item.description.short,
+        Util.get_item_type(item)
+      )
+
+    cond do
+      item.location.on_ground ->
+        Message.append_text(
+          message,
+          " on the ground",
+          "base"
+        )
+
+      # The item has been placed into a container somewhere in the area
+      item_in_area and in_container ->
+        outermost_item =
+          Enum.find(path, fn possible_parent ->
+            possible_parent.flags.has_pocket
+          end)
+
+        message = Message.append_text(message, " in ", "base")
+
+        if outermost_item.location.on_ground do
+          message
+          |> Message.append_text(
+            outermost_item.description.short,
+            Util.get_item_type(outermost_item)
+          )
+          |> Message.append_text(
+            " which is on the ground",
+            "base"
+          )
+        else
+          parent_index = Util.build_item_index(path)
+
+          Util.build_parent_string(
+            message,
+            outermost_item,
+            parent_index,
+            true,
+            character.name
+          )
+        end
+
+      # The item is on a visible surface somewhere and the full path should be described to everyone
+      item_in_area and not in_container ->
+        message = Message.append_text(message, " on ", "base")
+
+        parent_index = Util.build_item_index(path)
+
+        Util.build_parent_string(
+          message,
+          parent_index[item.location.relative_item_id],
+          parent_index,
+          true,
+          character.name
+        )
+
+      # If the item is relative to another item, but it is not in the area, assume it is on the character in their inventory
+      # It *SHOULD* be in a container
+      item.location.relative_to_item and in_container and not item_in_area ->
+        outermost_item =
+          Enum.find(path, fn possible_parent ->
+            possible_parent.flags.has_pocket or possible_parent.id == item.id
+          end)
+
+        message =
+          Message.append_text(message, " from ", "base")
+          |> Message.append_text(
+            outermost_item.description.short,
+            Util.get_item_type(outermost_item)
+          )
+
+        are_or_is =
+          if character.gender_pronoun == "neutral" do
+            "are"
+          else
+            "is"
+          end
+
+        if outermost_item.location.held_in_hand do
+          message
+          |> Message.append_text(
+            " #{Util.he_she_they(character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} holding",
+            "base"
+          )
+        else
+          message
+          |> Message.append_text(
+            " #{Util.he_she_they(character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} wearing",
+            "base"
+          )
+        end
+    end
+  end
+
+  @doc """
+  Given an item and a list of items representing potential matches, create and attach an 'assumption' line to message.
+  """
+  @spec append_assumption_text(
+          Mud.Engine.Message.StoryOutput.t(),
+          Mud.Engine.Item.t() | Mud.Engine.Link.t(),
+          [Mud.Engine.Item.t() | Mud.Engine.Link.t()],
+          String.t()
+        ) :: Mud.Engine.Message.StoryOutput.t()
+  def append_assumption_text(message, _item = %Mud.Engine.Item{}, _other_items, "silent") do
+    message
+  end
+
+  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items, mode) do
+    message =
+      message
+      |> Message.append_text("\n(Assuming you meant ", "system_info")
+      |> construct_item_current_location_message(item)
+      # |> Message.append_text(
+      #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
+      #   get_item_type(item)
+      # )
+      |> Message.append_text(
+        ". #{length(other_items)} other potential match#{
+          if length(other_items) > 1 do
+            "es"
+          end
+        }: ",
+        "system_info"
+      )
+
+    # fix the fact that this returns two entirely different things based on number of items and I need it to pick one thing and stick with it and compensate elsewhere
+    # do with item
+    # do without item
+    # have without item call with item and strip
+    # or have with item call without and then build up list
+    # item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
+
+    Enum.reduce(other_items, message, fn item, msg ->
+      msg =
+        case mode do
+          "full path" ->
+            construct_item_current_location_message(msg, item)
+
+          "item only" ->
+            Message.append_text(
+              msg,
+              item.description.short,
+              Util.get_item_type(item)
+            )
+        end
+
+      Message.append_text(
+        msg,
+        ", ",
+        "system_info"
+      )
+    end)
+    |> Message.drop_last_text()
+    |> Message.append_text(
+      ")",
+      "system_info"
+    )
+  end
+
+  def append_assumption_text(message, link = %Mud.Engine.Link{}, other_links) do
+    message =
+      message
+      |> Message.append_text("\n(Assuming you meant ", "system_info")
+      |> Message.append_text(
+        link.short_description,
+        Util.get_item_type(link)
+      )
+      |> Message.append_text(
+        ". #{length(other_links)} other potential matches: ",
+        "system_info"
+      )
+
+    Enum.reduce(other_links, message, fn link, msg ->
+      msg
+      |> Message.append_text(
+        link.short_description,
+        "exit"
+      )
+      |> Message.append_text(
+        ", ",
+        "system_info"
+      )
+    end)
+    |> Message.drop_last_text()
+    |> Message.append_text(
+      ")",
+      "system_info"
+    )
+  end
 end

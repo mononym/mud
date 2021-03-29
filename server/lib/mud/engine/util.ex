@@ -234,103 +234,6 @@ defmodule Mud.Engine.Util do
     )
   end
 
-  @doc """
-  Given an item and a list of items representing potential matches, create and attach an 'assumption' line to message.
-  """
-  @spec append_assumption_text(
-          Mud.Engine.Message.StoryOutput.t(),
-          Mud.Engine.Item.t() | Mud.Engine.Link.t(),
-          [Mud.Engine.Item.t() | Mud.Engine.Link.t()],
-          String.t()
-        ) :: Mud.Engine.Message.StoryOutput.t()
-
-  def append_assumption_text(message, _item = %Mud.Engine.Item{}, _other_items, "silent") do
-    message
-  end
-
-  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items, mode) do
-    message =
-      message
-      |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> construct_nested_item_previous_location_message_for_self(item, true)
-      # |> Message.append_text(
-      #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
-      #   get_item_type(item)
-      # )
-      |> Message.append_text(
-        ". #{length(other_items)} other potential match#{
-          if length(other_items) > 1 do
-            "es"
-          end
-        }: ",
-        "system_info"
-      )
-
-    # fix the fact that this returns two entirely different things based on number of items and I need it to pick one thing and stick with it and compensate elsewhere
-    # do with item
-    # do without item
-    # have without item call with item and strip
-    # or have with item call without and then build up list
-    # item_strings = Item.items_to_short_desc_with_nested_location_with_item(other_items)
-
-    Enum.reduce(other_items, message, fn item, msg ->
-      msg =
-        case mode do
-          "full path" ->
-            construct_nested_item_previous_location_message_for_self(msg, item, false)
-
-          "item only" ->
-            Message.append_text(
-              msg,
-              item.description.short,
-              get_item_type(item)
-            )
-        end
-
-      Message.append_text(
-        msg,
-        ", ",
-        "system_info"
-      )
-    end)
-    |> Message.drop_last_text()
-    |> Message.append_text(
-      ")",
-      "system_info"
-    )
-  end
-
-  def append_assumption_text(message, link = %Mud.Engine.Link{}, other_links) do
-    message =
-      message
-      |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> Message.append_text(
-        link.short_description,
-        get_item_type(link)
-      )
-      |> Message.append_text(
-        ". #{length(other_links)} other potential matches: ",
-        "system_info"
-      )
-
-    Enum.reduce(other_links, message, fn link, msg ->
-      msg
-      |> Message.append_text(
-        link.short_description,
-        "exit"
-      )
-      |> Message.append_text(
-        ", ",
-        "system_info"
-      )
-    end)
-    |> Message.drop_last_text()
-    |> Message.append_text(
-      ")",
-      "system_info"
-    )
-  end
-
   def dave_error_v2(context) do
     message =
       context.character.id
@@ -546,7 +449,7 @@ defmodule Mud.Engine.Util do
     Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
   end
 
-  def construct_nested_item_previous_location_message_for_self(message, item, target_item) do
+  def construct_nested_item_location_message_for_self(message, item, target_item) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
@@ -581,6 +484,18 @@ defmodule Mud.Engine.Util do
     end
   end
 
+  @spec construct_stow_item_location_message_for_self(
+          Mud.Engine.Message.StoryOutput.t(),
+          atom
+          | %{
+              :description => atom | %{:short => binary, optional(any) => any},
+              :location => atom | %{:relative_to_item => any, optional(any) => any},
+              optional(any) => any
+            },
+          any,
+          any,
+          any
+        ) :: Mud.Engine.Message.StoryOutput.t()
   def construct_stow_item_location_message_for_self(
         message,
         original_item,
@@ -881,13 +796,27 @@ defmodule Mud.Engine.Util do
     end
   end
 
-  defp build_parent_string(
-         message,
-         item,
-         parent_index,
-         target_item,
-         who
-       ) do
+  def build_parent_string(
+        message,
+        item,
+        parent_index,
+        current_state,
+        who
+      ) do
+    was_or_is =
+      if current_state do
+        "is"
+      else
+        "was"
+      end
+
+    were_or_are =
+      if current_state do
+        "are"
+      else
+        "were"
+      end
+
     cond do
       item.location.relative_to_item ->
         message
@@ -902,26 +831,19 @@ defmodule Mud.Engine.Util do
         |> build_parent_string(
           parent_index[item.location.relative_item_id],
           parent_index,
-          false,
+          current_state,
           who
         )
 
-      item.location.on_ground and target_item ->
+      item.location.on_ground ->
         message
         |> Message.append_text(
           item.description.short,
           get_item_type(item)
         )
         |> Message.append_text(
-          " which was on the ground",
+          " which #{was_or_is} on the ground",
           "base"
-        )
-
-      item.location.on_ground and not target_item ->
-        message
-        |> Message.append_text(
-          item.description.short,
-          get_item_type(item)
         )
 
       item.location.worn_on_character ->
@@ -939,13 +861,7 @@ defmodule Mud.Engine.Util do
           "character"
         )
         |> Message.append_text(
-          " #{
-            if target_item do
-              "were"
-            else
-              "are"
-            end
-          } wearing",
+          " #{were_or_are} wearing",
           "base"
         )
 
@@ -964,21 +880,13 @@ defmodule Mud.Engine.Util do
           "character"
         )
         |> Message.append_text(
-          " #{
-            if target_item do
-              "were"
-            else
-              "are"
-            end
-          } holding",
+          " #{were_or_are} holding",
           "base"
         )
     end
   end
 
   def item_wearable_slot_to_description_string(wearable) do
-    IO.inspect(wearable, label: :wearable)
-
     cond do
       wearable.slot == Constants.on_back_slot() ->
         {"on", "back"}

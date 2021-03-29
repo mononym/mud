@@ -16,6 +16,57 @@ defmodule Mud.Engine.ItemSearch do
   #
 
   @doc """
+  Search for an item in the character's hands.
+  """
+  @spec search_held(String.t(), String.t()) :: [Mud.Engine.Item.t()]
+  def search_held(character_id, search_string) do
+    search_held_query(character_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  defp search_held_query(character_id) do
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where: location.item_id in subquery(base_query_for_held_item_ids(character_id)),
+      order_by: [desc: location.moved_at]
+    )
+  end
+
+  defp base_query_for_held_item_ids(character_id) do
+    base_query_for_held_items(character_id)
+    |> modify_query_select_id()
+  end
+
+  def base_query_for_held_items(character_id) do
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where: location.held_in_hand and location.character_id == ^character_id
+    )
+  end
+
+  @doc """
+  Search for an item that is a child of another item.
+  """
+  def search_relative_to_item_in_inventory(
+        area_id,
+        [initial_path | path],
+        thing,
+        mode,
+        thing_is_immediate_child \\ true
+      ) do
+    # Initial path is the outermost item, so if doing 'get ring on box in vault' the initial path would be the vault
+    initial_query =
+      specific_nested_item_inventory_initial_query(
+        area_id,
+        Search.input_to_wildcard_string(initial_path.input, mode)
+      )
+
+    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
+  end
+
+  @doc """
   Search for an item that is a child of another item.
   """
   def search_relative_to_item_in_area(
@@ -33,6 +84,60 @@ defmodule Mud.Engine.ItemSearch do
       )
 
     build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
+  end
+
+  @doc """
+  Items on ground are searched for a match.
+  """
+  def search_on_ground(area_id, search_string) do
+    from(
+      [description: description, location: location] in base_query_for_description_and_location(),
+      where: location.area_id == ^area_id and location.on_ground,
+      order_by: [desc: location.moved_at]
+    )
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
+  All inventory items are searched, worn and then everything inside, for a match.
+  """
+  @spec search_inventory(String.t(), String.t()) :: [Mud.Engine.Item.t()]
+  def search_inventory(character_id, search_string) do
+    search_inventory_query(character_id, search_string)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
+  All surfaces visible in an area, but not the root items on the ground, are searched for a match.
+  """
+  @spec search_on_visible_surfaces_in_area(String.t(), String.t()) :: [Mud.Engine.Item.t()]
+  def search_on_visible_surfaces_in_area(area_id, search_string) do
+    search_for_items_on_visible_surfaces_in_area_query(area_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  #
+  #
+  # Helper/Internal Functions
+  #
+  #
+
+  defp specific_nested_item_inventory_initial_query(
+         character_id,
+         search_string
+       ) do
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where: location.item_id in subquery(base_query_for_all_inventory_ids(character_id))
+    )
+    |> modify_query_search_descriptions(search_string)
+    |> modify_query_select_id()
   end
 
   defp specific_nested_item_in_area_initial_query(
@@ -112,8 +217,6 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   defp build_nested_relative_query(previous_query, [current_path | path]) do
-    IO.inspect(current_path, label: :build_nested_relative_query)
-
     current_query =
       specific_nested_item_mid_level_query(
         previous_query,
@@ -124,11 +227,11 @@ defmodule Mud.Engine.ItemSearch do
     build_nested_relative_query(current_query, path)
   end
 
-  def specific_nested_item_mid_level_query(
-        previous_query,
-        search_string,
-        relation
-      ) do
+  defp specific_nested_item_mid_level_query(
+         previous_query,
+         search_string,
+         relation
+       ) do
     from(
       [location: location] in base_query_for_description_and_location(),
       where:
@@ -168,48 +271,6 @@ defmodule Mud.Engine.ItemSearch do
       where: location.on_ground and location.area_id == ^area_id
     )
   end
-
-  @doc """
-  Items on ground are searched for a match.
-  """
-  def search_on_ground(area_id, search_string) do
-    from(
-      [description: description, location: location] in base_query_for_description_and_location(),
-      where: location.area_id == ^area_id and location.on_ground,
-      order_by: [desc: location.moved_at]
-    )
-    |> modify_query_search_descriptions(search_string)
-    |> Repo.all()
-    |> Item.preload()
-  end
-
-  @doc """
-  All inventory items are searched, worn and then everything inside, for a match.
-  """
-  @spec search_inventory(String.t(), String.t()) :: [Mud.Engine.Item.t()]
-  def search_inventory(character_id, search_string) do
-    search_inventory_query(character_id, search_string)
-    |> modify_query_search_descriptions(search_string)
-    |> Repo.all()
-    |> Item.preload()
-  end
-
-  @doc """
-  All surfaces visible in an area, but not the root items on the ground, are searched for a match.
-  """
-  @spec search_on_visible_surfaces_in_area(String.t(), String.t()) :: [Mud.Engine.Item.t()]
-  def search_on_visible_surfaces_in_area(area_id, search_string) do
-    search_for_items_on_visible_surfaces_in_area_query(area_id)
-    |> modify_query_search_descriptions(search_string)
-    |> Repo.all()
-    |> Item.preload()
-  end
-
-  #
-  #
-  # Helper/Internal Functions
-  #
-  #
 
   defp search_for_items_on_visible_surfaces_in_area_query(area_id) do
     from(

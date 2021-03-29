@@ -362,7 +362,7 @@ defmodule Mud.Engine.Command.Stow do
           if matches != [] do
             other_items = Enum.map(matches, & &1.match)
 
-            Util.append_assumption_text(
+            CallbackUtil.append_assumption_text(
               self_msg,
               match.match,
               other_items,
@@ -598,7 +598,7 @@ defmodule Mud.Engine.Command.Stow do
                   IO.inspect(item, label: :other_matches)
                   IO.inspect(other_items, label: :other_matches)
 
-                  Util.append_assumption_text(
+                  CallbackUtil.append_assumption_text(
                     self_msg,
                     item,
                     other_items,

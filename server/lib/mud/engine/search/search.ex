@@ -63,7 +63,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_held_items(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_held(character_id, search_string)
+    items = ItemSearch.search_held(character_id, search_string)
 
     case things_to_match(items) do
       [] ->
@@ -397,24 +397,16 @@ defmodule Mud.Engine.Search do
         mode,
         thing_is_immediate_child \\ true
       ) do
-    # IO.inspect(thing, label: :find_matches_relative_to_place_in_inventory_thing)
-    # IO.inspect(place, label: :find_matches_relative_to_place_in_inventory_place)
     path = unnest_place_path(place, [])
-    # IO.inspect(path, label: :find_matches_relative_to_place_in_inventory_path)
-
-    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
-    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
 
     items =
-      Item.search_relative_to_inventory(
+      ItemSearch.search_relative_to_item_in_inventory(
         character_id,
         path,
         thing,
         mode,
         thing_is_immediate_child
       )
-
-    # IO.inspect(items, label: :find_matches_relative_to_place_in_inventory_items)
 
     case things_to_match(items) do
       [] ->

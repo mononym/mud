@@ -192,7 +192,7 @@ defmodule Mud.Engine.Command.Get do
                   context,
                   Message.new_story_output(
                     context.character.id,
-                    "Multiple places to put things were found, please be more specific.",
+                    "Multiple possible matches found, please be more specific.",
                     "system_alert"
                   )
                 )
@@ -205,41 +205,8 @@ defmodule Mud.Engine.Command.Get do
     end
   end
 
-
-
-
-
-
-
-
-  # THIS IS WHAT YOU ARE DOING!!!!!!!!!!!!!!!!!!!!
-
-  # getting only works with 'from' right now
-  # update to work with 'in' and 'on' because have surfaces and pockets now
-  # maybe 'from' could not care whether the item is in/on something but just looks
-  # for an immediate child, while 'in' and 'on' are more specific645
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   # The command entered was something like: get chest from pack
   defp get_item_with_place(context) do
-    IO.inspect(context.command.ast.thing, label: :get_item_with_place)
-
     # look for place on ground in hands or worn
     area_results =
       Search.find_matches_relative_to_place_in_area(
@@ -486,7 +453,7 @@ defmodule Mud.Engine.Command.Get do
     # The whole chain of containers, assuming there is a nested chain of containers, to where the item being 'gotten' is
     # will be used to generate the message.
     self_msg =
-      Util.construct_nested_item_previous_location_message_for_self(
+      Util.construct_nested_item_location_message_for_self(
         self_msg,
         original_item,
         true
@@ -498,7 +465,7 @@ defmodule Mud.Engine.Command.Get do
       if other_matches != [] do
         other_items = Enum.map(other_matches, & &1.match)
 
-        Util.append_assumption_text(
+        CallbackUtil.append_assumption_text(
           self_msg,
           original_item,
           other_items,

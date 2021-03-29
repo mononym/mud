@@ -125,7 +125,7 @@ defmodule Mud.Engine.Command.Put do
                   context,
                   Message.new_story_output(
                     context.character.id,
-                    "Multiple places to put things were found, please be more specific.",
+                    "Multiple items were found, please be more specific.",
                     "system_alert"
                   )
                 )
@@ -160,9 +160,9 @@ defmodule Mud.Engine.Command.Put do
   defp find_place_in_area_or_inventory_to_put_thing(context, thing, other_thing_matches) do
     # IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
 
+    # There is no extended path, ie: in backpack in sack on shelf
+    # So just try to find a thing in the area that can be seen to try and place the item on
     results =
-      # There is no extended path, ie: in backpack in sack on shelf
-      # So just try to find a thing in the area that can be seen to try and place the item on
       if is_nil(context.command.ast.place.path) do
         Search.find_matches_in_area(
           context.character.area_id,
@@ -246,31 +246,10 @@ defmodule Mud.Engine.Command.Put do
       )
 
     case results do
-      {:ok, [match]} ->
-        find_place_to_put_thing(context, match, [])
-
       {:ok, matches} ->
-        case context.character.settings.commands.multiple_matches_mode do
-          "silent" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, true)
+        sorted_results = CallbackUtil.sort_matches(matches, true)
 
-            find_place_to_put_thing(context, match, other_thing_matches)
-
-          "full path" ->
-            [match | other_thing_matches] = CallbackUtil.sort_matches(matches, true)
-
-            find_place_to_put_thing(context, match, other_thing_matches)
-
-          "choose" ->
-            Context.append_message(
-              context,
-              Message.new_story_output(
-                context.character.id,
-                "Multiple items to put were found, please be more specific.",
-                "system_alert"
-              )
-            )
-        end
+        handle_thing_search_results(context, {:ok, sorted_results})
 
       _ ->
         Util.not_found_error(context)
@@ -281,7 +260,7 @@ defmodule Mud.Engine.Command.Put do
     case results do
       # found a single place to put the thing
       {:ok, [match]} ->
-        put_item(context, thing, other_thing_matches, match, [])
+        validate_thing_and_place_for_put(context, thing, other_thing_matches, match, [])
 
       # Found multiple places to put the thing
       {:ok, all_matches = [match | matches]} ->
@@ -290,7 +269,13 @@ defmodule Mud.Engine.Command.Put do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{place: %Place{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            put_item(context, thing, other_thing_matches, Enum.at(all_matches, which - 1), [])
+            validate_thing_and_place_for_put(
+              context,
+              thing,
+              other_thing_matches,
+              Enum.at(all_matches, which - 1),
+              []
+            )
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{place: %Place{which: which}} when which > 0 and which > length(all_matches) ->
@@ -299,10 +284,16 @@ defmodule Mud.Engine.Command.Put do
           _ ->
             case context.character.settings.commands.multiple_matches_mode do
               "silent" ->
-                put_item(context, thing, other_thing_matches, match, [])
+                validate_thing_and_place_for_put(context, thing, other_thing_matches, match, [])
 
               "full path" ->
-                put_item(context, thing, other_thing_matches, match, matches)
+                validate_thing_and_place_for_put(
+                  context,
+                  thing,
+                  other_thing_matches,
+                  match,
+                  matches
+                )
 
               "choose" ->
                 Context.append_message(
@@ -321,7 +312,52 @@ defmodule Mud.Engine.Command.Put do
     end
   end
 
-  defp put_item(
+  defp validate_thing_and_place_for_put(
+         context,
+         thing = %Search.Match{},
+         other_thing_matches,
+         place,
+         other_place_matches
+       ) do
+    # If things aren't right will need to generate error message here
+    cond do
+      # Either the item being put somewhere is not in the hand, or the character the item is held by is not
+      # the character executing the command, or the place the item is being put is not in the proper area.
+      # Either way this should never happen.
+      not thing.match.location.held_in_hand or
+        not (thing.match.location.character_id == context.character.id) or
+          not Item.in_area?(place.match.id, context.character.area_id) ->
+        Util.dave_error_v2(context)
+
+      # Trying to put an item in or on a place where that relationship is not viable
+      (context.command.ast.thing.where == "in" and not place.match.flags.has_pocket) or
+          (context.command.ast.thing.where == "on" and not place.match.flags.has_surface) ->
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "You cannot put anything `#{context.command.ast.thing.where}` ",
+            "system_warning"
+          )
+          |> Message.append_text(
+            place.match.description.short,
+            Mud.Engine.Util.get_item_type(place.match)
+          )
+          |> Message.append_text(".", "system_warning")
+        )
+
+      true ->
+        execute_put_item(
+          context,
+          thing,
+          other_thing_matches,
+          place,
+          other_place_matches
+        )
+    end
+  end
+
+  defp execute_put_item(
          context,
          thing = %Search.Match{},
          other_thing_matches,
@@ -340,8 +376,6 @@ defmodule Mud.Engine.Command.Put do
 
     destination_in_area = Item.in_area?(destination.id, context.character.area_id)
 
-    # if item.location.held_in_hand and item.location.character_id == context.character.id do
-    #   # NEED TO KNOW WHERE THE HELL TO PUT IT
     items_in_path = Item.list_full_path(destination)
 
     others =
@@ -357,13 +391,12 @@ defmodule Mud.Engine.Command.Put do
       |> Message.append_text(" put ", "base")
 
     other_msg =
-      Util.construct_nested_item_location_message_for_others(
+      CallbackUtil.construct_item_current_location_movement_message_for_others(
         context.character,
         other_msg,
         item,
         items_in_path,
-        destination_in_area,
-        relative_location
+        destination_in_area
       )
       |> Message.append_text(".", "base")
 
@@ -374,11 +407,9 @@ defmodule Mud.Engine.Command.Put do
       |> Message.append_text(" put ", "base")
 
     self_msg =
-      Util.construct_nested_item_location_message_for_self(
+      CallbackUtil.construct_item_current_location_message(
         self_msg,
-        item,
-        relative_location,
-        true
+        item
       )
       |> Message.append_text(".", "base")
 
@@ -386,7 +417,7 @@ defmodule Mud.Engine.Command.Put do
       if other_thing_matches != [] do
         other_items = Enum.map(other_thing_matches, & &1.match)
 
-        Util.append_assumption_text(
+        CallbackUtil.append_assumption_text(
           self_msg,
           original_item,
           other_items,
@@ -398,12 +429,12 @@ defmodule Mud.Engine.Command.Put do
 
     self_msg =
       if other_place_matches != [] do
-        other_items = Enum.map(other_place_matches, & &1.match)
+        other_places = Enum.map(other_place_matches, & &1.match)
 
-        Util.append_assumption_text(
+        CallbackUtil.append_assumption_text(
           self_msg,
-          original_item,
-          other_items,
+          place.match,
+          other_places,
           context.character.settings.commands.multiple_matches_mode
         )
       else

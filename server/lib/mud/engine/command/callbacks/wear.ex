@@ -116,7 +116,7 @@ defmodule Mud.Engine.Command.Wear do
         if other_matches != [] do
           other_items = Enum.map(other_matches, & &1.match)
 
-          Util.append_assumption_text(
+          CallbackUtil.append_assumption_text(
             self_msg,
             original_item,
             other_items,

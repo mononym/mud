@@ -1740,6 +1740,5 @@ defmodule Mud.Engine.Item do
       ],
       force: true
     )
-    |> IO.inspect(label: :preloaded)
   end
 end
