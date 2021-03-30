@@ -469,7 +469,8 @@ defmodule Mud.Engine.Command.Get do
           self_msg,
           original_item,
           other_items,
-          context.character.settings.commands.multiple_matches_mode
+          context.character.settings.commands.multiple_matches_mode,
+          context.character
         )
       else
         self_msg

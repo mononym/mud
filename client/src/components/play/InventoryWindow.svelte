@@ -331,7 +331,7 @@
       >
         <i class="fas fa-{wornContainersExpanded ? 'minus' : 'plus'}" />
         <pre
-          class="inline ml-2">Worn Containers ({$wornContainers.length})</pre>
+          class="inline ml-2">Worn Items with Pockets ({$wornContainers.length})</pre>
       </div>
       {#if wornContainersExpanded}
         {#each $wornContainers as wornContainer}
@@ -342,7 +342,7 @@
             on:showContextMenu={showRightClickMenu}
           >
             <div class="h-full flex space-x-2 pl-2" slot="quickActions">
-              {#if wornContainer.container.open}
+              {#if wornContainer.pocket.open}
                 <QuickAction
                   icon="fas fa-box-open"
                   activeTooltip="close"

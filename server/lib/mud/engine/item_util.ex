@@ -7,8 +7,6 @@ defmodule Mud.Engine.ItemUtil do
   alias Mud.Engine.Message
   alias Mud.Engine.Item
   alias Mud.Engine.Command.CallbackUtil
-  alias Mud.Repo
-  import Ecto.Query
 
   @doc """
   Given a set of items, create a map where the key is the item id and the value is the item itself.
@@ -43,6 +41,8 @@ defmodule Mud.Engine.ItemUtil do
 
   Visible means that an item is either held, worn, on ground, in containers that are open, or sitting on a surface
   that displays items. This must be true of all parents recursively.
+
+  If an item is available for look it is usually available for quite a few other actions as well.
   """
   def is_available_for_look?(item) do
     parents = Item.list_sorted_parent_containers(item)

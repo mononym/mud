@@ -200,22 +200,17 @@ defmodule Mud.Engine.Command.CallbackUtil do
   def build_open_closed_nested_text(containers) do
     containers
     |> Stream.map(fn item ->
+      state =
+        if not item.flags.is_closable or (item.flags.is_closable and item.closable.open) do
+          "open"
+        else
+          "closed"
+        end
+
       if item.location.relative_to_item do
-        "#{item.description.short} (#{
-          if item.pocket.open do
-            "open"
-          else
-            "closed"
-          end
-        }) #{item.location.relation}"
+        "#{item.description.short} (#{state}) #{item.location.relation}"
       else
-        "#{item.description.short} (#{
-          if item.pocket.open do
-            "open"
-          else
-            "closed"
-          end
-        })"
+        "#{item.description.short} (#{state})"
       end
     end)
     |> Enum.join(" ")
@@ -452,7 +447,12 @@ defmodule Mud.Engine.Command.CallbackUtil do
     Context.append_message(context, message)
   end
 
-  def construct_item_current_location_message(message, item) do
+  def construct_item_current_location_message(
+        message,
+        item,
+        character,
+        default_text_type \\ "base"
+      ) do
     items = List.wrap(item)
     parents = Item.list_all_parents(items)
     parent_index = Util.build_item_index(parents)
@@ -468,23 +468,87 @@ defmodule Mud.Engine.Command.CallbackUtil do
         Mud.Engine.Util.get_item_type(item)
       )
 
-    # The parents query returns the item itself and this is expected, so to check if there are any parents check for
-    # length greater than 1 rather than against an empty list
-    if length(parents) > 1 do
-      message
-      |> Message.append_text(" #{item.location.relation} ", "base")
-      |> Util.build_parent_string(
-        parent_index[item.location.relative_item_id],
-        parent_index,
-        true,
-        "you"
-      )
-    else
-      message
-      |> Message.append_text(
-        " on the ground",
-        "base"
-      )
+    cond do
+      item.location.on_ground ->
+        message
+        |> Message.append_text(
+          " on the ground",
+          default_text_type
+        )
+
+      # The character holding the item is not the character passed in, which is the character that the item is being
+      # described for, their perspective, and so grab the character the item is attached to
+      (item.location.held_in_hand or item.location.worn_on_character) and
+          item.location.character_id != character.id ->
+        other_character = Character.get_by_id!(item.location.character_id)
+
+        are_or_is =
+          if other_character.gender_pronoun == "neutral" do
+            "are"
+          else
+            "is"
+          end
+
+        if item.location.held_in_hand do
+          message
+          |> Message.append_text(
+            " #{Util.he_she_they(other_character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} holding",
+            default_text_type
+          )
+        else
+          message
+          |> Message.append_text(
+            " #{Util.he_she_they(other_character)}",
+            "character"
+          )
+          |> Message.append_text(
+            " #{are_or_is} wearing",
+            default_text_type
+          )
+        end
+
+      # The character holding the item is the one passed in, meaning the item is in their hand
+      item.location.held_in_hand and item.location.character_id == character.id ->
+        message
+        |> Message.append_text(
+          " in",
+          default_text_type
+        )
+        |> Message.append_text(
+          " your",
+          "character"
+        )
+        |> Message.append_text(
+          " hand",
+          default_text_type
+        )
+
+      # The character wearing the item is the one passed in, meaning the item is on their body
+      item.location.worn_on_character and item.location.character_id == character.id ->
+        message
+        |> Message.append_text(
+          " you",
+          "character"
+        )
+        |> Message.append_text(
+          " are wearing",
+          default_text_type
+        )
+
+      true ->
+        message
+        |> Message.append_text(" #{item.location.relation} ", default_text_type)
+        |> Util.build_parent_string(
+          parent_index[item.location.relative_item_id],
+          parent_index,
+          true,
+          "you",
+          default_text_type
+        )
     end
   end
 
@@ -554,7 +618,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
       # The item is on a visible surface somewhere and the full path should be described to everyone
       item_in_area and not in_container ->
-        message = Message.append_text(message, " on ", "base")
+        message = Message.append_text(message, " #{item.location.relation} ", "base")
 
         parent_index = Util.build_item_index(path)
 
@@ -575,7 +639,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
           end)
 
         message =
-          Message.append_text(message, " from ", "base")
+          Message.append_text(message, " in ", "base")
           |> Message.append_text(
             outermost_item.description.short,
             Util.get_item_type(outermost_item)
@@ -619,21 +683,24 @@ defmodule Mud.Engine.Command.CallbackUtil do
           Mud.Engine.Message.StoryOutput.t(),
           Mud.Engine.Item.t() | Mud.Engine.Link.t(),
           [Mud.Engine.Item.t() | Mud.Engine.Link.t()],
-          String.t()
+          String.t(),
+          Mud.Engine.Character.t()
         ) :: Mud.Engine.Message.StoryOutput.t()
-  def append_assumption_text(message, _item = %Mud.Engine.Item{}, _other_items, "silent") do
+  def append_assumption_text(
+        message,
+        _item = %Mud.Engine.Item{},
+        _other_items,
+        "silent",
+        _character
+      ) do
     message
   end
 
-  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items, mode) do
+  def append_assumption_text(message, item = %Mud.Engine.Item{}, other_items, mode, character) do
     message =
       message
       |> Message.append_text("\n(Assuming you meant ", "system_info")
-      |> construct_item_current_location_message(item)
-      # |> Message.append_text(
-      #   List.first(Item.items_to_short_desc_with_nested_location_without_item(item)),
-      #   get_item_type(item)
-      # )
+      |> construct_item_current_location_message(item, character)
       |> Message.append_text(
         ". #{length(other_items)} other potential match#{
           if length(other_items) > 1 do
@@ -654,7 +721,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
       msg =
         case mode do
           "full path" ->
-            construct_item_current_location_message(msg, item)
+            construct_item_current_location_message(msg, item, character)
 
           "item only" ->
             Message.append_text(

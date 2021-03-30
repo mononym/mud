@@ -10,7 +10,7 @@
   $: disableArmorCheckbox =
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -22,7 +22,7 @@
   $: disableClothingCheckbox =
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -34,7 +34,7 @@
   $: disableCoinCheckbox =
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -59,7 +59,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
     $templateUnderConstruction.template.flags.jewelry ||
@@ -71,7 +71,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -84,7 +84,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.jewelry ||
@@ -96,7 +96,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -108,7 +108,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -122,7 +122,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -134,7 +134,7 @@
     $templateUnderConstruction.template.flags.armor ||
     $templateUnderConstruction.template.flags.clothing ||
     $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.container ||
+    $templateUnderConstruction.template.flags.has_pocket ||
     $templateUnderConstruction.template.flags.furniture ||
     $templateUnderConstruction.template.flags.gem ||
     $templateUnderConstruction.template.flags.instrument ||
@@ -143,7 +143,7 @@
     $templateUnderConstruction.template.flags.shield;
 
   $: disableGemPouchCheckbox =
-    !$templateUnderConstruction.template.flags.container ||
+    !$templateUnderConstruction.template.flags.has_pocket ||
     !$templateUnderConstruction.template.flags.wearable;
 
   $: disableHiddenCheckbox = !$templateUnderConstruction.template.flags.scenery;
@@ -163,7 +163,8 @@
 
   $: disableLookCheckbox = false;
 
-  $: disableOpenCheckbox = !$templateUnderConstruction.template.flags.container;
+  $: disableOpenCheckbox = !$templateUnderConstruction.template.flags
+    .has_pocket;
 
   $: disableRemoveCheckbox = !$templateUnderConstruction.template.flags
     .wearable;
@@ -297,7 +298,7 @@
             class="block text-sm font-medium text-gray-300">Container</label
           >
           <input
-            bind:checked={$templateUnderConstruction.template.flags.container}
+            bind:checked={$templateUnderConstruction.template.flags.has_pocket}
             type="checkbox"
             name="isContainer"
             id="isContainer"
@@ -638,7 +639,7 @@
           />
         </div>
 
-        {#if $templateUnderConstruction.template.flags.container}
+        {#if $templateUnderConstruction.template.flags.has_pocket}
           <div class="col-span-12">
             <h2 class="text-gray-300 text-center">Container Properties</h2>
           </div>

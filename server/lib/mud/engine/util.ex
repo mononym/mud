@@ -801,7 +801,8 @@ defmodule Mud.Engine.Util do
         item,
         parent_index,
         current_state,
-        who
+        who,
+        default_text_type \\ "base"
       ) do
     was_or_is =
       if current_state do
@@ -826,13 +827,14 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " #{item.location.relation} ",
-          "base"
+          default_text_type
         )
         |> build_parent_string(
           parent_index[item.location.relative_item_id],
           parent_index,
           current_state,
-          who
+          who,
+          default_text_type
         )
 
       item.location.on_ground ->
@@ -843,7 +845,7 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " which #{was_or_is} on the ground",
-          "base"
+          default_text_type
         )
 
       item.location.worn_on_character ->
@@ -854,7 +856,7 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " which",
-          "base"
+          default_text_type
         )
         |> Message.append_text(
           " #{who}",
@@ -862,7 +864,7 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " #{were_or_are} wearing",
-          "base"
+          default_text_type
         )
 
       item.location.held_in_hand ->
@@ -873,7 +875,7 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " which",
-          "base"
+          default_text_type
         )
         |> Message.append_text(
           " #{who}",
@@ -881,7 +883,7 @@ defmodule Mud.Engine.Util do
         )
         |> Message.append_text(
           " #{were_or_are} holding",
-          "base"
+          default_text_type
         )
     end
   end

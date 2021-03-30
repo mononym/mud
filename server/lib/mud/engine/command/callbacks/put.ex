@@ -3,14 +3,14 @@ defmodule Mud.Engine.Command.Put do
   The PUT command allows you to put something in your hand somewhere such as the ground or a container.
 
   Syntax:
-    - put {left|right|all|[<which>] <thing>} > [my] [<which>] <thing>
+    - put [left|right|all|<which>] <thing> in|on [my] [<which>] <thing>
 
   Examples:
-    - put backpack > ground (effectively same as drop)
-    - put quiver > shelf
-    - put 2 shirt > 3 drawer
-    - put 2 diamond > my 5 gem pouch
-    - put pouch > chest > bottom drawer
+    - put backpack on ground (effectively same as drop)
+    - put quiver on shelf
+    - put 2 shirt in 3 drawer
+    - put 2 diamond in my 5 gem pouch
+    - put pouch in chest in bottom drawer
   """
   use Mud.Engine.Command.Callback
 
@@ -325,8 +325,8 @@ defmodule Mud.Engine.Command.Put do
       # the character executing the command, or the place the item is being put is not in the proper area.
       # Either way this should never happen.
       not thing.match.location.held_in_hand or
-        not (thing.match.location.character_id == context.character.id) or
-          not Item.in_area?(place.match.id, context.character.area_id) ->
+          (thing.match.location.held_in_hand and
+             thing.match.location.character_id != context.character.id) ->
         Util.dave_error_v2(context)
 
       # Trying to put an item in or on a place where that relationship is not viable
@@ -409,7 +409,8 @@ defmodule Mud.Engine.Command.Put do
     self_msg =
       CallbackUtil.construct_item_current_location_message(
         self_msg,
-        item
+        item,
+        context.character
       )
       |> Message.append_text(".", "base")
 
@@ -421,7 +422,8 @@ defmodule Mud.Engine.Command.Put do
           self_msg,
           original_item,
           other_items,
-          context.character.settings.commands.multiple_matches_mode
+          context.character.settings.commands.multiple_matches_mode,
+          context.character
         )
       else
         self_msg
@@ -435,7 +437,8 @@ defmodule Mud.Engine.Command.Put do
           self_msg,
           place.match,
           other_places,
-          context.character.settings.commands.multiple_matches_mode
+          context.character.settings.commands.multiple_matches_mode,
+          context.character
         )
       else
         self_msg

@@ -17,8 +17,7 @@ defmodule Mud.Engine.Command.Close do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Item, Link}
-  alias Item.{Container}
+  alias Mud.Engine.{Character, Item, ItemUtil, Link}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Link.Closable
@@ -74,7 +73,7 @@ defmodule Mud.Engine.Command.Close do
       _ ->
         case Item.get(context.command.ast.thing.input) do
           {:ok, item} ->
-            close_item(context, List.first(Search.things_to_match(item)))
+            validate_item_for_close(context, List.first(Search.things_to_match(item)))
 
           _ ->
             Util.dave_error_v2(context)
@@ -131,7 +130,7 @@ defmodule Mud.Engine.Command.Close do
   defp handle_search_results(context, results) do
     case results do
       {:ok, [match]} ->
-        close_item(context, match)
+        validate_item_for_close(context, match)
 
       {:ok, all_matches = [match | matches]} ->
         case context.command.ast do
@@ -139,7 +138,7 @@ defmodule Mud.Engine.Command.Close do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            close_item(context, Enum.at(all_matches, which - 1))
+            validate_item_for_close(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -148,10 +147,10 @@ defmodule Mud.Engine.Command.Close do
           _ ->
             case context.character.settings.commands.multiple_matches_mode do
               "silent" ->
-                close_item(context, match, [])
+                validate_item_for_close(context, match, [])
 
               "full path" ->
-                close_item(context, match, matches)
+                validate_item_for_close(context, match, matches)
 
               "choose" ->
                 Context.append_message(
@@ -310,7 +309,8 @@ defmodule Mud.Engine.Command.Close do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -344,7 +344,8 @@ defmodule Mud.Engine.Command.Close do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -375,7 +376,8 @@ defmodule Mud.Engine.Command.Close do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -392,7 +394,72 @@ defmodule Mud.Engine.Command.Close do
     end
   end
 
-  defp close_item(context, thing = %Search.Match{}, other_matches \\ []) do
+  defp validate_item_for_close(context, thing = %Search.Match{}, other_matches \\ []) do
+    in_area = Item.in_area?(thing.match.id, context.character.area_id)
+    in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
+    available_for_look = ItemUtil.is_available_for_look?(thing.match)
+
+    cond do
+      (not in_area and not in_inventory) or not available_for_look ->
+        Util.dave_error_v2(context)
+
+      (in_area or in_inventory) and available_for_look and
+          (not thing.match.flags.is_closable or not thing.match.flags.close) ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            "You ",
+            "character"
+          )
+          |> Message.append_text(
+            "cannot close ",
+            "system_warning"
+          )
+          |> CallbackUtil.construct_item_current_location_message(
+            thing.match,
+            context.character,
+            "system_warning"
+          )
+          |> Message.append_text(
+            ".",
+            "system_warning"
+          )
+
+        Context.append_message(context, self_msg)
+
+      (in_area or in_inventory) and thing.match.flags.close and available_for_look and
+        thing.match.flags.is_closable and not thing.match.closable.open ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            "You ",
+            "character"
+          )
+          |> Message.append_text(
+            "cannot close ",
+            "system_warning"
+          )
+          |> CallbackUtil.construct_item_current_location_message(
+            thing.match,
+            context.character,
+            "system_warning"
+          )
+          |> Message.append_text(
+            " as it is already closed.",
+            "system_warning"
+          )
+
+        Context.append_message(context, self_msg)
+
+      (in_area or in_inventory) and thing.match.flags.close and available_for_look and
+        thing.match.flags.is_closable and thing.match.closable.open ->
+        close_item(context, thing, other_matches)
+    end
+  end
+
+  defp close_item(context, thing = %Search.Match{}, other_matches) do
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
     in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
     parent_containers_open = Item.parent_containers_open?(thing.match)
@@ -401,13 +468,15 @@ defmodule Mud.Engine.Command.Close do
       parent_containers_open and (in_area or in_inventory) ->
         cond do
           # Is container and container is open, meaning it can be closed
-          thing.match.flags.has_pocket and thing.match.pocket.open ->
-            container =
-              Container.update!(thing.match.pocket, %{
+          thing.match.flags.has_pocket and
+              (not thing.match.flags.is_closable or
+                 (thing.match.flags.is_closable and thing.match.closable.open)) ->
+            closable =
+              Item.Closable.update!(thing.match.closable, %{
                 open: false
               })
 
-            item = Map.put(thing.match, :container, container)
+            item = Map.put(thing.match, :closable, closable)
 
             others =
               Character.list_others_active_in_areas(
@@ -432,7 +501,8 @@ defmodule Mud.Engine.Command.Close do
             self_msg =
               CallbackUtil.construct_item_current_location_message(
                 self_msg,
-                item
+                item,
+                context.character
               )
               |> Message.append_text(".", "base")
 
@@ -444,7 +514,8 @@ defmodule Mud.Engine.Command.Close do
                   self_msg,
                   item,
                   other_items,
-                  context.character.settings.commands.multiple_matches_mode
+                  context.character.settings.commands.multiple_matches_mode,
+                  context.character
                 )
               else
                 self_msg
@@ -474,7 +545,8 @@ defmodule Mud.Engine.Command.Close do
             |> Context.append_message(self_msg)
 
           # It is a container but the container is close,
-          thing.match.flags.has_pocket and not thing.match.pocket.open ->
+          thing.match.flags.has_pocket and thing.match.flags.is_closable and
+              not thing.match.closable.open ->
             self_msg =
               context.character.id
               |> Message.new_story_output()
@@ -492,7 +564,8 @@ defmodule Mud.Engine.Command.Close do
                   self_msg,
                   thing.match,
                   other_items,
-                  context.character.settings.commands.multiple_matches_mode
+                  context.character.settings.commands.multiple_matches_mode,
+                  context.character
                 )
               else
                 self_msg
@@ -519,7 +592,8 @@ defmodule Mud.Engine.Command.Close do
                   self_msg,
                   thing.match,
                   other_items,
-                  context.character.settings.commands.multiple_matches_mode
+                  context.character.settings.commands.multiple_matches_mode,
+                  context.character
                 )
               else
                 self_msg

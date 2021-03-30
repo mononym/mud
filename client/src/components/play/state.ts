@@ -476,7 +476,7 @@ export function createState() {
     Object.values(get(allInventoryItemsIndex)).forEach((item) => {
       if (
         item.location.worn_on_character &&
-        item.flags.container &&
+        item.flags.has_pocket &&
         item.flags.wearable
       ) {
         newWornContainers.push(item);
@@ -534,7 +534,7 @@ export function createState() {
         }
       } else if (
         item.location.worn_on_character &&
-        item.flags.container &&
+        item.flags.has_pocket &&
         item.flags.wearable
       ) {
         wornContainers.update(function (containers) {
@@ -830,8 +830,6 @@ export function createState() {
     channel.set(newChannel);
   }
 
-
-
   function resetMapData(mapData) {
     knownAreasForCharacterMap.set(mapData.areas);
     const newAreasIndex = mapData.areas.reduce(
@@ -937,7 +935,7 @@ export function createState() {
     addExits,
     removeOtherCharacters,
     removeExits,
-    addOtherCharacters
+    addOtherCharacters,
   } = AreaWindowStore;
 
   // const allAreaItemsIndex = writable(<Record<string, ItemInterface>>{});

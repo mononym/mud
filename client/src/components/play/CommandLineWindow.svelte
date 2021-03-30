@@ -19,18 +19,18 @@
   let commandHistory = [];
   let commandHistoryIndex = -1;
   let commandHistoryLength = 1000;
-  let inputMode = "command";
-  let tippyInstance;
+  // let inputMode = "command";
+  // let tippyInstance;
 
-  function toggleInputMode() {
-    if (inputMode == "command") {
-      inputMode = "speak";
-      tippyInstance.setContent("Speaking Mode");
-    } else {
-      inputMode = "command";
-      tippyInstance.setContent("Command Mode");
-    }
-  }
+  // function toggleInputMode() {
+  //   if (inputMode == "command") {
+  //     inputMode = "speak";
+  //     tippyInstance.setContent("Speaking Mode");
+  //   } else {
+  //     inputMode = "command";
+  //     tippyInstance.setContent("Command Mode");
+  //   }
+  // }
 
   onMount(() => {
     actualInput = input;
@@ -83,19 +83,23 @@
     setupHotkeyWatcher();
     commandLineDiv.focus();
 
-    tippyInstance = tippy(
-      document.querySelector(".CommandLineWindowInputTypeButton"),
-      {
-        content: inputMode == "command" ? "Command Mode" : "Speaking Mode",
-      }
-    );
+    // tippyInstance = tippy(
+    //   document.querySelector(".CommandLineWindowInputTypeButton"),
+    //   {
+    //     content: inputMode == "command" ? "Command Mode" : "Speaking Mode",
+    //   }
+    // );
   });
 
   $: $selectedCharacter.settings.customHotkeys, normalizeCustomHotkeys();
 
   function submitPlayerInput() {
+    actualInput.trim();
     $channel.push("cli", { text: actualInput });
-    commandHistory.unshift(actualInput);
+
+    if (commandHistory[0] != actualInput) {
+      commandHistory.unshift(actualInput);
+    }
 
     if ($selectedCharacter.settings.echo.cli_commands_in_story) {
       appendNewStoryMessage({
@@ -150,14 +154,14 @@
 </script>
 
 <div class="commandlineWrapper h-full w-full flex">
-  <button
+  <!-- <button
     on:click={toggleInputMode}
     class="CommandLineWindowInputTypeButton hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 outline-none focus:outline-none border-r"
     type="button"
     style="width:50px"
   >
     <i class="fas fa-{inputMode == 'command' ? 'terminal' : 'comment-alt'}" />
-  </button>
+  </button> -->
   <form class="flex-1 flex">
     <textarea
       id="cli"

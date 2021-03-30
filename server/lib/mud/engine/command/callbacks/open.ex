@@ -17,8 +17,7 @@ defmodule Mud.Engine.Command.Open do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Item, Link}
-  alias Item.{Pocket}
+  alias Mud.Engine.{Character, Item, ItemUtil, Link}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Link.Closable
@@ -74,7 +73,7 @@ defmodule Mud.Engine.Command.Open do
       _ ->
         case Item.get(context.command.ast.thing.input) do
           {:ok, item} ->
-            open_item(context, List.first(Search.things_to_match(item)))
+            validate_item_for_open(context, List.first(Search.things_to_match(item)))
 
           _ ->
             Util.dave_error_v2(context)
@@ -88,7 +87,7 @@ defmodule Mud.Engine.Command.Open do
     if link.from_id == context.character.area_id do
       # It is possible to open/close this link, it is not owned by someone else, and it is closed
       cond do
-        link.flags.closable and not link.closable.open ->
+        link.flags.is_closable and not link.closable.open ->
           # open_links_both_ways()
           # actually open it
           closable = Closable.update!(link.closable, %{open: true})
@@ -136,7 +135,8 @@ defmodule Mud.Engine.Command.Open do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -150,7 +150,7 @@ defmodule Mud.Engine.Command.Open do
             UpdateArea.new(%{action: :update, exits: [link]})
           )
 
-        link.flags.closable and link.closable.open ->
+        link.flags.is_closable and link.closable.open ->
           upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
 
           # Create message to self
@@ -170,7 +170,8 @@ defmodule Mud.Engine.Command.Open do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -181,7 +182,7 @@ defmodule Mud.Engine.Command.Open do
             self_msg
           )
 
-        not link.flags.closable ->
+        not link.flags.is_closable ->
           upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
 
           # Create message to self
@@ -201,7 +202,8 @@ defmodule Mud.Engine.Command.Open do
                 self_msg,
                 link,
                 other_links,
-                context.character.settings.commands.multiple_matches_mode
+                context.character.settings.commands.multiple_matches_mode,
+                context.character
               )
             else
               self_msg
@@ -265,7 +267,7 @@ defmodule Mud.Engine.Command.Open do
   defp handle_search_results(context, results) do
     case results do
       {:ok, [match]} ->
-        open_item(context, match)
+        validate_item_for_open(context, match)
 
       {:ok, all_matches = [match | matches]} ->
         case context.command.ast do
@@ -273,7 +275,7 @@ defmodule Mud.Engine.Command.Open do
           # Make sure provided selection is not more than the number of items that were found
           %TAP{thing: %Thing{which: which}}
           when is_integer(which) and which > 0 and which <= length(all_matches) ->
-            open_item(context, Enum.at(all_matches, which - 1))
+            validate_item_for_open(context, Enum.at(all_matches, which - 1))
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
@@ -282,10 +284,10 @@ defmodule Mud.Engine.Command.Open do
           _ ->
             case context.character.settings.commands.multiple_matches_mode do
               "silent" ->
-                open_item(context, match, [])
+                validate_item_for_open(context, match, [])
 
               "full path" ->
-                open_item(context, match, matches)
+                validate_item_for_open(context, match, matches)
 
               "choose" ->
                 Context.append_message(
@@ -359,151 +361,208 @@ defmodule Mud.Engine.Command.Open do
     end
   end
 
-  defp open_item(context, thing = %Search.Match{}, other_matches \\ []) do
+  defp validate_item_for_open(context, thing = %Search.Match{}, other_matches \\ []) do
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
     in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
-    parent_containers_open = Item.parent_containers_open?(thing.match)
+    available_for_look = ItemUtil.is_available_for_look?(thing.match)
 
     cond do
-      parent_containers_open and (in_area or in_inventory) ->
-        cond do
-          # Is container and container is closed, meaning it can be opened
-          thing.match.flags.has_pocket and not thing.match.pocket.open ->
-            pocket =
-              Pocket.update!(thing.match.pocket, %{
-                open: true
-              })
-
-            item = Map.put(thing.match, :pocket, pocket)
-
-            others =
-              Character.list_others_active_in_areas(
-                context.character.id,
-                context.character.area_id
-              )
-
-            other_msg =
-              others
-              |> Message.new_story_output()
-              |> Message.append_text("[#{context.character.name}]", "character")
-              |> Message.append_text(" opens ", "base")
-              |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
-              |> Message.append_text(".", "base")
-
-            self_msg =
-              context.character.id
-              |> Message.new_story_output()
-              |> Message.append_text("You", "character")
-              |> Message.append_text(" open ", "base")
-
-            self_msg =
-              Util.construct_nested_item_location_message_for_self(
-                self_msg,
-                item,
-                "in",
-                true
-              )
-              |> Message.append_text(".", "base")
-
-            self_msg =
-              if other_matches != [] do
-                other_items = Enum.map(other_matches, & &1.match)
-
-                CallbackUtil.append_assumption_text(
-                  self_msg,
-                  item,
-                  other_items,
-                  context.character.settings.commands.multiple_matches_mode
-                )
-              else
-                self_msg
-              end
-
-            # for items that are not root items, check to see whether the update needs to go to inventory or the area
-            context =
-              cond do
-                item.location.worn_on_character or item.location.held_in_hand or
-                    in_inventory ->
-                  Context.append_event(
-                    context,
-                    context.character_id,
-                    UpdateInventory.new(:update, item)
-                  )
-
-                item.location.on_ground ->
-                  Context.append_event(
-                    context,
-                    [context.character_id | others],
-                    UpdateArea.new(%{action: :update, items: [item]})
-                  )
-              end
-
-            context
-            |> Context.append_message(other_msg)
-            |> Context.append_message(self_msg)
-
-          # It is a container but the container is open,
-          thing.match.flags.has_pocket and thing.match.pocket.open ->
-            self_msg =
-              context.character.id
-              |> Message.new_story_output()
-              |> Message.append_text(
-                CallbackUtil.upcase_item_with_location(thing.match),
-                Mud.Engine.Util.get_item_type(thing.match)
-              )
-              |> Message.append_text(" is already open.", "system_warning")
-
-            self_msg =
-              if other_matches != [] do
-                other_items = Enum.map(other_matches, & &1.match)
-
-                CallbackUtil.append_assumption_text(
-                  self_msg,
-                  thing.match,
-                  other_items,
-                  context.character.settings.commands.multiple_matches_mode
-                )
-              else
-                self_msg
-              end
-
-            Context.append_message(context, self_msg)
-
-          # Assume the thing is not a container
-          true ->
-            self_msg =
-              context.character.id
-              |> Message.new_story_output()
-              |> Message.append_text(
-                CallbackUtil.upcase_item_with_location(thing.match),
-                Mud.Engine.Util.get_item_type(thing.match)
-              )
-              |> Message.append_text(" cannot be opened.", "system_alert")
-
-            self_msg =
-              if other_matches != [] do
-                other_items = Enum.map(other_matches, & &1.match)
-
-                CallbackUtil.append_assumption_text(
-                  self_msg,
-                  thing.match,
-                  other_items,
-                  context.character.settings.commands.multiple_matches_mode
-                )
-              else
-                self_msg
-              end
-
-            Context.append_message(context, self_msg)
-        end
-
-      not parent_containers_open and (in_area or in_inventory) ->
-        parent_containers = Item.list_sorted_parent_containers(thing.match)
-        # If a parent is closed, warn the player
-        CallbackUtil.parent_containers_closed_error(context, thing.match, parent_containers)
-
-      not in_area and not in_inventory ->
+      (not in_area and not in_inventory) or not available_for_look ->
         Util.dave_error_v2(context)
+
+      (in_area or in_inventory) and available_for_look and
+          (not thing.match.flags.is_closable or not thing.match.flags.open) ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            "You ",
+            "character"
+          )
+          |> Message.append_text(
+            "cannot open ",
+            "system_warning"
+          )
+          |> CallbackUtil.construct_item_current_location_message(
+            thing.match,
+            context.character,
+            "system_warning"
+          )
+          |> Message.append_text(
+            ".",
+            "system_warning"
+          )
+
+        Context.append_message(context, self_msg)
+
+      (in_area or in_inventory) and thing.match.flags.open and available_for_look and
+        thing.match.flags.is_closable and thing.match.closable.open ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            "You ",
+            "character"
+          )
+          |> Message.append_text(
+            "cannot open ",
+            "system_warning"
+          )
+          |> CallbackUtil.construct_item_current_location_message(
+            thing.match,
+            context.character,
+            "system_warning"
+          )
+          |> Message.append_text(
+            " as it is already open.",
+            "system_warning"
+          )
+
+        Context.append_message(context, self_msg)
+
+      (in_area or in_inventory) and thing.match.flags.open and available_for_look and
+        thing.match.flags.is_closable and not thing.match.closable.open ->
+        open_item(context, thing, other_matches)
+    end
+  end
+
+  defp open_item(context, thing = %Search.Match{}, other_matches) do
+    cond do
+      # Is container and container is closed, meaning it can be opened
+      thing.match.flags.has_pocket and thing.match.flags.is_closable and
+          not thing.match.closable.open ->
+        in_inventory = Item.in_inventory?(thing.match.id, context.character.id)
+
+        closable =
+          Item.Closable.update!(thing.match.closable, %{
+            open: true
+          })
+
+        item = Map.put(thing.match, :closable, closable)
+
+        others =
+          Character.list_others_active_in_areas(
+            context.character.id,
+            context.character.area_id
+          )
+
+        other_msg =
+          others
+          |> Message.new_story_output()
+          |> Message.append_text("[#{context.character.name}]", "character")
+          |> Message.append_text(" opens ", "base")
+          |> Message.append_text(item.description.short, Mud.Engine.Util.get_item_type(item))
+          |> Message.append_text(".", "base")
+
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You", "character")
+          |> Message.append_text(" open ", "base")
+
+        self_msg =
+          CallbackUtil.construct_item_current_location_message(
+            self_msg,
+            item,
+            context.character
+          )
+          |> Message.append_text(".", "base")
+
+        self_msg =
+          if other_matches != [] do
+            other_items = Enum.map(other_matches, & &1.match)
+
+            CallbackUtil.append_assumption_text(
+              self_msg,
+              item,
+              other_items,
+              context.character.settings.commands.multiple_matches_mode,
+              context.character
+            )
+          else
+            self_msg
+          end
+
+        # for items that are not root items, check to see whether the update needs to go to inventory or the area
+        context =
+          cond do
+            item.location.worn_on_character or item.location.held_in_hand or
+                in_inventory ->
+              Context.append_event(
+                context,
+                context.character_id,
+                UpdateInventory.new(:update, item)
+              )
+
+            item.location.on_ground ->
+              Context.append_event(
+                context,
+                [context.character_id | others],
+                UpdateArea.new(%{action: :update, items: [item]})
+              )
+          end
+
+        context
+        |> Context.append_message(other_msg)
+        |> Context.append_message(self_msg)
+
+      # It is a container but the container is open,
+      thing.match.flags.has_pocket and
+          (not thing.match.flags.is_closable or
+             (thing.match.flags.is_closable and thing.match.closable.open)) ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            CallbackUtil.upcase_item_with_location(thing.match),
+            Mud.Engine.Util.get_item_type(thing.match)
+          )
+          |> Message.append_text(" is already open.", "system_warning")
+
+        self_msg =
+          if other_matches != [] do
+            other_items = Enum.map(other_matches, & &1.match)
+
+            CallbackUtil.append_assumption_text(
+              self_msg,
+              thing.match,
+              other_items,
+              context.character.settings.commands.multiple_matches_mode,
+              context.character
+            )
+          else
+            self_msg
+          end
+
+        Context.append_message(context, self_msg)
+
+      # Assume the thing is not a container
+      true ->
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text(
+            CallbackUtil.upcase_item_with_location(thing.match),
+            Mud.Engine.Util.get_item_type(thing.match)
+          )
+          |> Message.append_text(" cannot be opened.", "system_alert")
+
+        self_msg =
+          if other_matches != [] do
+            other_items = Enum.map(other_matches, & &1.match)
+
+            CallbackUtil.append_assumption_text(
+              self_msg,
+              thing.match,
+              other_items,
+              context.character.settings.commands.multiple_matches_mode,
+              context.character
+            )
+          else
+            self_msg
+          end
+
+        Context.append_message(context, self_msg)
     end
   end
 end
