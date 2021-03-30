@@ -3,6 +3,7 @@ export interface ItemPocketInterface {
   item_id: string;
   capacity: number;
   height: number;
+  item_limit: number;
   length: number;
   width: number;
 }
@@ -10,10 +11,11 @@ export interface ItemPocketInterface {
 const state: ItemPocketInterface = {
   id: "",
   item_id: "",
-  capacity: 1,
-  height: 1,
-  length: 1,
-  width: 1,
+  capacity: 0,
+  height: 0,
+  item_limit: 0,
+  length: 0,
+  width: 0,
 };
 
 export default state;

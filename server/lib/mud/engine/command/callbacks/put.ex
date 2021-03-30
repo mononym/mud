@@ -16,6 +16,7 @@ defmodule Mud.Engine.Command.Put do
 
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory}
   alias Mud.Engine.Item
+  alias Mud.Engine.ItemUtil
   alias Mud.Engine.Item.Location
   alias Mud.Engine.Character
   alias Mud.Engine.Command.CallbackUtil
@@ -158,8 +159,6 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_area_or_inventory_to_put_thing(context, thing, other_thing_matches) do
-    # IO.inspect(context.command.ast.place, label: :find_place_in_area_or_inventory_to_put_thing)
-
     # There is no extended path, ie: in backpack in sack on shelf
     # So just try to find a thing in the area that can be seen to try and place the item on
     results =
@@ -179,8 +178,6 @@ defmodule Mud.Engine.Command.Put do
         )
       end
 
-    # IO.inspect(results, label: :find_place_in_area_or_inventory_to_put_thing)
-
     # if place has a path, extract it and look for a place relative to a path
     # otherwise just look for a place somewhere in the area to put the thing into
     # double check to see if path requires sequential parent to work due to stow/get, and if so implement something else to handle put
@@ -197,8 +194,6 @@ defmodule Mud.Engine.Command.Put do
   end
 
   defp find_place_in_inventory_to_put_thing(context, thing, other_thing_matches) do
-    # IO.inspect(context.command.ast, label: :find_place_in_inventory_to_put_thing)
-
     results =
       if is_nil(context.command.ast.place.path) do
         Search.find_matches_in_inventory(
@@ -346,14 +341,84 @@ defmodule Mud.Engine.Command.Put do
           |> Message.append_text(".", "system_warning")
         )
 
+      # TODO Implement size/weight/count checks
+      # item has to fit dimentionally
+      # item has to fit by weight
+      # item has to fit by count
       true ->
-        execute_put_item(
-          context,
-          thing,
-          other_thing_matches,
-          place,
-          other_place_matches
-        )
+        fits_results =
+          if context.command.ast.thing.where == "in" do
+            ItemUtil.items_fit_in_pocket(thing.match, place.match)
+          else
+            ItemUtil.items_fit_on_surface(thing.match, place.match)
+          end
+
+        case fits_results do
+          true ->
+            execute_put_item(
+              context,
+              thing,
+              other_thing_matches,
+              place,
+              other_place_matches
+            )
+
+          {:error, :dimensions} ->
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                Util.upcase_first(thing.match.description.short),
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(
+                " is too big to fit {#context.command.ast.thing.where} ",
+                "system_warning"
+              )
+              |> Message.append_text(
+                place.match.description.short,
+                Mud.Engine.Util.get_item_type(place.match)
+              )
+              |> Message.append_text(".", "system_warning")
+
+            Context.append_message(context, self_msg)
+
+          {:error, :weight} ->
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                Util.upcase_first(place.match.description.short),
+                Mud.Engine.Util.get_item_type(place.match)
+              )
+              |> Message.append_text(
+                " cannot hold the additional weight of ",
+                "system_warning"
+              )
+              |> Message.append_text(
+                thing.match.description.short,
+                Mud.Engine.Util.get_item_type(thing.match)
+              )
+              |> Message.append_text(".", "system_warning")
+
+            Context.append_message(context, self_msg)
+
+          {:error, :count} ->
+            self_msg =
+              context.character.id
+              |> Message.new_story_output()
+              |> Message.append_text(
+                "There are already too many items {#context.command.ast.thing.where} ",
+                "system_warning"
+              )
+              |> Message.append_text(
+                place.match.description.short,
+                Mud.Engine.Util.get_item_type(place.match)
+              )
+              |> Message.append_text(".", "system_warning")
+
+            Context.append_message(context, self_msg)
+        end
     end
   end
 

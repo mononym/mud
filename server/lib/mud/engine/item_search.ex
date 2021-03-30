@@ -122,6 +122,36 @@ defmodule Mud.Engine.ItemSearch do
     |> Item.preload()
   end
 
+  def immediate_children_with_relationship_query(ids, relationship) do
+    from([item, location: location] in base_query(),
+      where: item.id in subquery(child_ids_query(ids)) and location.relation == ^relationship
+    )
+  end
+
+  def weight_of_immediate_children_with_relationship(ids, relationship) do
+    from([item, location: location, physics: physics, flags: flags] in base_query(),
+      where:
+        item.id in subquery(child_ids_query(List.wrap(ids))) and
+          location.relation == ^relationship and
+          flags.has_physics
+    )
+    |> Repo.all()
+    |> Repo.preload([:physics])
+    |> Stream.map(& &1.physics)
+    |> Stream.filter(&(&1 != nil))
+    |> Enum.reduce(0, &(&1.physics.weight + &2))
+  end
+
+  def count_of_immediate_children_with_relationship(ids, relationship) do
+    from([item, location: location] in base_query(),
+      where:
+        item.id in subquery(child_ids_query(List.wrap(ids))) and
+          location.relation == ^relationship,
+      select: count(item.id)
+    )
+    |> Repo.one()
+  end
+
   #
   #
   # Helper/Internal Functions
@@ -306,7 +336,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_select_item_id()
   end
 
-  defp modify_query_select_item_id(query) do
+  def modify_query_select_item_id(query) do
     from(location in query, select: location.item_id)
   end
 
@@ -324,7 +354,8 @@ defmodule Mud.Engine.ItemSearch do
     from(
       [description: description] in query,
       where:
-        (like(description.short, ^search_string) or like(description.long, ^search_string)) and
+        (like(description.short, ^search_string) or
+           (like(description.short, ^search_string) and like(description.long, ^search_string))) and
           fragment("? ~* ?", description.key, ^key_regex)
     )
   end
@@ -449,7 +480,7 @@ defmodule Mud.Engine.ItemSearch do
     |> with_cte("location_tree", as: ^item_tree_query)
   end
 
-  defp base_query() do
+  def base_query() do
     from(
       item in Item,
       left_join: closable in assoc(item, :closable),

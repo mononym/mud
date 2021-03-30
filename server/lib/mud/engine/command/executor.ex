@@ -1,8 +1,4 @@
 defmodule Mud.Engine.Command.Executor do
-  # defstruct callback_module: nil,
-  #           ast: nil,
-  #           input: ""
-
   use TypedStruct
 
   typedstruct do
@@ -38,18 +34,13 @@ defmodule Mud.Engine.Command.Executor do
     case Commands.find_command_definition(List.first(split_input)) do
       {:ok, definition} ->
         parts = Map.new(definition.parts, fn part -> {part.key, part} end)
-        Logger.debug("definition: #{inspect(definition)}")
 
         case build_abstract_ast(split_input, {List.first(definition.parts), parts}) do
           abstract_asts when abstract_asts != [] ->
-            Logger.debug("possible_ast_list: #{inspect(abstract_asts)}")
-
             abstract_ast =
               abstract_asts
               |> Enum.sort(&(&1 <= &2))
               |> List.first()
-
-            Logger.debug("chosen ast: #{inspect(abstract_ast)}")
 
             {:ok,
              %__MODULE__{
@@ -128,13 +119,8 @@ defmodule Mud.Engine.Command.Executor do
   @spec do_execute(Mud.Engine.Command.Context.t()) ::
           Mud.Engine.Command.Context.t()
   defp do_execute(context) do
-    Logger.debug("do_execute")
-    Logger.debug(inspect(context))
-
     case string_to_command(context.input) do
       {:ok, command} ->
-        Logger.debug("do_execute string_to_command succeeded")
-        Logger.debug(inspect(command))
         context = Map.put(context, :command, command)
         {:ok, context} = transaction(context, &command.callback_module.execute/1)
 
@@ -142,8 +128,6 @@ defmodule Mud.Engine.Command.Executor do
         process_messages(context)
 
       {:error, :no_match} ->
-        Logger.debug("do_execute string_to_command failed")
-
         context =
           context
           |> Context.append_message(
@@ -206,9 +190,6 @@ defmodule Mud.Engine.Command.Executor do
   # All input has been processed and no dangling ast node
   # defp build_abstract_ast([], _parts, _current_part, nil, [last_node | rest]) do
   defp build_abstract_ast([], _parts, _current_part, nil, ast_nodes) do
-    Logger.debug("All input has been processed and no dangling ast node")
-    Logger.debug(inspect(ast_nodes))
-
     [Enum.reverse(ast_nodes)]
 
     # normalize_ast(last_node, rest)
@@ -216,10 +197,6 @@ defmodule Mud.Engine.Command.Executor do
 
   # All input has been processed but a dangling ast node needs to be put into the tree
   defp build_abstract_ast([], parts, current_part, current_ast, ast) do
-    Logger.debug(
-      "All input has been processed but a dangling ast node needs to be put into the tree"
-    )
-
     transformed_input =
       current_ast.input
       |> Enum.reverse()
@@ -233,16 +210,11 @@ defmodule Mud.Engine.Command.Executor do
   # Not all input has been processed but there are no more possibilities for matching
   defp build_abstract_ast(input, _parts, nil, nil, ast)
        when length(ast) > 0 and length(input) > 0 do
-    Logger.debug(
-      "Not all input has been processed but there are no more possibilities for matching"
-    )
-
     :error
   end
 
   # very first iteration
   defp build_abstract_ast([next_input | rest_of_input], {current_part, parts}, nil, nil, ast = []) do
-    Logger.debug("very first iteration")
     current_matches = any_matches?(current_part.matches, next_input)
 
     # if current node matches
@@ -271,8 +243,6 @@ defmodule Mud.Engine.Command.Executor do
               build_abstract_ast(rest_of_input, parts, child, nil, [node | ast])
             end)
 
-          Logger.debug(inspect(r))
-
           r
 
           # no potential children
@@ -287,8 +257,6 @@ defmodule Mud.Engine.Command.Executor do
 
   # Iterating through children the first time
   defp build_abstract_ast(all_input, parts, current_part, nil, ast) do
-    Logger.debug("Iterating through children the first time")
-    Logger.debug(inspect({all_input, parts, current_part, nil, ast}))
     # if is whitespace and should be dropped, do it and update values so rest of algorithm works
     [next_input | rest_of_input] =
       if Regex.match?(~r/^\s+$/, List.first(all_input)) and current_part.drop_whitespace do
@@ -297,10 +265,7 @@ defmodule Mud.Engine.Command.Executor do
         all_input
       end
 
-    Logger.debug(inspect([next_input | rest_of_input]))
-
     current_matches = any_matches?(current_part.matches, next_input)
-    Logger.debug(inspect(current_matches))
 
     if current_matches do
       node = %AbstractAstNode{key: current_part.key, input: [next_input]}
@@ -338,7 +303,6 @@ defmodule Mud.Engine.Command.Executor do
          current_ast,
          ast
        ) do
-    Logger.debug("Iterating through a greedy child more than once")
     # if is whitespace and should be dropped, do it and update values so rest of algorithm works
     [next_input | rest_of_input] =
       if Regex.match?(~r/^\s+$/, List.first(all_input)) and current_part.drop_whitespace do
@@ -346,9 +310,6 @@ defmodule Mud.Engine.Command.Executor do
       else
         all_input
       end
-
-    Logger.debug(inspect(current_ast))
-    Logger.debug(inspect([next_input | rest_of_input]))
 
     current_matches = any_matches?(current_part.matches, next_input)
     potential_children = list_children(current_part, parts)
@@ -372,10 +333,6 @@ defmodule Mud.Engine.Command.Executor do
         child_asts
 
       current_matches ->
-        l = [next_input | current_ast.input]
-        Logger.debug(inspect(current_ast.input))
-        Logger.debug(inspect(next_input))
-        Logger.debug(inspect(l))
         node = %{current_ast | input: [next_input | current_ast.input]}
 
         build_abstract_ast(rest_of_input, parts, current_part, node, ast)

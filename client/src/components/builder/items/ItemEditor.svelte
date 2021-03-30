@@ -502,7 +502,7 @@
         </div> -->
         <div class="col-span-12">
           <h2 class="text-gray-300 font-bold">
-            Item Type Behavior Modifiers :
+            Behavior Modifiers:
           </h2>
         </div>
         <div
@@ -560,6 +560,20 @@
             name="isWearable"
             id="isWearable"
             disabled={disableWearableCheckbox}
+          />
+        </div>
+        <div
+          class="col-span-1"
+          data-tippy-content="Items which have a physical presence need to have their dimensions/weight configured."
+        >
+          <label for="hasPhysics" class="block text-sm font-medium text-gray-300"
+            >Has Physics</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.has_physics}
+            type="checkbox"
+            name="hasPhysics"
+            id="hasPhysics"
           />
         </div>
         <div
@@ -806,7 +820,7 @@
           />
         </div>
 
-        {#if $itemUnderConstruction.flags.physics}
+        {#if $itemUnderConstruction.flags.has_physics}
           <div class="col-span-12">
             <h2 class="text-gray-300 font-bold">Physical Properties:</h2>
           </div>
@@ -1084,6 +1098,25 @@
               max="1000000000000000"
               name="pocketCapacity"
               id="pocketCapacity"
+              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+            />
+          </div>
+          <div
+            class="col-span-2"
+            data-tippy-content="Control how many items, seperate from size or weight, a surface can hold. 0 is unlimited."
+          >
+            <label
+              for="pocketCountLimit"
+              class="block text-sm font-medium text-gray-300"
+              >Item Count Limit</label
+            >
+            <input
+              bind:value={$itemUnderConstruction.pocket.item_limit}
+              type="number"
+              min="0"
+              max="1000000000000000"
+              name="pocketCountLimit"
+              id="pocketCountLimit"
               class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
             />
           </div>

@@ -4,6 +4,7 @@ defmodule Mud.Engine.Item.Surface do
   import Ecto.Query
   require Logger
   alias Mud.Repo
+  alias Mud.Engine.ItemSearch
 
   @all_fields [
     :item_id,
@@ -12,6 +13,7 @@ defmodule Mud.Engine.Item.Surface do
     :item_weight_limit,
     :character_limit,
     :show_item_contents,
+    :show_item_limit,
     :show_detailed_items,
     :items_must_fit,
     :length,

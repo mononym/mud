@@ -10,10 +10,10 @@ export interface ItemPhysicsInterface {
 const state: ItemPhysicsInterface = {
   id: "",
   item_id: "",
-  weight: 1,
-  height: 1,
-  length: 1,
-  width: 1,
+  weight: 0,
+  height: 0,
+  length: 0,
+  width: 0,
 };
 
 export default state;

@@ -34,6 +34,7 @@ defmodule Mud.Engine.Item.Flags do
              :shield,
              :is_closable,
              :is_equipment,
+             :has_physics,
              :has_pocket,
              :has_surface,
              :shop_display,
@@ -103,6 +104,7 @@ defmodule Mud.Engine.Item.Flags do
     #
     # What behaviors item has, for example a piece of furniture may or may not have a surface on it.
     #
+    field(:has_physics, :boolean, default: false)
     field(:has_pocket, :boolean, default: false)
     field(:has_surface, :boolean, default: false)
     field(:is_closable, :boolean, default: false)
@@ -149,6 +151,7 @@ defmodule Mud.Engine.Item.Flags do
       #
       # What an item has as part of it
       #
+      :has_physics,
       :has_surface,
       :has_pocket
     ])

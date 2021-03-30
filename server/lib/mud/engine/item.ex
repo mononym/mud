@@ -1681,7 +1681,7 @@ defmodule Mud.Engine.Item do
       "gem" => :gem,
       "location" => true,
       "lockable" => false,
-      "physics" => true,
+      "physics" => :has_physics,
       "pocket" => :has_pocket,
       "surface" => :has_surface,
       "wearable" => :wearable
@@ -1711,6 +1711,8 @@ defmodule Mud.Engine.Item do
       "surface" => Surface,
       "wearable" => Wearable
     }
+
+    IO.inspect({key, attrs}, label: :update_component)
 
     callback = key_callback_map[key]
 

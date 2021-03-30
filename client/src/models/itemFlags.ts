@@ -27,6 +27,7 @@ export interface ItemFlagsInterface {
   shop_display: boolean;
   weapon: boolean;
   wearable: boolean;
+  has_physics: boolean;
   has_surface: boolean;
   has_pocket: boolean;
   is_closable: boolean;
@@ -61,6 +62,7 @@ const state: ItemFlagsInterface = {
   weapon: false,
   wearable: false,
   is_equipment: false,
+  has_physics: false,
   has_surface: false,
   has_pocket: false,
   is_closable: false,

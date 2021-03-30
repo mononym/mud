@@ -19,10 +19,10 @@ defmodule Mud.Engine.Item.Physics do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_physics" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:length, :float, default: 1.0)
-    field(:width, :float, default: 1.0)
-    field(:height, :float, default: 1.0)
-    field(:weight, :float, default: 1.0)
+    field(:length, :integer, default: 0)
+    field(:width, :integer, default: 0)
+    field(:height, :integer, default: 0)
+    field(:weight, :integer, default: 0)
   end
 
   @doc false
@@ -30,6 +30,7 @@ defmodule Mud.Engine.Item.Physics do
     physics
     |> change()
     |> cast(attrs, [
+      :item_id,
       :length,
       :width,
       :height,

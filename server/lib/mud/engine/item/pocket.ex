@@ -3,6 +3,7 @@ defmodule Mud.Engine.Item.Pocket do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.ItemSearch
   require Logger
 
   @type id :: String.t()
@@ -13,26 +14,29 @@ defmodule Mud.Engine.Item.Pocket do
              :item_id,
              :capacity,
              :height,
+             :item_limit,
              :length,
              :width
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_pockets" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:capacity, :integer, default: 1)
-    field(:height, :integer, default: 1)
-    field(:length, :integer, default: 1)
-    field(:width, :integer, default: 1)
+    field(:capacity, :integer, default: 0)
+    field(:height, :integer, default: 0)
+    field(:length, :integer, default: 0)
+    field(:width, :integer, default: 0)
+    field(:item_limit, :integer, default: 0)
   end
 
   @doc false
-  def changeset(container, attrs) do
-    container
+  def changeset(pocket, attrs) do
+    pocket
     |> change()
     |> cast(attrs, [
       :item_id,
       :capacity,
       :height,
+      :item_limit,
       :length,
       :width
     ])
@@ -40,21 +44,21 @@ defmodule Mud.Engine.Item.Pocket do
   end
 
   def create(attrs \\ %{}) do
-    Logger.debug("Creating item container with attrs: #{inspect(attrs)}")
+    Logger.debug("Creating item pocket with attrs: #{inspect(attrs)}")
 
     %__MODULE__{}
     |> changeset(attrs)
     |> Repo.insert!()
   end
 
-  def update!(container, attrs) do
-    container
+  def update!(pocket, attrs) do
+    pocket
     |> changeset(attrs)
     |> Repo.update!()
   end
 
-  def update(container, attrs) do
-    container
+  def update(pocket, attrs) do
+    pocket
     |> changeset(attrs)
     |> Repo.update()
   end
@@ -62,8 +66,8 @@ defmodule Mud.Engine.Item.Pocket do
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
-      container in __MODULE__,
-      where: container.id == ^id
+      pocket in __MODULE__,
+      where: pocket.id == ^id
     )
     |> Repo.one!()
   end
@@ -71,8 +75,8 @@ defmodule Mud.Engine.Item.Pocket do
   @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
     from(
-      container in __MODULE__,
-      where: container.id == ^id
+      pocket in __MODULE__,
+      where: pocket.id == ^id
     )
     |> Repo.one()
   end
