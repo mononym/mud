@@ -65,6 +65,7 @@ defmodule Mud.Engine.Command.AstUtil do
         }
 
       _ ->
+        IO.inspect(rest, label: :build_tap_ast)
         place = populate_place(%AstNode.Place{}, rest) |> normalize_personal()
 
         case place.input do
@@ -130,6 +131,18 @@ defmodule Mud.Engine.Command.AstUtil do
     case ast_node.key do
       :place_personal ->
         populate_place(%{tap_node | personal: true}, rest)
+
+      :place_switch ->
+        # if place has already been populated than this switch should belong to the "next" place
+        # specified
+        if not is_nil(tap_node.input) do
+          node = populate_place(%AstNode.Place{}, [ast_node | rest])
+
+          %{tap_node | path: node}
+        else
+          # if place not populated then switch belongs to "this" place
+          populate_place(%{tap_node | switch: ast_node.input}, rest)
+        end
 
       :place_which ->
         populate_place(%{tap_node | which: ast_node.input}, rest)

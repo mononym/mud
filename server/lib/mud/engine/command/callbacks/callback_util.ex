@@ -594,27 +594,15 @@ defmodule Mud.Engine.Command.CallbackUtil do
 
         message = Message.append_text(message, " in ", "base")
 
-        if outermost_item.location.on_ground do
-          message
-          |> Message.append_text(
-            outermost_item.description.short,
-            Util.get_item_type(outermost_item)
-          )
-          |> Message.append_text(
-            " which is on the ground",
-            "base"
-          )
-        else
-          parent_index = Util.build_item_index(path)
+        parent_index = Util.build_item_index(path)
 
-          Util.build_parent_string(
-            message,
-            outermost_item,
-            parent_index,
-            true,
-            character.name
-          )
-        end
+        Util.build_parent_string(
+          message,
+          outermost_item,
+          parent_index,
+          true,
+          Util.he_she_they(character)
+        )
 
       # The item is on a visible surface somewhere and the full path should be described to everyone
       item_in_area and not in_container ->
@@ -627,7 +615,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
           parent_index[item.location.relative_item_id],
           parent_index,
           true,
-          character.name
+          Util.he_she_they(character)
         )
 
       # If the item is relative to another item, but it is not in the area, assume it is on the character in their inventory

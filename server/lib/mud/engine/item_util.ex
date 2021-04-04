@@ -106,9 +106,9 @@ defmodule Mud.Engine.ItemUtil do
     Enum.all?(items_physics, fn item_physics ->
       [item1, item2] = [item_physics.width, item_physics.length] |> Enum.sort(:desc)
 
-      ((item1 <= surface1 or surface2 == 0) and (item2 <= surface2 or surface1 == 0)) ||
-        {:error, :dimensions}
-    end)
+      (item1 <= surface1 or surface2 == 0) and (item2 <= surface2 or surface1 == 0)
+    end) ||
+      {:error, :dimensions}
   end
 
   defp items_fit_surface_by_weight(items_physics, surface) do
@@ -168,9 +168,9 @@ defmodule Mud.Engine.ItemUtil do
       [item1, item2, _] =
         [item_physics.width, item_physics.height, item_physics.length] |> Enum.sort(:desc)
 
-      ((item1 <= pocket1 or pocket3 == 0) and (item2 <= pocket2 or pocket2 == 0)) ||
-        {:error, :dimensions}
-    end)
+      (item1 <= pocket1 or pocket3 == 0) and (item2 <= pocket2 or pocket2 == 0)
+    end) ||
+      {:error, :dimensions}
   end
 
   defp items_fit_pocket_by_weight(items_physics, pocket) do
@@ -288,5 +288,122 @@ defmodule Mud.Engine.ItemUtil do
       item_id,
       place
     )
+  end
+
+  def sort_items(items, oldest_move_first) do
+    ancestors = Item.list_all_parents(items)
+
+    # create ancestor tree index
+    parent_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        cond do
+          item.location.relative_to_item ->
+            Map.put(index, item.id, item.location.relative_item_id)
+
+          item.location.worn_on_character ->
+            Map.put(index, item.id, "worn")
+
+          item.location.held_in_hand ->
+            Map.put(index, item.id, "held")
+
+          item.flags.scenery ->
+            Map.put(index, item.id, "scenery")
+
+          item.location.on_ground ->
+            Map.put(index, item.id, "ground")
+        end
+      end)
+
+    # create ancestor tree index
+    parent_move_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        Map.put(index, item.id, item.location.moved_at)
+      end)
+
+    layer_index =
+      Enum.reduce(ancestors, %{}, fn item, index ->
+        cond do
+          item.location.relative_to_item ->
+            Map.put(
+              index,
+              item.id,
+              count_layers(item.location.relative_item_id, parent_index)
+            )
+
+          item.location.on_ground or item.location.worn_on_character or
+              item.location.held_in_hand ->
+            Map.put(index, item.id, 0)
+        end
+      end)
+
+    # sort by this
+
+    roots = ["ground", "scenery", "held", "worn"]
+
+    Enum.sort(items, fn item1, item2 ->
+      cond do
+        # both items are root inventory items
+        layer_index[item1.id] == 0 and layer_index[item2.id] == 0 ->
+          cond do
+            # different layers with item1 being held and item2 worn
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) <
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              true
+
+            # different layers with item2 being held and item1 worn
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) >
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              false
+
+            # both on the same root layer, so can go by when they were last moved
+            Enum.find_index(roots, &(&1 == parent_index[item1.id])) ==
+                Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
+              if oldest_move_first do
+                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
+              else
+                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+              end
+          end
+
+        # both items are at the same layer, which is not the root
+        layer_index[item1.id] == layer_index[item2.id] ->
+          if item1.location.relative_item_id == item2.location.relative_item_id do
+            # same layer same parent go by own sort order
+            if oldest_move_first do
+              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
+            else
+              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+            end
+          else
+            # same layer different parents go by parents sort order
+            parent_move_index[item1.location.relative_item_id] <=
+              parent_move_index[item2.location.relative_item_id]
+          end
+
+        # different layers go by layer order
+        layer_index[item1.id] <= layer_index[item2.id] ->
+          true
+
+        # different layers go by layer order
+        layer_index[item1.id] > layer_index[item2.id] ->
+          false
+      end
+    end)
+  end
+
+  defp count_layers(_parent_id, _parent_index, _current_layer \\ 0)
+
+  defp count_layers(nil, _parent_index, _current_layer) do
+    0
+  end
+
+  defp count_layers(parent_id, parent_index, current_layer) do
+    result = Map.get(parent_index, parent_id)
+
+    if result in ["worn", "held", "ground"] do
+      current_layer
+    else
+      count_layers(result, parent_index, current_layer + 1)
+    end
   end
 end

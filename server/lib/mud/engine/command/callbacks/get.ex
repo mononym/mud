@@ -21,7 +21,7 @@ defmodule Mud.Engine.Command.Get do
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
-  alias Mud.Engine.{Character, Item}
+  alias Mud.Engine.{Character, Item, ItemUtil}
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Item.Location
@@ -291,15 +291,7 @@ defmodule Mud.Engine.Command.Get do
       # an appropriate place. This closes the security hole of UUID's along with other potential ones as well.
       in_area = Item.in_area?(original_item.id, context.character.area_id)
       in_inventory = Item.in_inventory?(original_item.id, context.character.id)
-
-      # TODO: This assumes anything not in a container is on a surface all the way down. Is this good enough? Does this
-      # need a more intense check? Investigate.
-      available =
-        if original_item.location.relative_to_item and original_item.location.relation == "on" do
-          true
-        else
-          Item.parent_containers_open?(original_item)
-        end
+      available = ItemUtil.is_available_for_look?(original_item)
 
       cond do
         # This is the happy case where the item is where it is supposed to be and it is not inside any closed containers

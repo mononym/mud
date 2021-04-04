@@ -53,7 +53,7 @@
         item
       )}">{item.description.long}</pre>
   {/if}
-  {#if ((item.flags.has_pocket && item.pocket.open) || (item.flags.furniture && item.furniture.has_external_surface)) && $areaItemsParentChildIndex[item.id] != undefined}
+  {#if ((item.flags.has_pocket && (!item.flags.is_closable || (item.flags.is_closable && item.closable.open))) || (item.flags.furniture && item.furniture.has_external_surface)) && $areaItemsParentChildIndex[item.id] != undefined}
     <div class="flex flex-col ml-4">
       {#each $areaItemsParentChildIndex[item.id] as childItem}
         <div class="flex">

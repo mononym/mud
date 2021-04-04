@@ -19,6 +19,7 @@ defmodule Mud.Engine.Command.Wear do
   alias Mud.Engine.Search
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Item.Location
+  alias Mud.Engine.Command.AstNode.{Thing}
 
   require Logger
 
@@ -120,7 +121,8 @@ defmodule Mud.Engine.Command.Wear do
             self_msg,
             original_item,
             other_items,
-            context.character.settings.commands.multiple_matches_mode
+            context.character.settings.commands.multiple_matches_mode,
+            context.character
           )
         else
           self_msg

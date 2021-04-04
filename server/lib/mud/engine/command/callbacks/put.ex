@@ -372,7 +372,7 @@ defmodule Mud.Engine.Command.Put do
                 Mud.Engine.Util.get_item_type(thing.match)
               )
               |> Message.append_text(
-                " is too big to fit {#context.command.ast.thing.where} ",
+                " is too big to fit #{context.command.ast.thing.where} ",
                 "system_warning"
               )
               |> Message.append_text(
@@ -408,7 +408,7 @@ defmodule Mud.Engine.Command.Put do
               context.character.id
               |> Message.new_story_output()
               |> Message.append_text(
-                "There are already too many items {#context.command.ast.thing.where} ",
+                "There are already too many items #{context.command.ast.thing.where} ",
                 "system_warning"
               )
               |> Message.append_text(

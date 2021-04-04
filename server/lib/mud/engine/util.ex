@@ -6,7 +6,7 @@ defmodule Mud.Engine.Util do
   import Mud.Engine.Command.Context
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
-  alias Mud.Engine.{Area, Character, Link, Item}
+  alias Mud.Engine.{Area, Character, Link, Item, Util}
   alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Constants
 
@@ -129,8 +129,6 @@ defmodule Mud.Engine.Util do
   """
   @spec check_equiv(String.t() | Regex.t(), String.t()) :: boolean
   def check_equiv(maybe_regex, string) do
-    # IO.inspect({maybe_regex, string}, label: "check_equiv")
-
     if Regex.regex?(maybe_regex) do
       Regex.match?(maybe_regex, string)
     else
@@ -454,9 +452,6 @@ defmodule Mud.Engine.Util do
     parents = Item.list_all_parents(items)
     parent_index = build_item_index(parents)
 
-    # IO.inspect(items, label: :construct_nested_item_location_message_for_self_items)
-    # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
-    # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
     message =
       message
       |> Message.append_text(
@@ -503,39 +498,72 @@ defmodule Mud.Engine.Util do
         stowed_item,
         stowed_path
       ) do
-    # items = List.wrap(original_item)
-    # parents = Item.list_all_parents(items)
-    parent_index = build_item_index(original_path)
-
-    # IO.inspect(items, label: :construct_nested_item_location_message_for_self_items)
-    # IO.inspect(parents, label: :construct_nested_item_location_message_for_self_parents)
-    # IO.inspect(parent_index, label: :construct_nested_item_location_message_for_self_index)
-
-    origin_message =
-      Message.append_text(message, " from ", "base")
-      |> build_parent_string(original_item, parent_index, true, "you")
-
-    origin_message =
-      Message.append_text(
-        origin_message,
-        " into ",
-        "base"
+    message =
+      message
+      |> Message.append_text(
+        original_item.description.short,
+        get_item_type(original_item)
       )
 
-    # stowed_items = List.wrap(stowed_item)
-    # stowed_parents = Item.list_all_parents(stowed_items)
+    # Item being stowed was originally on the ground
+    message_with_origin =
+      cond do
+        original_item.location.on_ground ->
+          message
+          |> Message.append_text(
+            " which was on the ground into ",
+            "base"
+          )
+
+        original_item.location.held_in_hand ->
+          message
+          |> Message.append_text(
+            " which was in ",
+            "base"
+          )
+          |> Message.append_text(
+            "your",
+            "character"
+          )
+          |> Message.append_text(
+            " hand into ",
+            "base"
+          )
+
+        true ->
+          # Item being stowed was originally relative to another item
+          outermost_item =
+            Enum.find(original_path, fn possible_parent ->
+              possible_parent.id == original_item.location.relative_item_id
+            end)
+
+          parent_index = build_item_index(original_path)
+
+          Message.append_text(message, " from ", "base")
+          |> build_parent_string(
+            outermost_item,
+            parent_index,
+            true,
+            "you"
+          )
+          |> Message.append_text(
+            " into ",
+            "base"
+          )
+      end
+
     stowed_parent_index = build_item_index(stowed_path)
 
     outermost_item =
       Enum.find(stowed_path, fn possible_parent ->
-        possible_parent.flags.has_pocket or possible_parent.id == stowed_item.id
+        possible_parent.id == stowed_item.location.relative_item_id
       end)
 
     build_parent_string(
-      origin_message,
+      message_with_origin,
       outermost_item,
       stowed_parent_index,
-      false,
+      true,
       "you"
     )
   end
@@ -584,8 +612,12 @@ defmodule Mud.Engine.Util do
           # Item being stowed was originally relative to another item
           outermost_item =
             Enum.find(original_path, fn possible_parent ->
-              possible_parent.flags.has_pocket or possible_parent.id == original_item.id
+              possible_parent.flags.has_pocket or
+                possible_parent.id == original_item.location.relative_item_id
             end)
+
+          IO.inspect(original_path, label: :original_path)
+          IO.inspect(outermost_item, label: :outermost_item)
 
           cond do
             outermost_item.location.on_ground ->
@@ -618,18 +650,36 @@ defmodule Mud.Engine.Util do
                 "base"
               )
 
-            true ->
-              outermost_object = Item.get!(outermost_item.location.relative_item_id)
-
+            outermost_item.location.worn_on_character ->
               Message.append_text(message, " from ", "base")
               |> Message.append_text(
                 outermost_item.description.short,
                 get_item_type(outermost_item)
               )
-              |> Message.append_text(" #{outermost_item.location.relation} ", "base")
               |> Message.append_text(
-                outermost_object.description.short,
-                get_item_type(outermost_object)
+                " which ",
+                "base"
+              )
+              |> Message.append_text(
+                "#{he_she_they(character)}",
+                "character"
+              )
+              |> Message.append_text(
+                " are wearing into ",
+                "base"
+              )
+
+            true ->
+              message = Message.append_text(message, " from ", "base")
+
+              parent_index = Util.build_item_index(original_path)
+
+              Util.build_parent_string(
+                message,
+                outermost_item,
+                parent_index,
+                true,
+                Util.he_she_they(character)
               )
               |> Message.append_text(
                 " into ",
@@ -640,39 +690,50 @@ defmodule Mud.Engine.Util do
 
     outermost_item =
       Enum.find(stowed_path, fn possible_parent ->
-        possible_parent.flags.has_pocket or possible_parent.id == stowed_item.id
+        possible_parent.flags.has_pocket or
+          possible_parent.id == stowed_item.location.relative_item_id
       end)
 
-    are_or_is =
-      if character.gender_pronoun == "neutral" do
-        "are"
-      else
-        "is"
-      end
+    parent_index = Util.build_item_index(stowed_path)
 
-    message_with_origin
-    |> Message.append_text(
-      outermost_item.description.short,
-      get_item_type(outermost_item)
+    Util.build_parent_string(
+      message_with_origin,
+      outermost_item,
+      parent_index,
+      true,
+      Util.he_she_they(character)
     )
-    |> Message.append_text(
-      " which ",
-      "base"
-    )
-    |> Message.append_text(
-      "#{he_she_they(character)}",
-      "character"
-    )
-    |> Message.append_text(
-      " #{are_or_is} #{
-        if outermost_item.location.held_in_hand do
-          "holding"
-        else
-          "wearing"
-        end
-      }",
-      "base"
-    )
+
+    # are_or_is =
+    #   if character.gender_pronoun == "neutral" do
+    #     "are"
+    #   else
+    #     "is"
+    #   end
+
+    # message_with_origin
+    # |> Message.append_text(
+    #   outermost_item.description.short,
+    #   get_item_type(outermost_item)
+    # )
+    # |> Message.append_text(
+    #   " which ",
+    #   "base"
+    # )
+    # |> Message.append_text(
+    #   "#{he_she_they(character)}",
+    #   "character"
+    # )
+    # |> Message.append_text(
+    #   " #{are_or_is} #{
+    #     if outermost_item.location.held_in_hand do
+    #       "holding"
+    #     else
+    #       "wearing"
+    #     end
+    #   }",
+    #   "base"
+    # )
   end
 
   def construct_nested_item_previous_location_message_for_others(
@@ -747,7 +808,7 @@ defmodule Mud.Engine.Util do
           parent_index[item.location.relative_item_id],
           parent_index,
           true,
-          character.name
+          Util.he_she_they(character)
         )
 
       # If the item is relative to another item, but it is not in the area, assume it is on the character in their inventory
@@ -801,7 +862,7 @@ defmodule Mud.Engine.Util do
         item,
         parent_index,
         current_state,
-        who,
+        he_she_they,
         default_text_type \\ "base"
       ) do
     was_or_is =
@@ -833,7 +894,7 @@ defmodule Mud.Engine.Util do
           parent_index[item.location.relative_item_id],
           parent_index,
           current_state,
-          who,
+          he_she_they,
           default_text_type
         )
 
@@ -859,7 +920,7 @@ defmodule Mud.Engine.Util do
           default_text_type
         )
         |> Message.append_text(
-          " #{who}",
+          " #{he_she_they}",
           "character"
         )
         |> Message.append_text(
@@ -878,7 +939,7 @@ defmodule Mud.Engine.Util do
           default_text_type
         )
         |> Message.append_text(
-          " #{who}",
+          " #{he_she_they}",
           "character"
         )
         |> Message.append_text(

@@ -132,6 +132,7 @@ defmodule Mud.Engine.Character do
       :eye_accent_color,
       :eye_color,
       :eye_color_type,
+      :gender_pronoun,
       :height,
       :hair_color,
       :hair_length,

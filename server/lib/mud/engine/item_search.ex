@@ -4,6 +4,7 @@ defmodule Mud.Engine.ItemSearch do
   """
 
   alias Mud.Engine.Item
+  alias Mud.Engine.ItemUtil
   alias Mud.Engine.Item.{Location}
   alias Mud.Engine.Search
   alias Mud.Repo
@@ -67,37 +68,239 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   @doc """
-  Search for an item that is a child of another item.
+  Search for an item that is a child of another item in the inventory, and that has a pocket.
   """
-  def search_relative_to_item_in_area(
+  def search_for_pocket_relative_to_item_in_inventory(
+        character_id,
+        [initial_path | path],
+        thing,
+        mode,
+        thing_is_immediate_child \\ true
+      ) do
+    initial_query =
+      specific_nested_item_inventory_initial_query(
+        character_id,
+        Search.input_to_wildcard_string(initial_path.input, mode)
+      )
+
+    build_relative_query(initial_query, path, thing, thing_is_immediate_child)
+    |> modify_query_has_pocket()
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
+  The item being searched for is not only in the inventory but also has a pocket.
+
+  This was introduced to support 'STOW' by helping find a container to put an item in.
+  """
+  def search_inventory_for_item_with_pocket(character_id, search_string, mode) do
+    from(
+      [location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
+      where:
+        location.item_id in subquery(base_query_for_all_inventory_ids(character_id)) and
+          flags.has_pocket,
+      order_by: [desc: location.moved_at]
+    )
+    |> modify_query_search_descriptions(Search.input_to_wildcard_string(search_string, mode))
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
+  Search for an item that is a child of another item, where the parent is on the ground.
+  """
+  def search_relative_to_item_on_ground(
         area_id,
         [initial_path | path],
         thing,
         mode,
         thing_is_immediate_child \\ true
       ) do
-    # Initial path is the outermost item, so if doing 'get ring on box in vault' the initial path would be the vault
-    initial_query =
-      specific_nested_item_in_area_initial_query(
-        area_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
+    search_string = Search.input_to_wildcard_string(initial_path.input, mode)
 
-    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
+    base_items =
+      base_on_ground_query(area_id)
+      |> modify_query_search_descriptions(search_string)
+      |> Repo.all()
+
+    search_for_child(initial_path, base_items, path, thing, mode, thing_is_immediate_child)
+  end
+
+
+  @doc """
+  Search for an item that is a child of another item.
+  """
+  def search_relative_to_any_area_item(
+        area_id,
+        [initial_path | path],
+        thing,
+        mode,
+        thing_is_immediate_child \\ true
+      ) do
+    search_string = Search.input_to_wildcard_string(initial_path.input, mode)
+
+    base_items =
+      nested_item_in_area_initial_query(area_id, search_string)
+      |> Repo.all()
+
+    search_for_child(initial_path, base_items, path, thing, mode, thing_is_immediate_child)
+  end
+
+  defp search_for_child(
+         parent_node,
+         parent_search_results,
+         path,
+         thing,
+         mode,
+         thing_is_immediate_child
+       ) do
+    # if parent node doesn't specify which result, can use all of them and not have to iterate through each one on this round.
+    case parent_search_results do
+      # Player did not try and specify anything at this layer so go with all results
+      matches when matches != [] and parent_node.which == 0 ->
+        # if not another layer then grab thing and take the results from that and return them
+        if path == [] do
+          search_for_child_thing(matches, thing, mode, thing_is_immediate_child)
+        else
+          # if there is another layer recurse
+          # search for children and pass results through
+          search_for_child_next_path_step(
+            matches,
+            path,
+            thing,
+            mode,
+            thing_is_immediate_child
+          )
+        end
+
+      # There are possibly multiple matches, but the player might also have specified a specific item
+      matches when matches != [] and parent_node.which > 0 ->
+        # if a parent was specified, then all the results need to be grouped by their parent first (all root items equal parent?),
+        # then all of those groups need to be filtered based on which selection to reflect searching entirely different containers.
+        # This will let results and container chains to fall out of the results until there is a final set of results
+
+        # and then once all those results have been filtered and gathered back up into a single result set, check to see if there
+        # is still a further path and if so begin the search process again and recurse
+        # if there is no further path then search for thing relative to matches
+
+        filtered_matches =
+          matches
+          |> Repo.preload([:location])
+          |> Enum.group_by(fn item ->
+            cond do
+              item.location.relative_to_item -> item.location.relative_item_id
+              item.location.held_in_hand -> "#{item.location.character_id}:hand"
+              item.location.worn_on_character -> item.location.character_id
+              item.location.on_ground -> item.location.area_id
+            end
+          end)
+          |> Enum.flat_map(fn {_parent, children} ->
+            Enum.at(children, parent_node.which - 1, []) |> List.wrap()
+          end)
+
+          if path == [] do
+            search_for_child_thing(filtered_matches, thing, mode, thing_is_immediate_child)
+          else
+            # if there is another layer recurse
+            # search for children and pass results through
+            search_for_child_next_path_step(
+              filtered_matches,
+              path,
+              thing,
+              mode,
+              thing_is_immediate_child
+            )
+          end
+
+
+      # No results were found so just return empty results
+      [] ->
+        []
+    end
+  end
+
+  defp search_for_child_thing(parents, thing, mode, thing_is_immediate_child) do
+    search_string = Search.input_to_wildcard_string(thing.input, mode)
+
+    # search for thing relative to matches
+    parent_ids = Enum.map(parents, & &1.id)
+
+    query =
+      if thing_is_immediate_child do
+        immediate_children_with_relationship_query(parent_ids, thing.where)
+        |> modify_query_select_id()
+      else
+        immediate_children_with_relationship_and_all_nested_child_ids_query(
+          parent_ids,
+          thing.where
+        )
+        |> modify_query_select_id()
+      end
+
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where: location.item_id in subquery(query),
+      order_by: [desc: location.moved_at]
+    )
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+    |> ItemUtil.sort_items(true)
+  end
+
+  defp search_for_child_next_path_step(
+         parents,
+         path,
+         thing,
+         mode,
+         thing_is_immediate_child
+       ) do
+    [next_path_step | rest_of_path] = path
+    search_string = Search.input_to_wildcard_string(next_path_step.input, mode)
+    parent_ids = Enum.map(parents, & &1.id)
+
+    results =
+      from(
+        [location: location] in base_query_for_description_and_location(),
+        where:
+          location.item_id in subquery(
+            immediate_children_with_relationship_and_all_nested_child_ids_query(
+              parent_ids,
+              next_path_step.where
+            )
+          ),
+        order_by: [desc: location.moved_at]
+      )
+      |> modify_query_search_descriptions(search_string)
+      |> Repo.all()
+
+    search_for_child(
+      next_path_step,
+      results,
+      rest_of_path,
+      thing,
+      mode,
+      thing_is_immediate_child
+    )
   end
 
   @doc """
   Items on ground are searched for a match.
   """
   def search_on_ground(area_id, search_string) do
+    base_on_ground_query(area_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  defp base_on_ground_query(area_id) do
     from(
       [description: description, location: location] in base_query_for_description_and_location(),
       where: location.area_id == ^area_id and location.on_ground,
       order_by: [desc: location.moved_at]
     )
-    |> modify_query_search_descriptions(search_string)
-    |> Repo.all()
-    |> Item.preload()
   end
 
   @doc """
@@ -123,7 +326,7 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   def immediate_children_with_relationship_query(ids, relationship) do
-    from([item, location: location] in base_query(),
+    from([item, location: location] in base_query_for_description_and_location(),
       where: item.id in subquery(child_ids_query(ids)) and location.relation == ^relationship
     )
   end
@@ -139,7 +342,7 @@ defmodule Mud.Engine.ItemSearch do
     |> Repo.preload([:physics])
     |> Stream.map(& &1.physics)
     |> Stream.filter(&(&1 != nil))
-    |> Enum.reduce(0, &(&1.physics.weight + &2))
+    |> Enum.reduce(0, &(&1.weight + &2))
   end
 
   def count_of_immediate_children_with_relationship(ids, relationship) do
@@ -170,7 +373,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_select_id()
   end
 
-  defp specific_nested_item_in_area_initial_query(
+  defp nested_item_in_area_initial_query(
          area_id,
          search_string
        ) do
@@ -179,10 +382,9 @@ defmodule Mud.Engine.ItemSearch do
       where: location.item_id in subquery(base_query_for_all_area_item_ids(area_id))
     )
     |> modify_query_search_descriptions(search_string)
-    |> modify_query_select_id()
   end
 
-  defp build_and_execute_relative_query(
+  defp build_relative_query(
          initial_query,
          path,
          thing,
@@ -195,6 +397,21 @@ defmodule Mud.Engine.ItemSearch do
         mostly_constructed_query,
         Search.input_to_wildcard_string(thing.input),
         thing.where,
+        thing_is_immediate_child
+      )
+  end
+
+  defp build_and_execute_relative_query(
+         initial_query,
+         path,
+         thing,
+         thing_is_immediate_child
+       ) do
+    final_query =
+      build_relative_query(
+        initial_query,
+        path,
+        thing,
         thing_is_immediate_child
       )
 
@@ -331,6 +548,18 @@ defmodule Mud.Engine.ItemSearch do
     )
   end
 
+  defp base_query_for_description_and_location_and_flags() do
+    from(
+      item in Mud.Engine.Item,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: description in assoc(item, :description),
+      as: :description,
+      left_join: flags in assoc(item, :flags),
+      as: :flags
+    )
+  end
+
   defp base_query_for_all_inventory_ids(character_id) do
     base_query_for_all_inventory(character_id)
     |> modify_query_select_item_id()
@@ -368,6 +597,10 @@ defmodule Mud.Engine.ItemSearch do
       |> modify_query_select_id()
 
     recursive_child_ids_query(children_ids_query)
+  end
+
+  defp modify_query_has_pocket(query, does_have_pocket \\ true) do
+    from([flags: flags] in query, where: flags.has_pocket == ^does_have_pocket)
   end
 
   defp modify_query_select_id(query) do

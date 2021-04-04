@@ -19,12 +19,11 @@ defmodule Mud.Engine.Command.Deposit do
   alias Mud.Engine.Message
   alias Mud.Engine.Character.{Bank, Wealth}
   alias Mud.Engine.Event.Client.UpdateCharacter
+  alias Mud.Engine.Util
 
   require Logger
 
   def build_ast(ast_nodes) do
-    IO.inspect(ast_nodes, label: :deposit_build_ast)
-
     case ast_nodes do
       [_] ->
         nil
@@ -39,6 +38,21 @@ defmodule Mud.Engine.Command.Deposit do
 
   @impl true
   def execute(%Context{} = context) do
+    if is_nil(context.command.ast) do
+      Context.append_message(
+        context,
+        Message.new_story_output(
+          context.character.id,
+          Util.get_module_docs(__MODULE__),
+          "system_info"
+        )
+      )
+    else
+      continue_execution(context)
+    end
+  end
+
+  defp continue_execution(context) do
     ast = context.command.ast
 
     area = Area.get!(context.character.area_id)

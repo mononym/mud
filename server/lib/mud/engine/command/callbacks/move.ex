@@ -323,7 +323,8 @@ defmodule Mud.Engine.Command.Move do
           personal_departure_message,
           link,
           other_matches,
-          context.character.settings.commands.multiple_matches_mode
+          context.character.settings.commands.multiple_matches_mode,
+          context.character
         )
       else
         personal_departure_message
@@ -514,7 +515,8 @@ defmodule Mud.Engine.Command.Move do
         Message.new_story_output(context.character.id),
         link,
         other_links,
-        context.character.settings.commands.multiple_matches_mode
+        context.character.settings.commands.multiple_matches_mode,
+        context.character
       )
     )
   end

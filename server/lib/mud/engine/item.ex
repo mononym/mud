@@ -721,26 +721,6 @@ defmodule Mud.Engine.Item do
     |> preload()
   end
 
-  @doc """
-  """
-  def search_relative_to_item_in_area(
-        area_id,
-        [initial_path | path],
-        thing,
-        mode,
-        thing_is_immediate_child \\ true
-      ) do
-    initial_query =
-      specific_nested_item_area_initial_query(
-        area_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
-
-    # IO.inspect(initial_query, label: "search_relative_to_item_in_area")
-
-    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
-  end
-
   @spec search_relative_to_hands(
           any,
           [atom | %{:input => binary, optional(any) => any}, ...],

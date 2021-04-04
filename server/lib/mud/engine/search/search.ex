@@ -98,14 +98,14 @@ defmodule Mud.Engine.Search do
   @doc """
   Find matches in worn or held items.
   """
-  @spec find_matching_containers_in_inventory(
+  @spec search_inventory_for_item_with_pocket(
           String.t(),
           String.t()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matching_containers_in_inventory(character_id, input, mode \\ "simple") do
+  def search_inventory_for_item_with_pocket(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_inventory_for_containers(character_id, search_string)
+    items = ItemSearch.search_inventory_for_item_with_pocket(character_id, search_string, mode)
 
     case things_to_match(items) do
       [] ->
@@ -418,6 +418,45 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
+  Find an item in the inventory, that is a child of another item, that also has a pocket.
+
+  Ignores items without pockets while searching.
+  """
+  @spec find_matches_with_pocket_relative_to_place_in_inventory(
+          String.t(),
+          Mud.Engine.Command.AstNode.Thing.t(),
+          Mud.Engine.Command.AstNode.Place.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_with_pocket_relative_to_place_in_inventory(
+        character_id,
+        thing,
+        place,
+        mode,
+        thing_is_immediate_child \\ true
+      ) do
+    path = unnest_place_path(place, [])
+
+    items =
+      ItemSearch.search_for_pocket_relative_to_item_in_inventory(
+        character_id,
+        path,
+        thing,
+        mode,
+        thing_is_immediate_child
+      )
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
   Find matches relative to an item in a given area.
   """
   @spec find_matches_relative_to_place_in_area(
@@ -438,7 +477,7 @@ defmodule Mud.Engine.Search do
     path = unnest_place_path(place, [])
 
     items =
-      ItemSearch.search_relative_to_item_in_area(
+      ItemSearch.search_relative_to_any_area_item(
         area_id,
         path,
         thing,

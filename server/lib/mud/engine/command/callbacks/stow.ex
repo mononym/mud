@@ -35,6 +35,7 @@ defmodule Mud.Engine.Command.Stow do
 
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateInventory, UpdateCharacter}
   alias Mud.Engine.Item
+  alias Mud.Engine.ItemUtil
   alias Mud.Engine.Character
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Util
@@ -51,6 +52,7 @@ defmodule Mud.Engine.Command.Stow do
           Mud.Engine.Command.AstNode.ThingAndPlace.t()
   def build_ast(ast_nodes) do
     Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
+    |> IO.inspect(label: :build_ast)
   end
 
   @impl true
@@ -133,33 +135,34 @@ defmodule Mud.Engine.Command.Stow do
     Logger.debug(context.command.ast)
 
     case context.command.ast do
-      # This thing will be in a place, but that place might not be on the character
-      %TAP{place: %Place{personal: false}, thing: %Thing{personal: false, where: where}}
-      when where != ">" ->
+      # Item being stored is the child of another item. That parent item might be in the area or it might
+      # be on the character.
+      %TAP{place: %Place{switch: nil}, thing: %Thing{personal: false}} ->
         Logger.debug("in place in area or hands")
-        stow_item_with_place(context)
+        find_child_item_in_area_or_hands(context)
 
-      # stow thing in container on character
-      %TAP{place: %Place{personal: place}, thing: %Thing{personal: thing, where: where}}
-      when place or (thing and where != ">") ->
+      # stow thing in container that is held in the hands
+      %TAP{place: %Place{switch: nil}, thing: %Thing{personal: true}} ->
         Logger.debug("in place in hands")
-        stow_item_with_personal_place(context)
+        find_child_item_in_hands(context)
 
-      # If my was specific with no place, stow something from hands
-      %TAP{thing: %Thing{personal: true}} ->
+      # stow item that is not in a container but sitting in the hands
+      %TAP{place: place, thing: %Thing{personal: true}} when place == nil or place.switch != nil ->
         Logger.debug("Item to Stow should be in character hands")
 
-        stow_item_in_hands(context)
+        find_item_in_hands(context)
 
-      # Thing being stowed did not have 'my' specified, but also no place either
-      %TAP{thing: %Thing{input: "left"}} ->
+      # Stow whatever item is sitting in the left hand
+      %TAP{place: place, thing: %Thing{input: "left"}} when place == nil or place.switch != nil ->
         stow_thing_in_left_hand(context)
 
-      %TAP{thing: %Thing{input: "right"}} ->
+      %TAP{place: place, thing: %Thing{input: "right"}}
+      when place == nil or place.switch != nil ->
         stow_thing_in_right_hand(context)
 
-      # Thing being stowed did not have 'my' specified, but also no place either
-      %TAP{thing: %Thing{input: input}} when input in ["all", "both"] ->
+      # Stow everything in the hands
+      %TAP{place: place, thing: %Thing{input: input}}
+      when input in ["all", "both"] and (place == nil or place.switch != nil) ->
         if context.character.handedness == "right" do
           context
           |> stow_thing_in_right_hand(true)
@@ -173,12 +176,30 @@ defmodule Mud.Engine.Command.Stow do
       # Thing being stowed did not have 'my' specified, but also no place either
       %TAP{thing: %Thing{personal: false}} ->
         Logger.debug("in area or hands")
-        stow_thing_in_area_or_hands(context)
+        find_item_in_area_or_hands(context)
     end
   end
 
-  defp stow_item_in_hands(context) do
-    Logger.debug("stow_item_in_hands")
+  defp find_child_item_in_area_or_hands(context) do
+    area_results =
+      Search.find_matches_relative_to_place_in_area(
+        context.character.area_id,
+        context.command.ast.thing,
+        maybe_strip_place(context.command.ast.place),
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+
+      _ ->
+        find_child_item_in_hands(context)
+    end
+  end
+
+  defp find_item_in_hands(context) do
+    Logger.debug("find_item_in_hands")
 
     results =
       Search.find_matches_in_held_items(
@@ -189,7 +210,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
+        sorted_results = CallbackUtil.sort_matches(matches, true)
 
         handle_search_results(context, {:ok, sorted_results})
 
@@ -199,9 +220,6 @@ defmodule Mud.Engine.Command.Stow do
   end
 
   defp handle_search_results(context, results) do
-    Logger.debug("handle_search_results")
-    Logger.debug(inspect(results))
-
     case results do
       {:ok, [match]} ->
         stow_item(context, match)
@@ -244,61 +262,33 @@ defmodule Mud.Engine.Command.Stow do
   end
 
   defp maybe_strip_place(place) do
-    IO.inspect(place, label: :maybe_strip_place_place)
     path = CallbackUtil.unnest_place_path(place)
-    IO.inspect(path, label: :maybe_strip_place_path)
 
-    # check path for arrow
-    # assume arrow means last place is where to stow a thing
-    # if it is grab it out of the path and rebuild path
-    # otherwise return original path
+    [start | path] =
+      Enum.take_while(Enum.reverse(path), &(&1.switch not in ["into", "in my", "into my", ">"]))
 
-    if Enum.any?(path, fn place -> place.where == ">" end) do
-      [_ | tail] = path
+    CallbackUtil.renest_place_path(start, path)
+  end
 
-      [start | path] = Enum.reverse(tail)
+  defp maybe_extract_new_home(nil) do
+    {:error, :no_home}
+  end
 
-      IO.inspect(CallbackUtil.renest_place_path(start, path), label: :maybe_strip_place_renest)
+  defp maybe_extract_new_home(place) do
+    path = CallbackUtil.unnest_place_path(place)
+
+    if Enum.any?(path, &(&1.switch in ["into", "in my", "into my", ">"])) do
+      [start | path] =
+        Enum.split_while(Enum.reverse(path), &is_nil(&1.switch))
+        |> elem(1)
+
+      {:ok, CallbackUtil.renest_place_path(start, path)}
     else
-      place
+      {:error, :no_home}
     end
   end
 
-  defp stow_item_with_place(context) do
-    Logger.debug("stow_item_with_place")
-    Logger.debug(context.command.ast.thing, label: :stow_item_with_place_thing)
-    Logger.debug(context.command.ast.place, label: :stow_item_with_place_place)
-    Logger.debug(maybe_strip_place(context.command.ast.place), label: :stow_item_with_place_strip)
-
-    cond do
-      context.command.ast.thing.where == ">" ->
-        # this means the place is actually where I need to update to actually put the thing
-        # so this is not actually stowing an item with a place, but stowing an item and setting the place
-        stow_thing_in_area_or_hands(context)
-
-      true ->
-        area_results =
-          Search.find_matches_relative_to_place_in_area(
-            context.character.area_id,
-            context.command.ast.thing,
-            maybe_strip_place(context.command.ast.place),
-            context.character.settings.commands.search_mode,
-            true
-          )
-
-        case area_results do
-          {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
-
-          _ ->
-            # look for place on ground on in hands or worn
-            stow_item_with_personal_place(context)
-        end
-    end
-  end
-
-  defp stow_item_with_personal_place(context) do
-    Logger.debug("stow_item_with_personal_place")
+  defp find_child_item_in_hands(context) do
     # look for place on ground on in hands or worn
     results =
       Search.find_matches_relative_to_place_in_hands(
@@ -311,13 +301,11 @@ defmodule Mud.Engine.Command.Stow do
     handle_search_results(context, results)
   end
 
-  defp stow_thing_in_area_or_hands(context) do
-    Logger.debug("stow_thing_in_area_or_hands")
-
+  defp find_item_in_area_or_hands(context) do
     # if this is reached with something in the "place" then it indicates that the "place" is the new spot to set as the items home container
 
     area_results =
-      Search.find_matches_in_area(
+      Search.find_matches_on_ground(
         context.character.area_id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
@@ -325,103 +313,179 @@ defmodule Mud.Engine.Command.Stow do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
       _ ->
-        stow_item_in_hands(context)
+        stow_item_on_visible_surfaces_in_area_or_inventory(context)
     end
   end
 
-  defp try_update_stow_home_location(context, place, original_item) do
-    IO.inspect(place, label: :try_update_stow_home_location)
+  # Checks the area for an item and if nothing is found moves on to the inventory
+  defp stow_item_on_visible_surfaces_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_on_visible_surfaces(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
 
-    case Search.find_matching_containers_in_inventory(context.character.id, place.input) do
-      {:ok, matches} ->
-        # IO.inspect("found matches")
-        # IO.inspect(matches)
-        [match | matches] = CallbackUtil.sort_matches(matches, false)
-        # IO.inspect([match | matches])
-        location = Location.update_stow_home!(original_item.location, match.match.id)
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
 
-        item = %{original_item | location: location}
-
-        self_msg =
-          context.character.id
-          |> Message.new_story_output()
-          |> Message.append_text("Saved default container for item: ", "base")
-
-        self_msg =
-          Util.construct_nested_item_location_message_for_self(
-            self_msg,
-            item,
-            "in",
-            true
-          )
-
-        self_msg =
-          if matches != [] do
-            other_items = Enum.map(matches, & &1.match)
-
-            CallbackUtil.append_assumption_text(
-              self_msg,
-              match.match,
-              other_items,
-              context.character.settings.commands.multiple_matches_mode
-            )
-          else
-            self_msg
-          end
-
-        {Context.append_message(context, self_msg), item}
-
-      {:error, _} ->
-        self_msg =
-          context.character.id
-          |> Message.new_story_output()
-          |> Message.append_text(
-            "Could not find a matching container to set as default for item. Using defaults instead.",
-            "system_warning"
-          )
-
-        {Context.append_message(context, self_msg), original_item}
+      _ ->
+        find_item_in_hands(context)
     end
+  end
+
+  defp try_update_stow_home_location(context, new_home, original_item) do
+    # results = Search.search_inventory_for_item_with_pocket(context.character.id, place.input)
+
+    # Search.find_matches_with_pocket_relative_to_place_in_inventory(
+    #     context.character.area_id,
+    #     context.command.ast.thing,
+    #     context.command.ast.place,
+    #     context.character.settings.commands.search_mode
+    #   )
+
+    results =
+      if is_nil(new_home.path) do
+        Search.search_inventory_for_item_with_pocket(
+          context.character.id,
+          new_home.input,
+          context.character.settings.commands.search_mode
+        )
+      else
+        Search.find_matches_with_pocket_relative_to_place_in_inventory(
+          context.character.id,
+          new_home.path,
+          new_home,
+          context.character.settings.commands.search_mode,
+          false
+        )
+      end
+
+    case results do
+      # There is only a single match and the player did not try and specify a specific item so just roll with that.
+      {:ok, [match]} when new_home.which == 0 ->
+        update_stow_home(context, original_item, match.match.id)
+
+      # There are possibly multiple matches, but the player might also have specified a specific item
+      {:ok, all_matches = [match | _matches]} ->
+        case context.command.ast do
+          # If which is greater than 0, then more than one match was anticipated and the player entered a number.
+          # Make sure provided selection is not more than the number of items that were found
+          %TAP{thing: %Thing{which: which}}
+          when is_integer(which) and which > 0 and which <= length(all_matches) ->
+            update_stow_home(context, original_item, Enum.at(all_matches, which - 1).id)
+
+          # If the user provided a number but it is greater than the number of items found,
+          %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
+            Context.append_message(
+              context,
+              Message.new_story_output(
+                context.character.id,
+                "Could not find the specified new home for the item being stowed. Falling back to defaults.",
+                "system_alert"
+              )
+            )
+
+          # The user did not preselect an item and we're just dealing with multiple matches. Fall through to the
+          # normal get_item function.
+          _ ->
+            # Determine what to do based on character preferences when it comes to multiple potential matches.
+            case context.character.settings.commands.multiple_matches_mode do
+              "silent" ->
+                # If their choice is "silent" that means just drop the extras so it is like they don't exist
+                update_stow_home(context, original_item, match.match.id)
+
+              key when key in ["item only", "full path"] ->
+                # If their choice is "full path" or "item only" that means pass everything through for generating messages later
+
+                update_stow_home(context, original_item, match.match.id)
+
+              "choose" ->
+                Context.append_message(
+                  context,
+                  Message.new_story_output(
+                    context.character.id,
+                    "Found too many possible new homes, please be more specific. Falling back to defaults without setting override for",
+                    "system_alert"
+                  )
+                  |> Message.append_text(
+                    original_item.description.short,
+                    Util.get_item_type(original_item)
+                  )
+                  |> Message.append_text(".", "system_alert")
+                )
+            end
+        end
+
+      # No results were found so return a standard error.
+      _ ->
+        Util.not_found_error(context)
+    end
+  end
+
+  defp update_stow_home(context, original_item, new_home_id) do
+    location = Location.update_stow_home!(original_item.location, new_home_id)
+
+    item = %{original_item | location: location}
+
+    self_msg =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("Saved default container for item: ", "base")
+      |> Message.append_text(original_item.short_description, Util.get_item_type(original_item))
+
+    {Context.append_message(context, self_msg), item}
   end
 
   defp maybe_update_stow_home_location(context, original_item) do
+    # this needs to use the new switch instead of checking where
+    # this needs to enable a generic "in inventory/worn" check like other commands with full
+    # flexibility to specify children
+
     ast = context.command.ast
 
-    if not is_nil(ast.place) do
-      path = CallbackUtil.unnest_place_path(ast.place)
+    case maybe_extract_new_home(ast.place) do
+      {:ok, new_home} ->
+        try_update_stow_home_location(context, new_home, original_item)
 
-      cond do
-        # first thing in path, and should be only one thing, is dest for home
-        ast.thing.where == ">" ->
-          new_home = List.first(path)
-          try_update_stow_home_location(context, new_home, original_item)
-
-        Enum.any?(path, fn place -> place.where == ">" end) ->
-          new_home = List.first(path)
-          try_update_stow_home_location(context, new_home, original_item)
-
-        true ->
-          {context, original_item}
-      end
-    else
-      {context, original_item}
+      _ ->
+        {context, original_item}
     end
+
+    # if not is_nil(ast.place) do
+    #   path = CallbackUtil.unnest_place_path(ast.place)
+
+    #   cond do
+    #     # first thing in path, and should be only one thing, is dest for home
+    #     ast.thing.where == ">" ->
+    #       new_home = List.first(path)
+    #       try_update_stow_home_location(context, new_home, original_item)
+
+    #     Enum.any?(path, fn place -> place.where == ">" end) ->
+    #       new_home = List.first(path)
+    #       try_update_stow_home_location(context, new_home, original_item)
+
+    #     true ->
+    #       {context, original_item}
+    #   end
+    # else
+    #   {context, original_item}
+    # end
   end
 
   defp stow_item(context, thing = %Search.Match{}, other_matches \\ []) do
-    Logger.debug("stow_item")
-    Logger.debug(thing.match)
-    Logger.debug(context.command.ast.place)
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
     in_hands = thing.match.location.held_in_hand
     parent_containers_open = Item.parent_containers_open?(thing.match)
     original_item = thing.match
+    available_for_look = ItemUtil.is_available_for_look?(thing.match)
 
     cond do
-      parent_containers_open and (in_area or in_hands) ->
+      available_for_look and (in_area or in_hands) ->
         if original_item.flags.coin do
           # update character wealth
           wealth_attrs =
@@ -445,12 +509,12 @@ defmodule Mud.Engine.Command.Stow do
             )
 
           other_msg =
-            others
+            [context.character.id | others]
             |> Message.new_story_output()
-            |> Message.append_text("[#{context.character.name}]", "character")
+            |> Message.append_text("#{context.character.name}", "character")
             |> Message.append_text(" picks up ", "base")
             |> Message.append_text(
-              CallbackUtil.coin_to_count_string(original_item.coin),
+              original_item.description.short,
               Mud.Engine.Util.get_item_type(original_item)
             )
             |> Message.append_text(".", "base")
@@ -481,9 +545,7 @@ defmodule Mud.Engine.Command.Stow do
           # check and see if the place is populated. The only way it should be at this point is if it was injected to reflect that the place is the new default destination
           # for this specific item that is being stowed
 
-          {context, original_item} = maybe_update_stow_home_location(context, thing.match)
-
-          # IO.inspect(original_item, label: :original_item)
+          {context, original_item} = maybe_update_stow_home_location(context, original_item)
 
           # have item that needs to be stowed.
           # check the type of item and get the container that it should go into
@@ -494,8 +556,6 @@ defmodule Mud.Engine.Command.Stow do
           # if there are no worn containers, flip the fuck out, orhterwise return the container that the item should be put into (for later checks on capacity etc...)
           case get_stow_target_container(context.character.containers, original_item) do
             container when is_struct(container) ->
-              IO.inspect(container, label: :containerxxxxxxx)
-
               # if a home container for the item has been set and it does not match the container that was retrieved to stow the item into, warn
               context =
                 if not is_nil(original_item.location.stow_home_id) and
@@ -523,15 +583,7 @@ defmodule Mud.Engine.Command.Stow do
               location =
                 Location.update_relative_to_item!(original_item.location, container.id, "in")
 
-              # IO.inspect(Enum.concat([container_items, items_in_path]), label: :items_in_path)
-
-              # IO.inspect("updated location")
-              # IO.inspect(location)
-              # IO.inspect(container)
-
               item = Map.put(original_item, :location, location)
-              # IO.inspect("item")
-              # IO.inspect(item)
               new_path = Item.list_full_path(item)
 
               others =
@@ -539,8 +591,6 @@ defmodule Mud.Engine.Command.Stow do
                   context.character.id,
                   context.character.area_id
                 )
-
-              # IO.inspect("got others")
 
               other_msg =
                 [context.character.id | others]
@@ -559,8 +609,6 @@ defmodule Mud.Engine.Command.Stow do
                 )
                 |> Message.append_text(".", "base")
 
-              # IO.inspect("other msg")
-
               self_msg =
                 context.character.id
                 |> Message.new_story_output()
@@ -577,32 +625,16 @@ defmodule Mud.Engine.Command.Stow do
                 )
                 |> Message.append_text(".", "base")
 
-              # self_msg =
-              #   context.character.id
-              #   |> Message.new_story_output()
-              #   |> Message.append_text("You", "character")
-              #   |> Message.append_text(" stow ", "base")
-              #   |> Message.append_text(
-              #     thing.match.description.short,
-              #     Mud.Engine.Util.get_item_type(item)
-              #   )
-              #   |> Message.append_text(".", "base")
-
-              # IO.inspect("self msg")
-
               self_msg =
                 if other_matches != [] do
                   other_items = Enum.map(other_matches, & &1.match)
-
-                  IO.inspect(self_msg, label: :other_matches)
-                  IO.inspect(item, label: :other_matches)
-                  IO.inspect(other_items, label: :other_matches)
 
                   CallbackUtil.append_assumption_text(
                     self_msg,
                     item,
                     other_items,
-                    context.character.settings.commands.multiple_matches_mode
+                    context.character.settings.commands.multiple_matches_mode,
+                    context.character
                   )
                 else
                   self_msg
@@ -640,7 +672,7 @@ defmodule Mud.Engine.Command.Stow do
                 context,
                 Message.new_story_output(
                   context.character.id,
-                  "You aren't wearing any containers to stow anything inside of. And this isn't that sort of game.",
+                  "Nothing you are wearing has a pocket...and this isn't that sort of game.",
                   "system_alert"
                 )
               )
@@ -664,7 +696,6 @@ defmodule Mud.Engine.Command.Stow do
 
     if Item.in_inventory?(stow_home_id, containers.character_id) do
       item = Item.get!(stow_home_id)
-      # IO.inspect(item, label: :get_stow_target_container)
       item
     else
       # search for all worn containers on character and grab the largest one to use
@@ -733,6 +764,7 @@ defmodule Mud.Engine.Command.Stow do
   end
 
   defp find_largest_worn_container(character_id) do
+    # TODO: Is just doing it by capacity enough? Should this be a more fancy check including volume?
     Character.list_worn_containers(character_id)
     |> Enum.sort(&(&1.pocket.capacity >= &2.pocket.capacity))
     |> List.first()
