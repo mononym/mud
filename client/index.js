@@ -25,6 +25,7 @@ const createWindow = () => {
     if (!app.isPackaged) {
         window.webContents.openDevTools()
     }
+    window.setMenuBarVisibility(false)
     window.loadFile('public/index.html');
 };
 
