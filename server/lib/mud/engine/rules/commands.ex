@@ -618,8 +618,15 @@ defmodule Mud.Engine.Rules.Commands do
         },
         %Part{
           must_follow: [:place, :thing],
-          matches: ["in my", "into", "into my", ">"],
+          matches: ["into"],
           key: :place_switch,
+          greedy: true,
+          transformer: &List.first/1
+        },
+        %Part{
+          must_follow: [:place_where, :thing_where, :place_switch],
+          matches: ["my"],
+          key: :place_personal,
           greedy: true,
           transformer: &List.first/1
         },

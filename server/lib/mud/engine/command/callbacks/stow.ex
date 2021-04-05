@@ -52,7 +52,6 @@ defmodule Mud.Engine.Command.Stow do
           Mud.Engine.Command.AstNode.ThingAndPlace.t()
   def build_ast(ast_nodes) do
     Mud.Engine.Command.AstUtil.build_tap_ast(ast_nodes)
-    |> IO.inspect(label: :build_ast)
   end
 
   @impl true
@@ -137,12 +136,16 @@ defmodule Mud.Engine.Command.Stow do
     case context.command.ast do
       # Item being stored is the child of another item. That parent item might be in the area or it might
       # be on the character.
-      %TAP{place: %Place{switch: nil}, thing: %Thing{personal: false}} ->
+      %TAP{place: %Place{personal: false, switch: nil}, thing: %Thing{personal: false}} ->
         Logger.debug("in place in area or hands")
         find_child_item_in_area_or_hands(context)
 
       # stow thing in container that is held in the hands
-      %TAP{place: %Place{switch: nil}, thing: %Thing{personal: true}} ->
+      %TAP{
+        place: %Place{personal: place_personal, switch: nil},
+        thing: %Thing{personal: thing_personal}
+      }
+      when thing_personal or place_personal ->
         Logger.debug("in place in hands")
         find_child_item_in_hands(context)
 
@@ -191,7 +194,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, area_results)
 
       _ ->
         find_child_item_in_hands(context)
@@ -202,21 +205,13 @@ defmodule Mud.Engine.Command.Stow do
     Logger.debug("find_item_in_hands")
 
     results =
-      Search.find_matches_in_held_items(
+      Search.find_matches_in_held_items_and_children(
         context.character.id,
         context.command.ast.thing.input,
         context.character.settings.commands.search_mode
       )
 
-    case results do
-      {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, true)
-
-        handle_search_results(context, {:ok, sorted_results})
-
-      _ ->
-        handle_search_results(context, results)
-    end
+    handle_search_results(context, results)
   end
 
   defp handle_search_results(context, results) do
@@ -339,15 +334,6 @@ defmodule Mud.Engine.Command.Stow do
   end
 
   defp try_update_stow_home_location(context, new_home, original_item) do
-    # results = Search.search_inventory_for_item_with_pocket(context.character.id, place.input)
-
-    # Search.find_matches_with_pocket_relative_to_place_in_inventory(
-    #     context.character.area_id,
-    #     context.command.ast.thing,
-    #     context.command.ast.place,
-    #     context.character.settings.commands.search_mode
-    #   )
-
     results =
       if is_nil(new_home.path) do
         Search.search_inventory_for_item_with_pocket(
@@ -358,8 +344,8 @@ defmodule Mud.Engine.Command.Stow do
       else
         Search.find_matches_with_pocket_relative_to_place_in_inventory(
           context.character.id,
-          new_home.path,
           new_home,
+          new_home.path,
           context.character.settings.commands.search_mode,
           false
         )
@@ -381,14 +367,14 @@ defmodule Mud.Engine.Command.Stow do
 
           # If the user provided a number but it is greater than the number of items found,
           %TAP{thing: %Thing{which: which}} when which > 0 and which > length(all_matches) ->
-            Context.append_message(
-              context,
-              Message.new_story_output(
-                context.character.id,
-                "Could not find the specified new home for the item being stowed. Falling back to defaults.",
-                "system_alert"
-              )
-            )
+            {Context.append_message(
+               context,
+               Message.new_story_output(
+                 context.character.id,
+                 "Could not find the specified new home for the item being stowed. Falling back to defaults.",
+                 "system_alert"
+               )
+             ), original_item}
 
           # The user did not preselect an item and we're just dealing with multiple matches. Fall through to the
           # normal get_item function.
@@ -405,25 +391,25 @@ defmodule Mud.Engine.Command.Stow do
                 update_stow_home(context, original_item, match.match.id)
 
               "choose" ->
-                Context.append_message(
-                  context,
-                  Message.new_story_output(
-                    context.character.id,
-                    "Found too many possible new homes, please be more specific. Falling back to defaults without setting override for",
-                    "system_alert"
-                  )
-                  |> Message.append_text(
-                    original_item.description.short,
-                    Util.get_item_type(original_item)
-                  )
-                  |> Message.append_text(".", "system_alert")
-                )
+                {Context.append_message(
+                   context,
+                   Message.new_story_output(
+                     context.character.id,
+                     "Found too many possible new homes, please be more specific. Falling back to defaults without setting override for",
+                     "system_alert"
+                   )
+                   |> Message.append_text(
+                     original_item.description.short,
+                     Util.get_item_type(original_item)
+                   )
+                   |> Message.append_text(".", "system_alert")
+                 ), original_item}
             end
         end
 
       # No results were found so return a standard error.
       _ ->
-        Util.not_found_error(context)
+        {Util.not_found_error(context), original_item}
     end
   end
 
@@ -436,16 +422,12 @@ defmodule Mud.Engine.Command.Stow do
       context.character.id
       |> Message.new_story_output()
       |> Message.append_text("Saved default container for item: ", "base")
-      |> Message.append_text(original_item.short_description, Util.get_item_type(original_item))
+      |> Message.append_text(original_item.description.short, Util.get_item_type(original_item))
 
     {Context.append_message(context, self_msg), item}
   end
 
   defp maybe_update_stow_home_location(context, original_item) do
-    # this needs to use the new switch instead of checking where
-    # this needs to enable a generic "in inventory/worn" check like other commands with full
-    # flexibility to specify children
-
     ast = context.command.ast
 
     case maybe_extract_new_home(ast.place) do
@@ -455,32 +437,11 @@ defmodule Mud.Engine.Command.Stow do
       _ ->
         {context, original_item}
     end
-
-    # if not is_nil(ast.place) do
-    #   path = CallbackUtil.unnest_place_path(ast.place)
-
-    #   cond do
-    #     # first thing in path, and should be only one thing, is dest for home
-    #     ast.thing.where == ">" ->
-    #       new_home = List.first(path)
-    #       try_update_stow_home_location(context, new_home, original_item)
-
-    #     Enum.any?(path, fn place -> place.where == ">" end) ->
-    #       new_home = List.first(path)
-    #       try_update_stow_home_location(context, new_home, original_item)
-
-    #     true ->
-    #       {context, original_item}
-    #   end
-    # else
-    #   {context, original_item}
-    # end
   end
 
   defp stow_item(context, thing = %Search.Match{}, other_matches \\ []) do
     in_area = Item.in_area?(thing.match.id, context.character.area_id)
-    in_hands = thing.match.location.held_in_hand
-    parent_containers_open = Item.parent_containers_open?(thing.match)
+    in_hands = ItemUtil.is_held_in_hand?(thing.match, context.character.id)
     original_item = thing.match
     available_for_look = ItemUtil.is_available_for_look?(thing.match)
 
@@ -679,7 +640,7 @@ defmodule Mud.Engine.Command.Stow do
           end
         end
 
-      not parent_containers_open and (in_area or in_hands) ->
+      not available_for_look and (in_area or in_hands) ->
         parent_containers = Item.list_sorted_parent_containers(thing.match)
         # If a parent is closed, warn the player
         CallbackUtil.parent_containers_closed_error(context, thing.match, parent_containers)

@@ -163,7 +163,7 @@ defmodule Mud.Engine.Command.Put do
     # So just try to find a thing in the area that can be seen to try and place the item on
     results =
       if is_nil(context.command.ast.place.path) do
-        Search.find_matches_in_area(
+        Search.find_matches_on_ground_and_surfaces_in_area(
           context.character.area_id,
           context.command.ast.place.input,
           context.character.settings.commands.search_mode
@@ -341,10 +341,6 @@ defmodule Mud.Engine.Command.Put do
           |> Message.append_text(".", "system_warning")
         )
 
-      # TODO Implement size/weight/count checks
-      # item has to fit dimentionally
-      # item has to fit by weight
-      # item has to fit by count
       true ->
         fits_results =
           if context.command.ast.thing.where == "in" do

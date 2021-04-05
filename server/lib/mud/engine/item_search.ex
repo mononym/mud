@@ -19,6 +19,40 @@ defmodule Mud.Engine.ItemSearch do
   @doc """
   Search for an item in the character's hands.
   """
+  def search_relative_to_held(
+        character_id,
+        [initial_path | path],
+        thing,
+        mode
+      ) do
+    search_string = Search.input_to_wildcard_string(initial_path.input, mode)
+
+    base_items =
+      search_held_query(character_id)
+      |> modify_query_search_descriptions(search_string)
+      |> Repo.all()
+
+    search_for_child(initial_path, base_items, path, thing, mode, false)
+  end
+
+  @doc """
+  Search for an item in the character's hands.
+  """
+  @spec search_held_and_all_nested_children(String.t(), String.t()) :: [Mud.Engine.Item.t()]
+  def search_held_and_all_nested_children(character_id, search_string) do
+    initial_query = search_held_query(character_id) |> modify_query_select_id()
+
+    from([item, location: location] in base_query_for_description_and_location(),
+      where: item.id in subquery(modify_query_select_id(recursive_child_query(initial_query)))
+    )
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
+  Search for an item in the character's hands.
+  """
   @spec search_held(String.t(), String.t()) :: [Mud.Engine.Item.t()]
   def search_held(character_id, search_string) do
     search_held_query(character_id)
@@ -51,20 +85,20 @@ defmodule Mud.Engine.ItemSearch do
   Search for an item that is a child of another item.
   """
   def search_relative_to_item_in_inventory(
-        area_id,
+        character_id,
         [initial_path | path],
         thing,
         mode,
         thing_is_immediate_child \\ true
       ) do
-    # Initial path is the outermost item, so if doing 'get ring on box in vault' the initial path would be the vault
-    initial_query =
-      specific_nested_item_inventory_initial_query(
-        area_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
+    search_string = Search.input_to_wildcard_string(initial_path.input, mode)
 
-    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
+    base_items =
+      base_query_for_all_inventory(character_id)
+      |> modify_query_search_descriptions(search_string)
+      |> Repo.all()
+
+    search_for_child(initial_path, base_items, path, thing, mode, thing_is_immediate_child)
   end
 
   @doc """
@@ -72,21 +106,19 @@ defmodule Mud.Engine.ItemSearch do
   """
   def search_for_pocket_relative_to_item_in_inventory(
         character_id,
-        [initial_path | path],
+        path,
         thing,
         mode,
         thing_is_immediate_child \\ true
       ) do
-    initial_query =
-      specific_nested_item_inventory_initial_query(
-        character_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
-
-    build_relative_query(initial_query, path, thing, thing_is_immediate_child)
-    |> modify_query_has_pocket()
-    |> Repo.all()
-    |> Item.preload()
+    search_relative_to_item_in_inventory(
+      character_id,
+      path,
+      thing,
+      mode,
+      thing_is_immediate_child
+    )
+    |> Enum.filter(& &1.flags.has_pocket)
   end
 
   @doc """
@@ -127,9 +159,12 @@ defmodule Mud.Engine.ItemSearch do
     search_for_child(initial_path, base_items, path, thing, mode, thing_is_immediate_child)
   end
 
-
   @doc """
-  Search for an item that is a child of another item.
+  Search for an item that is a child of another item somewhere in the area.
+
+  Does not pay any attention to locked containers or anything, just that an item is or is not a child of another item.
+
+  Any filtering and validating that an item can really be accessed will need to be done afterwards.
   """
   def search_relative_to_any_area_item(
         area_id,
@@ -141,7 +176,11 @@ defmodule Mud.Engine.ItemSearch do
     search_string = Search.input_to_wildcard_string(initial_path.input, mode)
 
     base_items =
-      nested_item_in_area_initial_query(area_id, search_string)
+      from(
+        [location: location] in base_query_for_description_and_location(),
+        where: location.item_id in subquery(base_query_for_all_area_item_ids(area_id))
+      )
+      |> modify_query_search_descriptions(search_string)
       |> Repo.all()
 
     search_for_child(initial_path, base_items, path, thing, mode, thing_is_immediate_child)
@@ -199,20 +238,19 @@ defmodule Mud.Engine.ItemSearch do
             Enum.at(children, parent_node.which - 1, []) |> List.wrap()
           end)
 
-          if path == [] do
-            search_for_child_thing(filtered_matches, thing, mode, thing_is_immediate_child)
-          else
-            # if there is another layer recurse
-            # search for children and pass results through
-            search_for_child_next_path_step(
-              filtered_matches,
-              path,
-              thing,
-              mode,
-              thing_is_immediate_child
-            )
-          end
-
+        if path == [] do
+          search_for_child_thing(filtered_matches, thing, mode, thing_is_immediate_child)
+        else
+          # if there is another layer recurse
+          # search for children and pass results through
+          search_for_child_next_path_step(
+            filtered_matches,
+            path,
+            thing,
+            mode,
+            thing_is_immediate_child
+          )
+        end
 
       # No results were found so just return empty results
       [] ->
@@ -235,7 +273,6 @@ defmodule Mud.Engine.ItemSearch do
           parent_ids,
           thing.where
         )
-        |> modify_query_select_id()
       end
 
     from(
@@ -315,6 +352,19 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   @doc """
+  All surfaces visible in an area and the root items on the ground are searched for a match.
+  """
+  @spec search_on_ground_and_on_visible_surfaces_in_area(String.t(), String.t()) :: [
+          Mud.Engine.Item.t()
+        ]
+  def search_on_ground_and_on_visible_surfaces_in_area(area_id, search_string) do
+    search_for_items_on_ground_and_on_visible_surfaces_in_area_query(area_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+  end
+
+  @doc """
   All surfaces visible in an area, but not the root items on the ground, are searched for a match.
   """
   @spec search_on_visible_surfaces_in_area(String.t(), String.t()) :: [Mud.Engine.Item.t()]
@@ -361,86 +411,6 @@ defmodule Mud.Engine.ItemSearch do
   #
   #
 
-  defp specific_nested_item_inventory_initial_query(
-         character_id,
-         search_string
-       ) do
-    from(
-      [location: location] in base_query_for_description_and_location(),
-      where: location.item_id in subquery(base_query_for_all_inventory_ids(character_id))
-    )
-    |> modify_query_search_descriptions(search_string)
-    |> modify_query_select_id()
-  end
-
-  defp nested_item_in_area_initial_query(
-         area_id,
-         search_string
-       ) do
-    from(
-      [location: location] in base_query_for_description_and_location(),
-      where: location.item_id in subquery(base_query_for_all_area_item_ids(area_id))
-    )
-    |> modify_query_search_descriptions(search_string)
-  end
-
-  defp build_relative_query(
-         initial_query,
-         path,
-         thing,
-         thing_is_immediate_child
-       ) do
-    mostly_constructed_query = build_nested_relative_query(initial_query, path)
-
-    final_query =
-      specific_nested_item_top_level_query(
-        mostly_constructed_query,
-        Search.input_to_wildcard_string(thing.input),
-        thing.where,
-        thing_is_immediate_child
-      )
-  end
-
-  defp build_and_execute_relative_query(
-         initial_query,
-         path,
-         thing,
-         thing_is_immediate_child
-       ) do
-    final_query =
-      build_relative_query(
-        initial_query,
-        path,
-        thing,
-        thing_is_immediate_child
-      )
-
-    Repo.all(final_query)
-    |> Item.preload()
-  end
-
-  defp specific_nested_item_top_level_query(
-         previous_query,
-         search_string,
-         relation,
-         thing_is_immediate_child
-       ) do
-    query =
-      if thing_is_immediate_child do
-        child_ids_query(previous_query)
-      else
-        recursive_child_ids_query(previous_query)
-      end
-
-    from(
-      [location: location] in base_query_for_description_and_location(),
-      where:
-        location.relative_to_item and location.item_id in subquery(query) and
-          location.relation == ^relation
-    )
-    |> modify_query_search_descriptions(search_string)
-  end
-
   defp child_ids_query(ids) do
     from([location: location] in child_query(ids), select: location.item_id)
   end
@@ -459,48 +429,9 @@ defmodule Mud.Engine.ItemSearch do
     end
   end
 
-  defp build_nested_relative_query(previous_query, []) do
-    previous_query
-  end
-
-  defp build_nested_relative_query(previous_query, [current_path | path]) do
-    current_query =
-      specific_nested_item_mid_level_query(
-        previous_query,
-        Search.input_to_wildcard_string(current_path.input),
-        current_path.where
-      )
-
-    build_nested_relative_query(current_query, path)
-  end
-
-  defp specific_nested_item_mid_level_query(
-         previous_query,
-         search_string,
-         relation
-       ) do
-    from(
-      [location: location] in base_query_for_description_and_location(),
-      where:
-        location.relative_to_item and
-          location.item_id in subquery(
-            immediate_children_with_relationship_and_all_nested_child_ids_query(
-              previous_query,
-              relation
-            )
-          )
-    )
-    |> modify_query_search_descriptions(search_string)
-    |> modify_query_select_id()
-  end
-
-  defp recursive_child_ids_query(ids) do
-    from(location in recursive_child_query(ids), select: location.item_id)
-  end
-
   defp base_query_for_all_area_item_ids(area_id) do
     base_query_for_all_area_items(area_id)
-    |> modify_query_select_item_id()
+    |> modify_query_select_id()
   end
 
   defp base_query_for_all_area_items(area_id) do
@@ -516,6 +447,18 @@ defmodule Mud.Engine.ItemSearch do
     from(
       [location: location] in base_query_for_description_and_location(),
       where: location.on_ground and location.area_id == ^area_id
+    )
+  end
+
+  defp search_for_items_on_ground_and_on_visible_surfaces_in_area_query(area_id) do
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where:
+        location.item_id in subquery(base_query_for_items_on_ground_ids(area_id)) or
+          location.item_id in subquery(
+            base_query_for_all_children_on_surfaces_in_area_ids(area_id)
+          ),
+      order_by: [desc: location.moved_at]
     )
   end
 
@@ -562,11 +505,7 @@ defmodule Mud.Engine.ItemSearch do
 
   defp base_query_for_all_inventory_ids(character_id) do
     base_query_for_all_inventory(character_id)
-    |> modify_query_select_item_id()
-  end
-
-  def modify_query_select_item_id(query) do
-    from(location in query, select: location.item_id)
+    |> modify_query_select_id()
   end
 
   # All queries which need to check item descriptions should go through this modifier function
@@ -591,16 +530,14 @@ defmodule Mud.Engine.ItemSearch do
 
   defp immediate_children_with_relationship_and_all_nested_child_ids_query(ids, relationship) do
     children_ids_query =
-      from([item, location: location] in base_query_for_description_and_location(),
-        where: item.id in subquery(child_ids_query(ids)) and location.relation == ^relationship
-      )
+      immediate_children_with_relationship_query(ids, relationship)
       |> modify_query_select_id()
 
-    recursive_child_ids_query(children_ids_query)
-  end
-
-  defp modify_query_has_pocket(query, does_have_pocket \\ true) do
-    from([flags: flags] in query, where: flags.has_pocket == ^does_have_pocket)
+    from([item, location: location] in base_query_for_description_and_location(),
+      where:
+        item.id in subquery(modify_query_select_id(recursive_child_query(children_ids_query)))
+    )
+    |> modify_query_select_id()
   end
 
   defp modify_query_select_id(query) do
@@ -634,11 +571,15 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   defp base_query_for_all_children_on_surfaces_in_area_ids(area_id) do
-    from(
-      location in recursive_surface_child_query(base_query_for_items_on_ground_ids(area_id)),
-      where: location.on_ground == false
+    from([location: location] in base_query_for_description_and_location_and_flags(),
+      where:
+        location.item_id in subquery(
+          modify_query_select_id(
+            recursive_surface_child_query(base_query_for_items_on_ground_ids(area_id))
+          )
+        )
     )
-    |> modify_query_select_item_id()
+    |> modify_query_select_id()
   end
 
   defp base_query_for_all_inventory(character_id) do
@@ -674,9 +615,15 @@ defmodule Mud.Engine.ItemSearch do
       item_tree_initial_query
       |> union_all(^item_tree_recursion_query)
 
-    {"location_tree", Location}
-    |> recursive_ctes(true)
-    |> with_cte("location_tree", as: ^item_tree_query)
+    recursive_query =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+      |> select([location], location.item_id)
+
+    from([location: location] in base_query_for_description_and_location(),
+      where: location.item_id in subquery(recursive_query)
+    )
   end
 
   defp recursive_child_query(maybe_subqry) do
@@ -708,9 +655,15 @@ defmodule Mud.Engine.ItemSearch do
       item_tree_initial_query
       |> union_all(^item_tree_recursion_query)
 
-    {"location_tree", Location}
-    |> recursive_ctes(true)
-    |> with_cte("location_tree", as: ^item_tree_query)
+    recursive_query =
+      {"location_tree", Location}
+      |> recursive_ctes(true)
+      |> with_cte("location_tree", as: ^item_tree_query)
+      |> select([location], location.item_id)
+
+    from([location: location] in base_query_for_description_and_location(),
+      where: location.item_id in subquery(recursive_query)
+    )
   end
 
   def base_query() do

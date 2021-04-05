@@ -74,6 +74,26 @@ defmodule Mud.Engine.ItemUtil do
   end
 
   @doc """
+  An item is considered to be held in the hand if it is directly held, or is a child object of a parent which is held.
+
+  If an optional character id is passed in, will return `true` if the root item is held by the specified character.
+  Otherwise passing `:any`, which is the default, will not check the character id and only that the root item is held.
+  """
+  @spec is_held_in_hand?(%Mud.Engine.Item{}, :any | String.t()) :: boolean
+  def is_held_in_hand?(item, character_id \\ :any) do
+    parents = Item.list_sorted_parent_containers(item)
+
+    if character_id == :any do
+      Enum.any?([item | parents], & &1.location.held_in_hand)
+    else
+      Enum.any?(
+        [item | parents],
+        &(&1.location.held_in_hand and &1.location.character_id == character_id)
+      )
+    end
+  end
+
+  @doc """
   Given an item, or a list of items, ensure they will fit onto an item with a surface in every possible way.
   """
   @spec items_fit_on_surface(

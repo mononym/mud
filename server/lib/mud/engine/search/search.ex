@@ -4,6 +4,7 @@ defmodule Mud.Engine.Search do
   """
 
   alias Mud.Engine.{Character, Item, Link, ItemSearch}
+  alias Mud.Engine.Command.CallbackUtil
   require Logger
 
   defmodule Match do
@@ -42,7 +43,9 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_worn_containers(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_worn_containers(character_id, search_string)
+
+    items =
+      Item.search_worn_containers(character_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -63,7 +66,31 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_held_items(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = ItemSearch.search_held(character_id, search_string)
+    items = ItemSearch.search_held(character_id, search_string) |> CallbackUtil.sort_items(true)
+
+    case things_to_match(items) do
+      [] ->
+        {:error, :no_match}
+
+      matches ->
+        {:ok, matches}
+    end
+  end
+
+  @doc """
+  Find matches in held items only.
+  """
+  @spec find_matches_in_held_items_and_children(
+          String.t(),
+          String.t()
+        ) ::
+          {:ok, [Match.t()]} | {:error, :no_match}
+  def find_matches_in_held_items_and_children(character_id, input, mode \\ "simple") do
+    search_string = input_to_wildcard_string(input, mode)
+
+    items =
+      ItemSearch.search_held_and_all_nested_children(character_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -84,7 +111,9 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_inventory(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = ItemSearch.search_inventory(character_id, search_string)
+
+    items =
+      ItemSearch.search_inventory(character_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -105,7 +134,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def search_inventory_for_item_with_pocket(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = ItemSearch.search_inventory_for_item_with_pocket(character_id, search_string, mode)
+
+    items =
+      ItemSearch.search_inventory_for_item_with_pocket(character_id, search_string, mode)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -128,7 +160,9 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_inside_inventory(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_inside_inventory(character_id, search_string)
+
+    items =
+      Item.search_inside_inventory(character_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -151,7 +185,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_furniture_in_area(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_furniture_in_area(area_id, search_string)
+    items = Item.search_furniture_in_area(area_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -197,14 +231,17 @@ defmodule Mud.Engine.Search do
   @doc """
   Find matches on the ground or in the area.
   """
-  @spec find_matches_in_area(
+  @spec find_matches_on_ground_and_surfaces_in_area(
           String.t(),
           String.t()
         ) ::
           {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_in_area(area_id, input, mode \\ "simple") do
+  def find_matches_on_ground_and_surfaces_in_area(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_area(area_id, search_string)
+
+    items =
+      ItemSearch.search_on_ground_and_on_visible_surfaces_in_area(area_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -225,7 +262,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_worn_items(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_worn_items(character_id, search_string)
+    items = Item.search_worn_items(character_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -248,7 +285,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_on_visible_surfaces(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = ItemSearch.search_on_visible_surfaces_in_area(area_id, search_string)
+
+    items =
+      ItemSearch.search_on_visible_surfaces_in_area(area_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -259,6 +299,8 @@ defmodule Mud.Engine.Search do
     end
   end
 
+  @spec find_matches_on_ground(any, binary, <<_::48, _::_*16>>) ::
+          {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
   @doc """
   Find matches on the ground of an area
   """
@@ -269,7 +311,7 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_on_ground(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = ItemSearch.search_on_ground(area_id, search_string)
+    items = ItemSearch.search_on_ground(area_id, search_string) |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -291,7 +333,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_on_ground_or_worn_items(area_id, character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_on_ground_or_worn_items(area_id, character_id, search_string)
+
+    items =
+      Item.search_on_ground_or_worn_items(area_id, character_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -315,7 +360,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_on_ground_or_worn_or_held_items(area_id, character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_on_ground_or_worn_or_held_items(area_id, character_id, search_string)
+
+    items =
+      Item.search_on_ground_or_worn_or_held_items(area_id, character_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -335,7 +383,7 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in items in unspecified location
+  Find matches in items held in the hand
   """
   @spec find_matches_relative_to_place_in_hands(
           String.t(),
@@ -352,24 +400,15 @@ defmodule Mud.Engine.Search do
       ) do
     path = unnest_place_path(place, [])
 
-    # Either the last thing is set to be an override to where this specific item is to be placed, or it is just the place to go
-    # for now strip and ignore any override, and just focus on getting stow to work and then come back later and work in the override for that item
-    path =
-      if length(path) >= 2 and Enum.at(path, 1).where == "in" do
-        [_ | path] = path
-
-        path
-      else
-        path
-      end
-
     items =
-      Item.search_relative_to_hands(
+      ItemSearch.search_relative_to_held(
         character_id,
         path,
         thing,
         mode
       )
+      |> IO.inspect(label: :find_matches_relative_to_place_in_hands)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -407,6 +446,7 @@ defmodule Mud.Engine.Search do
         mode,
         thing_is_immediate_child
       )
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -439,13 +479,16 @@ defmodule Mud.Engine.Search do
     path = unnest_place_path(place, [])
 
     items =
-      ItemSearch.search_for_pocket_relative_to_item_in_inventory(
+      ItemSearch.search_relative_to_item_in_inventory(
         character_id,
         path,
         thing,
         mode,
         thing_is_immediate_child
       )
+      |> IO.inspect(label: :find_matches_with_pocket_relative_to_place_in_inventory)
+      |> Enum.filter(& &1.flags.has_pocket)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -484,6 +527,7 @@ defmodule Mud.Engine.Search do
         mode,
         thing_is_immediate_child
       )
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
