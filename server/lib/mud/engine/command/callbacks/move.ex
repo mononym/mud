@@ -408,7 +408,7 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(".", "base")
 
-      (link.flags.closable and link.closable.open) or link.flags.object ->
+      (link.flags.closable and link.closable.open) or link.flags.object or link.flags.portal ->
         message
         |> Message.append_text("You ", "character")
         |> Message.append_text("head #{link.departure_text} ", "base")
@@ -448,10 +448,15 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(".", "base")
 
-      (link.flags.closable and link.closable.open) or link.flags.object ->
+      (link.flags.closable and link.closable.open) or link.flags.object or link.flags.portal ->
         message
         |> Message.append_text(character.name, "character")
-        |> Message.append_text(" went #{link.departure_text}.", "base")
+        |> Message.append_text(" went #{link.departure_text} ", "base")
+        |> Message.append_text(
+          link.short_description,
+          Mud.Engine.Util.get_link_type(link)
+        )
+        |> Message.append_text(".", "base")
 
       # Everything else is assumed to be a direction or open.
       link.flags.direction ->
@@ -481,7 +486,7 @@ defmodule Mud.Engine.Command.Move do
         )
         |> Message.append_text(" which just opened.", "base")
 
-      (link.flags.closable and link.closable.open) or link.flags.object ->
+      (link.flags.closable and link.closable.open) or link.flags.object or link.flags.portal ->
         message
         |> Message.append_text(character.name, "character")
         |> Message.append_text(" arrived #{link.arrival_text} ", "base")

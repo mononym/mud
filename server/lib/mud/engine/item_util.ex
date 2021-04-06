@@ -103,6 +103,9 @@ defmodule Mud.Engine.ItemUtil do
   def items_fit_on_surface(items_being_placed, item_with_surface) do
     items_being_placed = List.wrap(items_being_placed)
 
+    IO.inspect(items_being_placed, label: :items_fit_on_surface)
+    IO.inspect(item_with_surface, label: :items_fit_on_surface)
+
     with true <-
            items_fit_surface_by_dimensions(
              Enum.map(items_being_placed, & &1.physics),

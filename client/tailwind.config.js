@@ -17,15 +17,15 @@ module.exports = {
       blue: colors.blue,
       yellow: colors.amber,
       fuchsia: colors.fuchsia,
-      accent: {
-        light: '#f2e7c3',
-        DEFAULT: '#d4af37',
-        dark: '#c39623',
-      },
       primary: {
-        light: '#e1bee7',
+        light: '#ffe168',
+        DEFAULT: '#d4af37',
+        dark: '#9f8000',
+      },
+      accent: {
+        light: '#d05ce3',
         DEFAULT: '#9c27b0',
-        dark: '#801797',
+        dark: '#6a0080',
       },
       white: colors.white,
       black: colors.black
@@ -34,6 +34,9 @@ module.exports = {
       fontFamily: {
         sans: [...defaultTheme.fontFamily.sans],
       },
+    },
+    container: {
+      center: true,
     },
   },
   variants: {},

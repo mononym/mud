@@ -1,6 +1,9 @@
 <script>
   import { getContext } from "svelte";
   import { key } from "./state";
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
+  import { onMount } from "svelte";
 
   const state = getContext(key);
   const {
@@ -10,6 +13,10 @@
   } = state;
 
   let settingsChanged = true;
+
+  onMount(() => {
+    tippy("[data-tippy-content]");
+  });
 </script>
 
 {#if $characterSettings != undefined}
@@ -19,20 +26,26 @@
   >
     <div class="col-span-4 grid grid-cols-8 gap-4">
       <div class="col-span-4 grid grid-cols-12 gap-4">
-        <h2 class="text-center text-white border-b-2 border-black col-span-12">
+        <h2
+          class="text-center text-gray-300 border-b-2 border-primary col-span-12"
+        >
           Command Behavior Configuration
         </h2>
-        <div class="col-span-6">
+        <div
+          class="col-span-6"
+          data-tippy-content="In simple mode input is parsed with the expectation that there will be spaces between words. For example, `get a wooden sword`. In this mode `get awoodensword` would not return a result. Advanced mode, however, is far more powerful and flexible. In Advanced mode, each entered letter is checked only for its relation to other letters while ignoring any whitespace. That means that `get awoodensword` will work. As will `get woodensword` or `get awoswo`."
+        >
           <label
             for="searchMode"
             style="color:{$characterSettings.commands.search_mode}"
-            class="block text-sm font-medium">Item Search Mode</label
+            class="block text-sm font-medium text-gray-300"
+            >Item Search Mode</label
           >
           <select
             id="searchMode"
             bind:value={$characterSettings.commands.search_mode}
             name="searchMode"
-            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option>simple</option>
             <option>advanced</option>
@@ -42,13 +55,14 @@
           <label
             for="multipleMatchMode"
             style="color:{$characterSettings.commands.multiple_matches_mode}"
-            class="block text-sm font-medium">Multiple Item Match Mode</label
+            class="block text-sm font-medium text-gray-300"
+            >Multiple Item Match Mode</label
           >
           <select
             id="multipleMatchMode"
             bind:value={$characterSettings.commands.multiple_matches_mode}
             name="multipleMatchMode"
-            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option>full path</option>
             <option>item only</option>
@@ -62,13 +76,15 @@
           disabled={!settingsChanged}
           type="submit"
           class="{!settingsChanged
-            ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
-            : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            ? 'bg-primary-dark text-black cursor-not-allowed'
+            : 'bg-primary hover:bg-primary-light text-black'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+        >
           Save
         </button>
         <button
           on:click|preventDefault={resetCharacterSettings}
-          class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          class="bg-primary hover:bg-primary-light text-black inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+        >
           Reset
         </button>
       </div>

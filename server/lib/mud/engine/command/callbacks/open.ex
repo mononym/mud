@@ -87,7 +87,7 @@ defmodule Mud.Engine.Command.Open do
     if link.from_id == context.character.area_id do
       # It is possible to open/close this link, it is not owned by someone else, and it is closed
       cond do
-        link.flags.is_closable and not link.closable.open ->
+        link.flags.closable and not link.closable.open ->
           # open_links_both_ways()
           # actually open it
           closable = Closable.update!(link.closable, %{open: true})

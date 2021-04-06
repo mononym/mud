@@ -8,7 +8,7 @@ defmodule Mud.Engine.Item do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.{Area, Character, Search}
+  alias Mud.Engine.{Area, Character}
 
   alias Mud.Engine.Item.{
     Closable,
@@ -650,262 +650,6 @@ defmodule Mud.Engine.Item do
     end
   end
 
-  @doc """
-  Worn containers are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  def search_worn_containers(character_id, search_string) do
-    from(
-      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
-      where:
-        location.character_id == ^character_id and location.worn_on_character and
-          flags.has_pocket == true and flags.wearable and
-          like(description.short, ^search_string),
-      order_by: [desc: location.moved_at]
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  Only held items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_held(String.t(), String.t()) :: [%__MODULE__{}]
-  def search_held(character_id, search_string) do
-    search_held_query(character_id, search_string)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  All inventory items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_inventory_for_containers(String.t(), String.t()) :: [%__MODULE__{}]
-  def search_inventory_for_containers(character_id, search_string) do
-    search_inventory_for_containers_query(character_id, search_string)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  All inventory items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_inside_inventory(String.t(), String.t()) :: [%__MODULE__{}]
-  def search_inside_inventory(character_id, search_string) do
-    search_inside_inventory_query(character_id, search_string)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  All area items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_area(String.t(), String.t()) :: [%__MODULE__{}]
-  def search_area(area_id, search_string) do
-    search_area_query(area_id, search_string)
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  Worn items are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  def search_worn_items(character_id, search_string) do
-    from(
-      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
-      where:
-        location.character_id == ^character_id and location.worn_on_character and flags.wearable and
-          like(description.short, ^search_string),
-      order_by: [desc: location.moved_at]
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @spec search_relative_to_hands(
-          any,
-          [atom | %{:input => binary, optional(any) => any}, ...],
-          atom | %{:input => binary, optional(any) => any},
-          <<_::48, _::_*16>>
-        ) :: any
-  @doc """
-  """
-  def search_relative_to_hands(
-        character_id,
-        [initial_path | path],
-        thing,
-        mode
-      ) do
-    initial_query =
-      specific_nested_item_in_hands_initial_query(
-        character_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
-
-    build_and_execute_relative_query(initial_query, path, thing)
-  end
-
-  @doc """
-  """
-  def search_relative_to_inventory(
-        character_id,
-        [initial_path | path],
-        thing,
-        mode,
-        thing_is_immediate_child \\ true
-      ) do
-    # IO.inspect(initial_path,
-    #   label: "search_relative_to_inventory initial_path"
-    # )
-
-    # IO.inspect(path,
-    #   label: "search_relative_to_inventory path"
-    # )
-
-    # IO.inspect(thing,
-    #   label: "search_relative_to_inventory thing"
-    # )
-
-    initial_query =
-      specific_nested_item_inventory_initial_query(
-        character_id,
-        Search.input_to_wildcard_string(initial_path.input, mode)
-      )
-
-    build_and_execute_relative_query(initial_query, path, thing, thing_is_immediate_child)
-  end
-
-  defp build_and_execute_relative_query(
-         initial_query,
-         path,
-         thing,
-         thing_is_immediate_child \\ true
-       ) do
-    # IO.inspect(initial_query,
-    #   label: "build_and_execute_relative_query initial_query"
-    # )
-
-    # IO.inspect(path,
-    #   label: "build_and_execute_relative_query path"
-    # )
-
-    # IO.inspect(thing,
-    #   label: "build_and_execute_relative_query thing"
-    # )
-
-    mostly_constructed_query = build_nested_relative_query(initial_query, path)
-
-    # IO.inspect(mostly_constructed_query,
-    #   label: "build_and_execute_relative_query mostly_constructed_query"
-    # )
-
-    final_query =
-      specific_nested_item_top_level_query(
-        mostly_constructed_query,
-        Search.input_to_wildcard_string(thing.input),
-        thing_is_immediate_child
-      )
-
-    # IO.inspect(final_query, label: "build_and_execute_relative_query final_query")
-
-    Repo.all(final_query)
-    |> preload()
-  end
-
-  defp build_nested_relative_query(previous_query, []) do
-    previous_query
-  end
-
-  defp build_nested_relative_query(previous_query, [current_path | path]) do
-    # IO.inspect(current_path,
-    #   label: "build_and_execute_relative_query current_path"
-    # )
-
-    # IO.inspect(path,
-    #   label: "build_and_execute_relative_query path"
-    # )
-
-    current_query =
-      specific_nested_item_mid_level_query(
-        previous_query,
-        Search.input_to_wildcard_string(current_path.input)
-      )
-
-    build_nested_relative_query(current_query, path)
-  end
-
-  @doc """
-  Furniture on the ground in an area is searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  def search_furniture_in_area(area_id, search_string) do
-    from(
-      [item, location: location] in furniture_in_area_query(area_id),
-      left_join: description in assoc(item, :description),
-      as: :description,
-      where: like(description.short, ^search_string),
-      order_by: [desc: location.moved_at]
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  def search_on_ground(area_id, search_string) do
-    from(
-      [description: description, location: location] in base_query_for_description_and_location(),
-      where:
-        location.area_id == ^area_id and location.on_ground and
-          like(description.short, ^search_string),
-      order_by: [desc: location.moved_at]
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_on_ground_or_worn_items(String.t(), String.t(), String.t()) :: [Item.t()]
-  def search_on_ground_or_worn_items(area_id, character_id, search_string) do
-    from(
-      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
-      where:
-        (location.area_id == ^area_id and location.on_ground and
-           like(description.short, ^search_string)) or
-          (location.character_id == ^character_id and location.worn_on_character and
-             flags.wearable and
-             like(description.short, ^search_string)),
-      order_by: [desc: location.moved_at],
-      order_by: fragment("CASE i1.on_ground WHEN true THEN 0 ELSE 1 END")
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
-  @doc """
-  Items on ground are searched for a match in the Repo using the search_string as part of a LIKE query.
-  """
-  @spec search_on_ground_or_worn_or_held_items(String.t(), String.t(), String.t()) :: [Item.t()]
-  def search_on_ground_or_worn_or_held_items(area_id, character_id, search_string) do
-    from(
-      [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
-      where:
-        (location.area_id == ^area_id and location.on_ground and
-           like(description.short, ^search_string)) or
-          (location.character_id == ^character_id and
-             (location.worn_on_character or location.held_in_hand) and
-             like(description.short, ^search_string)),
-      order_by: [desc: location.moved_at],
-      order_by:
-        fragment(
-          "CASE WHEN i1.on_ground THEN 0 WHEN i1.held_in_hand OR i1.worn_on_character THEN 1 ELSE 2 END"
-        )
-    )
-    |> Repo.all()
-    |> preload()
-  end
-
   def list_worn_gem_pouches(character_id) do
     from(
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
@@ -1057,11 +801,13 @@ defmodule Mud.Engine.Item do
       order_by: item.moved_at
     )
     |> Repo.all()
+    |> preload()
   end
 
   def list_held_by(character_id) do
     base_query_for_held_items(character_id)
     |> Repo.all()
+    |> preload()
   end
 
   defp held_or_worn_and_children_query(character_id) do
@@ -1161,18 +907,6 @@ defmodule Mud.Engine.Item do
     from(
       [item, location: location, flags: flags] in base_query_without_preload(),
       where: location.on_ground == true and location.area_id == ^area_id and not flags.scenery,
-      order_by: [desc: location.moved_at]
-    )
-  end
-
-  defp furniture_in_area_query(area_id) do
-    from(
-      item in __MODULE__,
-      left_join: location in assoc(item, :location),
-      as: :location,
-      left_join: flags in assoc(item, :flags),
-      as: :flags,
-      where: location.area_id == ^area_id and flags.furniture,
       order_by: [desc: location.moved_at]
     )
   end
@@ -1521,7 +1255,7 @@ defmodule Mud.Engine.Item do
 
   @spec base_query_for_all_inventory(any) :: Ecto.Query.t()
   def base_query_for_all_inventory(character_id) do
-    recursive_child_query(base_query_for_root_inventory_ids(character_id), true)
+    recursive_child_query(base_query_for_worn_and_held_inventory_ids(character_id), true)
   end
 
   def base_query_for_root_scenery_item_ids(area_id) do
@@ -1545,8 +1279,8 @@ defmodule Mud.Engine.Item do
     |> modify_query_select_id()
   end
 
-  def base_query_for_root_inventory_ids(character_id) do
-    base_query_for_root_inventory(character_id)
+  def base_query_for_worn_and_held_inventory_ids(character_id) do
+    base_query_for_worn_and_held_inventory(character_id)
     |> modify_query_select_id()
   end
 
@@ -1569,7 +1303,7 @@ defmodule Mud.Engine.Item do
     )
   end
 
-  def base_query_for_root_inventory(character_id) do
+  def base_query_for_worn_and_held_inventory(character_id) do
     from(
       [location: location] in base_query_without_preload(),
       where:

@@ -18,12 +18,14 @@
   export let initialY = "0";
   export let id;
   export let label = "";
+  export let zIndex = 1;
 
   let localX = "0";
   let localY = "0";
   let localHeight = 400;
   let localWidth = 400;
   let localIsLocked = true;
+  let localZIndex = 1;
 
   onMount(() => {
     // if (!initialized) {
@@ -41,6 +43,7 @@
           localHeight = data.height;
           localWidth = data.width;
           localIsLocked = data.locked || true;
+          localZIndex = data.zIndex || zIndex;
         });
       } else {
         localX = initialX;
@@ -50,6 +53,7 @@
         localHeight = initialHeight;
         localWidth = initialWidth;
         localIsLocked = locked || true;
+        localZIndex = zIndex;
       }
 
       interactable(layoutItemWrapper);
@@ -89,6 +93,7 @@
         x: x.toString(),
         y: y.toString(),
         locked: localIsLocked,
+        zIndex: localZIndex,
       },
       function (error) {
         if (error) throw error;
@@ -107,23 +112,68 @@
       saveData();
     }
   }
+
+  function incrementZIndex() {
+    if (!localIsLocked) {
+      localZIndex += 1;
+      saveData();
+    }
+  }
+
+  function decrementZIndex() {
+    if (!localIsLocked) {
+      localZIndex -= 1;
+      saveData();
+    }
+  }
 </script>
 
 <div
   bind:this={layoutItemWrapper}
   class="layoutItemWrapper flex flex-col absolute bg-gray-700"
-  style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px">
+  style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px;z-index:{localZIndex}"
+>
   <div
-    style="background-color:{$selectedCharacter.settings.colors.window_toolbar_background}"
-    class="flex-shrink h-8 grid grid-cols-3">
+    style="background-color:{$selectedCharacter.settings.colors
+      .window_toolbar_background}"
+    class="flex-shrink h-8 grid grid-cols-3"
+  >
     <div class="flex items-center">
       <i
         on:click={toggleLocked}
-        style="color:{localIsLocked ? `${$selectedCharacter.settings.colors.window_lock_locked}` : `${$selectedCharacter.settings.colors.window_lock_unlocked}`}"
-        class="pl-2 fas fa-{localIsLocked ? `lock` : `unlock`} cursor-pointer" />
+        style="color:{localIsLocked
+          ? `${$selectedCharacter.settings.colors.window_lock_locked}`
+          : `${$selectedCharacter.settings.colors.window_lock_unlocked}`}"
+        class="pl-2 fas fa-{localIsLocked ? `lock` : `unlock`} cursor-pointer"
+      />
       <i
-        style="color:{localIsLocked ? `${$selectedCharacter.settings.colors.window_move_locked}` : `${$selectedCharacter.settings.colors.window_move_unlocked}`}"
-        class="drag-handle {localIsLocked ? `cursor-not-allowed` : `cursor-move`} pl-2 fas fa-arrows-alt" />
+        style="color:{localIsLocked
+          ? `${$selectedCharacter.settings.colors.window_move_locked}`
+          : `${$selectedCharacter.settings.colors.window_move_unlocked}`}"
+        class="drag-handle {localIsLocked
+          ? `cursor-not-allowed`
+          : `cursor-move`} pl-2 fas fa-arrows-alt"
+      />
+      <span class="text-white place-self-center ml-2">z:</span>
+      <i
+        on:click={decrementZIndex}
+        style="color:{localIsLocked
+          ? `${$selectedCharacter.settings.colors.window_move_locked}`
+          : `${$selectedCharacter.settings.colors.window_move_unlocked}`}"
+        class="drag-handle {localIsLocked
+          ? `cursor-not-allowed`
+          : `cursor-move`} pl-2 fas fa-minus"
+      />
+      <span class="text-white place-self-center ml-2">{localZIndex}</span>
+      <i
+        on:click={incrementZIndex}
+        style="color:{localIsLocked
+          ? `${$selectedCharacter.settings.colors.window_move_locked}`
+          : `${$selectedCharacter.settings.colors.window_move_unlocked}`}"
+        class="drag-handle {localIsLocked
+          ? `cursor-not-allowed`
+          : `cursor-move`} pl-2 fas fa-plus"
+      />
     </div>
     <span class="text-white place-self-center">{label}</span>
   </div>

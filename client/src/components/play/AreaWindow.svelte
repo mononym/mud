@@ -426,7 +426,7 @@
       {#each $exitsInArea as link}
         <div class="flex" style="color:{getExitColor(link)}">
           &nbsp; &nbsp;
-          {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
+          <!-- {#if $selectedCharacter.settings.areaWindow["show_quick_actions"]}
             <QuickAction
               icon="fas fa-sign-out"
               activeTooltip="go"
@@ -444,19 +444,14 @@
               data-tippy-content="peer"
             />
             &nbsp; &nbsp;
-          {/if}
+          {/if} -->
           <pre>{link.shortDescription} {#if link.flags.closable}({#if link.closable.open}open{:else}closed{/if}){/if}</pre>
         </div>
       {/each}
     {/if}
   {/if}
   <div class="spacer flex-1" />
-  <div
-    class="w-full flex"
-    style="border:1px solid {$selectedCharacter.settings.areaWindow[
-      'filter_border_color'
-    ]}"
-  >
+  <div class="w-full flex">
     <FilterButton
       icon="fas fa-align-left"
       bind:active={$characterSettings.areaWindow.show_description}
@@ -468,6 +463,15 @@
       ]}
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
+      ]}
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
       ]}
     />
     <FilterButton
@@ -482,6 +486,15 @@
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
+      ]}
     />
     <FilterButton
       icon="fas fa-hand-holding-box fa-rotate-180"
@@ -494,6 +507,15 @@
       ]}
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
+      ]}
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
       ]}
     />
     <FilterButton
@@ -508,6 +530,15 @@
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
+      ]}
     />
     <FilterButton
       icon="fas fa-sign-out"
@@ -521,8 +552,17 @@
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
+      ]}
     />
-    <FilterButton
+    <!-- <FilterButton
       icon="fas fa-rabbit-fast"
       bind:active={$characterSettings.areaWindow.show_quick_actions}
       on:toggle={saveSettings}
@@ -534,7 +574,16 @@
       inactiveIconColor={$selectedCharacter.settings.areaWindow[
         "filter_inactive_icon_color"
       ]}
-    />
+      activeBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.areaWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.areaWindow[
+        "filter_border_color"
+      ]}
+    /> -->
   </div>
   <InventoryItemRightClickMenu {pos} item={menuItem} bind:showMenu />
 </div>

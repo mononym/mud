@@ -813,9 +813,6 @@
   bind:offsetHeight={svgWrapperHeight}
   class="h-full w-full flex flex-col"
 >
-  <p class="flex-shrink text-gray-300 w-full text-center overflow-hidden">
-    {chosenMap.name}
-  </p>
   <Svg
     {viewBox}
     shapes={[

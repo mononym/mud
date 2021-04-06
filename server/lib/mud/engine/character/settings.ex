@@ -80,7 +80,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:filter_border_color, :string, default: "#ffffff")
       field(:filter_active_icon_color, :string, default: "#a7f3d0")
       field(:filter_inactive_icon_color, :string, default: "#fca5a5")
-      field(:filter_active_background_color, :string, default: "#6b7280")
+      field(:filter_active_background_color, :string, default: "#28282D")
       field(:filter_inactive_background_color, :string, default: "#28282D")
       field(:enabled_quick_action_color, :string, default: "#a7f3d0")
       field(:disabled_quick_action_color, :string, default: "#6B7280")

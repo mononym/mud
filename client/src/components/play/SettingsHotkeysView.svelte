@@ -13,7 +13,6 @@
 
   const state = getContext(key);
   const {
-    selectedCharacter,
     characterSettings,
     resetCharacterSettings,
     saveCharacterSettings,
@@ -25,7 +24,6 @@
     );
   }
 
-  let customHotkeyIndex = {};
   let normalizedCustomHotkeys = [];
 
   function normalizeCustomHotkeys() {
@@ -100,11 +98,11 @@
   on:submit|preventDefault={saveCharacterSettings}
 >
   <div class="col-span-2 grid grid-cols-8">
-    <h2 class="text-center border-b-2 border-black col-span-8 text-white">
+    <h2 class="text-center border-b-2 border-primary col-span-8 text-gray-300">
       Application Hotkeys
     </h2>
     <div class="col-span-2">
-      <label for="openSettings" class="block text-sm font-medium text-white"
+      <label for="openSettings" class="block text-sm font-medium text-gray-300"
         >Open Settings Tab</label
       >
       <input
@@ -117,7 +115,7 @@
       />
     </div>
     <div class="col-span-2">
-      <label for="openPlay" class="block text-sm font-medium text-white"
+      <label for="openPlay" class="block text-sm font-medium text-gray-300"
         >Open Play Tab</label
       >
       <input
@@ -126,24 +124,24 @@
         bind:value={$characterSettings.presetHotkeys.open_play}
         name="openPlay"
         id="openPlay"
-        class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        class="mt-1 bg-gray-400 text-black0 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
       />
     </div>
     <div class="col-span-2">
-      <label for="toggleHistory" class="block text-sm font-medium text-white"
+      <label for="toggleHistory" class="block text-sm font-medium text-gray-300"
         >Toggle History View in Story Window</label
       >
       <input
         on:keydown|preventDefault={(e) =>
-          buildPresetHotkeyString(e, "toggle_history")}
-        bind:value={$characterSettings.presetHotkeys.toggle_history}
+          buildPresetHotkeyString(e, "toggle_history_view")}
+        bind:value={$characterSettings.presetHotkeys.toggle_history_view}
         name="toggleHistory"
         id="toggleHistory"
         class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
       />
     </div>
     <div class="col-span-2">
-      <label for="selectCli" class="block text-sm font-medium text-white"
+      <label for="selectCli" class="block text-sm font-medium text-gray-300"
         >Select Commandline</label
       >
       <input
@@ -157,19 +155,25 @@
     </div>
   </div>
   <div class="col-span-6 grid grid-cols-8 gap-16">
-    <h2 class="text-center border-b-2 border-black col-span-8 text-white">
+    <h2 class="text-center border-b-2 border-primary col-span-8 text-gray-300">
       Custom Hotkeys
     </h2>
     {#each normalizedCustomHotkeys as customHotkey, i}
       <div class="col-span-2 grid grid-cols-9 gap-4">
-        <h3 class="text-center border-b-2 border-black col-span-4 text-white">
+        <h3
+          class="text-center border-b-2 border-primary col-span-4 text-gray-300"
+        >
           Hotkey
         </h3>
-        <h3 class="text-center border-b-2 border-black col-span-4 text-white">
+        <h3
+          class="text-center border-b-2 border-primary col-span-4 text-gray-300"
+        >
           Command
         </h3>
-        <h3 class="text-center border-b-2 border-black col-span-1 text-white">
-          <i class="fas fa-trash" />
+        <h3
+          class="text-center border-b-2 border-primary col-span-1 text-gray-300"
+        >
+          &nbsp;
         </h3>
         <input
           on:keydown|preventDefault={(e) => buildCustomHotkeyString(e, i)}
@@ -186,29 +190,35 @@
         />
         <button
           on:click|preventDefault={deleteCustomHotkey(customHotkey.id)}
-          class="col-span-1 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          class="col-span-1 cursor-pointer bg-red-500 hover:bg-red-400 hover:text-black text-gray-300 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
           <i class="fas fa-trash" />
         </button>
       </div>
     {/each}
-    <button
-      on:click|preventDefault={addNewHotkey}
-      class="col-span-8 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-      New Hotkey
-    </button>
+    <div class="col-span-8 flex justify-center">
+      <button
+        on:click|preventDefault={addNewHotkey}
+        class="cursor-pointer bg-primary hover:bg-primary-light text-black inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+      >
+        New Hotkey
+      </button>
+    </div>
   </div>
   <div class="px-4 py-3 text-right sm:px-6">
     <button
       disabled={!settingsChanged}
       type="submit"
       class="{!settingsChanged
-        ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
-        : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        ? 'bg-primary-dark text-black cursor-not-allowed'
+        : 'bg-primary hover:bg-primary-light text-black'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+    >
       Save
     </button>
     <button
       on:click|preventDefault={resetCharacterSettings}
-      class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+      class="bg-primary hover:bg-primary-light text-black inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+    >
       Reset
     </button>
   </div>

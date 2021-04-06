@@ -1018,6 +1018,13 @@ export function createState() {
   //   }
   // }
 
+  const currentMap = derived(
+    [currentArea, knownMapsIndex],
+    function ([$currentArea, $knownMapsIndex]) {
+      return $knownMapsIndex[$currentArea.mapId] || {};
+    }
+  );
+
   return {
     //
     // Overall UI stuff, such as whether to show the play view or the other views
@@ -1048,6 +1055,7 @@ export function createState() {
     //
     // Map stuff
     //
+    currentMap,
     knownMapsList,
     knownMapsIndex,
     knownAreasForCharacterMap,

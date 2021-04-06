@@ -10,9 +10,9 @@
   const { selectedCharacter, areaItemsParentChildIndex } = state;
 
   export let item;
-  export let itemsParentChildIndex = {};
-  export let colors = {};
-  export let showQuickActions = true;
+  // export let itemsParentChildIndex = {};
+  // export let colors = {};
+  // export let showQuickActions = true;
   let wrapperDiv;
   let itemDiv;
 
@@ -33,11 +33,11 @@
     bind:this={itemDiv}
     on:contextmenu={dispatchContextMenuEvent}
   >
-    {#if showQuickActions && $$slots.quickActions}
+    <!-- {#if showQuickActions && $$slots.quickActions}
       <div class="flex-shrink mr-2">
         <slot name="quickActions" />
       </div>
-    {/if}
+    {/if} -->
     <pre
       on:click|preventDefault={toggleItemExpanded}
       class="flex-1 whitespace-pre-wrap">

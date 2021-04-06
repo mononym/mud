@@ -12,6 +12,7 @@ defmodule Mud.Engine.Command.Wear do
   """
 
   alias Mud.Engine.Event.Client.UpdateInventory
+  alias Mud.Engine.ItemSearch
   alias Mud.Engine.Util
   alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.Context
@@ -19,7 +20,6 @@ defmodule Mud.Engine.Command.Wear do
   alias Mud.Engine.Search
   alias Mud.Engine.{Character, Item}
   alias Mud.Engine.Item.Location
-  alias Mud.Engine.Command.AstNode.{Thing}
 
   require Logger
 
@@ -36,11 +36,16 @@ defmodule Mud.Engine.Command.Wear do
     ast = context.command.ast
 
     if is_nil(ast.thing) do
-      Context.append_output(
+      Context.append_message(
         context,
-        context.character.id,
-        Util.get_module_docs(__MODULE__),
-        "error"
+        # This message type is for sending text to the client for it to appear in the primary "Story Window"
+        Message.new_story_output(
+          context.character.id,
+          Util.get_module_docs(__MODULE__),
+          # The text 'type' determines that color that text will take on in the front end. Every single type of text is
+          # configurable by the end user when it comes to the game client, so they can have the colors they want.
+          "system_info"
+        )
       )
     else
       if Util.is_uuid4(ast.thing.input) do
@@ -82,59 +87,87 @@ defmodule Mud.Engine.Command.Wear do
     original_item = match.match
 
     if original_item.flags.wearable and original_item.flags.wear do
-      location = Location.update_worn_item!(original_item.location, context.character.id)
+      count =
+        ItemSearch.count_worn_items_in_slot(context.character.id, original_item.wearable.slot)
 
-      item = %{original_item | location: location}
+      if count <
+           Map.get(
+             context.character.slots,
+             String.to_existing_atom(original_item.wearable.slot),
+             -1
+           ) do
+        location = Location.update_worn_item!(original_item.location, context.character.id)
 
-      others =
-        Character.list_others_active_in_areas(context.character.id, context.character.area_id)
+        item = %{original_item | location: location}
 
-      {how, where} = Util.item_wearable_slot_to_description_string(item.wearable)
+        others =
+          Character.list_others_active_in_areas(context.character.id, context.character.area_id)
 
-      other_msg =
-        [context.character.id | others]
-        |> Message.new_story_output()
-        |> Message.append_text("#{context.character.name}", "character")
-        |> Message.append_text(" wears ", "base")
-        |> Message.append_text(item.description.short, Util.get_item_type(item))
-        |> Message.append_text(
-          " #{how} #{Util.his_her_their(context.character)} #{where}.",
-          "base"
-        )
+        {how, where} = Util.item_wearable_slot_to_description_string(item.wearable)
 
-      self_msg =
-        context.character.id
-        |> Message.new_story_output()
-        |> Message.append_text("You", "character")
-        |> Message.append_text(" wear ", "base")
-        |> Message.append_text(item.description.short, Util.get_item_type(item))
-        |> Message.append_text(
-          " #{how} your #{where}.",
-          "base"
-        )
-
-      self_msg =
-        if other_matches != [] do
-          other_items = Enum.map(other_matches, & &1.match)
-
-          CallbackUtil.append_assumption_text(
-            self_msg,
-            original_item,
-            other_items,
-            context.character.settings.commands.multiple_matches_mode,
-            context.character
+        other_msg =
+          [context.character.id | others]
+          |> Message.new_story_output()
+          |> Message.append_text("#{context.character.name}", "character")
+          |> Message.append_text(" wears ", "base")
+          |> Message.append_text(item.description.short, Util.get_item_type(item))
+          |> Message.append_text(
+            " #{how} #{Util.his_her_their(context.character)} #{where}.",
+            "base"
           )
-        else
-          self_msg
-        end
 
-      context
-      |> Context.append_message(other_msg)
-      |> Context.append_message(self_msg)
-      |> Context.append_event(
-        context.character_id,
-        UpdateInventory.new(:update, item)
-      )
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You", "character")
+          |> Message.append_text(" wear ", "base")
+          |> Message.append_text(item.description.short, Util.get_item_type(item))
+          |> Message.append_text(
+            " #{how} your #{where}.",
+            "base"
+          )
+
+        self_msg =
+          if other_matches != [] do
+            other_items = Enum.map(other_matches, & &1.match)
+
+            CallbackUtil.append_assumption_text(
+              self_msg,
+              original_item,
+              other_items,
+              context.character.settings.commands.multiple_matches_mode,
+              context.character
+            )
+          else
+            self_msg
+          end
+
+        context
+        |> Context.append_message(other_msg)
+        |> Context.append_message(self_msg)
+        |> Context.append_event(
+          context.character_id,
+          UpdateInventory.new(:update, item)
+        )
+      else
+        {how, where} = Util.item_wearable_slot_to_description_string(original_item.wearable)
+
+        self_msg =
+          context.character.id
+          |> Message.new_story_output()
+          |> Message.append_text("You", "character")
+          |> Message.append_text(" cannot wear anything else #{how} ", "system_alert")
+          |> Message.append_text("your ", "character")
+          |> Message.append_text(
+            "#{where}.",
+            "system_alert"
+          )
+
+        Context.append_message(
+          context,
+          self_msg
+        )
+      end
     else
       error_message =
         Message.new_story_output(

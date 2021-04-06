@@ -48,23 +48,22 @@
     <div class="flex items-center justify-between">
       <div class="flex">
         <div class="flex items-baseline space-x-4">
-
           <button
             on:click={() => push("/dashboard")}
-            class="px-3 py-2 text-sm font-medium {$location.includes(
+            class="px-3 py-2 text-sm font-medium focus:outline-none {$location.includes(
               '/dashboard'
             )
-              ? 'text-white border-accent border-b-2 focus:outline-none'
+              ? 'text-white border-primary border-b-2'
               : 'text-gray-300 hover:text-white hover:bg-gray-700'} "
             >Dashboard</button
           >
 
           <button
             on:click={() => push("/build/world")}
-            class="px-3 py-2 text-sm font-medium {$location.includes(
+            class="px-3 py-2 text-sm font-medium focus:outline-none {$location.includes(
               '/build/world'
             )
-              ? 'text-white border-accent border-b-2 focus:outline-none'
+              ? 'text-white border-primary border-b-2'
               : 'text-gray-300 hover:text-white hover:bg-gray-700'} "
             >Build</button
           >

@@ -34,29 +34,6 @@ defmodule Mud.Engine.Search do
   end
 
   @doc """
-  Find matches in worn containers.
-  """
-  @spec find_matches_in_worn_containers(
-          String.t(),
-          String.t()
-        ) ::
-          {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_in_worn_containers(character_id, input, mode \\ "simple") do
-    search_string = input_to_wildcard_string(input, mode)
-
-    items =
-      Item.search_worn_containers(character_id, search_string) |> CallbackUtil.sort_items(true)
-
-    case things_to_match(items) do
-      [] ->
-        {:error, :no_match}
-
-      matches ->
-        {:ok, matches}
-    end
-  end
-
-  @doc """
   Find matches in held items only.
   """
   @spec find_matches_in_held_items(
@@ -148,31 +125,6 @@ defmodule Mud.Engine.Search do
     end
   end
 
-  @doc """
-  Find matches in inventory not at the root level.
-
-  So it won't find the backpack on your back, but it will find the sack in the backpack.
-  """
-  @spec find_matches_inside_inventory(
-          String.t(),
-          String.t()
-        ) ::
-          {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_inside_inventory(character_id, input, mode \\ "simple") do
-    search_string = input_to_wildcard_string(input, mode)
-
-    items =
-      Item.search_inside_inventory(character_id, search_string) |> CallbackUtil.sort_items(true)
-
-    case things_to_match(items) do
-      [] ->
-        {:error, :no_match}
-
-      matches ->
-        {:ok, matches}
-    end
-  end
-
   @spec find_furniture_in_area(String.t(), String.t(), String.t()) ::
           {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
   @doc """
@@ -185,7 +137,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_furniture_in_area(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_furniture_in_area(area_id, search_string) |> CallbackUtil.sort_items(true)
+
+    items =
+      ItemSearch.search_furniture_on_ground(area_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -262,7 +217,10 @@ defmodule Mud.Engine.Search do
           {:ok, [Match.t()]} | {:error, :no_match}
   def find_matches_in_worn_items(character_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
-    items = Item.search_worn_items(character_id, search_string) |> CallbackUtil.sort_items(true)
+
+    items =
+      ItemSearch.search_worn_inventory(character_id, search_string)
+      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->
@@ -312,58 +270,6 @@ defmodule Mud.Engine.Search do
   def find_matches_on_ground(area_id, input, mode \\ "simple") do
     search_string = input_to_wildcard_string(input, mode)
     items = ItemSearch.search_on_ground(area_id, search_string) |> CallbackUtil.sort_items(true)
-
-    case things_to_match(items) do
-      [] ->
-        {:error, :no_match}
-
-      matches ->
-        {:ok, matches}
-    end
-  end
-
-  @doc """
-  Find matches either on the ground or in worn items.
-  """
-  @spec find_matches_on_ground_or_worn_items(
-          String.t(),
-          String.t(),
-          String.t()
-        ) ::
-          {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_on_ground_or_worn_items(area_id, character_id, input, mode \\ "simple") do
-    search_string = input_to_wildcard_string(input, mode)
-
-    items =
-      Item.search_on_ground_or_worn_items(area_id, character_id, search_string)
-      |> CallbackUtil.sort_items(true)
-
-    case things_to_match(items) do
-      [] ->
-        {:error, :no_match}
-
-      matches ->
-        {:ok, matches}
-    end
-  end
-
-  @spec find_matches_on_ground_or_worn_or_held_items(binary, binary, binary, <<_::48, _::_*16>>) ::
-          {:error, :no_match} | {:ok, [Mud.Engine.Search.Match.t(), ...]}
-  @doc """
-  Find matches in held or worn items.
-  """
-  @spec find_matches_on_ground_or_worn_or_held_items(
-          String.t(),
-          String.t(),
-          String.t()
-        ) ::
-          {:ok, [Match.t()]} | {:error, :no_match}
-  def find_matches_on_ground_or_worn_or_held_items(area_id, character_id, input, mode \\ "simple") do
-    search_string = input_to_wildcard_string(input, mode)
-
-    items =
-      Item.search_on_ground_or_worn_or_held_items(area_id, character_id, search_string)
-      |> CallbackUtil.sort_items(true)
 
     case things_to_match(items) do
       [] ->

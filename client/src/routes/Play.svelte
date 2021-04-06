@@ -32,6 +32,8 @@
     characterInitializing,
     selectedCharacter,
     view,
+    currentArea,
+    currentMap,
   } = state;
 
   $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
@@ -225,41 +227,45 @@
   let startingStatusY;
 
   onMount(async () => {
+    console.log(wrapper.offsetHeight);
+    console.log(wrapper.height);
+    console.log(wrapper.clientY);
+    console.log(wrapper.getBoundingClientRect());
     startingMapWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingMapHeight = Math.floor(
-      (wrapper.offsetHeight - 64) * 0.5
+      (wrapper.offsetHeight - 38) * 0.5
     ).toString();
     startingMapX = "0";
     startingMapY = "0";
 
     startingInventoryWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingInventoryHeight = Math.floor(
-      (wrapper.offsetHeight - 64) * 0.5
+      (wrapper.offsetHeight - 38) * 0.5
     ).toString();
     startingInventoryX = "0";
     startingInventoryY = Math.floor(
-      (wrapper.offsetHeight - 64) * 0.5
+      (wrapper.offsetHeight - 38) * 0.5
     ).toString();
 
     startingStoryWidth = Math.floor(wrapper.offsetWidth * 0.4).toString();
-    startingStoryHeight = Math.floor(wrapper.offsetHeight - 144).toString();
+    startingStoryHeight = Math.floor(wrapper.offsetHeight - 118).toString();
     startingStoryX = Math.floor(wrapper.offsetWidth * 0.3).toString();
     startingStoryY = "0";
 
     startingCliWidth = Math.floor(wrapper.offsetWidth * 0.4).toString();
     startingCliHeight = Math.floor(80).toString();
     startingCliX = Math.floor(wrapper.offsetWidth * 0.3).toString();
-    startingCliY = Math.floor(wrapper.offsetHeight - 144).toString();
+    startingCliY = Math.floor(wrapper.offsetHeight - 118).toString();
 
     startingAreaWidth = Math.floor(wrapper.offsetWidth * 0.3).toString();
-    startingAreaHeight = wrapper.offsetHeight - 264;
+    startingAreaHeight = wrapper.offsetHeight - 238;
     startingAreaX = Math.floor(wrapper.offsetWidth * 0.7).toString();
     startingAreaY = "0";
 
     startingCompassWidth = Math.floor(wrapper.offsetWidth * 0.1).toString();
     startingCompassHeight = "200";
     startingCompassX = Math.floor(wrapper.offsetWidth * 0.7).toString();
-    startingCompassY = Math.floor(wrapper.offsetHeight - 264).toString();
+    startingCompassY = Math.floor(wrapper.offsetHeight - 238).toString();
 
     startingEnvironmentInfoWidth = Math.floor(
       wrapper.offsetWidth * 0.1
@@ -269,13 +275,15 @@
       wrapper.offsetWidth * 0.7 + wrapper.offsetWidth * 0.1
     ).toString();
     startingEnvironmentInfoY = Math.floor(
-      wrapper.offsetHeight - 264
+      wrapper.offsetHeight - 238
     ).toString();
 
     startingStatusWidth = Math.floor(wrapper.offsetWidth * 0.1).toString();
     startingStatusHeight = "200";
-    startingStatusX = Math.floor(wrapper.offsetWidth * 0.7 + wrapper.offsetWidth * 0.2).toString();
-    startingStatusY = Math.floor(wrapper.offsetHeight - 264).toString();
+    startingStatusX = Math.floor(
+      wrapper.offsetWidth * 0.7 + wrapper.offsetWidth * 0.2
+    ).toString();
+    startingStatusY = Math.floor(wrapper.offsetHeight - 238).toString();
 
     const character = $characters.filter(
       (character) => character.id == params.characterId
@@ -294,7 +302,10 @@
   });
 </script>
 
-<div bind:this={wrapper} class="h-full w-full flex flex-col overflow-hidden">
+<div
+  bind:this={wrapper}
+  class="h-full w-full flex flex-col overflow-hidden bg-gray-900"
+>
   {#if !$characterInitialized || $characterInitializing}
     <div class="flex-1 flex flex-col justify-center items-center">
       <Circle2 />
@@ -309,7 +320,7 @@
       bind:this={canvas}
       hidden={$view != "play"}
       id="container"
-      class="flex-1 bg-gray-200 relative"
+      class="flex-1 bg-gray-900 relative"
       on:mouseup={mouseUp}
       on:mousedown={mouseDown}
       on:mousemove={mouseMove}
@@ -321,6 +332,7 @@
         bind:initialWidth={startingCliWidth}
         bind:initialX={startingCliX}
         bind:initialY={startingCliY}
+        zIndex="1"
       >
         <CommandLineWindow />
       </LayoutItemWrapper>
@@ -331,16 +343,18 @@
         bind:initialWidth={startingStoryWidth}
         bind:initialX={startingStoryX}
         bind:initialY={startingStoryY}
+        zIndex="2"
       >
         <StoryWindow />
       </LayoutItemWrapper>
       <LayoutItemWrapper
         id="clientMapWindow"
-        label="Map"
+        label={$currentMap.name}
         bind:initialHeight={startingMapHeight}
         bind:initialWidth={startingMapWidth}
         bind:initialX={startingMapX}
         bind:initialY={startingMapY}
+        zIndex="3"
       >
         <MapWindow />
       </LayoutItemWrapper>
@@ -351,16 +365,18 @@
         bind:initialWidth={startingInventoryWidth}
         bind:initialX={startingInventoryX}
         bind:initialY={startingInventoryY}
+        zIndex="4"
       >
         <InventoryWindow />
       </LayoutItemWrapper>
       <LayoutItemWrapper
         id="areaWindow"
-        label="Area"
+        label={$currentArea.name}
         bind:initialHeight={startingAreaHeight}
         bind:initialWidth={startingAreaWidth}
         bind:initialX={startingAreaX}
         bind:initialY={startingAreaY}
+        zIndex="8"
       >
         <AreaWindow />
       </LayoutItemWrapper>
@@ -371,6 +387,7 @@
         bind:initialWidth={startingCompassWidth}
         bind:initialX={startingCompassX}
         bind:initialY={startingCompassY}
+        zIndex="6"
       >
         <CompassWindow />
       </LayoutItemWrapper>
@@ -381,6 +398,7 @@
         bind:initialWidth={startingEnvironmentInfoWidth}
         bind:initialX={startingEnvironmentInfoX}
         bind:initialY={startingEnvironmentInfoY}
+        zIndex="7"
       >
         <EnvironmentInfoWindow />
       </LayoutItemWrapper>
@@ -391,6 +409,7 @@
         bind:initialWidth={startingStatusWidth}
         bind:initialX={startingStatusX}
         bind:initialY={startingStatusY}
+        zIndex="5"
       >
         <CharacterStatusWindow />
       </LayoutItemWrapper>

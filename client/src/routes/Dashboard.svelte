@@ -68,12 +68,12 @@
               alt={character.name}
               style="height:200px;width:200px;object-fit:cover"
             />
-  
+
             <div class="flex w-full">
               <button
                 on:click={playCharacter(character)}
                 type="button"
-                class="flex-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-accent text-base font-medium text-black hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400"
+                class="flex-1 rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-black hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
                 >Play
               </button>
               <button
@@ -84,7 +84,6 @@
                 <i class="fas fa-trash" />
               </button>
             </div>
-
           </div>
         </div>
         <!-- </div> -->

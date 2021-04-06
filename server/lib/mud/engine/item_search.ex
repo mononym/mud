@@ -48,6 +48,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   @doc """
@@ -59,6 +60,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   defp search_held_query(character_id) do
@@ -137,6 +139,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(Search.input_to_wildcard_string(search_string, mode))
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   @doc """
@@ -330,6 +333,19 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
+  end
+
+  @doc """
+  Items on ground are searched for a match.
+  """
+  def search_furniture_on_ground(area_id, search_string) do
+    base_on_ground_query(area_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+    |> Enum.filter(& &1.flags.furniture)
+    |> ItemUtil.sort_items(true)
   end
 
   defp base_on_ground_query(area_id) do
@@ -349,6 +365,19 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
+  end
+
+  @doc """
+  Only worn items are searched for a match.
+  """
+  @spec search_worn_inventory(String.t(), String.t()) :: [Mud.Engine.Item.t()]
+  def search_worn_inventory(character_id, search_string) do
+    base_worn_inventory_query(character_id)
+    |> modify_query_search_descriptions(search_string)
+    |> Repo.all()
+    |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   @doc """
@@ -362,6 +391,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   @doc """
@@ -373,6 +403,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
+    |> ItemUtil.sort_items(true)
   end
 
   def immediate_children_with_relationship_query(ids, relationship) do
@@ -403,6 +434,21 @@ defmodule Mud.Engine.ItemSearch do
       select: count(item.id)
     )
     |> Repo.one()
+  end
+
+  @spec count_worn_items_in_slot(String.t(), String.t()) :: integer
+  @doc """
+  Given a character and a slot to check, return the number of items currently worn on the character in that spot.
+  """
+  def count_worn_items_in_slot(character_id, slot) do
+    from(
+      [item, location: location, wearable: wearable] in base_query_for_description_and_location_and_wearable(),
+      where:
+        location.character_id == ^character_id and location.worn_on_character and
+          wearable.slot == ^slot,
+      select: count(item.id)
+    )
+    |> Repo.one!()
   end
 
   #
@@ -481,6 +527,14 @@ defmodule Mud.Engine.ItemSearch do
     )
   end
 
+  defp base_worn_inventory_query(character_id) do
+    from(
+      [location: location] in base_query_for_description_and_location(),
+      where: location.worn_on_character and location.character_id == ^character_id,
+      order_by: [desc: location.moved_at]
+    )
+  end
+
   defp base_query_for_description_and_location() do
     from(
       item in Mud.Engine.Item,
@@ -488,6 +542,18 @@ defmodule Mud.Engine.ItemSearch do
       as: :location,
       left_join: description in assoc(item, :description),
       as: :description
+    )
+  end
+
+  defp base_query_for_description_and_location_and_wearable() do
+    from(
+      item in Mud.Engine.Item,
+      left_join: location in assoc(item, :location),
+      as: :location,
+      left_join: description in assoc(item, :description),
+      as: :description,
+      left_join: wearable in assoc(item, :wearable),
+      as: :wearable
     )
   end
 
@@ -544,12 +610,12 @@ defmodule Mud.Engine.ItemSearch do
     from([item] in query, select: item.id)
   end
 
-  defp base_query_for_root_inventory_ids(character_id) do
-    base_query_for_root_inventory(character_id)
+  defp base_query_for_worn_and_held_inventory_ids(character_id) do
+    base_query_for_worn_and_held_inventory(character_id)
     |> modify_query_select_id()
   end
 
-  defp base_query_for_root_inventory(character_id) do
+  defp base_query_for_worn_and_held_inventory(character_id) do
     from(
       [location: location] in base_query(),
       where:
@@ -583,7 +649,7 @@ defmodule Mud.Engine.ItemSearch do
   end
 
   defp base_query_for_all_inventory(character_id) do
-    recursive_child_query(base_query_for_root_inventory_ids(character_id))
+    recursive_child_query(base_query_for_worn_and_held_inventory_ids(character_id))
   end
 
   defp recursive_surface_child_query(maybe_subqry) do

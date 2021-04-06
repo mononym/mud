@@ -334,45 +334,45 @@
           class="inline ml-2">Worn Items with Pockets ({$wornContainers.length})</pre>
       </div>
       {#if wornContainersExpanded}
-        {#each $wornContainers as wornContainer}
-          <InventoryItem
-            item={wornContainer}
-            showQuickActions={$selectedCharacter.settings.inventoryWindow
-              .show_quick_actions}
-            on:showContextMenu={showRightClickMenu}
-          >
-            <div class="h-full flex space-x-2 pl-2" slot="quickActions">
-              {#if wornContainer.pocket.open}
-                <QuickAction
-                  icon="fas fa-box-open"
-                  activeTooltip="close"
-                  cliInput="close {wornContainer.id}"
-                  storyOutput="close {wornContainer.description.short}"
-                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
-                    "enabled_quick_action_color"
-                  ]}
-                  inactiveIconColor={$selectedCharacter.settings
-                    .inventoryWindow["disabled_quick_action_color"]}
-                />
-              {:else}
-                <QuickAction
-                  icon="fas fa-box"
-                  activeTooltip="open"
-                  cliInput="open {wornContainer.id}"
-                  storyOutput="open {wornContainer.description.short}"
-                  activeIconColor={$selectedCharacter.settings.inventoryWindow[
-                    "enabled_quick_action_color"
-                  ]}
-                  inactiveIconColor={$selectedCharacter.settings
-                    .inventoryWindow["disabled_quick_action_color"]}
-                />
-              {/if}
-            </div>
-          </InventoryItem>
-        {/each}
+        <div class="ml-2">
+          {#each $wornContainers as wornContainer}
+            <InventoryItem
+              item={wornContainer}
+              showQuickActions={$selectedCharacter.settings.inventoryWindow
+                .show_quick_actions}
+              on:showContextMenu={showRightClickMenu}
+            >
+              <div class="h-full flex space-x-2 pl-2" slot="quickActions">
+                {#if wornContainer.pocket.open}
+                  <QuickAction
+                    icon="fas fa-box-open"
+                    activeTooltip="close"
+                    cliInput="close {wornContainer.id}"
+                    storyOutput="close {wornContainer.description.short}"
+                    activeIconColor={$selectedCharacter.settings
+                      .inventoryWindow["enabled_quick_action_color"]}
+                    inactiveIconColor={$selectedCharacter.settings
+                      .inventoryWindow["disabled_quick_action_color"]}
+                  />
+                {:else}
+                  <QuickAction
+                    icon="fas fa-box"
+                    activeTooltip="open"
+                    cliInput="open {wornContainer.id}"
+                    storyOutput="open {wornContainer.description.short}"
+                    activeIconColor={$selectedCharacter.settings
+                      .inventoryWindow["enabled_quick_action_color"]}
+                    inactiveIconColor={$selectedCharacter.settings
+                      .inventoryWindow["disabled_quick_action_color"]}
+                  />
+                {/if}
+              </div>
+            </InventoryItem>
+          {/each}
+        </div>
       {/if}
     {/if}
-    {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
+    <!-- {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
       <div
         class="cursor-pointer select-none"
         on:click={toggleWornItems}
@@ -395,7 +395,7 @@
           {/each}
         </div>
       {/if}
-    {/if}
+    {/if} -->
     {#if $selectedCharacter.settings.inventoryWindow.show_slots}
       <div
         class="cursor-pointer select-none"
@@ -728,12 +728,7 @@
     {/if}
   </div>
   <div class="spacer" />
-  <div
-    class="w-full flex"
-    style="border:1px solid {$selectedCharacter.settings.inventoryWindow[
-      'filter_border_color'
-    ]}"
-  >
+  <div class="flex">
     <FilterButton
       icon="fas fa-hands"
       bind:active={$characterSettings.inventoryWindow.show_held_items}
@@ -746,18 +741,36 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
     />
     <FilterButton
       icon="fas fa-backpack"
       bind:active={$characterSettings.inventoryWindow.show_worn_containers}
       on:toggle={saveSettings}
-      activeTooltip="Hide worn containers"
-      inactiveTooltip="Show worn containers"
+      activeTooltip="Hide worn items with pockets"
+      inactiveTooltip="Show worn items with pockets"
       activeIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_active_icon_color"
       ]}
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
+      ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
       ]}
     />
     <FilterButton
@@ -772,8 +785,17 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
     />
-    <FilterButton
+    <!-- <FilterButton
       icon="fas fa-shield"
       bind:active={$characterSettings.inventoryWindow.show_worn_armor}
       on:toggle={saveSettings}
@@ -784,6 +806,15 @@
       ]}
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
+      ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
       ]}
     />
     <FilterButton
@@ -798,6 +829,15 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
     />
     <FilterButton
       icon="fas fa-ring"
@@ -811,8 +851,17 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
-    />
-    <FilterButton
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
+    /> -->
+    <!-- <FilterButton
       icon="fas fa-certificate"
       bind:active={$characterSettings.inventoryWindow.show_worn_items}
       on:toggle={saveSettings}
@@ -824,7 +873,16 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
-    />
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
+    /> -->
     <FilterButton
       icon="fas fa-folder-tree"
       bind:active={$characterSettings.inventoryWindow.show_slots}
@@ -837,8 +895,17 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
     />
-    <FilterButton
+    <!-- <FilterButton
       icon="fas fa-rabbit-fast"
       bind:active={$characterSettings.inventoryWindow.show_quick_actions}
       on:toggle={saveSettings}
@@ -850,7 +917,16 @@
       inactiveIconColor={$selectedCharacter.settings.inventoryWindow[
         "filter_inactive_icon_color"
       ]}
-    />
+      activeBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_active_background_color"
+      ]}
+      inactiveBackgroundColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_inactive_background_color"
+      ]}
+      borderColor={$selectedCharacter.settings.inventoryWindow[
+        "filter_border_color"
+      ]}
+    /> -->
   </div>
   <InventoryItemRightClickMenu {pos} item={menuItem} bind:showMenu />
 </div>

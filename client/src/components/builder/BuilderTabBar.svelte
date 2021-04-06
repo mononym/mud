@@ -15,23 +15,26 @@
   <div class="flex items-baseline space-x-4">
     <button
       on:click={selectBuilderTabMapsAndAreas}
-      class="px-3 py-2 text-sm font-medium {$builderTab == 'mapsAndAreas'
-        ? 'text-white border-accent border-b-2 focus:outline-none'
+      class="px-3 py-2 text-sm font-medium focus:outline-none {$builderTab ==
+      'mapsAndAreas'
+        ? 'text-white border-primary border-b-2'
         : 'text-gray-300 hover:text-white hover:bg-gray-600'} "
       >Maps and Areas</button
     >
 
     <button
       on:click={selectBuilderTabShops}
-      class="px-3 py-2 text-sm font-medium {$builderTab == 'shops'
-        ? 'text-white border-accent border-b-2 focus:outline-none'
+      class="px-3 py-2 text-sm font-medium focus:outline-none {$builderTab ==
+      'shops'
+        ? 'text-white border-primary border-b-2'
         : 'text-gray-300 hover:text-white hover:bg-gray-600'}">Shops</button
     >
 
     <button
       on:click={selectBuilderTabItems}
-      class="px-3 py-2 text-sm font-medium {$builderTab == 'items'
-        ? 'text-white border-accent border-b-2 focus:outline-none'
+      class="px-3 py-2 text-sm font-medium focus:outline-none {$builderTab ==
+      'items'
+        ? 'text-white border-primary border-b-2'
         : 'text-gray-300 hover:text-white hover:bg-gray-600'}">Items</button
     >
   </div>

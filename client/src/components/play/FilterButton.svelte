@@ -8,6 +8,9 @@
   export let inactiveTooltip = "";
   export let activeIconColor = "";
   export let inactiveIconColor = "";
+  export let activeBackgroundColor = "";
+  export let inactiveBackgroundColor = "";
+  export let borderColor = "";
   export let key = "";
   let tippyInstance;
   let buttonDiv;
@@ -36,8 +39,12 @@
 
 <button
   bind:this={buttonDiv}
-  class="py-1 px-1 border-r"
-  on:click={toggleActive}>
+  class="py-1 px-1 focus:outline-none"
+  style="border:1px solid {borderColor};background-color:{active
+    ? activeBackgroundColor
+    : inactiveBackgroundColor}"
+  on:click={toggleActive}
+>
   <i
     class={`fa-fw fa-lg ${icon}`}
     style="color:{active ? activeIconColor : inactiveIconColor}"

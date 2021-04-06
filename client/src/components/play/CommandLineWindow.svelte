@@ -5,8 +5,6 @@
     buildHotkeyStringFromRecord,
   } from "../../utils/utils";
   import { onDestroy, onMount } from "svelte";
-  import tippy from "tippy.js";
-  import "tippy.js/dist/tippy.css";
   import { getContext } from "svelte";
   import { key } from "./state";
 
@@ -18,19 +16,7 @@
   let commandLineDiv;
   let commandHistory = [];
   let commandHistoryIndex = -1;
-  let commandHistoryLength = 1000;
-  // let inputMode = "command";
-  // let tippyInstance;
-
-  // function toggleInputMode() {
-  //   if (inputMode == "command") {
-  //     inputMode = "speak";
-  //     tippyInstance.setContent("Speaking Mode");
-  //   } else {
-  //     inputMode = "command";
-  //     tippyInstance.setContent("Command Mode");
-  //   }
-  // }
+  let commandHistoryMaxLength = 1000;
 
   onMount(() => {
     actualInput = input;
@@ -60,7 +46,6 @@
           commandHistory.length - 1 == commandHistoryIndex
         ) {
           return;
-          // if there is existing input we don't want to lose it, so move to a special holder
         }
       } else if (event.key == "ArrowDown") {
         event.preventDefault();
@@ -82,13 +67,6 @@
     normalizeCustomHotkeys();
     setupHotkeyWatcher();
     commandLineDiv.focus();
-
-    // tippyInstance = tippy(
-    //   document.querySelector(".CommandLineWindowInputTypeButton"),
-    //   {
-    //     content: inputMode == "command" ? "Command Mode" : "Speaking Mode",
-    //   }
-    // );
   });
 
   $: $selectedCharacter.settings.customHotkeys, normalizeCustomHotkeys();
@@ -154,14 +132,6 @@
 </script>
 
 <div class="commandlineWrapper h-full w-full flex">
-  <!-- <button
-    on:click={toggleInputMode}
-    class="CommandLineWindowInputTypeButton hover:bg-gray-400 hover:text-white text-gray-200 bg-transparent active:bg-gray-500 font-bold uppercase text-xs px-4 py-2 outline-none focus:outline-none border-r"
-    type="button"
-    style="width:50px"
-  >
-    <i class="fas fa-{inputMode == 'command' ? 'terminal' : 'comment-alt'}" />
-  </button> -->
   <form class="flex-1 flex">
     <textarea
       id="cli"

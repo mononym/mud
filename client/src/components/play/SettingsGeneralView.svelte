@@ -1,6 +1,9 @@
 <script>
   import { getContext } from "svelte";
   import { key } from "./state";
+  import tippy from "tippy.js";
+  import "tippy.js/dist/tippy.css";
+  import { onMount } from "svelte";
 
   const state = getContext(key);
   const {
@@ -10,22 +13,28 @@
   } = state;
 
   let settingsChanged = true;
+
+  onMount(() => {
+    tippy("[data-tippy-content]");
+  });
 </script>
 
 {#if $characterSettings != undefined}
   <form
-    class="container grid grid-cols-8 gap-4"
+    class="container grid grid-cols-12 gap-4"
     on:submit|preventDefault={saveCharacterSettings}
   >
-    <div class="col-span-4 grid grid-cols-8 gap-4">
-      <h2 class="text-center text-white border-b-2 border-black col-span-8">
-        Command Input Colors
+    <!-- Command Input Window -->
+    <div class="col-span-4 grid grid-cols-8 gap-4 bg-gray-900">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
+      >
+        Command Input Window Configuration
       </h2>
       <div class="col-span-4">
         <label
           for="inputBackgroundColor"
-          style="color:{$characterSettings.colors.input_background}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Command Input Background Color</label
         >
         <input
@@ -33,75 +42,49 @@
           type="color"
           name="inputBackgroundColor"
           id="inputBackgroundColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          class="mt-1 bg-gray-400 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
       <div class="col-span-4">
         <label
           for="inputTextColor"
-          style="color:{$characterSettings.colors.input}"
-          class="block text-sm font-medium">Input Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Input Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.input}
           type="color"
           name="inputTextColor"
           id="inputTextColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-        />
-      </div>
-      <div class="col-span-4">
-        <label
-          for="inputButtonBackgroundColor"
-          style="color:{$characterSettings.colors.input_button_background}"
-          class="block text-sm font-medium">Input Button Background Color</label
-        >
-        <input
-          bind:value={$characterSettings.colors.input_button_background}
-          type="color"
-          name="inputButtonBackgroundColor"
-          id="inputButtonBackgroundColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-        />
-      </div>
-      <div class="col-span-4">
-        <label
-          for="inputButtonIconColor"
-          style="color:{$characterSettings.colors.input_button_icon}"
-          class="block text-sm font-medium">Input Button Icon Color</label
-        >
-        <input
-          bind:value={$characterSettings.colors.input_button_icon}
-          type="color"
-          name="inputButtonIconColor"
-          id="inputButtonIconColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          class="mt-1 bg-gray-400 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
     </div>
+    <!-- Story Window -->
     <div class="col-span-4 grid grid-cols-6 gap-4">
-      <h2 class="text-center text-white border-b-2 border-black col-span-6">
-        Story Window Colors
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-6"
+      >
+        Story Window Configuration
       </h2>
       <div class="col-span-2">
         <label
           for="storyBackgroundColor"
-          style="color:{$characterSettings.colors.story_background}"
-          class="block text-sm font-medium">Story Window Background Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Story Window Background Color</label
         >
         <input
           bind:value={$characterSettings.colors.story_background}
           type="color"
           name="storyBackgroundColor"
           id="storyBackgroundColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          class="mt-1 bg-gray-400 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
       <div class="col-span-2">
         <label
           for="storyHistoryIconColor"
-          style="color:{$characterSettings.colors.story_history_icon}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Story Window History Icon Color</label
         >
         <input
@@ -109,14 +92,16 @@
           type="color"
           name="storyHistoryIconColor"
           id="storyHistoryIconColor"
-          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          class="mt-1 bg-gray-400 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The horizontal border that splits the Story Window in half when the history view is opened."
+      >
         <label
           for="storyHistoryBorderColor"
-          style="color:{$characterSettings.colors.story_history_border}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Story Window History Window Border</label
         >
         <input
@@ -130,14 +115,16 @@
     </div>
 
     <div class="col-span-4 grid grid-cols-6 gap-4">
-      <h2 class="text-center text-white border-b-2 border-black col-span-6">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-6"
+      >
         UI Colors
       </h2>
       <div class="col-span-2">
         <label
           for="windowToolbarColor"
-          style="color:{$characterSettings.colors.window_toolbar_background}"
-          class="block text-sm font-medium">Window Toolbar Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Toolbar Color</label
         >
         <input
           bind:value={$characterSettings.colors.window_toolbar_background}
@@ -150,8 +137,8 @@
       <div class="col-span-2">
         <label
           for="windowToolbarLabelColor"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Window Toolbar Label Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Toolbar Label Color</label
         >
         <input
           bind:value={$characterSettings.colors.window_toolbar_label}
@@ -164,8 +151,8 @@
       <div class="col-span-2">
         <label
           for="windowUnlockedColor"
-          style="color:{$characterSettings.colors.window_lock_unlocked}"
-          class="block text-sm font-medium">Window Lock Icon Unlocked</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Lock Icon Unlocked</label
         >
         <input
           bind:value={$characterSettings.colors.window_lock_unlocked}
@@ -178,8 +165,8 @@
       <div class="col-span-2">
         <label
           for="windowLockedColor"
-          style="color:{$characterSettings.colors.window_lock_locked}"
-          class="block text-sm font-medium">Window Lock Icon Unlocked</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Lock Icon Unlocked</label
         >
         <input
           bind:value={$characterSettings.colors.window_lock_locked}
@@ -189,11 +176,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the 'move' and 'increase/decrease zIndex' icons when the window is unlocked for editing."
+      >
         <label
           for="windowMoveUnlockedColor"
-          style="color:{$characterSettings.colors.window_move_unlocked}"
-          class="block text-sm font-medium">Window Move Icon Unlocked</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Edit Icons Unlocked</label
         >
         <input
           bind:value={$characterSettings.colors.window_move_unlocked}
@@ -203,11 +193,15 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the 'move' and 'increase/decrease zIndex' icons when the window is locked for editing."
+      >
+        >
         <label
           for="windowMoveLockedColor"
-          style="color:{$characterSettings.colors.window_move_locked}"
-          class="block text-sm font-medium">Window Move Icon locked</label
+          class="block text-sm font-medium text-gray-300"
+          >Window Edit Icons locked</label
         >
         <input
           bind:value={$characterSettings.colors.window_move_locked}
@@ -220,14 +214,18 @@
     </div>
 
     <div class="col-span-4 grid grid-cols-4 gap-4">
-      <h2 class="text-center text-white border-b-2 border-black col-span-4">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-4"
+      >
         Text Colors
       </h2>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The 'default' text color when no other colors apply to the specific span of text."
+      >
         <label
           for="baseTextColor"
-          style="color:{$characterSettings.colors.base}"
-          class="block text-sm font-medium">Base Text Color</label
+          class="block text-sm font-medium text-gray-300">Base Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.base}
@@ -237,12 +235,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the ToI label in both the Story Window and the Area Window."
+      >
         <label
           for="toiLabelTextColor"
-          style="color:{$characterSettings.colors.toi_label}"
-          class="block text-sm font-medium"
-          >'Things of Interest' Label Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Things of Interest Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.toi_label}
@@ -252,11 +252,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Area name in both the Story Window and the Area Window."
+      >
         <label
           for="areaNameTextColor"
-          style="color:{$characterSettings.colors.area_name}"
-          class="block text-sm font-medium">[Area Name Text Color]</label
+          class="block text-sm font-medium text-gray-300"
+          >Area Name Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.area_name}
@@ -266,11 +269,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Area description, with specific spans within the description able to be overridden, in both the Story Window and the Area Window."
+      >
         <label
           for="areaDescTextColor"
-          style="color:{$characterSettings.colors.area_description}"
-          class="block text-sm font-medium">Area Description Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Area Description Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.area_description}
@@ -280,11 +286,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Character label in both the Story Window and the Area Window."
+      >
         <label
           for="characterLabelTextColor"
-          style="color:{$characterSettings.colors.character_label}"
-          class="block text-sm font-medium">'Character' Label Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Character Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.character_label}
@@ -294,11 +303,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Character names in both the Story Window and the Area Window."
+      >
         <label
           for="charTextColor"
-          style="color:{$characterSettings.colors.character}"
-          class="block text-sm font-medium">Character Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Character Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.character}
@@ -308,12 +320,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Exits label in both the Story Window and the Area Window."
+      >
         <label
           for="exitLabelTextColor"
-          style="color:{$characterSettings.colors.exit_label}"
-          class="block text-sm font-medium"
-          >'Obvious Exits' Label Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Obvious Exits Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.exit_label}
@@ -323,11 +337,10 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <!-- <div class="col-span-2">
         <label
           for="exitTextColor"
-          style="color:{$characterSettings.colors.exit}"
-          class="block text-sm font-medium">Exit Text Color</label
+          class="block text-sm font-medium text-gray-300">Exit Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.exit}
@@ -336,12 +349,15 @@
           id="exitTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-2">
+      </div> -->
+      <!-- <div
+        class="col-span-2"
+        data-tippy-content="The color of the Denizen's label in both the Story Window and the Area Window."
+      >
         <label
           for="denizenLabelTextColor"
-          style="color:{$characterSettings.colors.denizen_label}"
-          class="block text-sm font-medium">Denizen Label Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Denizen Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.denizen_label}
@@ -351,11 +367,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the Denizen's names in both the Story Window and the Area Window."
+      >
         <label
           for="denizenTextColor"
-          style="color:{$characterSettings.colors.denizen}"
-          class="block text-sm font-medium">Denizen Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Denizen Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.denizen}
@@ -364,12 +383,15 @@
           id="denizenTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-2">
+      </div> -->
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Furniture names in both the Story Window and the Area Window."
+      >
         <label
           for="furnTextColor"
-          style="color:{$characterSettings.colors.furniture}"
-          class="block text-sm font-medium">Furniture Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Furniture Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.furniture}
@@ -379,11 +401,11 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <!-- <div class="col-span-2">
         <label
           for="wornContainerTextColor"
-          style="color:{$characterSettings.colors.worn_container}"
-          class="block text-sm font-medium">Worn Container Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Container Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.worn_container}
@@ -396,8 +418,8 @@
       <div class="col-span-2">
         <label
           for="containerTextColor"
-          style="color:{$characterSettings.colors.container}"
-          class="block text-sm font-medium">Container Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Container Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.container}
@@ -410,8 +432,8 @@
       <div class="col-span-2">
         <label
           for="weaponTextColor"
-          style="color:{$characterSettings.colors.weapon}"
-          class="block text-sm font-medium">Weapon Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Weapon Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.weapon}
@@ -424,8 +446,8 @@
       <div class="col-span-2">
         <label
           for="armorTextColor"
-          style="color:{$characterSettings.colors.armor}"
-          class="block text-sm font-medium">Armor Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Armor Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.armor}
@@ -438,8 +460,8 @@
       <div class="col-span-2">
         <label
           for="shieldTextColor"
-          style="color:{$characterSettings.colors.shield}"
-          class="block text-sm font-medium">Shield Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Shield Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.shield}
@@ -448,12 +470,14 @@
           id="shieldTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-2">
+      </div> -->
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Gem names in both the Story Window and the Area Window."
+      >
         <label
           for="gemTextColor"
-          style="color:{$characterSettings.colors.gem}"
-          class="block text-sm font-medium">Gem Text Color</label
+          class="block text-sm font-medium text-gray-300">Gem Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.gem}
@@ -463,11 +487,11 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <!-- <div class="col-span-2">
         <label
           for="ammoTextColor"
-          style="color:{$characterSettings.colors.ammunition}"
-          class="block text-sm font-medium">Ammunition Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Ammunition Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.ammunition}
@@ -476,12 +500,15 @@
           id="ammoTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-2">
+      </div> -->
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Clothing names in both the Story Window and the Area Window."
+      >
         <label
           for="clothingTextColor"
-          style="color:{$characterSettings.colors.clothing}"
-          class="block text-sm font-medium">Clothing Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Clothing Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.clothing}
@@ -491,11 +518,11 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <!-- <div class="col-span-2">
         <label
           for="sceneryTextColor"
-          style="color:{$characterSettings.colors.scenery}"
-          class="block text-sm font-medium">Scenery Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Scenery Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.scenery}
@@ -504,12 +531,14 @@
           id="sceneryTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-2">
+      </div> -->
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Coin names in both the Story Window and the Area Window."
+      >
         <label
           for="coinTextColor"
-          style="color:{$characterSettings.colors.coin}"
-          class="block text-sm font-medium">Coin Text Color</label
+          class="block text-sm font-medium text-gray-300">Coin Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.coin}
@@ -520,11 +549,14 @@
         />
       </div>
 
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Portal exits in both the Story Window and the Area Window."
+      >
         <label
           for="portalTextColor"
-          style="color:{$characterSettings.colors.portal}"
-          class="block text-sm font-medium">Portal Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Portal Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.portal}
@@ -534,11 +566,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Closable exits, such as doors or gates, in both the Story Window and the Area Window."
+      >
         <label
           for="closableTextColor"
-          style="color:{$characterSettings.colors.closable}"
-          class="block text-sm font-medium">Closable Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Closable Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.closable}
@@ -548,11 +583,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Direction exits, such as north or east, in both the Story Window and the Area Window."
+      >
         <label
           for="directionTextColor"
-          style="color:{$characterSettings.colors.direction}"
-          class="block text-sm font-medium">Direction Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Direction Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.direction}
@@ -562,11 +600,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Object exits, such as a bridge or arch, in both the Story Window and the Area Window."
+      >
         <label
           for="objectExitTextColor"
-          style="color:{$characterSettings.colors.object}"
-          class="block text-sm font-medium">Object Exit Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Object Exit Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.object}
@@ -577,11 +618,14 @@
         />
       </div>
 
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the On Ground label in both the Story Window and the Area Window."
+      >
         <label
           for="onGroundLabelTextColor"
-          style="color:{$characterSettings.colors.on_ground_label}"
-          class="block text-sm font-medium">'On Ground' Label Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >On Ground Label Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.on_ground_label}
@@ -591,11 +635,13 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of commands echoed in the Story Window."
+      >
         <label
           for="echoTextColor"
-          style="color:{$characterSettings.colors.echo}"
-          class="block text-sm font-medium">Echo Text Color</label
+          class="block text-sm font-medium text-gray-300">Echo Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.echo}
@@ -605,12 +651,15 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the System Warning text in the Story Window."
+      >
         <label
           for="sysWarnTextColor"
-          style="color:{$characterSettings.colors.system_warning}"
-          class="block text-sm font-medium"
-          >***** System Warning Text Color *****</label
+          class="block text-sm font-medium text-gray-300"
+        >
+          System Warning Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.system_warning}
@@ -620,12 +669,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the System Info text in the Story Window."
+      >
         <label
           for="sysInfoTextColor"
-          style="color:{$characterSettings.colors.system_info}"
-          class="block text-sm font-medium"
-          >***** System Info Text Color *****</label
+          class="block text-sm font-medium text-gray-300"
+          >System Info Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.system_info}
@@ -635,12 +686,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of the System Alert text in the Story Window."
+      >
         <label
           for="sysAlertTextColor"
-          style="color:{$characterSettings.colors.system_alert}"
-          class="block text-sm font-medium"
-          >***** System Alert Text Color *****</label
+          class="block text-sm font-medium text-gray-300"
+          >System Alert Text Color</label
         >
         <input
           bind:value={$characterSettings.colors.system_alert}
@@ -652,23 +705,17 @@
       </div>
     </div>
 
-    <div
-      class="col-span-4 grid grid-cols-12 gap-4"
-      style="background-color:{$characterSettings.areaWindow.background}"
-    >
+    <div class="col-span-4 grid grid-cols-12 gap-4">
       <h2
-        class="text-center text-white border-b-2 border-black col-span-12"
-        style="background-color:{$characterSettings.colors
-          .window_toolbar_background};color:{$characterSettings.colors
-          .window_toolbar_label}"
+        class="text-center text-gray-300 border-b-2 border-primary col-span-12"
       >
         Area Window
       </h2>
       <div class="col-span-12">
         <label
           for="areaWindowBackgroundColor"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Background Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
         >
         <input
           bind:value={$characterSettings.areaWindow.background}
@@ -678,11 +725,14 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-6">
+      <div
+        class="col-span-6"
+        data-tippy-content="Whether to show the Area descripion at all. Can be toggled in the Area Window."
+      >
         <label
           for="showDescription"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show Description</label
+          class="block text-sm font-medium text-gray-300"
+          >Show Description</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_description}
@@ -691,11 +741,14 @@
           id="showDescription"
         />
       </div>
-      <div class="col-span-6">
+      <div
+        class="col-span-6"
+        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it."
+      >
         <label
           for="descriptionExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Description Expansion Mode</label
+          class="block text-sm font-medium text-gray-300"
+          >Description Expansion Mode</label
         >
         <select
           id="descriptionExpansionMode"
@@ -709,11 +762,12 @@
         </select>
       </div>
 
-      <div class="col-span-4">
-        <label
-          for="showToi"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show Things Of Interest</label
+      <div
+        class="col-span-4"
+        data-tippy-content="Whether to show the ToI at all. Can be toggled in the Area Window."
+      >
+        <label for="showToi" class="block text-sm font-medium text-gray-300"
+          >Show Things Of Interest</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_toi}
@@ -722,11 +776,13 @@
           id="showToi"
         />
       </div>
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+      >
         <label
           for="toiExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Things Of Interest Expansion Mode</label
         >
         <select
@@ -745,8 +801,7 @@
       <div class="col-span-4">
         <label
           for="toiThreshold"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Things Of Interest Collapse Threshold</label
         >
         <input
@@ -759,11 +814,13 @@
         />
       </div>
 
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="Whether to show things On the Ground at all. Can be toggled in the Area Window."
+      >
         <label
           for="showOnGround"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show On Ground</label
+          class="block text-sm font-medium text-gray-300">Show On Ground</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_on_ground}
@@ -772,11 +829,14 @@
           id="showOnGround"
         />
       </div>
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+      >
         <label
           for="onGroundExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">On Ground Expansion Mode</label
+          class="block text-sm font-medium text-gray-300"
+          >On Ground Expansion Mode</label
         >
         <select
           id="onGroundExpansionMode"
@@ -794,8 +854,8 @@
       <div class="col-span-4">
         <label
           for="onGroundThreshold"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">On Ground Collapse Threshold</label
+          class="block text-sm font-medium text-gray-300"
+          >On Ground Collapse Threshold</label
         >
         <input
           bind:value={$characterSettings.areaWindow
@@ -808,11 +868,14 @@
         />
       </div>
 
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="Whether to show other Characters at all. Can be toggled in the Area Window."
+      >
         <label
           for="showAlsoPresent"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show Also Present</label
+          class="block text-sm font-medium text-gray-300"
+          >Show Also Present</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_also_present}
@@ -821,11 +884,14 @@
           id="showAlsoPresent"
         />
       </div>
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+      >
         <label
           for="alsoPresentExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Also Present Expansion Mode</label
+          class="block text-sm font-medium text-gray-300"
+          >Also Present Expansion Mode</label
         >
         <select
           id="alsoPresentExpansionMode"
@@ -843,8 +909,7 @@
       <div class="col-span-4">
         <label
           for="alsoPresentThreshold"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Also Present Collapse Threshold</label
         >
         <input
@@ -858,11 +923,12 @@
         />
       </div>
 
-      <div class="col-span-4">
-        <label
-          for="showExits"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show Exits</label
+      <div
+        class="col-span-4"
+        data-tippy-content="Whether to show the Exits at all. Can be toggled in the Area Window."
+      >
+        <label for="showExits" class="block text-sm font-medium text-gray-300"
+          >Show Exits</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_exits}
@@ -871,11 +937,14 @@
           id="showExits"
         />
       </div>
-      <div class="col-span-4">
+      <div
+        class="col-span-4"
+        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+      >
         <label
           for="exitsExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Exits Expansion Mode</label
+          class="block text-sm font-medium text-gray-300"
+          >Exits Expansion Mode</label
         >
         <select
           id="exitsExpansionMode"
@@ -893,8 +962,8 @@
       <div class="col-span-4">
         <label
           for="exitsThreshold"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Exits Collapse Threshold</label
+          class="block text-sm font-medium text-gray-300"
+          >Exits Collapse Threshold</label
         >
         <input
           bind:value={$characterSettings.areaWindow.exits_collapse_threshold}
@@ -906,11 +975,14 @@
         />
       </div>
 
-      <div class="col-span-6">
+      <div
+        class="col-span-6"
+        data-tippy-content="The overall expansion settings can be used with the individual ones to help ensure that there is flexibility in how many individual items can be displayed at any given time while still providing protection for limited space."
+      >
         <label
           for="overallExpansionMode"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Overall Expansion Mode</label
+          class="block text-sm font-medium text-gray-300"
+          >Overall Expansion Mode</label
         >
         <select
           id="overallExpansionMode"
@@ -927,8 +999,8 @@
       <div class="col-span-6">
         <label
           for="overallThreshold"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Overall Collapse Threshold</label
+          class="block text-sm font-medium text-gray-300"
+          >Overall Collapse Threshold</label
         >
         <input
           bind:value={$characterSettings.areaWindow
@@ -943,8 +1015,8 @@
       <div class="col-span-4">
         <label
           for="areaWindowfilterBorderColorColor"
-          style="color:{$characterSettings.areaWindow.filter_border_color}"
-          class="block text-sm font-medium">Filter Border Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Border Color</label
         >
         <input
           bind:value={$characterSettings.areaWindow.filter_border_color}
@@ -957,8 +1029,8 @@
       <div class="col-span-4">
         <label
           for="areaWindowfilterActiveIconColor"
-          style="color:{$characterSettings.areaWindow.filter_active_icon_color}"
-          class="block text-sm font-medium">Filter Active Icon Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Active Icon Color</label
         >
         <input
           bind:value={$characterSettings.areaWindow.filter_active_icon_color}
@@ -971,9 +1043,8 @@
       <div class="col-span-4">
         <label
           for="areaWindowfilterInactiveIconColor"
-          style="color:{$characterSettings.areaWindow
-            .filter_inactive_icon_color}"
-          class="block text-sm font-medium">Filter Inactive Icon Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Inactive Icon Color</label
         >
         <input
           bind:value={$characterSettings.areaWindow.filter_inactive_icon_color}
@@ -986,9 +1057,7 @@
       <div class="col-span-4">
         <label
           for="areaWindowfilterActiveBackgroundColor"
-          style="color:{$characterSettings.areaWindow
-            .filter_active_background_color}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Filter Active Background Color</label
         >
         <input
@@ -1003,9 +1072,7 @@
       <div class="col-span-4">
         <label
           for="areaWindowfilterInactiveBackgroundColor"
-          style="color:{$characterSettings.areaWindow
-            .filter_inactive_background_color}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Filter Inactive Background Color</label
         >
         <input
@@ -1017,11 +1084,11 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-6">
+      <!-- <div class="col-span-6">
         <label
           for="showQuickActions"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Show Quick Actions</label
+          class="block text-sm font-medium text-gray-300"
+          >Show Quick Actions</label
         >
         <input
           bind:checked={$characterSettings.areaWindow.show_quick_actions}
@@ -1029,13 +1096,12 @@
           name="showQuickActions"
           id="showQuickActions"
         />
-      </div>
-      <div class="col-span-4">
+      </div> -->
+      <!-- <div class="col-span-4">
         <label
           for="areaWindowDisabledQuickActionColor"
-          style="color:{$characterSettings.areaWindow
-            .disabled_quick_action_color}"
-          class="block text-sm font-medium">Disabled Quick Action Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Disabled Quick Action Color</label
         >
         <input
           bind:value={$characterSettings.areaWindow.disabled_quick_action_color}
@@ -1044,26 +1110,20 @@
           id="areaWindowDisabledQuickActionColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
+      </div> -->
     </div>
 
-    <div
-      class="col-span-4 grid grid-cols-8 gap-4"
-      style="background-color:{$characterSettings.inventoryWindow.background}"
-    >
+    <div class="col-span-4 grid grid-cols-8 gap-4">
       <h2
-        class="text-center text-white border-b-2 border-black col-span-8"
-        style="background-color:{$characterSettings.colors
-          .window_toolbar_background};color:{$characterSettings.colors
-          .window_toolbar_label}"
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
       >
         Inventory Window
       </h2>
       <div class="col-span-4">
         <label
           for="inventoryWindowBackgroundColor"
-          style="color:{$characterSettings.colors.window_toolbar_label}"
-          class="block text-sm font-medium">Background Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.background}
@@ -1076,8 +1136,8 @@
       <div class="col-span-4">
         <label
           for="emptyHandTextColor"
-          style="color:{$characterSettings.inventoryWindow.empty_hand}"
-          class="block text-sm font-medium">Empty Hand Text Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Empty Hand Text Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.empty_hand}
@@ -1090,8 +1150,8 @@
       <div class="col-span-4">
         <label
           for="heldItemsColor"
-          style="color:{$characterSettings.inventoryWindow.held_items_label}"
-          class="block text-sm font-medium">Held Items Label Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Held Items Label Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.held_items_label}
@@ -1104,9 +1164,8 @@
       <div class="col-span-4">
         <label
           for="wornContainersLabel"
-          style="color:{$characterSettings.inventoryWindow
-            .worn_containers_label}"
-          class="block text-sm font-medium">Worn Containers Label</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Items With Pockets Label</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.worn_containers_label}
@@ -1119,8 +1178,8 @@
       <div class="col-span-4">
         <label
           for="wornClothesLabel"
-          style="color:{$characterSettings.inventoryWindow.worn_clothes_label}"
-          class="block text-sm font-medium">Worn Clothes Label</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Clothes Label</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.worn_clothes_label}
@@ -1130,11 +1189,11 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <div class="col-span-4">
+      <!-- <div class="col-span-4">
         <label
           for="wornArmorLabel"
-          style="color:{$characterSettings.inventoryWindow.worn_armor_label}"
-          class="block text-sm font-medium">Worn Armor Label</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Armor Label</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.worn_armor_label}
@@ -1143,12 +1202,12 @@
           id="wornArmorLabel"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-4">
+      </div> -->
+      <!-- <div class="col-span-4">
         <label
           for="wornWeaponsLabel"
-          style="color:{$characterSettings.inventoryWindow.worn_weapons_label}"
-          class="block text-sm font-medium">Worn Weapons Label</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Weapons Label</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.worn_weapons_label}
@@ -1157,12 +1216,12 @@
           id="wornWeaponsLabel"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div>
-      <div class="col-span-4">
+      </div> -->
+      <!-- <div class="col-span-4">
         <label
           for="wornJewelryLabel"
-          style="color:{$characterSettings.inventoryWindow.worn_jewelry_label}"
-          class="block text-sm font-medium">Worn Jewelry Label</label
+          class="block text-sm font-medium text-gray-300"
+          >Worn Jewelry Label</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.worn_jewelry_label}
@@ -1171,12 +1230,25 @@
           id="wornJewelryLabel"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
+      </div> -->
+      <div class="col-span-4">
+        <label
+          for="wornSlotsLabel"
+          class="block text-sm font-medium text-gray-300">Slots Label</label
+        >
+        <input
+          bind:value={$characterSettings.inventoryWindow.slots_label}
+          type="color"
+          name="wornSlotsLabel"
+          id="wornSlotsLabel"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
       </div>
       <div class="col-span-4">
         <label
           for="filterBorderColorColor"
-          style="color:{$characterSettings.inventoryWindow.filter_border_color}"
-          class="block text-sm font-medium">Filter Border Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Border Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow.filter_border_color}
@@ -1189,9 +1261,8 @@
       <div class="col-span-4">
         <label
           for="filterActiveIconColor"
-          style="color:{$characterSettings.inventoryWindow
-            .filter_active_icon_color}"
-          class="block text-sm font-medium">Filter Active Icon Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Active Icon Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow
@@ -1205,9 +1276,8 @@
       <div class="col-span-4">
         <label
           for="filterInactiveIconColor"
-          style="color:{$characterSettings.inventoryWindow
-            .filter_inactive_icon_color}"
-          class="block text-sm font-medium">Filter Inactive Icon Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Filter Inactive Icon Color</label
         >
         <input
           bind:value={$characterSettings.inventoryWindow
@@ -1221,9 +1291,7 @@
       <div class="col-span-4">
         <label
           for="filterActiveBackgroundColor"
-          style="color:{$characterSettings.inventoryWindow
-            .filter_active_background_color}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Filter Active Background Color</label
         >
         <input
@@ -1238,9 +1306,7 @@
       <div class="col-span-4">
         <label
           for="filterInactiveBackgroundColor"
-          style="color:{$characterSettings.inventoryWindow
-            .filter_inactive_background_color}"
-          class="block text-sm font-medium"
+          class="block text-sm font-medium text-gray-300"
           >Filter Inactive Background Color</label
         >
         <input
@@ -1254,22 +1320,17 @@
       </div>
     </div>
 
-    <div
-      class="col-span-4 grid grid-cols-8 gap-4"
-      style="background-color:{$characterSettings.inventoryWindow.background}"
-    >
+    <div class="col-span-4 grid grid-cols-8 gap-4">
       <h2
-        class="text-center text-white border-b-2 border-black col-span-8"
-        style="background-color:{$characterSettings.colors
-          .window_toolbar_background};color:{$characterSettings.colors
-          .window_toolbar_label}"
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
       >
         Map Window
       </h2>
       <div class="col-span-4">
         <label
           for="unexploredLinkColor"
-          class="block text-sm font-medium text-white">Unexplored Link Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Unexplored Link Color</label
         >
         <input
           bind:value={$characterSettings.mapWindow.unexplored_link_color}
@@ -1282,7 +1343,8 @@
       <div class="col-span-4">
         <label
           for="highlightedAreaColor"
-          class="block text-sm font-medium text-white">Highlighted Area Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Highlighted Area Color</label
         >
         <input
           bind:value={$characterSettings.mapWindow.highlighted_area_color}
@@ -1295,7 +1357,8 @@
       <div class="col-span-4">
         <label
           for="backgroundColor"
-          class="block text-sm font-medium text-white">Background Color</label
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
         >
         <input
           bind:value={$characterSettings.mapWindow.background_color}
@@ -1312,14 +1375,14 @@
         disabled={!settingsChanged}
         type="submit"
         class="{!settingsChanged
-          ? 'bg-indigo-800 text-gray-500 cursor-not-allowed'
-          : 'bg-indigo-600 hover:bg-indigo-700 text-white'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          ? 'bg-primary-dark text-black cursor-not-allowed'
+          : 'bg-primary hover:bg-primary-light text-black'} inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
       >
         Save
       </button>
       <button
         on:click|preventDefault={resetCharacterSettings}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="bg-primary hover:bg-primary-light text-black inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
       >
         Reset
       </button>
