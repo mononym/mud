@@ -364,11 +364,11 @@ defmodule Mud.Engine.Util do
   """
   def get_item_type(item, default) when is_struct(item) do
     cond do
-      item.flags.has_pocket and item.flags.wearable ->
-        "worn_container"
+      item.flags.is_clothing ->
+        "clothing"
 
-      item.flags.has_pocket ->
-        "container"
+      item.flags.is_equipment ->
+        "equipment"
 
       item.flags.gem ->
         "gem"
@@ -378,9 +378,6 @@ defmodule Mud.Engine.Util do
 
       item.flags.furniture ->
         "furniture"
-
-      item.flags.scenery ->
-        "scenery"
 
       item.flags.coin ->
         "coin"

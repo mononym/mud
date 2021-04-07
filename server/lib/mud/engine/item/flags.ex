@@ -93,7 +93,6 @@ defmodule Mud.Engine.Item.Flags do
     field(:instrument, :boolean, default: false)
     field(:jewelry, :boolean, default: false)
     field(:material, :boolean, default: false)
-    field(:scenery, :boolean, default: false)
     field(:shield, :boolean, default: false)
     # A shop display might be a container, such as a box or a chest,
     # or it might be a surface such as a table or a shelf or a coat rack etc...
@@ -104,10 +103,13 @@ defmodule Mud.Engine.Item.Flags do
     #
     # What behaviors item has, for example a piece of furniture may or may not have a surface on it.
     #
+
     field(:has_physics, :boolean, default: false)
     field(:has_pocket, :boolean, default: false)
     field(:has_surface, :boolean, default: false)
     field(:is_closable, :boolean, default: false)
+    # Any item can be a piece of scenery.
+    field(:scenery, :boolean, default: false)
   end
 
   @doc false

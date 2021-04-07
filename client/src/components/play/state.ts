@@ -18,6 +18,7 @@ import AreaState from "../../models/area";
 import type { LinkInterface } from "../../models/link";
 import type { ShopInterface } from "../../models/shop";
 import { AreaWindowStore } from "../../stores/area_window";
+import storage from "electron-json-storage";
 
 export const key = {};
 
@@ -330,6 +331,39 @@ export function createState() {
       ]
     );
     console.log(get(selectedCharacter).areaId);
+
+    // loadClientState(get(selectedCharacter).name);
+  }
+
+  // The map of what windows are visible vs not
+  const windowVisibility = writable(<Record<string, boolean>>{
+    map: true,
+    area: true,
+    inventory: true,
+    status: true,
+    compass: true,
+    environment: true,
+  });
+
+  function setWindowVisibility(key, value) {
+    windowVisibility.update(function (index) {
+      index[key] = value;
+      return index;
+    });
+  }
+
+  function loadClientState(characterName) {
+    storage.has(`client_data:${characterName}`, function (error, hasKey) {
+      if (error) throw error;
+
+      if (hasKey) {
+        storage.get(`client_data:${characterName}`, function (error, data) {
+          if (error) throw error;
+
+          windowVisibility.set(data.windowVisibility);
+        });
+      }
+    });
   }
 
   function setupInventory(items) {
@@ -1030,6 +1064,8 @@ export function createState() {
     // Overall UI stuff, such as whether to show the play view or the other views
     //
     view,
+    windowVisibility,
+    setWindowVisibility,
     selectSettingsView,
     selectPlayView,
     //

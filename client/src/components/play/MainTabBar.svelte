@@ -7,9 +7,17 @@
   import { key } from "./state";
 
   const state = getContext(key);
-  const { endGameSession, view, selectSettingsView, selectPlayView } = state;
+  const {
+    endGameSession,
+    view,
+    selectSettingsView,
+    selectPlayView,
+    setWindowVisibility,
+    windowVisibility,
+  } = state;
 
   let menuOpen = false;
+  let windowDropdownMenuOpen = false;
 
   function logout() {
     endGameSession().then(() => AuthStore.logout().then(() => push("#/login")));
@@ -21,6 +29,14 @@
 
   function toggleMenu() {
     menuOpen = !menuOpen;
+  }
+
+  function openWindowMenu() {
+    windowDropdownMenuOpen = true;
+  }
+
+  function toggleWindowVisibility(key) {
+    setWindowVisibility($windowVisibility[key]);
   }
 
   function clickOutside(node, { enabled: initialEnabled, cb }) {
@@ -74,6 +90,60 @@
       </div>
       <div class="hidden md:block">
         <div class="ml-4 flex items-center md:ml-6">
+          <!-- Window dropdown -->
+          <div class="ml-3 relative">
+            <div>
+              <button
+                use:clickOutside={{
+                  enabled: true,
+                  cb: () =>
+                    windowDropdownMenuOpen
+                      ? (windowDropdownMenuOpen = false)
+                      : (windowDropdownMenuOpen = windowDropdownMenuOpen),
+                }}
+                on:click={openWindowMenu}
+                class="max-w-xs bg-gray-800 flex items-center text-sm focus:outline-none"
+                id="window-menu"
+                aria-haspopup="true"
+              >
+                <span class="sr-only">Open Window Visibility Menu</span>
+                <i class="text-gray-300 fa-2x fa-fw fal fa-window" />
+              </button>
+            </div>
+            <!--
+                Profile dropdown panel, show/hide based on dropdown state.
+
+                Entering: "transition ease-out duration-100"
+                  From: "transform opacity-0 scale-95"
+                  To: "transform opacity-100 scale-100"
+                Leaving: "transition ease-in duration-75"
+                  From: "transform opacity-100 scale-100"
+                  To: "transform opacity-0 scale-95"
+              -->
+            <div
+              in:scale={{ duration: 100, start: 0.95, easing: cubicOut }}
+              out:scale={{ duration: 75, start: 0.95, easing: cubicIn }}
+              class="origin-top-right absolute z-50 right-0 mt-2 w-36 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 {windowDropdownMenuOpen
+                ? 'visible'
+                : 'invisible'}"
+              role="menu"
+              aria-orientation="vertical"
+              aria-labelledby="window-menu"
+            >
+              <button
+                on:click={toggleWindowVisibility("map")}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Map</button
+              >
+
+              <button
+                on:click={logout}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Inventory</button
+              >
+            </div>
+          </div>
+
           <button
             class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
           >

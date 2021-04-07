@@ -12,13 +12,14 @@ if (!app.isPackaged) {
 
 const createWindow = () => {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    
+
     window = new BrowserWindow({
         width: width / 1.25,
         height: height / 1.25,
         webPreferences: {
             nodeIntegration: true,
-            enableRemoteModule: true
+            enableRemoteModule: true,
+            contextIsolation: false,
         },
     });
 

@@ -34,6 +34,7 @@
     view,
     currentArea,
     currentMap,
+    windowVisibility,
   } = state;
 
   $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
@@ -355,6 +356,7 @@
         bind:initialX={startingMapX}
         bind:initialY={startingMapY}
         zIndex="3"
+        visible={$windowVisibility.map}
       >
         <MapWindow />
       </LayoutItemWrapper>
@@ -366,6 +368,7 @@
         bind:initialX={startingInventoryX}
         bind:initialY={startingInventoryY}
         zIndex="4"
+        visible={$windowVisibility.inventory}
       >
         <InventoryWindow />
       </LayoutItemWrapper>
@@ -377,6 +380,7 @@
         bind:initialX={startingAreaX}
         bind:initialY={startingAreaY}
         zIndex="8"
+        visible={$windowVisibility.area}
       >
         <AreaWindow />
       </LayoutItemWrapper>
@@ -388,17 +392,19 @@
         bind:initialX={startingCompassX}
         bind:initialY={startingCompassY}
         zIndex="6"
+        visible={$windowVisibility.compass}
       >
         <CompassWindow />
       </LayoutItemWrapper>
       <LayoutItemWrapper
         id="environmentInfoWindow"
-        label="Time"
+        label="Environment"
         bind:initialHeight={startingEnvironmentInfoHeight}
         bind:initialWidth={startingEnvironmentInfoWidth}
         bind:initialX={startingEnvironmentInfoX}
         bind:initialY={startingEnvironmentInfoY}
         zIndex="7"
+        visible={$windowVisibility.environment}
       >
         <EnvironmentInfoWindow />
       </LayoutItemWrapper>
@@ -410,6 +416,7 @@
         bind:initialX={startingStatusX}
         bind:initialY={startingStatusY}
         zIndex="5"
+        visible={$windowVisibility.status}
       >
         <CharacterStatusWindow />
       </LayoutItemWrapper>

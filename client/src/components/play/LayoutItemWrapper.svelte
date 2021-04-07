@@ -19,6 +19,7 @@
   export let id;
   export let label = "";
   export let zIndex = 1;
+  export let visible = true;
 
   let localX = "0";
   let localY = "0";
@@ -132,6 +133,7 @@
   bind:this={layoutItemWrapper}
   class="layoutItemWrapper flex flex-col absolute bg-gray-700"
   style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px;z-index:{localZIndex}"
+  hidden={!visible}
 >
   <div
     style="background-color:{$selectedCharacter.settings.colors
