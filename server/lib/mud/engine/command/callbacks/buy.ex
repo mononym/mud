@@ -102,7 +102,7 @@ defmodule Mud.Engine.Command.Buy do
           hand =
             cond do
               length(held_items) == 0 ->
-                context.character.settings.handedness
+                context.character.handedness
 
               true ->
                 if List.first(held_items).location.hand == "right" do
@@ -134,7 +134,7 @@ defmodule Mud.Engine.Command.Buy do
           |> Context.append_message(
             Message.new_story_output(
               context.character.id,
-              "You bought #{product.description}.#{random_buy_post_message()}",
+              "You bought: #{new_item.description.short}.#{random_buy_post_message()}",
               "base"
             )
           )
@@ -225,7 +225,7 @@ defmodule Mud.Engine.Command.Buy do
   end
 
   defp random_buy_post_message do
-    if Enum.random(1..20) == 1 do
+    if Enum.random(1..20) != 1 do
       ""
     else
       Enum.random([
@@ -239,9 +239,12 @@ defmodule Mud.Engine.Command.Buy do
         " The bestest of the bunch.",
         " The bestest of the bunch. Maybe.",
         " Did it have to be that one?",
+        " Do...do you know what to do with it?",
         " Why that one?",
         " Really? Just...why?",
         " Really? Just...REALLY?",
+        "..but why?",
+        " But did you really need it?",
         " Ohhhhhhhhhhhhhh!",
         " That's one way to spend some coin.",
         " That's one way to spend some coin!",

@@ -109,9 +109,7 @@ defmodule Mud.Engine.Character.Settings do
 
       # Item Types
       field(:furniture, :string, default: "#ffffff")
-      field(:container, :string, default: "#ffffff")
-      field(:worn_container, :string, default: "#A098DD")
-      field(:gem_pouch, :string, default: "#A098DD")
+      field(:equipment, :string, default: "#ffffff")
       field(:weapon, :string, default: "#ffffff")
       field(:armor, :string, default: "#ffffff")
       field(:gem, :string, default: "#ffffff")
@@ -119,7 +117,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:ammunition, :string, default: "#ffffff")
       field(:shield, :string, default: "#ffffff")
       field(:clothing, :string, default: "#ffffff")
-      field(:scenery, :string, default: "#ffffff")
+      field(:misc, :string, default: "#ffffff")
 
       # Link Types
       field(:portal, :string, default: "#ffffff")
@@ -225,9 +223,7 @@ defmodule Mud.Engine.Character.Settings do
       :echo,
       # Item types
       :furniture,
-      :container,
-      :worn_container,
-      :gem_pouch,
+      :equipment,
       :weapon,
       :armor,
       :gem,
@@ -235,7 +231,7 @@ defmodule Mud.Engine.Character.Settings do
       :ammunition,
       :shield,
       :clothing,
-      :scenery,
+      :misc,
       :coin,
       # Link types
       :portal,
@@ -415,16 +411,14 @@ defmodule Mud.Engine.Character.Settings do
 
       # Item Types
       furniture: "#E8B773",
-      container: "#73A6E8",
-      worn_container: "#A098DD",
-      gem_pouch: "#A098DD",
+      equipment: "#73A6E8",
+      misc: "#A098DD",
       weapon: "#ffffff",
       armor: "#ffffff",
       gem: "#ffffff",
       ammunition: "#ffffff",
       shield: "#ffffff",
       clothing: "#ffffff",
-      scenery: "#9BD2EE",
       coin: "#FFD700",
 
       # Link Types

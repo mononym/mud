@@ -397,20 +397,6 @@ defmodule Mud.Engine.Item do
   end
 
   @doc """
-  Given one or more items, return their children, and their children's children, all the way down as long as every item
-  in the chain has a surface and the children are on said surface, or is itself a "leaf" node in which case no
-  surface is required.
-  """
-  def list_nested_surface_children(items) do
-    items
-    |> items_to_ids()
-    |> recursive_surface_child_query()
-    |> Repo.all()
-    |> preload()
-    |> Enum.sort_by(& &1.location.moved_at)
-  end
-
-  @doc """
   Given one or more items, return all of their children and optionally them
   """
   @spec list_all_recursive_children(

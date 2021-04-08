@@ -22,8 +22,7 @@ export interface CharacterSettingsInterface {
     echo: string;
     // Item Types
     furniture: string;
-    container: string;
-    worn_container: string;
+    equipment: string;
     weapon: string;
     armor: string;
     gem: string;
@@ -31,7 +30,7 @@ export interface CharacterSettingsInterface {
     ammunition: string;
     shield: string;
     clothing: string;
-    scenery: string;
+    misc: string;
 
     // Link Types
     portal: string;
@@ -247,8 +246,7 @@ const state: CharacterSettingsInterface = {
     echo: "#ffffff",
     // Item Types
     furniture: "#ffffff",
-    container: "#ffffff",
-    worn_container: "#ffffff",
+    equipment: "#ffffff",
     weapon: "#ffffff",
     armor: "#ffffff",
     gem: "#ffffff",
@@ -256,7 +254,7 @@ const state: CharacterSettingsInterface = {
     ammunition: "#ffffff",
     shield: "#ffffff",
     clothing: "#ffffff",
-    scenery: "#ffffff",
+    misc: "#ffffff",
     // Link Types
     portal: "#73A6E8",
     closable: "#E8B773",

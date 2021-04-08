@@ -438,17 +438,10 @@ defmodule Mud.Engine.Area do
       |> Enum.filter(&(&1.flags.hidden != true))
       |> CallbackUtil.sort_items(true)
 
-    # grouped_toi = Enum.group_by(things_of_interest, fn item -> item.location.on_ground end)
-
     if things_of_interest == [] do
       story_output
     else
       story_output = Message.append_text(story_output, "Things of Interest: ", "toi_label")
-
-      # root_items = grouped_toi[true] || []
-      # nested_items = grouped_toi[false] || []
-      # child_index = ItemUtil.build_child_index(nested_items)
-      # item_index = ItemUtil.build_item_index(things_of_interest)
 
       things_of_interest
       |> Enum.reduce(

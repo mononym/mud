@@ -11,7 +11,7 @@
   export let saveItemCallback = saveItem;
 
   $: disableArmorCheckbox =
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -33,12 +33,11 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
-    $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.weapon;
 
   $: disableCoinCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
@@ -51,7 +50,7 @@
 
   $: disableEquipmentCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.furniture ||
     $itemUnderConstruction.flags.gem ||
@@ -64,7 +63,7 @@
 
   $: disableFurnitureCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.gem ||
@@ -77,7 +76,7 @@
 
   $: disableGemCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -91,7 +90,7 @@
 
   $: disableInstrumentCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -104,7 +103,7 @@
 
   $: disableJewelryCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -117,7 +116,7 @@
 
   $: disableMaterialCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -132,7 +131,7 @@
 
   $: disableShieldCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -145,7 +144,7 @@
 
   $: disableWeaponCheckbox =
     $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.clothing ||
+    $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
     $itemUnderConstruction.flags.furniture ||
@@ -275,10 +274,8 @@
     tippy("[data-tippy-content]");
   });
 
-  let customizeLongDescriptionInput;
-
   function onChangeCustomizeLongDescription(event) {
-    if (!customizeLongDescriptionInput.checked) {
+    if (!customizeLongDescription) {
       $itemUnderConstruction.description.long =
         $itemUnderConstruction.description.short;
     }
@@ -318,6 +315,7 @@
           >
           <input
             bind:value={$itemUnderConstruction.description.short}
+            on:keydown={onChangeCustomizeLongDescription}
             type="textarea"
             name="itemShortDescription"
             id="itemShortDescription"
@@ -333,8 +331,6 @@
           >
           <input
             bind:checked={customizeLongDescription}
-            on:change={onChangeCustomizeLongDescription}
-            bind:this={customizeLongDescriptionInput}
             type="checkbox"
             name="customizeLongDescription"
             id="customizeLongDescription"
@@ -370,20 +366,20 @@
             id="isArmor"
             disabled={disableArmorCheckbox}
           />
-        </div>
+        </div> -->
         <div class="col-span-1">
           <label
             for="isClothing"
             class="block text-sm font-medium text-gray-300">Clothing</label
           >
           <input
-            bind:checked={$itemUnderConstruction.flags.clothing}
+            bind:checked={$itemUnderConstruction.flags.is_clothing}
             type="checkbox"
             name="isClothing"
             id="isClothing"
             disabled={disableClothingCheckbox}
           />
-        </div> -->
+        </div>
         <div class="col-span-1">
           <label for="isCoin" class="block text-sm font-medium text-gray-300"
             >Coin</label
@@ -501,9 +497,7 @@
           />
         </div> -->
         <div class="col-span-12">
-          <h2 class="text-gray-300 font-bold">
-            Behavior Modifiers:
-          </h2>
+          <h2 class="text-gray-300 font-bold">Behavior Modifiers:</h2>
         </div>
         <div
           class="col-span-1"
@@ -566,8 +560,9 @@
           class="col-span-1"
           data-tippy-content="Items which have a physical presence need to have their dimensions/weight configured."
         >
-          <label for="hasPhysics" class="block text-sm font-medium text-gray-300"
-            >Has Physics</label
+          <label
+            for="hasPhysics"
+            class="block text-sm font-medium text-gray-300">Has Physics</label
           >
           <input
             bind:checked={$itemUnderConstruction.flags.has_physics}
@@ -1197,6 +1192,9 @@
               name="wearableSlot"
               class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
+              {#if $itemUnderConstruction.wearable.slot == null}
+                <option value="" disabled selected>Select a Slot</option>
+              {/if}
               <option value="on_back">On Back</option>
               <option value="around_waist">Around Waist (like belt)</option>
               <option value="on_belt"

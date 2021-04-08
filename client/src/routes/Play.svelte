@@ -22,6 +22,7 @@
 
   export let params = {};
   let presetHotkeyCallbacks = {};
+  const windows = {};
 
   // Set up the store to be used by everyone
   const state = createState();
@@ -34,7 +35,6 @@
     view,
     currentArea,
     currentMap,
-    windowVisibility,
   } = state;
 
   $: $selectedCharacter.settings.presetHotkeys, generatePresetHotkeyCallbacks();
@@ -57,6 +57,15 @@
     zoom_map_in: () => state.zoom_map_in(),
     select_cli: () => document.getElementById("cli").focus(),
   };
+
+  function handleWindowVisibilityToggleEvent(event) {
+    console.log("handleWindowVisibilityToggleEvent");
+    console.log(event);
+    console.log(windows);
+
+    console.log(windows[event.detail]);
+    windows[event.detail].toggleVisibility();
+  }
 
   function generatePresetHotkeyCallbacks() {
     const hotkeys = $selectedCharacter.settings.presetHotkeys;
@@ -316,7 +325,7 @@
       </h2>
     </div>
   {:else if $characterInitialized}
-    <MainTabBar />
+    <MainTabBar on:toggleWindowVisibility={handleWindowVisibilityToggleEvent} />
     <div
       bind:this={canvas}
       hidden={$view != "play"}
@@ -356,7 +365,7 @@
         bind:initialX={startingMapX}
         bind:initialY={startingMapY}
         zIndex="3"
-        visible={$windowVisibility.map}
+        bind:this={windows["map"]}
       >
         <MapWindow />
       </LayoutItemWrapper>
@@ -368,7 +377,7 @@
         bind:initialX={startingInventoryX}
         bind:initialY={startingInventoryY}
         zIndex="4"
-        visible={$windowVisibility.inventory}
+        bind:this={windows["inventory"]}
       >
         <InventoryWindow />
       </LayoutItemWrapper>
@@ -380,7 +389,7 @@
         bind:initialX={startingAreaX}
         bind:initialY={startingAreaY}
         zIndex="8"
-        visible={$windowVisibility.area}
+        bind:this={windows["area"]}
       >
         <AreaWindow />
       </LayoutItemWrapper>
@@ -392,7 +401,7 @@
         bind:initialX={startingCompassX}
         bind:initialY={startingCompassY}
         zIndex="6"
-        visible={$windowVisibility.compass}
+        bind:this={windows["compass"]}
       >
         <CompassWindow />
       </LayoutItemWrapper>
@@ -404,7 +413,7 @@
         bind:initialX={startingEnvironmentInfoX}
         bind:initialY={startingEnvironmentInfoY}
         zIndex="7"
-        visible={$windowVisibility.environment}
+        bind:this={windows["environment"]}
       >
         <EnvironmentInfoWindow />
       </LayoutItemWrapper>
@@ -416,7 +425,7 @@
         bind:initialX={startingStatusX}
         bind:initialY={startingStatusY}
         zIndex="5"
-        visible={$windowVisibility.status}
+        bind:this={windows["status"]}
       >
         <CharacterStatusWindow />
       </LayoutItemWrapper>

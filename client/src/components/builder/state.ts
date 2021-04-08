@@ -409,6 +409,11 @@ export function createWorldBuilderStore() {
     let res: TemplateInterface;
 
     if (isNew) {
+      if (template.template.description.long == "") {
+        template.template.description.long =
+          template.template.description.short;
+      }
+
       res = (await createTemplate(template)).data;
     } else {
       res = (await updateTemplate(template.id, template)).data;
@@ -480,8 +485,8 @@ export function createWorldBuilderStore() {
   }
 
   async function editTemplate(template: TemplateInterface) {
-    templateUnderConstruction.set(template);
-    selectedTemplate.set(template);
+    templateUnderConstruction.set({ ...template });
+    selectedTemplate.set({ ...template });
     templateview.set("edit");
   }
 

@@ -487,20 +487,23 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <!-- <div class="col-span-2">
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Equipment names in both the Story Window and the Area Window."
+      >
         <label
-          for="ammoTextColor"
+          for="equipmentTextColor"
           class="block text-sm font-medium text-gray-300"
-          >Ammunition Text Color</label
+          >Equipment Text Color</label
         >
         <input
-          bind:value={$characterSettings.colors.ammunition}
+          bind:value={$characterSettings.colors.equipment}
           type="color"
-          name="ammoTextColor"
-          id="ammoTextColor"
+          name="equipmentTextColor"
+          id="equipmentTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div> -->
+      </div>
       <div
         class="col-span-2"
         data-tippy-content="The color of Clothing names in both the Story Window and the Area Window."
@@ -518,20 +521,20 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
-      <!-- <div class="col-span-2">
+      <div class="col-span-2">
         <label
-          for="sceneryTextColor"
+          for="miscTextColor"
           class="block text-sm font-medium text-gray-300"
-          >Scenery Text Color</label
+          >Misc. Items which don't fit into other categories</label
         >
         <input
-          bind:value={$characterSettings.colors.scenery}
+          bind:value={$characterSettings.colors.misc}
           type="color"
-          name="sceneryTextColor"
-          id="sceneryTextColor"
+          name="miscTextColor"
+          id="miscTextColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
-      </div> -->
+      </div>
       <div
         class="col-span-2"
         data-tippy-content="The color of Coin names in both the Story Window and the Area Window."
@@ -778,7 +781,7 @@
       </div>
       <div
         class="col-span-4"
-        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+        data-tippy-content="This controls whether or not the Things of Interest are expanded when moving between areas. Open always opens them, Close always closes them, and Manual leaves them how you last left them. The threshold variants automatically collapse when a threshold number of items has been met."
       >
         <label
           for="toiExpansionMode"
@@ -831,7 +834,7 @@
       </div>
       <div
         class="col-span-4"
-        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+        data-tippy-content="This controls whether or not the On Ground items are expanded when moving between areas. Open always opens them, Close always closes them, and Manual leaves them how you last left them. The threshold variants automatically collapse when a threshold number of items has been met."
       >
         <label
           for="onGroundExpansionMode"
@@ -886,7 +889,7 @@
       </div>
       <div
         class="col-span-4"
-        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+        data-tippy-content="This controls whether or not the Also Present list of characters is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of characters has been met."
       >
         <label
           for="alsoPresentExpansionMode"
@@ -939,7 +942,7 @@
       </div>
       <div
         class="col-span-4"
-        data-tippy-content="This controls whether or not the Area Description is expanded when moving between areas. Open always opens it, Close always closes it, and Manual leaves it how you last left it. The threshold variants automatically collapse when a threshold number of items has been met."
+        data-tippy-content="This controls whether or not the Exits are expanded when moving between areas. Open always opens them, Close always closes them, and Manual leaves them how you last left them. The threshold variants automatically collapse when a threshold number of exits has been met."
       >
         <label
           for="exitsExpansionMode"

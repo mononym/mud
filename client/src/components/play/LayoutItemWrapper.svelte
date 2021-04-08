@@ -19,7 +19,7 @@
   export let id;
   export let label = "";
   export let zIndex = 1;
-  export let visible = true;
+  let visible = true;
 
   let localX = "0";
   let localY = "0";
@@ -27,6 +27,12 @@
   let localWidth = 400;
   let localIsLocked = true;
   let localZIndex = 1;
+  let localVisible = true;
+
+  export function toggleVisibility() {
+    localVisible = !localVisible;
+    saveData();
+  }
 
   onMount(() => {
     // if (!initialized) {
@@ -43,8 +49,9 @@
           layoutItemWrapper.style.top = `${data.y}px`;
           localHeight = data.height;
           localWidth = data.width;
-          localIsLocked = data.locked || true;
+          localIsLocked = data.locked != undefined ? data.locked : locked;
           localZIndex = data.zIndex || zIndex;
+          localVisible = data.visible != undefined ? data.visible : visible;
         });
       } else {
         localX = initialX;
@@ -53,8 +60,9 @@
         layoutItemWrapper.style.top = `${initialY}px`;
         localHeight = initialHeight;
         localWidth = initialWidth;
-        localIsLocked = locked || true;
+        localIsLocked = locked;
         localZIndex = zIndex;
+        localVisible = visible;
       }
 
       interactable(layoutItemWrapper);
@@ -70,36 +78,55 @@
   });
 
   function saveData() {
-    if (
-      layoutItemWrapper.clientWidth == 0 ||
-      layoutItemWrapper.clientHeight == 0
-    ) {
+    if (layoutItemWrapper == null) {
       return;
     }
+    console.log("saveData");
+    console.log(layoutItemWrapper.dataset);
+    console.log(layoutItemWrapper.dataset || "0");
 
     const x = Math.max(
-      parseInt(localX) + parseInt(layoutItemWrapper.dataset.x),
+      parseInt(localX) + parseInt(layoutItemWrapper.dataset.x || "0"),
       0
     );
     const y = Math.max(
-      parseInt(localY) + parseInt(layoutItemWrapper.dataset.y),
+      parseInt(localY) + parseInt(layoutItemWrapper.dataset.y || "0"),
       0
     );
 
-    storage.set(
-      `${$selectedCharacter.name}-${id}`,
-      {
-        width: layoutItemWrapper.offsetWidth,
-        height: layoutItemWrapper.offsetHeight,
-        x: x.toString(),
-        y: y.toString(),
-        locked: localIsLocked,
-        zIndex: localZIndex,
-      },
-      function (error) {
-        if (error) throw error;
-      }
-    );
+    const data = {
+      x: x.toString(),
+      y: y.toString(),
+      locked: localIsLocked,
+      zIndex: localZIndex,
+      visible: localVisible,
+    };
+
+    if (
+      layoutItemWrapper.clientWidth != 0 &&
+      layoutItemWrapper.clientHeight != 0
+    ) {
+      data.width = layoutItemWrapper.offsetWidth;
+      data.height = layoutItemWrapper.offsetHeight;
+    } else {
+      data.width = localWidth;
+      data.height = localHeight;
+    }
+
+    console.log(x);
+    console.log(y);
+
+    // if (x != 0 && y != 0) {
+    //   data.x = x.toString();
+    //   data.y = y.toString();
+    // } else {
+    //   data.x = localX;
+    //   data.y = localY;
+    // }
+
+    storage.set(`${$selectedCharacter.name}-${id}`, data, function (error) {
+      if (error) throw error;
+    });
   }
 
   function toggleLocked() {
@@ -132,8 +159,9 @@
 <div
   bind:this={layoutItemWrapper}
   class="layoutItemWrapper flex flex-col absolute bg-gray-700"
-  style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px;z-index:{localZIndex}"
-  hidden={!visible}
+  style="height:{localHeight}px;width:{localWidth}px;touch-action:none;border-width:1px;z-index:{localZIndex};visibility:{localVisible
+    ? 'visible'
+    : 'hidden'}"
 >
   <div
     style="background-color:{$selectedCharacter.settings.colors

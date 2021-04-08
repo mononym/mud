@@ -5,6 +5,8 @@
   import { push } from "svelte-spa-router";
   import { getContext } from "svelte";
   import { key } from "./state";
+  import { setContext, createEventDispatcher } from "svelte";
+  const dispatch = createEventDispatcher();
 
   const state = getContext(key);
   const {
@@ -35,8 +37,28 @@
     windowDropdownMenuOpen = true;
   }
 
-  function toggleWindowVisibility(key) {
-    setWindowVisibility($windowVisibility[key]);
+  function toggleMapVisibility() {
+    dispatch("toggleWindowVisibility", "map");
+  }
+
+  function toggleAreaVisibility() {
+    dispatch("toggleWindowVisibility", "area");
+  }
+
+  function toggleCompassVisibility() {
+    dispatch("toggleWindowVisibility", "compass");
+  }
+
+  function toggleStatusVisibility() {
+    dispatch("toggleWindowVisibility", "status");
+  }
+
+  function toggleEnvironmentVisibility() {
+    dispatch("toggleWindowVisibility", "environment");
+  }
+
+  function toggleInventoryVisibility() {
+    dispatch("toggleWindowVisibility", "inventory");
   }
 
   function clickOutside(node, { enabled: initialEnabled, cb }) {
@@ -131,21 +153,40 @@
               aria-labelledby="window-menu"
             >
               <button
-                on:click={toggleWindowVisibility("map")}
+                on:click={toggleAreaVisibility}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Area</button
+              >
+              <button
+                on:click={toggleCompassVisibility}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Compass</button
+              >
+              <button
+                on:click={toggleEnvironmentVisibility}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Environment</button
+              >
+              <button
+                on:click={toggleInventoryVisibility}
+                class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
+                role="menuitem">Toggle Inventory</button
+              >
+              <button
+                on:click={toggleMapVisibility}
                 class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
                 role="menuitem">Toggle Map</button
               >
-
               <button
-                on:click={logout}
+                on:click={toggleStatusVisibility}
                 class="block py-2 text-sm text-gray-700 hover:bg-gray-100 w-full"
-                role="menuitem">Toggle Inventory</button
+                role="menuitem">Toggle Status</button
               >
             </div>
           </div>
 
           <button
-            class="bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+            class="ml-3 bg-gray-800 p-1 rounded-full text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
           >
             <span class="sr-only">View notifications</span>
             <!-- Heroicon name: bell -->

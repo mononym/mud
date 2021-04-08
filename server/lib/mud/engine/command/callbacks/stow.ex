@@ -673,7 +673,7 @@ defmodule Mud.Engine.Command.Stow do
         %{armor: true} ->
           containers.armor_id
 
-        %{clothing: true} ->
+        %{is_clothing: true} ->
           containers.clothing_id
 
         %{gem: true} ->

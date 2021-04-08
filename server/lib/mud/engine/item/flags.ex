@@ -24,7 +24,7 @@ defmodule Mud.Engine.Item.Flags do
              :trash,
              :wear,
              :armor,
-             :clothing,
+             :is_clothing,
              :furniture,
              :gem_pouch,
              :instrument,
@@ -77,12 +77,12 @@ defmodule Mud.Engine.Item.Flags do
     # What an item is
     #
     field(:armor, :boolean, default: false)
-    field(:clothing, :boolean, default: false)
     field(:coin, :boolean, default: false)
 
     # While clothing is functional and worn, and equipment is functional and some of it is worn, the difference is that
     # clothes are primarily for covering the body while equipment has functions that serve a different purpose, even
     # if worn. Armor is a thing on its own.
+    field(:is_clothing, :boolean, default: false)
     field(:is_equipment, :boolean, default: false)
 
     # This doesn't actually say what types of surfaces or interactions the specific piece of furniture might have.
@@ -135,7 +135,7 @@ defmodule Mud.Engine.Item.Flags do
       # What an item is
       #
       :armor,
-      :clothing,
+      :is_clothing,
       :coin,
       :furniture,
       :gem,

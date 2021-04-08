@@ -89,17 +89,19 @@ export function buildRecordFromHotkeyString(hotkeyString) {
 }
 
 export function getItemColor(colors, item) {
-  if (item.flags.wearable && item.flags.has_pocket) {
-    return colors.worn_container;
-  } else if (item.flags.has_pocket) {
-    return colors.container;
+  console.log("getItemColor");
+  console.log(item);
+  if (item.flags.is_clothing) {
+    return colors.clothing;
+  } else if (item.flags.coin) {
+    return colors.coin;
+  } else if (item.flags.is_equipment) {
+    return colors.equipment;
   } else if (item.flags.furniture) {
     return colors.furniture;
-  } else if (item.flags.scenery) {
-    return colors.scenery;
   } else if (item.flags.gem) {
     return colors.gem;
   } else {
-    return colors.base;
+    return colors.misc;
   }
 }
