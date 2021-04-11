@@ -35,6 +35,11 @@
   });
 </script>
 
+<svelte:head>
+  <!-- elements go here -->
+  <title>Mudtopia</title>
+</svelte:head>
+
 <div class="h-full w-full flex flex-col overflow-hidden">
   <MainNavBar />
   {#if $loading}

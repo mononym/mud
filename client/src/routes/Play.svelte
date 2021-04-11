@@ -15,6 +15,7 @@
   import CompassWindow from "../components/play/CompassWindow.svelte";
   import EnvironmentInfoWindow from "../components/play/EnvironmentInfoWindow.svelte";
   import CharacterStatusWindow from "../components/play/CharacterStatusWindow.svelte";
+  import AudioPlayer from "../components/play/AudioPlayer.svelte";
   import MainTabBar from "../components/play/MainTabBar.svelte";
   import Settings from "../components/play/Settings.svelte";
   import { buildHotkeyStringFromEvent } from "../utils/utils";
@@ -29,6 +30,7 @@
   setContext(key, state);
 
   const {
+    AudioStore,
     characterInitialized,
     characterInitializing,
     selectedCharacter,
@@ -312,6 +314,11 @@
   });
 </script>
 
+<svelte:head>
+  <!-- elements go here -->
+  <title>{$selectedCharacter.name}</title>
+</svelte:head>
+
 <div
   bind:this={wrapper}
   class="h-full w-full flex flex-col overflow-hidden bg-gray-900"
@@ -348,7 +355,7 @@
       </LayoutItemWrapper>
       <LayoutItemWrapper
         id="storyWindowWrapper"
-        label="Main Story"
+        label="{$selectedCharacter.name}'s Story"
         bind:initialHeight={startingStoryHeight}
         bind:initialWidth={startingStoryWidth}
         bind:initialX={startingStoryX}
@@ -433,5 +440,6 @@
     {#if $view == "settings"}
       <Settings />
     {/if}
+    <AudioPlayer store={AudioStore} />
   {/if}
 </div>

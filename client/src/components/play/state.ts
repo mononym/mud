@@ -18,6 +18,7 @@ import AreaState from "../../models/area";
 import type { LinkInterface } from "../../models/link";
 import type { ShopInterface } from "../../models/shop";
 import { AreaWindowStore } from "../../stores/area_window";
+import { AudioStore } from "../../stores/audioPlayer";
 
 export const key = {};
 
@@ -44,6 +45,16 @@ export function createState() {
       characterSettings.set(newSettings);
 
       settingsView.set("general");
+    }
+  }
+
+  async function selectSettingsAudioView() {
+    if (get(settingsView) != "audio") {
+      const settings = get(selectedCharacter).settings;
+      const newSettings = _.cloneDeep(settings);
+      characterSettings.set(newSettings);
+
+      settingsView.set("audio");
     }
   }
 
@@ -135,7 +146,7 @@ export function createState() {
 
       characterSettings.set(_.cloneDeep(res));
 
-      selectPlayView();
+      // selectPlayView();
 
       return true;
     } catch (e) {
@@ -298,38 +309,24 @@ export function createState() {
 
     exploredAreas.set(res.mapData.exploredAreas);
 
-    console.log("knownMapsList");
-    console.log(res.maps);
     knownMapsList.set(res.maps);
     const newMapsIndex = res.maps.reduce(
       (obj, map) => ((obj[map.id] = map), obj),
       {}
     );
     knownMapsIndex.set(newMapsIndex);
-
-    console.log("knownAreasForCharacterMap");
-    console.log(res.mapData.areas);
     resetMapData(res.mapData);
 
     setupInventory(res.inventory);
 
     characterSettings.set(_.cloneDeep(character.settings));
 
+    AudioStore.updateMusicVolume(
+      (character.settings.audio.music_volume / 100).toFixed(2)
+    );
+
     characterInitializing.set(false);
     characterInitialized.set(true);
-    console.log("selectedCharacter");
-    console.log(get(selectedCharacter));
-    console.log(get(knownAreasForCharacterMapIndex));
-    console.log(get(selectedCharacter)["areaId"]);
-    console.log(
-      get(knownAreasForCharacterMapIndex)[get(selectedCharacter)["areaId"]]
-    );
-    console.log(
-      knownMapsIndex[
-        get(knownAreasForCharacterMapIndex)[get(selectedCharacter).areaId].mapId
-      ]
-    );
-    console.log(get(selectedCharacter).areaId);
 
     // loadClientState(get(selectedCharacter).name);
   }
@@ -1054,6 +1051,7 @@ export function createState() {
     selectSettingsHotkeysView,
     selectSettingsGeneralView,
     selectSettingsCommandsView,
+    selectSettingsAudioView,
     //
     // Map stuff
     //
@@ -1134,6 +1132,10 @@ export function createState() {
     maxHistoryWindowMessagesCount,
     echoCommands,
     echoInterface,
+    //
+    // Audio setup
+    //
+    AudioStore,
   };
 }
 

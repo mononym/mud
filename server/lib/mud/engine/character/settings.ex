@@ -12,6 +12,16 @@ defmodule Mud.Engine.Character.Settings do
     @derive Jason.Encoder
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
 
+    embeds_one :audio, Audio, on_replace: :delete do
+      @derive Jason.Encoder
+      field(:music_volume, :integer, default: 30)
+      field(:ambiance_volume, :integer, default: 50)
+      field(:sound_effect_volume, :integer, default: 60)
+      field(:play_music, :boolean, default: true)
+      field(:play_ambiance, :boolean, default: true)
+      field(:play_sound_effects, :boolean, default: true)
+    end
+
     embeds_one :commands, Commands, on_replace: :delete do
       @derive Jason.Encoder
       field(:search_mode, :string, default: "simple")
@@ -198,6 +208,7 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:area_window, with: &area_window_changeset/2)
     |> cast_embed(:commands, with: &commands_changeset/2)
     |> cast_embed(:map_window, with: &map_window_changeset/2)
+    |> cast_embed(:audio, with: &audio_changeset/2)
   end
 
   defp colors_changeset(schema, params) do
@@ -332,6 +343,20 @@ defmodule Mud.Engine.Character.Settings do
       :enabled_quick_action_color,
       :disabled_quick_action_color,
       :show_quick_actions
+    ])
+    |> validate_required([])
+  end
+
+  defp audio_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :music_volume,
+      :ambiance_volume,
+      :sound_effect_volume,
+      :play_music,
+      :play_ambiance,
+      :play_sound_effects
     ])
     |> validate_required([])
   end
@@ -568,6 +593,7 @@ defmodule Mud.Engine.Character.Settings do
     attrs = insert_default_inventory_window_settings(attrs)
     attrs = insert_default_map_window_settings(attrs)
     attrs = insert_default_commands_settings(attrs)
+    attrs = Map.put(attrs, :audio, %{})
 
     Logger.debug(inspect(attrs))
 

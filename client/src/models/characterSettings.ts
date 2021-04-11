@@ -55,6 +55,15 @@ export interface CharacterSettingsInterface {
     window_move_unlocked: string;
     window_move_locked: string;
   };
+  audio: {
+    id: string;
+    music_volume: number;
+    ambiance_volume: number;
+    sound_effect_volume: number;
+    play_music: boolean;
+    play_ambiance: boolean;
+    play_sound_effects: boolean;
+  };
   mapWindow: {
     id: string;
     unexplored_link_color: string;
@@ -146,6 +155,15 @@ export interface CharacterSettingsInterface {
 
 const state: CharacterSettingsInterface = {
   id: "",
+  audio: {
+    id: "",
+    music_volume: 40,
+    ambiance_volume: 50,
+    sound_effect_volume: 60,
+    play_music: true,
+    play_ambiance: true,
+    play_sound_effects: true,
+  },
   areaWindow: {
     id: "",
     background: "#28282D",

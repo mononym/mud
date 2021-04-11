@@ -39,7 +39,7 @@
       document.execCommand("copy");
     }
 
-    document.getElementById("cli").focus()
+    document.getElementById("cli").focus();
   }
 
   // Scrolling the main window upwards should trigger the display of the history window.
@@ -123,7 +123,7 @@
       on:scroll={handleHistoryWindowCurrentViewScrollEvent}
       bind:this={historyStoryWindowDiv}
       id="StoryWindowHistoryView"
-      class="flex flex-col overflow-y-scroll border-b-2 pl-2"
+      class="flex flex-col overflow-y-scroll border-b-2 pl-4 pt-4 pr-4"
       style="height:{$storyWindowView == 'history'
         ? '50%'
         : '100%'};background-color:{$selectedCharacter.settings.colors
@@ -132,12 +132,7 @@
     >
       {#each $historyWindowMessages as message}
         <pre
-          class="whitespace-pre-wrap mb-4">
-        {#each message.segments as segment}
-            <span
-              style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>
-          {/each}
-      </pre>
+          class="whitespace-pre-wrap mb-4">{#each message.segments as segment}<span style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>{/each}</pre>
       {/each}
     </div>
   {:else}
@@ -159,9 +154,7 @@
   >
     {#each $storyWindowMessages as message}
       <pre
-        class="whitespace-pre-wrap mb-4">
-          {#each message.segments as segment}<span
-            style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>{/each}</pre>
+        class="whitespace-pre-wrap mb-4">{#each message.segments as segment}<span style="color:{$selectedCharacter.settings.colors[segment.type]}">{segment.text}</span>{/each}</pre>
     {/each}
   </div>
 </div>

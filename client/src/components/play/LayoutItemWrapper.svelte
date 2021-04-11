@@ -1,5 +1,5 @@
 <script language="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, setContext } from "svelte";
   import interact from "interactjs";
   import { interactable } from "../../utils/interactable";
   const storage = require("electron-json-storage");

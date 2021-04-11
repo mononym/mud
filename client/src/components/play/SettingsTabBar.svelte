@@ -8,6 +8,7 @@
     selectSettingsHotkeysView,
     selectSettingsGeneralView,
     selectSettingsCommandsView,
+    selectSettingsAudioView
   } = state;
 </script>
 
@@ -35,6 +36,14 @@
       'commands'
         ? 'text-white border-primary border-b-2'
         : 'text-gray-300 hover:text-white hover:bg-gray-600'}">Commands</button
+    >
+
+    <button
+      on:click={selectSettingsAudioView}
+      class="px-3 py-2 text-sm font-medium focus:outline-none {$settingsView ==
+      'audio'
+        ? 'text-white border-primary border-b-2'
+        : 'text-gray-300 hover:text-white hover:bg-gray-600'}">Audio</button
     >
   </div>
 </nav>
