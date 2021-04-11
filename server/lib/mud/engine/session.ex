@@ -200,27 +200,6 @@ defmodule Mud.Engine.Session do
     {:noreply, state}
   end
 
-  # def handle_cast(%Mud.Engine.Message.Output{} = output, state) do
-  #   Logger.debug("#{inspect(output)}", label: "session_handle_cast")
-  #   Logger.debug("Subscribers: #{inspect(state.subscribers)}")
-
-  #   state = update_buffer(state, output)
-
-  #   state =
-  #     if map_size(state.subscribers) != 0 do
-  #       Map.values(state.subscribers)
-  #       |> Enum.each(fn subscriber ->
-  #         GenServer.cast(subscriber.pid, {:story_output, [convert_output(output)]})
-  #       end)
-
-  #       state
-  #     else
-  #       %{state | undelivered_text: [output | state.undelivered_text]}
-  #     end
-
-  #   {:noreply, state}
-  # end
-
   @impl true
   def handle_cast(%Mud.Engine.Message.Input{} = input, state) do
     Logger.debug("#{inspect(input)}", label: "session_handle_cast")
@@ -565,13 +544,13 @@ defmodule Mud.Engine.Session do
     # send stuff off to task
     task =
       Task.async(fn ->
-        # if input.type == :normal do
-        #   GenServer.cast(session_pid, %Mud.Engine.Message.Output{
-        #     id: input.id,
-        #     to: input.to,
-        #     text: "<span id=\"#{input.id}-echo\">{{echo}}> #{input.text}{{/echo}}</span>"
-        #   })
-        # end
+        if input.type == :normal do
+          echo_message =
+            Message.new_story_output(input.to)
+            |> Message.append_text("> #{input.text}", "echo")
+
+          GenServer.cast(session_pid, echo_message)
+        end
 
         execution_context =
           Mud.Engine.Command.Executor.execute(%Mud.Engine.Command.Context{

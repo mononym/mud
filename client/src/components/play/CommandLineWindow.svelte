@@ -79,12 +79,6 @@
       commandHistory.unshift(actualInput);
     }
 
-    if ($selectedCharacter.settings.echo.cli_commands_in_story) {
-      appendNewStoryMessage({
-        segments: [{ type: "echo", text: `> ${actualInput}` }],
-      });
-    }
-
     actualInput = "";
   }
 
@@ -121,12 +115,6 @@
 
       $channel.push("cli", { text: commandString });
       commandHistory.unshift(commandString);
-
-      if ($selectedCharacter.settings.echo.hotkey_commands_in_story) {
-        appendNewStoryMessage({
-          segments: [{ type: "echo", text: `> ${commandString}` }],
-        });
-      }
     }
   }
 </script>
