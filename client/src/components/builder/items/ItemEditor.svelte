@@ -176,7 +176,8 @@
     $itemUnderConstruction.flags.material;
 
   $: disableSurfaceCheckbox =
-    !$itemUnderConstruction.flags.furniture && !$itemUnderConstruction.flags.is_equipment
+    !$itemUnderConstruction.flags.furniture &&
+    !$itemUnderConstruction.flags.is_equipment;
 
   $: disableCloseCheckbox = !$itemUnderConstruction.flags.has_pocket;
 
@@ -223,8 +224,6 @@
     $itemUnderConstruction.location.on_ground ||
     $itemUnderConstruction.location.held_in_hand;
 
-  let customizeLongDescription = false;
-
   function handleOtherItemChange() {
     // if other id is blank make sure it the rest of the flags are not set for it to be relative to an item
     // if other item id is not blank make sure flags are set for it to be relative
@@ -269,13 +268,6 @@
   onMount(() => {
     tippy("[data-tippy-content]");
   });
-
-  function onChangeCustomizeLongDescription(event) {
-    if (!customizeLongDescription) {
-      $itemUnderConstruction.description.long =
-        $itemUnderConstruction.description.short;
-    }
-  }
 </script>
 
 <form
@@ -290,7 +282,7 @@
         </div>
         <div
           class="col-span-1"
-          data-tippy-content="The key aids in searching for items, and as such this single word MUST match one of the words in both the short and long description. For example, `a sturdy backpack with red and white piping` would have the key `backpack`."
+          data-tippy-content="The key aids in searching for items, and as such this single word MUST match one of the words in the short description. For example, `a sturdy backpack with red and white piping` would have the key `backpack`."
         >
           <label for="itemKey" class="block text-sm font-medium text-gray-300"
             >Item Key</label
@@ -311,43 +303,25 @@
           >
           <input
             bind:value={$itemUnderConstruction.description.short}
-            on:keydown={onChangeCustomizeLongDescription}
             type="textarea"
             name="itemShortDescription"
             id="itemShortDescription"
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
-
-        <div class="col-span-1">
+        <div class="col-span-8">
           <label
-            for="customizeLongDescription"
-            class="block text-sm font-medium text-gray-300"
-            >Customize Long Description</label
+            for="itemDetails"
+            class="block text-sm font-medium text-gray-300">Item Details</label
           >
           <input
-            bind:checked={customizeLongDescription}
-            type="checkbox"
-            name="customizeLongDescription"
-            id="customizeLongDescription"
+            bind:value={$itemUnderConstruction.description.details}
+            type="textarea"
+            name="itemDetails"
+            id="itemDetails"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
-        {#if customizeLongDescription}
-          <div class="col-span-8">
-            <label
-              for="itemLongDescription"
-              class="block text-sm font-medium text-gray-300"
-              >Item Long Description</label
-            >
-            <input
-              bind:value={$itemUnderConstruction.description.long}
-              type="textarea"
-              name="itemLongDescription"
-              id="itemLongDescription"
-              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
-          </div>
-        {/if}
         <div class="col-span-12">
           <h2 class="text-gray-300 font-bold">Item Type (Pick One):</h2>
         </div>
@@ -901,7 +875,7 @@
             />
           </div>
           {#if $itemUnderConstruction.surface.show_item_contents}
-            <div
+            <!-- <div
               class="col-span-1"
               data-tippy-content="If selected items on the surface will be described using their long description rather than their short."
             >
@@ -917,10 +891,10 @@
                 name="showDetailedItems"
                 id="showDetailedItems"
               />
-            </div>
+            </div> -->
             <div
               class="col-span-2"
-              data-tippy-content="When showing items, as in the case of a table in an area during a 'look' action, this determines how many items to actually show before signaling there is more to see with an explicit 'look on table'. O is unlimited."
+              data-tippy-content="When showing items, as in the case of a table in an area during a 'look' action, this determines how many items to actually show before signaling there is more to see with an explicit 'look on table'. Most items will likely be set to 0, meaning they will simply show up as 'thing which has some stuff on it'."
             >
               <label
                 for="showItemLimit"

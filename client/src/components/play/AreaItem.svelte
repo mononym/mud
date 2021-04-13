@@ -64,7 +64,7 @@
       style="color:{getItemColor(
         $selectedCharacter.settings.colors,
         item
-      )}">{item.description.long}</pre>
+      )}">{item.description.details}</pre>
   {/if}
   {#if ((hasPocket && (!item.flags.is_closable || (item.flags.is_closable && item.closable.open))) || item.flags.has_surface) && $areaItemsParentChildIndex[item.id] != undefined}
     <div class="flex flex-col ml-4">

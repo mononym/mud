@@ -475,7 +475,7 @@ defmodule Mud.Engine.Search do
       %Match{
         match_string: String.downcase(item.description.short),
         short_description: item.description.short,
-        long_description: item.description.long,
+        long_description: item.description.details,
         match: item
       }
     end)

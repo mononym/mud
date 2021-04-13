@@ -208,7 +208,8 @@ defmodule Mud.Engine.Command.Drop do
             self_msg,
             item,
             other_items,
-            context.character.settings.commands.multiple_matches_mode
+            context.character.settings.commands.multiple_matches_mode,
+            context.character
           )
         else
           self_msg
@@ -225,7 +226,10 @@ defmodule Mud.Engine.Command.Drop do
       )
       |> Context.append_event(
         [context.character_id | others],
-        UpdateArea.new(%{action: :add, items: [item]})
+        UpdateArea.new(%{
+          action: :add,
+          items: Item.list_all_recursive_surface_children(original_item)
+        })
       )
     else
       Util.dave_error_v2(context)

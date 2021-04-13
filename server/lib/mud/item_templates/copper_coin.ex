@@ -3,7 +3,7 @@ defmodule Mud.Engine.ItemTemplate.CopperCoin do
     %{
       description: %{
         short: Mud.Engine.Util.describe_coin("copper", count),
-        long: Mud.Engine.Util.describe_coin("copper", count)
+        details: Mud.Engine.Util.describe_coin("copper", count)
       },
       flags: %{
         coin: true,

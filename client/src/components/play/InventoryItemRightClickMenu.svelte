@@ -57,12 +57,12 @@
 
   function copyShort(item) {
     console.log(item);
-    navigator.clipboard.writeText(item.shortDescription);
+    navigator.clipboard.writeText(item.description.short);
   }
 
-  function copyLong(item) {
+  function copyDetails(item) {
     console.log(item);
-    navigator.clipboard.writeText(item.longDescription);
+    navigator.clipboard.writeText(item.description.details);
   }
 
   function closeContainer(item) {
@@ -140,13 +140,13 @@
     <MenuDivider />
     <MenuOption
       on:click={copyShort(item)}
-      enabledTooltip="Copy the short description to the clipboard"
-      text="copy short description"
+      enabledTooltip="Copy the item description to the clipboard"
+      text="copy description"
     />
     <MenuOption
-      on:click={copyLong(item)}
-      enabledTooltip="Copy the long description to the clipboard"
-      text="copy long description"
+      on:click={copyDetails(item)}
+      enabledTooltip="Copy the item details to the clipboard"
+      text="copy details"
     />
   </Menu>
 {/if}

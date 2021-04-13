@@ -507,6 +507,11 @@ defmodule Mud.Engine.Command.Put do
 
     all_items_to_update = Item.list_all_recursive_children(item)
 
+    filtered_items =
+      Enum.filter(all_items_to_update, fn it ->
+        it.location.relation == "on" and it.id != original_item.id
+      end)
+
     # check to see whether the update needs to go to only inventory or the area too
     context =
       if destination_in_area do
@@ -517,7 +522,7 @@ defmodule Mud.Engine.Command.Put do
         )
         |> Context.append_event(
           [context.character_id | others],
-          UpdateArea.new(%{action: :add, items: [item]})
+          UpdateArea.new(%{action: :add, items: [item | filtered_items]})
         )
       else
         Context.append_event(

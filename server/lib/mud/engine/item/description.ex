@@ -11,7 +11,7 @@ defmodule Mud.Engine.Item.Description do
            only: [
              :id,
              :short,
-             :long,
+             :details,
              :key,
              :item_id
            ]}
@@ -19,7 +19,7 @@ defmodule Mud.Engine.Item.Description do
   schema "item_descriptions" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
     field(:short, :string, required: true)
-    field(:long, :string, required: true)
+    field(:details, :string, required: true, default: "There is nothing unusual to see.")
     field(:key, :string, required: true)
   end
 
@@ -29,7 +29,7 @@ defmodule Mud.Engine.Item.Description do
     |> change()
     |> cast(attrs, [
       :item_id,
-      :long,
+      :details,
       :short,
       :key
     ])

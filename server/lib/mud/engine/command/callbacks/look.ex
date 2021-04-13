@@ -244,7 +244,7 @@ defmodule Mud.Engine.Command.Look do
               context.character.id
               |> Message.new_story_output()
               |> Message.append_text(
-                Util.upcase_first(item.description.long),
+                Util.upcase_first(item.description.details),
                 Mud.Engine.Util.get_item_type(item)
               )
 
@@ -282,10 +282,7 @@ defmodule Mud.Engine.Command.Look do
                 self_msg =
                   Enum.reduce(items, self_msg, fn itm, msg ->
                     msg
-                    |> Message.append_text(
-                      itm.description.short,
-                      Mud.Engine.Util.get_item_type(itm)
-                    )
+                    |> ItemUtil.build_item_description(itm)
                     |> Message.append_text(
                       "; ",
                       "base"
@@ -297,7 +294,10 @@ defmodule Mud.Engine.Command.Look do
                 Context.append_message(context, self_msg)
                 |> Context.append_event(
                   context.character_id,
-                  UpdateArea.new(%{action: :add, items: items})
+                  UpdateArea.new(%{
+                    action: :add,
+                    items: Item.list_all_recursive_surface_children(items)
+                  })
                 )
             end
 
@@ -345,7 +345,10 @@ defmodule Mud.Engine.Command.Look do
                 Context.append_message(context, self_msg)
                 |> Context.append_event(
                   context.character_id,
-                  UpdateArea.new(%{action: :add, items: items})
+                  UpdateArea.new(%{
+                    action: :add,
+                    items: Item.list_all_recursive_surface_children(items)
+                  })
                 )
             end
 

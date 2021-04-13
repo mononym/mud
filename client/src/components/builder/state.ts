@@ -409,11 +409,6 @@ export function createWorldBuilderStore() {
     let res: TemplateInterface;
 
     if (isNew) {
-      if (template.template.description.long == "") {
-        template.template.description.long =
-          template.template.description.short;
-      }
-
       res = (await createTemplate(template)).data;
     } else {
       res = (await updateTemplate(template.id, template)).data;
@@ -827,10 +822,6 @@ export function createWorldBuilderStore() {
     itemUnderConstruction.update(function (item) {
       if (item.location.on_ground == true) {
         item.location.area_id = get(selectedArea).id;
-      }
-
-      if (item.description.long == "") {
-        item.description.long = item.description.short;
       }
 
       return item;

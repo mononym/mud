@@ -177,13 +177,13 @@ defmodule Mud.Engine.Item do
       Map.has_key?(purged_attrs[:flags], :gem) and purged_attrs[:flags][:gem] ->
         Map.put(purged_attrs, :description, %{
           short: Gem.generate_short_description(purged_attrs.gem),
-          long: Gem.generate_short_description(purged_attrs.gem)
+          details: Gem.generate_short_description(purged_attrs.gem)
         })
 
       Map.has_key?(purged_attrs[:flags], :coin) and purged_attrs[:flags][:coin] ->
         Map.put(purged_attrs, :description, %{
           short: "some coins",
-          long: "some coins"
+          details: "some coins"
         })
 
       true ->
@@ -1344,7 +1344,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location] in base_query_for_description_and_location(),
       where:
         description.item_id in subquery(base_query_for_all_area_item_ids(area_id)) and
-          (like(description.short, ^search_string) or like(description.long, ^search_string)),
+          like(description.short, ^search_string),
       order_by: [desc: location.moved_at]
     )
   end

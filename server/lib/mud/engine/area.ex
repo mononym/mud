@@ -474,7 +474,7 @@ defmodule Mud.Engine.Area do
         story_output,
         fn item, message ->
           message
-          |> Message.append_text(item.description.short, Engine.Util.get_item_type(item))
+          |> ItemUtil.build_item_description(item)
           |> Message.append_text("; ", "base")
         end
       )

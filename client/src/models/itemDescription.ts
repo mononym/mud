@@ -2,7 +2,7 @@ export interface ItemDescriptionInterface {
   id: string;
   item_id: string;
   short: string;
-  long: string;
+  details: string;
   key: string;
 }
 
@@ -10,7 +10,7 @@ const state: ItemDescriptionInterface = {
   id: "",
   item_id: "",
   short: "",
-  long: "",
+  details: "There is nothing unusual to see.",
   key: "",
 };
 

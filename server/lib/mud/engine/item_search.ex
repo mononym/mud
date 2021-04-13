@@ -580,7 +580,7 @@ defmodule Mud.Engine.ItemSearch do
   defp modify_query_search_descriptions(query, search_string) do
     key_string =
       String.split(search_string, "%", trim: true)
-      |> Enum.map(&".*#{&1}.*")
+      |> Stream.map(&".*#{&1}.*")
       |> Enum.join("|")
 
     key_regex = "^(#{key_string})$"
@@ -588,8 +588,7 @@ defmodule Mud.Engine.ItemSearch do
     from(
       [description: description] in query,
       where:
-        (like(description.short, ^search_string) or
-           (like(description.short, ^search_string) and like(description.long, ^search_string))) and
+        like(description.short, ^search_string) and
           fragment("? ~* ?", description.key, ^key_regex)
     )
   end

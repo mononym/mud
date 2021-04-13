@@ -48,7 +48,7 @@
           scope="col"
           class="px-4 py-3 bg-gray-800 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
         >
-          Long Description
+          Details
         </th>
         <th
           scope="col"
@@ -75,7 +75,7 @@
             <p class="text-sm text-gray-100">{item.description.short}</p>
           </td>
           <td class="px-4 py-4">
-            <p class="text-sm text-gray-100">{item.description.long}</p>
+            <p class="text-sm text-gray-100">{item.description.details}</p>
           </td>
           <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
             <button

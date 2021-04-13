@@ -2049,7 +2049,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "rock",
     short: "a flat rounded rock",
-    long: "This rock has been worn down over time by water into a smooth, flat round shape."
+    details: "This rock has been worn down over time by water into a smooth, flat round shape."
   },
   flags: %{
     drop: true,
@@ -2069,7 +2069,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "rock",
     short: "a rough rounded rock",
-    long:
+    details:
       "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
   },
   flags: %{
@@ -2090,7 +2090,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "branch",
     short: "a leafy branch",
-    long:
+    details:
       "The leafy branch has only recently been removed from its tree, the leaves not yet wilted."
   },
   flags: %{
@@ -2112,7 +2112,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "fountain",
     short: "a massive fountain",
-    long:
+    details:
       "Clean cool water erupts in perfect arcs from the mouths of half a dozen merfolk. Each statue was made from a single block of marble, making each a marvel unto itself."
   },
   flags: %{
@@ -2136,7 +2136,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "bench",
     short: "a worn copperwood bench",
-    long:
+    details:
       "The sturdy copperwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
   },
   flags: %{
@@ -2161,7 +2161,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "bench",
     short: "a worn goldenwood bench",
-    long:
+    details:
       "The sturdy goldenwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
   },
   flags: %{
@@ -2186,7 +2186,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "bench",
     short: "a worn silverwood bench",
-    long:
+    details:
       "The sturdy silverwood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
   },
   flags: %{
@@ -2211,7 +2211,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "bench",
     short: "a worn rosewood bench",
-    long:
+    details:
       "The sturdy rosewood bench has seen many years of use, and is still solid as a rock. A testament to its maker."
   },
   flags: %{
@@ -2236,7 +2236,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "chest",
     short: "a simple wooden chest",
-    long: "The chest is big enough to fit an average human, and is bolted to the ground."
+    details: "The chest is big enough to fit an average human, and is bolted to the ground."
   },
   flags: %{
     look: true,
@@ -2263,7 +2263,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "backpack",
     short: "a ragged leather backpack",
-    long: "The backpack has clearly seen better days."
+    details: "The backpack has clearly seen better days."
   },
   flags: %{
     look: true,
@@ -2300,7 +2300,7 @@ Mud.Engine.Item.create(%{
   description: %{
     key: "rock",
     short: "a rough rounded rock",
-    long:
+    details:
       "This rock has, judging by the dry dirt still attached, been recently separated from the ground."
   },
   flags: %{
