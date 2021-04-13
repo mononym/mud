@@ -334,9 +334,7 @@ defmodule Mud.Engine.Session do
         character = Character.get_by_id!(state.character_id)
         area = Area.get!(character.area_id)
         # items_in_area = Item.list_in_area(area.id)
-        items_in_area =
-          Item.list_in_area(area.id)
-          |> Stream.filter(&(&1.flags.hidden != true))
+        items_in_area = Item.list_items_in_area_and_nested_visible_items(area.id)
 
         # |> Enum.group_by(fn area ->
         #   area.flags.scenery

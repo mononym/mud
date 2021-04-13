@@ -357,7 +357,7 @@ defmodule Mud.Engine.Util do
     end
   end
 
-  def get_item_type(_item, default \\ "base")
+  def get_item_type(_item, default \\ "misc")
 
   @doc """
   Given an item, examine it and return an atom that represents its type such as 'worn_container' or 'weapon'

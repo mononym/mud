@@ -1,5 +1,5 @@
 <script language="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   const dispatch = createEventDispatcher();
   import { getContext } from "svelte";
   import { key } from "./state";
@@ -24,6 +24,19 @@
   function dispatchContextMenuEvent(event) {
     dispatch("showContextMenu", { event: event, item: item });
   }
+
+  // Keep track of whether or not an item has been "looked inside" if it has a pocket for configuring display
+  let hasPocket = false;
+  let hasSurface = false;
+  let hasBeenLookedInside = false;
+  onMount(() => {
+    if (item.flags.has_pocket) {
+      hasPocket = true;
+    }
+    if (item.flags.has_surface) {
+      hasSurface = true;
+    }
+  });
 </script>
 
 <div class="flex flex-col select-none" bind:this={wrapperDiv}>
@@ -41,7 +54,7 @@
     <pre
       on:click|preventDefault={toggleItemExpanded}
       class="flex-1 whitespace-pre-wrap">
-      {item.description.short} {#if item.flags.has_pocket || (item.flags.furniture && item.furniture.has_external_surface)}({($areaItemsParentChildIndex[item.id] || []).length}){/if}
+      {item.description.short}<!-- {#if (hasPocket && hasBeenLookedInside) || hasSurface}({($areaItemsParentChildIndex[item.id] || []).length}){/if} -->
     </pre>
   </div>
   {#if itemExpanded}
@@ -53,7 +66,7 @@
         item
       )}">{item.description.long}</pre>
   {/if}
-  {#if ((item.flags.has_pocket && (!item.flags.is_closable || (item.flags.is_closable && item.closable.open))) || (item.flags.furniture && item.furniture.has_external_surface)) && $areaItemsParentChildIndex[item.id] != undefined}
+  {#if ((hasPocket && (!item.flags.is_closable || (item.flags.is_closable && item.closable.open))) || item.flags.has_surface) && $areaItemsParentChildIndex[item.id] != undefined}
     <div class="flex flex-col ml-4">
       {#each $areaItemsParentChildIndex[item.id] as childItem}
         <div class="flex">

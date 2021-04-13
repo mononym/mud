@@ -4,12 +4,15 @@ defmodule Mud.Engine.System.Time do
   alias Mud.Engine.Event.Client.UpdateTime
   alias Mud.Engine.Message
 
+  require Logger
+
   defmodule State do
     @moduledoc false
     use TypedStruct
 
     typedstruct do
       field(:time_at_last_check, :float)
+      field(:timer, :reference)
     end
   end
 
@@ -52,7 +55,13 @@ defmodule Mud.Engine.System.Time do
 
   @impl true
   def init(_) do
-    {:ok, %State{time_at_last_check: calculate_hours_from_now()}, 60_000}
+    {:ok, %State{time_at_last_check: calculate_hours_from_now()}, {:continue, :setup_timer}}
+  end
+
+  @impl true
+  def handle_continue(:setup_timer, state) do
+    timer = Process.send_after(self(), :tick, 60_000)
+    {:noreply, %{state | timer: timer}}
   end
 
   @impl true
@@ -63,8 +72,10 @@ defmodule Mud.Engine.System.Time do
   end
 
   @impl true
-  def handle_info(:timeout, state) do
+  def handle_info(:tick, state) do
     hours_into_day = calculate_hours_from_now()
+
+    Logger.debug("Hours into in-game day: #{hours_into_day}")
 
     time_update =
       UpdateTime.new(%{
@@ -85,7 +96,8 @@ defmodule Mud.Engine.System.Time do
       )
     end
 
-    {:noreply, %{state | time_at_last_check: hours_into_day}, 60_000}
+    timer = Process.send_after(self(), :tick, 60_000)
+    {:noreply, %{state | time_at_last_check: hours_into_day, timer: timer}}
   end
 
   defp calculate_hours_from_now do

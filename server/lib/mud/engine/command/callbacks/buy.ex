@@ -134,7 +134,19 @@ defmodule Mud.Engine.Command.Buy do
           |> Context.append_message(
             Message.new_story_output(
               context.character.id,
-              "You bought: #{new_item.description.short}.#{random_buy_post_message()}",
+              "You",
+              "character"
+            )
+            |> Message.append_text(
+              " bought: ",
+              "base"
+            )
+            |> Message.append_text(
+              new_item.description.short,
+              Util.get_item_type(new_item)
+            )
+            |> Message.append_text(
+              ".#{random_buy_post_message()}",
               "base"
             )
           )

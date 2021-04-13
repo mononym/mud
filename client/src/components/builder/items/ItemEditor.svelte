@@ -176,11 +176,7 @@
     $itemUnderConstruction.flags.material;
 
   $: disableSurfaceCheckbox =
-    !$itemUnderConstruction.flags.furniture &&
-    !(
-      $itemUnderConstruction.flags.scenery &&
-      $itemUnderConstruction.flags.equipment
-    );
+    !$itemUnderConstruction.flags.furniture && !$itemUnderConstruction.flags.is_equipment
 
   $: disableCloseCheckbox = !$itemUnderConstruction.flags.has_pocket;
 

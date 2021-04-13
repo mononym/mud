@@ -260,6 +260,8 @@ export function createState() {
     }
   );
 
+  const wornClothesIds = writable(<string[]>[]);
+
   const totalNumberOfCharacterSlotsAvailable = derived(
     [selectedCharacter],
     function ([$selectedCharacter]) {
@@ -343,6 +345,7 @@ export function createState() {
     resetHeldItems();
     resetWornContainers();
     resetParentChildIndex();
+    resetWornClothesIds();
     resetInventorySlotsIndexes();
   }
 
@@ -485,6 +488,20 @@ export function createState() {
     wornContainers.set(newWornContainers);
   }
 
+  function resetWornClothesIds() {
+    const newWornClothesIds = [];
+
+    Object.values(get(allInventoryItemsIndex)).forEach((item) => {
+      console.log("resetWornClothesIds");
+      console.log(item);
+      if (item.location.worn_on_character && item.flags.is_clothing) {
+        newWornClothesIds.push(item.id);
+      }
+    });
+
+    wornClothesIds.set(newWornClothesIds);
+  }
+
   function resetParentChildIndex() {
     const newParentChildIndex = {};
 
@@ -511,6 +528,7 @@ export function createState() {
     resetParentChildIndex();
     resetHeldItems();
     resetWornContainers();
+    resetWornClothesIds();
     resetInventorySlotsIndexes();
   }
 
@@ -556,6 +574,7 @@ export function createState() {
     removeItemsFromAllInventoryItemsIndex(items);
     resetHeldItems();
     resetWornContainers();
+    resetWornClothesIds();
     resetInventorySlotsIndexes();
   }
 
@@ -1086,6 +1105,7 @@ export function createState() {
     itemInRightHand,
     rightHandHasItem,
     wornContainers,
+    wornClothesIds,
     allInventoryItemsIndex,
     inventoryItemsParentChildIndex,
     updateInventory,

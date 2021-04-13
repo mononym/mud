@@ -253,47 +253,56 @@ defmodule Mud.Engine.ItemUtil do
        ) do
     # First thing first, append the description of the item
     message =
-      if item.location.on_ground or
-           item_index[item.location.relative_item_id].surface.show_detailed_items == false do
-        Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
-      else
-        Message.append_text(message, item.description.long, Engine.Util.get_item_type(item))
-      end
+      Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
 
     # If the item being currently build up has children enter this logic, because we need more than a single item
     # description.
     if Map.has_key?(child_index, item.id) do
-      # Pull out the actual children to display, and then also flag whether or not there were too many
-      {children, too_many_children_to_display} =
-        if length(child_index[item.id]) > item.surface.show_item_limit do
-          sorted_children = CallbackUtil.sort_items(child_index[item.id], true)
-          {Enum.take(sorted_children, item.surface.show_item_limit), true}
-        else
-          {CallbackUtil.sort_items(child_index[item.id], true), false}
-        end
+      if item.surface.show_item_limit == 0 do
+        string = count_of_children_to_append_string(length(child_index[item.id]))
+        Message.append_text(message, " with #{string} on it", "base")
+      else
+        # Pull out the actual children to display, and then also flag whether or not there were too many
+        {children, too_many_children_to_display} =
+          if length(child_index[item.id]) > item.surface.show_item_limit do
+            sorted_children = CallbackUtil.sort_items(child_index[item.id], true)
+            {Enum.take(sorted_children, item.surface.show_item_limit), true}
+          else
+            {CallbackUtil.sort_items(child_index[item.id], true), false}
+          end
 
-      message =
-        Message.append_text(
-          message,
-          " on which sits#{
-            if too_many_children_to_display do
-              ", among other things,"
-            end
-          } ",
-          "base"
-        )
+        message =
+          Message.append_text(
+            message,
+            " with#{
+              if too_many_children_to_display do
+                ", among other things,"
+              end
+            } ",
+            "base"
+          )
 
-      Enum.reduce(children, message, fn child, message ->
-        # For each child recurse so we can display things arbitrary levels deep
-        build_item_description(message, child, child_index, item_index)
-        |> Message.append_text(", ", "base")
-      end)
-      |> Message.drop_last_text()
-      |> Message.maybe_add_oxford_comma()
-
-      # If there are no children the only thing that needs to happen has already happened.
+        Enum.reduce(children, message, fn child, message ->
+          # For each child recurse so we can display things arbitrary levels deep
+          build_item_description(message, child, child_index, item_index)
+          |> Message.append_text(", ", "base")
+        end)
+        |> Message.drop_last_text()
+        |> Message.maybe_add_oxford_comma()
+        |> Message.append_text(" on it", "base")
+      end
     else
+      # If there are no children the only thing that needs to happen has already happened.
       message
+    end
+  end
+
+  defp count_of_children_to_append_string(num_children) do
+    cond do
+      num_children == 1 -> "something"
+      num_children <= 3 -> "a few things"
+      num_children <= 0 -> "several things"
+      true -> "lots of things"
     end
   end
 

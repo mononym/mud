@@ -333,10 +333,7 @@ defmodule Mud.Engine.Command.Look do
                 self_msg =
                   Enum.reduce(items, self_msg, fn itm, msg ->
                     msg
-                    |> Message.append_text(
-                      itm.description.short,
-                      Mud.Engine.Util.get_item_type(itm)
-                    )
+                    |> ItemUtil.build_item_description(itm)
                     |> Message.append_text(
                       "; ",
                       "base"

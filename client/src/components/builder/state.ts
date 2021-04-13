@@ -788,20 +788,23 @@ export function createWorldBuilderStore() {
     const removeFalsy = (obj) => {
       let newObj = {};
       Object.keys(obj).forEach((prop) => {
-        if (obj[prop]) {
+        if (obj[prop] && obj[prop] != null) {
           newObj[prop] = obj[prop];
         }
       });
       return newObj;
     };
 
-    selectedItem.set(item);
+    const newItem = _.cloneDeep(item);
+    const newState = _.cloneDeep(ItemState);
+
+    selectedItem.set(newItem);
     console.log("edit item");
     console.log(item);
-    const strippedItem = removeFalsy({ ...item });
+    const strippedItem = removeFalsy(newItem);
     console.log(strippedItem);
-    console.log({ ...ItemState, ...strippedItem });
-    itemUnderConstruction.set({ ...ItemState, ...strippedItem });
+    console.log({ ...newState, ...strippedItem });
+    itemUnderConstruction.set({ ...newState, ...strippedItem });
     view.set("edit_item");
   }
 

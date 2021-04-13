@@ -11,6 +11,7 @@
 
   const state = getContext(key);
   const {
+    wornClothesIds,
     wornContainers,
     itemInLeftHand,
     itemInRightHand,
@@ -76,9 +77,9 @@
     wornContainersExpanded = !wornContainersExpanded;
   }
 
-  let wornItemsExpanded = true;
-  function toggleWornItems() {
-    wornItemsExpanded = !wornItemsExpanded;
+  let wornClothesExpanded = true;
+  function toggleWornClothes() {
+    wornClothesExpanded = !wornClothesExpanded;
   }
 
   let slotsExpanded = true;
@@ -372,6 +373,32 @@
         </div>
       {/if}
     {/if}
+
+    {#if $selectedCharacter.settings.inventoryWindow.show_worn_clothes}
+      <div
+        class="cursor-pointer select-none"
+        on:click={toggleWornClothes}
+        style="color:{$selectedCharacter.settings.inventoryWindow[
+          'worn_clothes_label'
+        ]}"
+      >
+        <i class="fas fa-{wornClothesExpanded ? 'minus' : 'plus'}" />
+        <pre class="inline ml-2">Worn Clothes ({$wornClothesIds.length})</pre>
+      </div>
+      {#if wornClothesExpanded}
+        <div class="ml-2">
+          {#each $wornClothesIds as clothes}
+            <InventoryItem
+              item={$allInventoryItemsIndex[clothes]}
+              showQuickActions={$selectedCharacter.settings.inventoryWindow
+                .show_quick_actions}
+              on:showContextMenu={showRightClickMenu}
+            />
+          {/each}
+        </div>
+      {/if}
+    {/if}
+
     <!-- {#if $selectedCharacter.settings.inventoryWindow.show_worn_items}
       <div
         class="cursor-pointer select-none"

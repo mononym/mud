@@ -89,8 +89,6 @@ export function buildRecordFromHotkeyString(hotkeyString) {
 }
 
 export function getItemColor(colors, item) {
-  console.log("getItemColor");
-  console.log(item);
   if (item.flags.is_clothing) {
     return colors.clothing;
   } else if (item.flags.coin) {

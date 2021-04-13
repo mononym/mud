@@ -510,22 +510,15 @@ defmodule Mud.Engine.Command.Put do
     # check to see whether the update needs to go to only inventory or the area too
     context =
       if destination_in_area do
-        context =
-          Context.append_event(
-            context,
-            context.character_id,
-            UpdateInventory.new(:remove, all_items_to_update)
-          )
-
-        if item.location.on_ground do
-          Context.append_event(
-            context,
-            [context.character_id | others],
-            UpdateArea.new(%{action: :add, items: [item]})
-          )
-        else
-          context
-        end
+        context
+        |> Context.append_event(
+          context.character_id,
+          UpdateInventory.new(:remove, all_items_to_update)
+        )
+        |> Context.append_event(
+          [context.character_id | others],
+          UpdateArea.new(%{action: :add, items: [item]})
+        )
       else
         Context.append_event(
           context,

@@ -108,7 +108,7 @@ defmodule Mud.Engine.Item do
   defp template_keys_to_atoms(template) do
     Map.new(template, fn {k, v} ->
       {if is_binary(k) do
-         String.to_existing_atom(k)
+         String.to_atom(k)
        else
          k
        end,
@@ -117,7 +117,7 @@ defmodule Mud.Engine.Item do
        else
          Map.new(v, fn {key, val} ->
            {if is_binary(key) do
-              String.to_existing_atom(key)
+              String.to_atom(key)
             else
               key
             end, val}
@@ -142,10 +142,11 @@ defmodule Mud.Engine.Item do
       wearable: [:wearable],
       has_surface: [:surface],
       is_equipment: [:equipment],
-      has_pocket: [:pocket]
+      has_pocket: [:pocket],
+      has_physics: [:physics]
     }
 
-    base_keys_to_keep = [:description, :location, :physics, :flags]
+    base_keys_to_keep = [:description, :location, :flags]
 
     final_keys_to_keep =
       Enum.reduce(keys_map, base_keys_to_keep, fn {key, ktk}, keys_tk ->
@@ -531,8 +532,7 @@ defmodule Mud.Engine.Item do
          item_index,
          parent_index
        ) do
-    if item_index[parent_index[parent]].flags.has_surface and
-         item_index[parent_index[parent]].surface.show_item_contents do
+    if item_index[parent_index[parent]].flags.has_surface do
       is_visible_item(item_index[parent_index[parent]], item_index, parent_index)
     else
       false
@@ -1372,11 +1372,17 @@ defmodule Mud.Engine.Item do
   end
 
   defp update_item_components(attrs, flags) do
+    flags =
+      if Map.has_key?(attrs, "flags") do
+        update_component("flags", attrs["flags"], flags.item_id)
+      else
+        flags
+      end
+
     key_to_flags = %{
       "closable" => :close,
       "coin" => :coin,
       "description" => true,
-      "flags" => true,
       "furniture" => :furniture,
       "gem" => :gem,
       "location" => true,
