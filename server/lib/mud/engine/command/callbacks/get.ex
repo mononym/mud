@@ -141,11 +141,8 @@ defmodule Mud.Engine.Command.Get do
 
     case results do
       {:ok, matches} ->
-        # Make sure the results are sorted for consistent behavior
-        sorted_results = CallbackUtil.sort_matches(matches, true)
-
         # then just handle results as normal
-        handle_search_results(context, {:ok, sorted_results})
+        handle_search_results(context, {:ok, matches})
 
       _ ->
         handle_search_results(context, results)
@@ -218,7 +215,7 @@ defmodule Mud.Engine.Command.Get do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         get_item_with_personal_place(context)
@@ -251,7 +248,7 @@ defmodule Mud.Engine.Command.Get do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         get_item_on_visible_surfaces_in_area_or_inventory(context)
@@ -269,7 +266,7 @@ defmodule Mud.Engine.Command.Get do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         get_item_in_inventory(context)

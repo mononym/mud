@@ -10,7 +10,7 @@
   export let otherItemsForRelativePlacement = {};
   export let saveItemCallback = saveItem;
 
-  $: disableArmorCheckbox =
+  $: disableMiscCheckbox =
     $itemUnderConstruction.flags.is_clothing ||
     $itemUnderConstruction.flags.coin ||
     $itemUnderConstruction.flags.is_equipment ||
@@ -21,7 +21,39 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_jewelry;
+
+  $: disableJewelryCheckbox =
+    $itemUnderConstruction.flags.is_clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.is_equipment ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
+
+  $: disableStructureCheckbox =
+    $itemUnderConstruction.flags.is_clothing ||
+    $itemUnderConstruction.flags.coin ||
+    $itemUnderConstruction.flags.is_equipment ||
+    $itemUnderConstruction.flags.furniture ||
+    $itemUnderConstruction.flags.gem ||
+    $itemUnderConstruction.flags.instrument ||
+    $itemUnderConstruction.flags.jewelry ||
+    $itemUnderConstruction.flags.material ||
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.surface ||
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableClothingCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -33,7 +65,10 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableCoinCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -46,7 +81,10 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableEquipmentCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -59,7 +97,10 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableFurnitureCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -72,7 +113,10 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableGemCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -86,7 +130,10 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableInstrumentCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -99,20 +146,10 @@
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.shield ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
-
-  $: disableJewelryCheckbox =
-    $itemUnderConstruction.flags.armor ||
-    $itemUnderConstruction.flags.is_clothing ||
-    $itemUnderConstruction.flags.coin ||
-    $itemUnderConstruction.flags.is_equipment ||
-    $itemUnderConstruction.flags.furniture ||
-    $itemUnderConstruction.flags.gem ||
-    $itemUnderConstruction.flags.instrument ||
-    $itemUnderConstruction.flags.material ||
-    $itemUnderConstruction.flags.shield ||
-    $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableMaterialCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -125,7 +162,10 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.surface ||
     $itemUnderConstruction.flags.shield;
-  $itemUnderConstruction.flags.weapon;
+  $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableSceneryCheckbox = false;
 
@@ -140,7 +180,10 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.weapon;
+    $itemUnderConstruction.flags.weapon ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableWeaponCheckbox =
     $itemUnderConstruction.flags.armor ||
@@ -153,7 +196,10 @@
     $itemUnderConstruction.flags.jewelry ||
     $itemUnderConstruction.flags.material ||
     $itemUnderConstruction.flags.surface ||
-    $itemUnderConstruction.flags.shield;
+    $itemUnderConstruction.flags.shield ||
+    $itemUnderConstruction.flags.is_jewelry ||
+    $itemUnderConstruction.flags.is_structure ||
+    $itemUnderConstruction.flags.is_misc;
 
   $: disableGemPouchCheckbox =
     !$itemUnderConstruction.flags.has_pocket ||
@@ -177,7 +223,8 @@
 
   $: disableSurfaceCheckbox =
     !$itemUnderConstruction.flags.furniture &&
-    !$itemUnderConstruction.flags.is_equipment;
+    !$itemUnderConstruction.flags.is_equipment &&
+    !$itemUnderConstruction.flags.is_structure;
 
   $: disableCloseCheckbox = !$itemUnderConstruction.flags.has_pocket;
 
@@ -309,7 +356,10 @@
             class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
           />
         </div>
-        <div class="col-span-8">
+        <div
+          class="col-span-8"
+          data-tippy-content="This should be written as full sentences as this text is directly spit out to the client without modification."
+        >
           <label
             for="itemDetails"
             class="block text-sm font-medium text-gray-300">Item Details</label
@@ -325,18 +375,6 @@
         <div class="col-span-12">
           <h2 class="text-gray-300 font-bold">Item Type (Pick One):</h2>
         </div>
-        <!-- <div class="col-span-1">
-          <label for="isArmor" class="block text-sm font-medium text-gray-300"
-            >Armor</label
-          >
-          <input
-            bind:checked={$itemUnderConstruction.flags.armor}
-            type="checkbox"
-            name="isArmor"
-            id="isArmor"
-            disabled={disableArmorCheckbox}
-          />
-        </div> -->
         <div class="col-span-1">
           <label
             for="isClothing"
@@ -401,6 +439,43 @@
             name="isGem"
             id="isGem"
             disabled={disableGemCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label for="isJewelry" class="block text-sm font-medium text-gray-300"
+            >Jewelry</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.is_jewelry}
+            type="checkbox"
+            name="isJewelry"
+            id="isJewelry"
+            disabled={disableJewelryCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label for="isMisc" class="block text-sm font-medium text-gray-300"
+            >Miscellaneous</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.is_misc}
+            type="checkbox"
+            name="isMisc"
+            id="isMisc"
+            disabled={disableMiscCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label
+            for="isStructure"
+            class="block text-sm font-medium text-gray-300">Structure</label
+          >
+          <input
+            bind:checked={$itemUnderConstruction.flags.is_structure}
+            type="checkbox"
+            name="isStructure"
+            id="isStructure"
+            disabled={disableStructureCheckbox}
           />
         </div>
         <!-- <div class="col-span-1">
@@ -1371,13 +1446,13 @@
     <div class="px-4 py-3 text-right sm:px-6">
       <button
         type="submit"
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-black hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
       >
         Save
       </button>
       <button
         on:click={cancelEditItem}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-black hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
       >
         Cancel
       </button>

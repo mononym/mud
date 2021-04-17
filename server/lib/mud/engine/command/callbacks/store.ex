@@ -283,7 +283,7 @@ defmodule Mud.Engine.Command.Store do
     # find a container somewhere in inventory and set it
     # if nothing found send out warning
     results =
-      Search.find_matching_containers_in_inventory(
+      Search.search_inventory_for_item_with_pocket(
         context.character.id,
         context.command.ast.place.input,
         context.character.settings.commands.search_mode
@@ -291,10 +291,8 @@ defmodule Mud.Engine.Command.Store do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
-
         # then just handle results as normal
-        handle_search_results(context, {:ok, sorted_results})
+        handle_search_results(context, {:ok, matches})
 
       _ ->
         handle_search_results(context, results)
@@ -374,7 +372,8 @@ defmodule Mud.Engine.Command.Store do
             self_msg,
             place.match,
             other_items,
-            context.character.settings.commands.multiple_matches_mode
+            context.character.settings.commands.multiple_matches_mode,
+            context.character
           )
         else
           self_msg

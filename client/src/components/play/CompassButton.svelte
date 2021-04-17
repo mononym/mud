@@ -13,7 +13,7 @@
   const red = "#fca5a5";
 
   const state = getContext(key);
-  const { channel, exitsInArea } = state;
+  const { channel, exitsInArea, selectedCharacter } = state;
 
   $: $exitsInArea, exitInArea();
 
@@ -43,8 +43,20 @@
 <button
   on:click={move}
   data-tippy-content={exit}
-  style="background-color:{buttonActive ? green : red}"
-  class="row-span-{rowSpan} flex-1 text-gray-800 rounded border border-gray-600 place-items-center"
+  style="background-color:{buttonActive
+    ? $selectedCharacter.settings.directionsWindow[
+        'active_direction_background_color'
+      ]
+    : $selectedCharacter.settings.directionsWindow[
+        'inactive_direction_background_color'
+      ]};color:{buttonActive
+    ? $selectedCharacter.settings.directionsWindow[
+        'active_direction_icon_color'
+      ]
+    : $selectedCharacter.settings.directionsWindow[
+        'inactive_direction_icon_color'
+      ]}"
+  class="row-span-{rowSpan} flex-1 m-px place-items-center"
   ><i class="fa-fw {icon}" /></button
 >
 

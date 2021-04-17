@@ -22,11 +22,19 @@ defmodule Mud.Engine.Command.Executor do
   ##
 
   @doc """
-  Given a string such as 'look' or 'move west' turn it into a populated '__MODULE__{}.t()' struct.
+  Given a string such as 'get coin' or '"/slowly to thomas Yoohoo!' turn it into a populated '__MODULE__{}.t()' struct.
   """
   @spec string_to_command(String.t()) :: {:error, :no_match} | {:ok, Mud.Engine.Command.t()}
   def string_to_command(input) do
     input = String.trim(input)
+
+    input =
+      if String.starts_with?(input, "'") or String.starts_with?(input, "\"") do
+        "say " <> String.trim(String.slice(input, 1..-1))
+      else
+        input
+      end
+
     # Split the input and keep all the spaces for use/dropping later
     [first | rest] = Regex.split(~r/\s+/, input, include_captures: true)
     split_input = [String.downcase(first) | rest]
@@ -39,7 +47,7 @@ defmodule Mud.Engine.Command.Executor do
           abstract_asts when abstract_asts != [] ->
             abstract_ast =
               abstract_asts
-              |> Enum.sort(&(&1 <= &2))
+              |> Enum.sort(&(length(&1) >= length(&2)))
               |> List.first()
 
             {:ok,
@@ -191,8 +199,6 @@ defmodule Mud.Engine.Command.Executor do
   # defp build_abstract_ast([], _parts, _current_part, nil, [last_node | rest]) do
   defp build_abstract_ast([], _parts, _current_part, nil, ast_nodes) do
     [Enum.reverse(ast_nodes)]
-
-    # normalize_ast(last_node, rest)
   end
 
   # All input has been processed but a dangling ast node needs to be put into the tree

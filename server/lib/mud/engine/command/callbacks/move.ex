@@ -108,10 +108,12 @@ defmodule Mud.Engine.Command.Move do
   defp attempt_move_direction(direction, context, which) do
     Logger.debug(inspect({direction, context, which}))
 
+    normalized_direction = normalize_direction(direction)
+
     result =
       Search.find_exits_in_area(
         context.character.area_id,
-        direction,
+        normalized_direction,
         context.character.settings.commands.search_mode
       )
 
@@ -129,7 +131,23 @@ defmodule Mud.Engine.Command.Move do
         attempt_move_link(context, match.match)
 
       {:ok, matches} ->
-        handle_multiple_matches(context, matches)
+        match_fun = fn match ->
+          match.match.short_description == direction
+        end
+
+        matches =
+          if Enum.any?(matches, match_fun) do
+            Enum.filter(matches, match_fun)
+          else
+            matches
+          end
+
+        if length(matches) == 1 do
+          [match] = matches
+          attempt_move_link(context, match.match)
+        else
+          handle_multiple_matches(context, matches)
+        end
 
       _error ->
         Context.append_message(
@@ -527,54 +545,20 @@ defmodule Mud.Engine.Command.Move do
   end
 
   defp normalize_direction(direction) do
-    case direction do
-      "nw" ->
-        "northwest"
-
-      "ne" ->
-        "northeast"
-
-      "n" ->
-        "north"
-
-      "e" ->
-        "east"
-
-      "w" ->
-        "west"
-
-      "s" ->
-        "south"
-
-      "sw" ->
-        "southwest"
-
-      "se" ->
-        "southeast"
-
-      "o" ->
-        "out"
-
-      "ou" ->
-        "out"
-
-      "i" ->
-        "in"
-
-      "u" ->
-        "up"
-
-      "d" ->
-        "down"
-
-      "do" ->
-        "down"
-
-      "dow" ->
-        "down"
-
-      _ ->
-        direction
+    cond do
+      direction in ["nw", "northw", "northwe", "northwes"] -> "northwest"
+      direction in ["ne", "northe", "northea", "northeas"] -> "northeast"
+      direction in ["n", "no", "nor", "nort"] -> "north"
+      direction in ["s", "so", "sou", "sout"] -> "south"
+      direction in ["e", "ea", "eas"] -> "east"
+      direction in ["w", "we", "wes"] -> "west"
+      direction in ["sw", "southw", "southwe", "southwes"] -> "southwest"
+      direction in ["se", "southe", "southea", "southeas"] -> "southeast"
+      direction in ["i"] -> "in"
+      direction in ["o", "ou"] -> "out"
+      direction in ["u"] -> "up"
+      direction in ["d", "do", "dow"] -> "down"
+      true -> direction
     end
   end
 end

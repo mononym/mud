@@ -12,7 +12,6 @@ defmodule Mud.Engine.Command.Look do
   alias Mud.Engine.Command.Context
   alias Mud.Engine.ItemUtil
   alias Mud.Engine.Util
-  alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.Command.AstNode.ThingAndPlace, as: TAP
   alias Mud.Engine.Command.AstNode.{Thing, Place}
   alias Mud.Engine.Message
@@ -98,7 +97,7 @@ defmodule Mud.Engine.Command.Look do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, true)
+        sorted_results = matches
 
         # then just handle results as normal
         handle_search_results(context, {:ok, sorted_results})
@@ -167,7 +166,7 @@ defmodule Mud.Engine.Command.Look do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         look_item_with_personal_place(context)
@@ -198,7 +197,7 @@ defmodule Mud.Engine.Command.Look do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         look_item_on_visible_surfaces_in_area_or_inventory(context)
@@ -216,7 +215,7 @@ defmodule Mud.Engine.Command.Look do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         look_item_in_inventory(context)

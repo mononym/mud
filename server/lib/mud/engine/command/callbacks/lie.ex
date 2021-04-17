@@ -177,7 +177,8 @@ defmodule Mud.Engine.Command.Lie do
             self_msg,
             thing.match,
             other_items,
-            context.character.settings.commands.multiple_matches_mode
+            context.character.settings.commands.multiple_matches_mode,
+            context.character
           )
         else
           self_msg

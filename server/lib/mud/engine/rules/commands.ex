@@ -965,10 +965,10 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp define_say_command do
     %Definition{
-      callback_module: Command.Placeholder,
+      callback_module: Command.Say,
       parts: [
         %Part{
-          matches: ["say"],
+          matches: ["say", "scream", "shout", "yell"],
           key: :say,
           transformer: &Enum.join/1
         },
@@ -976,27 +976,37 @@ defmodule Mud.Engine.Rules.Commands do
           matches: ["to"],
           key: :to,
           must_follow: [:say, :switch],
+          greedy: false,
           transformer: &Enum.join/1
         },
         %Part{
           must_follow: [:to],
-          matches: [~r/^\@[a-zA-Z]+/],
-          key: :character,
+          matches: [~r/^[a-zA-Z]+/],
+          greedy: false,
+          key: :to_character,
           transformer: &trim_at/1
         },
         %Part{
-          must_follow: [:say, :character],
-          matches: ["/slowly"],
+          must_follow: [:say, :switch],
+          matches: [~r/^\@[a-zA-Z]+/],
+          greedy: false,
+          key: :at_character,
+          transformer: &trim_at/1
+        },
+        %Part{
+          must_follow: [:say, :to_character, :at_character],
+          matches: [~r/^\/[a-zA-Z]+$/],
           key: :switch,
+          greedy: false,
           transformer: &trim_slash/1
         },
         %Part{
-          must_follow: [:character, :say, :switch],
+          must_follow: [:to_character, :at_character, :say, :switch],
           matches: [~r/.*/],
           key: :words,
           greedy: true,
           drop_whitespace: false,
-          transformer: &Enum.join/1
+          transformer: &join_with_trimmed_ends/1
         }
       ]
     }
@@ -1091,5 +1101,9 @@ defmodule Mud.Engine.Rules.Commands do
 
   defp string_to_int([input]) do
     String.to_integer(input)
+  end
+
+  defp join_with_trimmed_ends(input) do
+    Enum.join(input) |> String.trim()
   end
 end

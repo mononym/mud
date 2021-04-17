@@ -118,7 +118,7 @@ defmodule Mud.Engine.Command.Lock do
 
     cond do
       item.container_lockable and not item.container_open and not item.container_locked ->
-        Item.update!(item, %{container_locked: true})
+        Item.update!(item.id, %{container_locked: true})
 
         others =
           Character.list_others_active_in_areas(context.character.id, context.character.area_id)

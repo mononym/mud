@@ -28,6 +28,30 @@ defmodule Mud.Engine.Character.Settings do
       field(:multiple_matches_mode, :string, default: "full path")
     end
 
+    embeds_one :directions_window, DirectionsWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:active_direction_background_color, :string, default: "#a7f3d0")
+      field(:active_direction_icon_color, :string, default: "#000000")
+      field(:inactive_direction_background_color, :string, default: "#fca5a5")
+      field(:inactive_direction_icon_color, :string, default: "#000000")
+      field(:background_color, :string, default: "#28282D")
+    end
+
+    embeds_one :environment_window, EnvironmentWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:background_color, :string, default: "#28282D")
+      field(:time_text_color, :string, default: "#E4E4E7")
+    end
+
+    embeds_one :status_window, StatusWindow, on_replace: :delete do
+      @derive Jason.Encoder
+
+      field(:posture_icon_color, :string, default: "#CF3078")
+      field(:background_color, :string, default: "#28282D")
+    end
+
     embeds_one :map_window, MapWindow, on_replace: :delete do
       @derive Jason.Encoder
 
@@ -127,6 +151,8 @@ defmodule Mud.Engine.Character.Settings do
       field(:ammunition, :string, default: "#ffffff")
       field(:shield, :string, default: "#ffffff")
       field(:clothing, :string, default: "#ffffff")
+      field(:structure, :string, default: "#ffffff")
+      field(:jewelry, :string, default: "#ffffff")
       field(:misc, :string, default: "#ffffff")
 
       # Link Types
@@ -209,6 +235,10 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:commands, with: &commands_changeset/2)
     |> cast_embed(:map_window, with: &map_window_changeset/2)
     |> cast_embed(:audio, with: &audio_changeset/2)
+    |> cast_embed(:directions_window, with: &directions_changeset/2)
+    |> cast_embed(:environment_window, with: &environment_changeset/2)
+    |> cast_embed(:status_window, with: &status_changeset/2)
+    |> IO.inspect(label: :changeset_settings)
   end
 
   defp colors_changeset(schema, params) do
@@ -244,6 +274,8 @@ defmodule Mud.Engine.Character.Settings do
       :clothing,
       :misc,
       :coin,
+      :jewelry,
+      :structure,
       # Link types
       :portal,
       :closable,
@@ -361,6 +393,39 @@ defmodule Mud.Engine.Character.Settings do
     |> validate_required([])
   end
 
+  defp directions_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :active_direction_background_color,
+      :active_direction_icon_color,
+      :inactive_direction_background_color,
+      :inactive_direction_icon_color,
+      :background_color
+    ])
+    |> validate_required([])
+  end
+
+  defp environment_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :background_color,
+      :time_text_color
+    ])
+    |> validate_required([])
+  end
+
+  defp status_changeset(schema, params) do
+    schema
+    |> cast(params, [
+      :id,
+      :posture_icon_color,
+      :background_color
+    ])
+    |> validate_required([])
+  end
+
   defp preset_hotkeys_changeset(schema, params) do
     schema
     |> cast(params, [
@@ -444,6 +509,8 @@ defmodule Mud.Engine.Character.Settings do
       ammunition: "#ffffff",
       shield: "#ffffff",
       clothing: "#ffffff",
+      jewelry: "#ffffff",
+      structure: "#ffffff",
       coin: "#FFD700",
 
       # Link Types
@@ -589,11 +656,16 @@ defmodule Mud.Engine.Character.Settings do
         Map.put(attrs, :echo, default_echo_settings)
       end
 
-    attrs = insert_default_area_window_settings(attrs)
-    attrs = insert_default_inventory_window_settings(attrs)
-    attrs = insert_default_map_window_settings(attrs)
-    attrs = insert_default_commands_settings(attrs)
-    attrs = Map.put(attrs, :audio, %{})
+    attrs =
+      attrs
+      |> insert_default_area_window_settings()
+      |> insert_default_inventory_window_settings()
+      |> insert_default_map_window_settings()
+      |> insert_default_commands_settings()
+      |> Map.put(:audio, Map.from_struct(%__MODULE__.Audio{}))
+      |> Map.put(:directions_window, Map.from_struct(%__MODULE__.DirectionsWindow{}))
+      |> Map.put(:environment_window, Map.from_struct(%__MODULE__.EnvironmentWindow{}))
+      |> Map.put(:status_window, Map.from_struct(%__MODULE__.StatusWindow{}))
 
     Logger.debug(inspect(attrs))
 

@@ -184,9 +184,7 @@ defmodule Mud.Engine.Command.Put do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
-
-        handle_search_results(context, {:ok, sorted_results}, thing, other_thing_matches)
+        handle_search_results(context, {:ok, matches}, thing, other_thing_matches)
 
       _ ->
         find_place_in_inventory_to_put_thing(context, thing, other_thing_matches)
@@ -222,10 +220,8 @@ defmodule Mud.Engine.Command.Put do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
-
         # then just handle results as normal
-        handle_search_results(context, {:ok, sorted_results}, thing, other_thing_matches)
+        handle_search_results(context, {:ok, matches}, thing, other_thing_matches)
 
       _ ->
         handle_search_results(context, results, thing, other_thing_matches)
@@ -242,7 +238,7 @@ defmodule Mud.Engine.Command.Put do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, true)
+        sorted_results = matches
 
         handle_thing_search_results(context, {:ok, sorted_results})
 

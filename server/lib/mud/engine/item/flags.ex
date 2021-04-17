@@ -28,12 +28,14 @@ defmodule Mud.Engine.Item.Flags do
              :furniture,
              :gem_pouch,
              :instrument,
-             :jewelry,
+             :is_jewelry,
+             :is_misc,
              :material,
              :scenery,
              :shield,
              :is_closable,
              :is_equipment,
+             :is_structure,
              :has_physics,
              :has_pocket,
              :has_surface,
@@ -84,6 +86,9 @@ defmodule Mud.Engine.Item.Flags do
     # if worn. Armor is a thing on its own.
     field(:is_clothing, :boolean, default: false)
     field(:is_equipment, :boolean, default: false)
+    field(:is_structure, :boolean, default: false)
+    field(:is_jewelry, :boolean, default: false)
+    field(:is_misc, :boolean, default: false)
 
     # This doesn't actually say what types of surfaces or interactions the specific piece of furniture might have.
     # You can't really lie down in a chair, but you can sit in it. Can't sit on a coat rack but can hang things on it.
@@ -91,7 +96,6 @@ defmodule Mud.Engine.Item.Flags do
     field(:gem, :boolean, default: false)
     field(:gem_pouch, :boolean, default: false)
     field(:instrument, :boolean, default: false)
-    field(:jewelry, :boolean, default: false)
     field(:material, :boolean, default: false)
     field(:shield, :boolean, default: false)
     # A shop display might be a container, such as a box or a chest,
@@ -143,7 +147,9 @@ defmodule Mud.Engine.Item.Flags do
       :instrument,
       :is_closable,
       :is_equipment,
-      :jewelry,
+      :is_structure,
+      :is_jewelry,
+      :is_misc,
       :material,
       :shield,
       :shop_display,

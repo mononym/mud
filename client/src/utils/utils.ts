@@ -99,6 +99,10 @@ export function getItemColor(colors, item) {
     return colors.furniture;
   } else if (item.flags.gem) {
     return colors.gem;
+  } else if (item.flags.is_jewelry) {
+    return colors.jewelry;
+  } else if (item.flags.is_structure) {
+    return colors.structure;
   } else {
     return colors.misc;
   }

@@ -7,7 +7,7 @@
     cancelEditTemplate,
   } = WorldBuilderStore;
 
-  $: disableArmorCheckbox =
+  $: disableJewelryCheckbox =
     $templateUnderConstruction.template.flags.is_clothing ||
     $templateUnderConstruction.template.flags.coin ||
     $templateUnderConstruction.template.flags.is_equipment ||
@@ -18,7 +18,22 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure;
+
+  $: disableStructureCheckbox =
+    $templateUnderConstruction.template.flags.is_clothing ||
+    $templateUnderConstruction.template.flags.coin ||
+    $templateUnderConstruction.template.flags.is_equipment ||
+    $templateUnderConstruction.template.flags.furniture ||
+    $templateUnderConstruction.template.flags.gem ||
+    $templateUnderConstruction.template.flags.instrument ||
+    $templateUnderConstruction.template.flags.jewelry ||
+    $templateUnderConstruction.template.flags.material ||
+    $templateUnderConstruction.template.flags.shield ||
+    $templateUnderConstruction.template.flags.surface ||
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableClothingCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -31,7 +46,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableCoinCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -44,7 +61,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableEquipmentCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -57,7 +76,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableFurnitureCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -70,7 +91,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableGemCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -84,7 +107,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableInstrumentCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -97,20 +122,9 @@
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.shield ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
-
-  $: disableJewelryCheckbox =
-    $templateUnderConstruction.template.flags.armor ||
-    $templateUnderConstruction.template.flags.is_clothing ||
-    $templateUnderConstruction.template.flags.coin ||
-    $templateUnderConstruction.template.flags.is_equipment ||
-    $templateUnderConstruction.template.flags.furniture ||
-    $templateUnderConstruction.template.flags.gem ||
-    $templateUnderConstruction.template.flags.instrument ||
-    $templateUnderConstruction.template.flags.material ||
-    $templateUnderConstruction.template.flags.shield ||
-    $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableMaterialCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -122,8 +136,10 @@
     $templateUnderConstruction.template.flags.instrument ||
     $templateUnderConstruction.template.flags.jewelry ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.shield;
-  $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.shield ||
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableSceneryCheckbox = false;
 
@@ -138,7 +154,9 @@
     $templateUnderConstruction.template.flags.jewelry ||
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.weapon;
+    $templateUnderConstruction.template.flags.weapon ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableWeaponCheckbox =
     $templateUnderConstruction.template.flags.armor ||
@@ -151,7 +169,9 @@
     $templateUnderConstruction.template.flags.jewelry ||
     $templateUnderConstruction.template.flags.material ||
     $templateUnderConstruction.template.flags.surface ||
-    $templateUnderConstruction.template.flags.shield;
+    $templateUnderConstruction.template.flags.shield ||
+    $templateUnderConstruction.template.flags.is_structure ||
+    $templateUnderConstruction.template.flags.is_jewelry;
 
   $: disableGemPouchCheckbox =
     !$templateUnderConstruction.template.flags.has_pocket ||
@@ -176,10 +196,8 @@
 
   $: disableSurfaceCheckbox =
     !$templateUnderConstruction.template.flags.furniture &&
-    !(
-      $templateUnderConstruction.template.flags.scenery &&
-      $templateUnderConstruction.template.flags.equipment
-    );
+    !$templateUnderConstruction.template.flags.is_equipment &&
+    !$templateUnderConstruction.template.flags.is_structure;
 
   $: disableCloseCheckbox = !$templateUnderConstruction.template.flags
     .has_pocket;
@@ -308,35 +326,25 @@
           />
         </div>
 
-          <div class="col-span-8">
-            <label
-              for="itemDetails"
-              class="block text-sm font-medium text-gray-300"
-              >Item Details</label
-            >
-            <input
-              bind:value={$templateUnderConstruction.template.description.details}
-              type="textarea"
-              name="itemDetails"
-              id="itemDetails"
-              class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-            />
-          </div>
+        <div
+          class="col-span-8"
+          data-tippy-content="This should be written as full sentences as this text is directly spit out to the client without modification."
+        >
+          <label
+            for="itemDetails"
+            class="block text-sm font-medium text-gray-300">Item Details</label
+          >
+          <input
+            bind:value={$templateUnderConstruction.template.description.details}
+            type="textarea"
+            name="itemDetails"
+            id="itemDetails"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
         <div class="col-span-12">
           <h2 class="text-gray-300 font-bold">Item Type (Pick One):</h2>
         </div>
-        <!-- <div class="col-span-1">
-        <label for="isArmor" class="block text-sm font-medium text-gray-300"
-          >Armor</label
-        >
-        <input
-          bind:checked={$templateUnderConstruction.template.flags.armor}
-          type="checkbox"
-          name="isArmor"
-          id="isArmor"
-          disabled={disableArmorCheckbox}
-        />
-      </div> -->
         <div class="col-span-1">
           <label
             for="isClothing"
@@ -402,6 +410,32 @@
             name="isGem"
             id="isGem"
             disabled={disableGemCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label for="isJewelry" class="block text-sm font-medium text-gray-300"
+            >Jewelry</label
+          >
+          <input
+            bind:checked={$templateUnderConstruction.template.flags.is_jewelry}
+            type="checkbox"
+            name="isJewelry"
+            id="isJewelry"
+            disabled={disableJewelryCheckbox}
+          />
+        </div>
+        <div class="col-span-1">
+          <label
+            for="isStructure"
+            class="block text-sm font-medium text-gray-300">Structure</label
+          >
+          <input
+            bind:checked={$templateUnderConstruction.template.flags
+              .is_structure}
+            type="checkbox"
+            name="isStructure"
+            id="isStructure"
+            disabled={disableStructureCheckbox}
           />
         </div>
         <!-- <div class="col-span-1">
@@ -1261,13 +1295,13 @@
     <div class="px-4 py-3 text-right sm:px-6">
       <button
         type="submit"
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-black hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
       >
         Save
       </button>
       <button
         on:click={cancelEditTemplate}
-        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        class="inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-black hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
       >
         Cancel
       </button>

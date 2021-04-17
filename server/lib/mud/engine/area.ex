@@ -436,7 +436,7 @@ defmodule Mud.Engine.Area do
       |> Item.list_scenery_in_area()
       # Hidden scenery does not show up when looking at the area
       |> Enum.filter(&(&1.flags.hidden != true))
-      |> CallbackUtil.sort_items(true)
+      |> ItemUtil.sort_items(true)
 
     if things_of_interest == [] do
       story_output
@@ -462,7 +462,7 @@ defmodule Mud.Engine.Area do
 
     items_on_ground =
       Item.list_on_ground(area.id)
-      |> CallbackUtil.sort_items(true)
+      |> ItemUtil.sort_items(true)
 
     if items_on_ground == [] do
       story_output

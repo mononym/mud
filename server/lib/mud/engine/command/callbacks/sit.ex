@@ -79,7 +79,7 @@ defmodule Mud.Engine.Command.Sit do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        area_matches = CallbackUtil.sort_matches(area_matches, true)
+        area_matches = area_matches
 
         maybe_sit_relative_to_item(
           context,
@@ -197,7 +197,8 @@ defmodule Mud.Engine.Command.Sit do
             self_msg,
             thing.match,
             other_items,
-            context.character.settings.commands.multiple_matches_mode
+            context.character.settings.commands.multiple_matches_mode,
+            context.character
           )
         else
           self_msg

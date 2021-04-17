@@ -93,12 +93,22 @@ function createAreaWindowStore() {
     otherCharactersInArea.set(characters);
   }
 
+  function resetExits(exits) {
+    exits = exits.sort(compareExitsForSort);
+    exitsInArea.set(exits);
+  }
+
   function updateExits(exits) {
+    exits = exits.sort(compareExitsForSort);
     exitsInArea.set(
       [...exits, ...get(exitsInArea)].filter(
         (v, i, a) => a.findIndex((it) => it.id == v.id) === i
       )
     );
+  }
+
+  function compareExitsForSort(exitA, exitB) {
+    return exitA.shortDescription.localeCompare(exitB.shortDescription);
   }
 
   function resetToi() {
@@ -114,6 +124,8 @@ function createAreaWindowStore() {
   }
 
   function addExits(exits) {
+    exits = exits.sort(compareExitsForSort);
+
     exits.forEach((item) => {
       exitsInArea.update(function (ext) {
         ext.push(item);
@@ -131,6 +143,8 @@ function createAreaWindowStore() {
   }
 
   function removeExits(exits) {
+    exits = exits.sort(compareExitsForSort);
+
     exits.forEach((exit) => {
       exitsInArea.update(function (eia) {
         return eia.filter((ext) => ext.id != exit.id);
@@ -158,6 +172,7 @@ function createAreaWindowStore() {
     otherCharactersInArea,
     toiInArea,
     // Functions
+    resetExits,
     addItemsToAreaItemsIndex,
     removeItemsFromAreaItemsIndex,
     resetAreaItemsIndex,

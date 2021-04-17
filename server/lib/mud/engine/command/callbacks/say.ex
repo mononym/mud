@@ -1,0 +1,826 @@
+defmodule Mud.Engine.Command.Say do
+  @moduledoc """
+  The SAY command allows the Character to speak to one or more other Characters in an area. The speech is always 'public' even when directed to a single Character.
+
+  SAY, ", and ' are all interchangable and will trigger the SAY command. In the case of the latter two, no space is required between the punctuation and the rest of the command as might usually be required. See Examples below.
+
+  Either 'to' or '@' may be used to direct the speech to a single Character, but both may not be used at the same time. In the case where '@' is used there should not be a space between the symbol and the character name. See Examples below.
+
+  Emotes are preceeded, without a space, by the forward slash '/' character. If a default emote has been set it will be used in any case where no emote has been specified.
+
+  Examples:
+    - say Hello World!
+    - 'Hello World!
+    - 'Hello World!
+    - say to world Hello World!
+    - '@world Hello World!
+    - say /slowly @world Goobye, cruel world!
+    - '@george /quick Do you feel lucky?
+    - '/angry Why me?
+
+  For a list of emotes:
+    - say /emotes
+
+  To set a default emote:
+    - '/emotes <default>
+  """
+
+  alias Mud.Engine.Search
+  alias Mud.Engine.Message
+  alias Mud.Engine.Command.Context
+  alias Mud.Engine.{Character}
+
+  require Logger
+
+  use Mud.Engine.Command.Callback
+
+  # The process which executes the command logic first calls this method to have it parse the raw command AST nodes
+  # into something that the actual command execution logic expects and can more easily use.
+
+  # In some cases this may not even really be necessary, or at least it can act as simply a passthrough and :ok
+  # can be returned.
+  def build_ast(ast_nodes) do
+    %{
+      character:
+        Enum.find(ast_nodes, %{input: nil}, fn node ->
+          node.key in [:at_character, :to_character]
+        end)
+        |> Map.get(:input),
+      switch:
+        Enum.find(ast_nodes, %{input: nil}, fn node -> node.key in [:switch] end)
+        |> Map.get(:input),
+      volume:
+        Enum.find(ast_nodes, %{input: "say"}, fn node -> node.key == :say end) |> Map.get(:input),
+      words:
+        Enum.find(ast_nodes, %{input: nil}, fn node -> node.key in [:words] end)
+        |> Map.get(:input)
+    }
+  end
+
+  # This is where the actual execution of the command takes place.
+  # At this point the execution context (found at: lib/mud/engine/command/execution_context.ex) is populated and the
+  # build_ast function above has been called.
+  @impl true
+  def execute(context) do
+    Logger.debug("Executing Say command")
+    Logger.debug(inspect(context))
+    # Extract the ast for ease of access
+    ast = context.command.ast
+
+    IO.inspect(ast,
+      label: :execute
+    )
+
+    case ast do
+      %{character: nil} ->
+        validate_switch(context, ast)
+
+      _ ->
+        find_character_for_say(context)
+    end
+  end
+
+  defp find_character_for_say(context) do
+    ast = context.command.ast
+    IO.inspect(ast, label: :find_character_for_say)
+
+    results = Search.search_characters_in_area(context.character.area_id, ast.character)
+
+    case results do
+      {:ok, [match]} ->
+        ast = %{ast | character: match.match.name}
+
+        validate_switch(context, ast)
+
+      {:error, _} ->
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "Who did you wish to speak to?",
+            "system_warning"
+          )
+        )
+    end
+  end
+
+  defp validate_switch(context, ast = %{switch: nil}) do
+    say_thing(context, ast)
+  end
+
+  defp validate_switch(context, ast = %{switch: switch}) do
+    result = normalize_switch(switch)
+
+    case result do
+      {:ok, normalized_switch} ->
+        ast = %{ast | switch: normalized_switch}
+
+        say_thing(context, ast)
+
+      {:error, _} ->
+        context =
+          Context.append_message(
+            context,
+            Message.new_story_output(
+              context.character.id,
+              "Emote not recognized and is being ignored. See SAY commnad for information on available emotes.",
+              "system_warning"
+            )
+          )
+
+        ast = %{ast | switch: nil}
+        say_thing(context, ast)
+    end
+  end
+
+  defp say_thing(context, ast) do
+    IO.inspect(ast, label: :say_thing)
+
+    # if the character does not equal nil check to see if there is a match in the area. If there isn't throw an error, otherwise say the thing
+    # if not is_nil(ast.character) do
+    #   case Search.search_characters_in_area(context.character.area_id, ast.character) do
+    #     {:ok, [match | _matches]} ->
+
+    all_characters =
+      Character.list_others_active_in_areas(
+        context.character.id,
+        context.character.area_id
+      )
+
+    # If there is a character being spoken to we want to remove it from the list of characters to which the normal speaking message goes to
+
+    others = Enum.filter(all_characters, &(&1.name !== ast.character))
+
+    #
+    # FINISH UP SAY LOGIC HERE: MAKE SURE TO HANDLE MESSAGES TO CHARACTER BEING SPOKEN TO
+    #
+
+    # ast = Map.put(ast, :character, match.match.name)
+
+    other_msg =
+      others
+      |> Message.new_story_output()
+      |> Message.append_text("#{context.character.name}", "character")
+      |> Message.append_text(" says,", "base")
+      |> maybe_build_optional_string(ast)
+      |> Message.append_text(" \"#{ast.words}\"", "base")
+
+    self_msg =
+      context.character.id
+      |> Message.new_story_output()
+      |> Message.append_text("You", "character")
+      |> Message.append_text(" say,", "base")
+      |> maybe_build_optional_string(ast)
+      |> Message.append_text(" \"#{ast.words}\"", "base")
+
+    context =
+      context
+      |> Context.append_message(other_msg)
+      |> Context.append_message(self_msg)
+
+    if not is_nil(ast.character) do
+      target =
+        Enum.fetch!(all_characters, Enum.find_index(all_characters, &(&1.name == ast.character)))
+
+      target_msg =
+        target.id
+        |> Message.new_story_output()
+        |> Message.append_text("#{context.character.name}", "character")
+        |> Message.append_text(" says,", "base")
+        |> maybe_build_optional_string(ast, true)
+        |> Message.append_text(" \"#{ast.words}\"", "base")
+
+      Context.append_message(context, target_msg)
+    else
+      context
+    end
+  end
+
+  defp maybe_build_optional_string(message, ast, is_target \\ false)
+
+  defp maybe_build_optional_string(message, %{switch: nil, character: nil}, _is_target) do
+    message
+  end
+
+  defp maybe_build_optional_string(message, %{switch: switch, character: nil}, _is_target) do
+    Message.append_text(message, " #{switch},", "base")
+  end
+
+  defp maybe_build_optional_string(message, %{switch: nil, character: _}, true) do
+    Message.append_text(message, " to ", "base")
+    |> Message.append_text("you", "character")
+    |> Message.append_text(",", "base")
+  end
+
+  defp maybe_build_optional_string(message, %{switch: nil, character: character}, false) do
+    Message.append_text(message, " to ", "base")
+    |> Message.append_text(character, "character")
+    |> Message.append_text(",", "base")
+  end
+
+  defp maybe_build_optional_string(message, %{switch: switch, character: _}, true) do
+    Message.append_text(message, " #{switch} to ", "base")
+    |> Message.append_text("you", "character")
+    |> Message.append_text(",", "base")
+  end
+
+  defp maybe_build_optional_string(message, %{switch: switch, character: character}, false) do
+    Message.append_text(message, " #{switch} to ", "base")
+    |> Message.append_text(character, "character")
+    |> Message.append_text(",", "base")
+  end
+
+  @possible_emotes [
+    "absentmindedly",
+    "acerbically",
+    "acidly",
+    "adamantly",
+    "admiringly",
+    "adoringly",
+    "affably",
+    "affectionately",
+    "aggressively",
+    "agreeably",
+    "ambiguously",
+    "ambivalently",
+    "angrily",
+    "animatedly",
+    "anxiously",
+    "apathetically",
+    "apologetically",
+    "apoplectically",
+    "appreciatively",
+    "apprehensively",
+    "approvingly",
+    "ardently",
+    "arrogantly",
+    "articulately",
+    "artlessly",
+    "assertively",
+    "attentively",
+    "audaciously",
+    "awkwardly",
+    "bashfully",
+    "begrudgingly",
+    "beguilingly",
+    "belligerently",
+    "benignly",
+    "bewilderedly",
+    "bitingly",
+    "bitterly",
+    "bizarrely",
+    "blandly",
+    "bleakly",
+    "blissfully",
+    "blithely",
+    "bluntly",
+    "boastfully",
+    "boisterously",
+    "boldly",
+    "boorishly",
+    "brashly",
+    "bravely",
+    "brazenly",
+    "brightly",
+    "briskly",
+    "brusquely",
+    "brutally",
+    "busily",
+    "callously",
+    "calmly",
+    "candidly",
+    "cantankerously",
+    "carefully",
+    "carelessly",
+    "casually",
+    "cattily",
+    "cautiously",
+    "ceremoniously",
+    "charmingly",
+    "cheekily",
+    "cheerfully",
+    "cheerlessly",
+    "chivalrously",
+    "circumspectly",
+    "clearly",
+    "clumsily",
+    "coarsely",
+    "coaxingly",
+    "coldly",
+    "compassionately",
+    "concisely",
+    "condescendingly",
+    "confidently",
+    "conscientiously",
+    "considerately",
+    "consolingly",
+    "contemptuously",
+    "contentedly",
+    "contritely",
+    "coolly",
+    "cooperatively",
+    "courageously",
+    "courteously",
+    "covetously",
+    "coyly",
+    "crassly",
+    "credulously",
+    "crisply",
+    "critically",
+    "crossly",
+    "crudely",
+    "cruelly",
+    "cunningly",
+    "curiously",
+    "curtly",
+    "cynically",
+    "dangerously",
+    "daringly",
+    "darkly",
+    "dauntlessly",
+    "dazedly",
+    "decently",
+    "deceptively",
+    "decisively",
+    "deeply",
+    "deferentially",
+    "defiantly",
+    "dejectedly",
+    "deliberately",
+    "delicately",
+    "delightedly",
+    "densely",
+    "depressingly",
+    "derisively",
+    "desperately",
+    "despondently",
+    "deviously",
+    "devotedly",
+    "devoutly",
+    "diffidently",
+    "diplomatically",
+    "directly",
+    "disagreeably",
+    "discerningly",
+    "discreetly",
+    "disdainfully",
+    "disgustedly",
+    "disingenuously",
+    "dismally",
+    "dispassionately",
+    "disrespectfully",
+    "distantly",
+    "distractedly",
+    "divisively",
+    "docilely",
+    "dolefully",
+    "dopily",
+    "dotingly",
+    "doubtfully",
+    "dramatically",
+    "dreamily",
+    "drowsily",
+    "drunkenly",
+    "dryly",
+    "dully",
+    "duplicitously",
+    "dutifully",
+    "eagerly",
+    "earnestly",
+    "ecstatically",
+    "eerily",
+    "eloquently",
+    "emotionlessly",
+    "emphatically",
+    "endearingly",
+    "energetically",
+    "enigmatically",
+    "enthusiastically",
+    "enviously",
+    "ethically",
+    "euphorically",
+    "evasively",
+    "excitedly",
+    "explicitly",
+    "exultantly",
+    "faintly",
+    "fairly",
+    "faithfully",
+    "faithlessly",
+    "falsely",
+    "fatally",
+    "fearfully",
+    "fearlessly",
+    "feebly",
+    "ferociously",
+    "fervently",
+    "fiercely",
+    "firmly",
+    "flamboyantly",
+    "flatly",
+    "fluently",
+    "fluidly",
+    "fondly",
+    "foolishly",
+    "formally",
+    "frankly",
+    "frantically",
+    "frenetically",
+    "fretfully",
+    "furiously",
+    "futilely",
+    "generously",
+    "gently",
+    "genuinely",
+    "gingerly",
+    "gleefully",
+    "gloomily",
+    "graciously",
+    "gratefully",
+    "gravely",
+    "greedily",
+    "grievously",
+    "groggily",
+    "gruesomely",
+    "gruffly",
+    "grumblingly",
+    "grumpily",
+    "guardedly",
+    "gullibly",
+    "haggardly",
+    "haltingly",
+    "happily",
+    "harshly",
+    "hastily",
+    "hatefully",
+    "haughtily",
+    "hauntingly",
+    "heartily",
+    "heavily",
+    "helplessly",
+    "hesitantly",
+    "hoarsely",
+    "hollowly",
+    "honestly",
+    "hopefully",
+    "hopelessly",
+    "humbly",
+    "humorously",
+    "hungrily",
+    "hurriedly",
+    "hypocritically",
+    "hysterically",
+    "idiotically",
+    "ignorantly",
+    "imaginatively",
+    "impartially",
+    "impassively",
+    "impatiently",
+    "imperiously",
+    "impertinently",
+    "impiously",
+    "impishly",
+    "impudently",
+    "impulsively",
+    "incoherently",
+    "inconsiderately",
+    "incredulously",
+    "indecisively",
+    "indifferently",
+    "indignantly",
+    "inflexibly",
+    "informally",
+    "innocently",
+    "inquiringly",
+    "inquisitively",
+    "insanely",
+    "insincerely",
+    "insinuatingly",
+    "insolently",
+    "inspiringly",
+    "intelligently",
+    "intensely",
+    "intently",
+    "irately",
+    "ironically",
+    "irreverently",
+    "irritably",
+    "jauntily",
+    "jealously",
+    "jokingly",
+    "joshingly",
+    "jovially",
+    "joyfully",
+    "joylessly",
+    "jubilantly",
+    "judgmentally",
+    "judiciously",
+    "justly",
+    "kindheartedly",
+    "kindly",
+    "knavishly",
+    "knowingly",
+    "kookily",
+    "lackadaisically",
+    "laconically",
+    "languidly",
+    "laughingly",
+    "lazily",
+    "lethargically",
+    "lightheartedly",
+    "lightly",
+    "limply",
+    "lispingly",
+    "loathingly",
+    "loftily",
+    "longingly",
+    "loudly",
+    "lovingly",
+    "loyally",
+    "ludicrously",
+    "lyrically",
+    "madly",
+    "malevolently",
+    "malignantly",
+    "maniacally",
+    "manically",
+    "matter-of-factly",
+    "mawkishly",
+    "meaningfully",
+    "mechanically",
+    "meekly",
+    "melodically",
+    "melodiously",
+    "mendaciously",
+    "merrily",
+    "methodically",
+    "mildly",
+    "mindfully",
+    "mirthfully",
+    "mischievously",
+    "miserably",
+    "mistakenly",
+    "mockingly",
+    "modestly",
+    "morbidly",
+    "moronically",
+    "morosely",
+    "mournfully",
+    "mulishly",
+    "mysteriously",
+    "naively",
+    "nasally",
+    "naughtily",
+    "nervously",
+    "neurotically",
+    "noisily",
+    "numbly",
+    "obediently",
+    "obligingly",
+    "obnoxiously",
+    "observantly",
+    "obstinately",
+    "obstreperously",
+    "obtusely",
+    "oddly",
+    "offensively",
+    "ominously",
+    "openly",
+    "operatically",
+    "optimistically",
+    "outrageously",
+    "overjoyously",
+    "overconfidently",
+    "painfully",
+    "passionately",
+    "patiently",
+    "patronizingly",
+    "peevishly",
+    "penitently",
+    "pessimistically",
+    "phonily",
+    "piously",
+    "pithily",
+    "pitifully",
+    "pityingly",
+    "placidly",
+    "playfully",
+    "pleasantly",
+    "poetically",
+    "pointedly",
+    "politely",
+    "pompously",
+    "ponderously",
+    "positively",
+    "powerfully",
+    "prayerfully",
+    "precisely",
+    "pretentiously",
+    "primly",
+    "profoundly",
+    "proudly",
+    "pugnaciously",
+    "quarrelsomely",
+    "quaveringly",
+    "queasily",
+    "querulously",
+    "questioningly",
+    "quickly",
+    "quietly",
+    "quizzically",
+    "rancidly",
+    "rancorously",
+    "rapaciously",
+    "rapidly",
+    "rapturously",
+    "rashly",
+    "raucously",
+    "ravenously",
+    "reassuringly",
+    "recklessly",
+    "regretfully",
+    "reluctantly",
+    "remorsefully",
+    "reproachfully",
+    "resentfully",
+    "resignedly",
+    "resonantly",
+    "respectfully",
+    "restlessly",
+    "reverentially",
+    "reverently",
+    "rhetorically",
+    "rhythmically",
+    "righteously",
+    "rightly",
+    "rigidly",
+    "roughly",
+    "rudely",
+    "ruefully",
+    "ruthlessly",
+    "sadly",
+    "saltily",
+    "sanctimoniously",
+    "sarcastically",
+    "sardonically",
+    "sassily",
+    "savagely",
+    "savvily",
+    "scornfully",
+    "searchingly",
+    "sedately",
+    "sensibly",
+    "serenely",
+    "seriously",
+    "severely",
+    "shakily",
+    "shamefully",
+    "sharply",
+    "sheepishly",
+    "shrewdly",
+    "shriekingly",
+    "shrilly",
+    "shyly",
+    "sibilantly",
+    "simperingly",
+    "simply",
+    "sincerely",
+    "skeptically",
+    "sleepily",
+    "slickly",
+    "slothfully",
+    "slowly",
+    "slyly",
+    "smartly",
+    "smoothly",
+    "smugly",
+    "snarkily",
+    "snidely",
+    "soberly",
+    "softly",
+    "solemnly",
+    "solicitously",
+    "somberly",
+    "sonorously",
+    "soothingly",
+    "sorrowfully",
+    "spasmodically",
+    "spitefully",
+    "spontaneously",
+    "squeakily",
+    "sternly",
+    "stiffly",
+    "stoically",
+    "stormily",
+    "strangely",
+    "strictly",
+    "strongly",
+    "stubbornly",
+    "stupidly",
+    "stutteringly",
+    "suavely",
+    "subconsciously",
+    "succinctly",
+    "suspiciously",
+    "sweetly",
+    "sympathetically",
+    "tactfully",
+    "tactlessly",
+    "tearfully",
+    "teasingly",
+    "tempestuously",
+    "tenderly",
+    "tensely",
+    "tepidly",
+    "tersely",
+    "thankfully",
+    "thanklessly",
+    "theatrically",
+    "thoughtfully",
+    "thoughtlessly",
+    "threateningly",
+    "timidly",
+    "timorously",
+    "tiredly",
+    "tonelessly",
+    "tranquilly",
+    "tremulously",
+    "triumphantly",
+    "truthfully",
+    "tumultuously",
+    "unabashedly",
+    "unambiguously",
+    "unappreciatively",
+    "unceremoniously",
+    "uncomfortably",
+    "unconvincingly",
+    "uncooperatively",
+    "uncouthly",
+    "undiscerningly",
+    "uneasily",
+    "unemotionally",
+    "unethically",
+    "unflinchingly",
+    "ungratefully",
+    "unhappily",
+    "unimaginatively",
+    "uninterestedly",
+    "unnaturally",
+    "untruthfully",
+    "upliftingly",
+    "urgently",
+    "uselessly",
+    "vacantly",
+    "vaguely",
+    "vainly",
+    "valiantly",
+    "valorously",
+    "vehemently",
+    "vengefully",
+    "venomously",
+    "viciously",
+    "victoriously",
+    "vindictively",
+    "virtuously",
+    "vivaciously",
+    "voraciously",
+    "warily",
+    "warmly",
+    "warningly",
+    "weakly",
+    "wearily",
+    "weirdly",
+    "wheezily",
+    "whiningly",
+    "wickedly",
+    "wildly",
+    "willfully",
+    "wisely",
+    "wistfully",
+    "witheringly",
+    "wittily",
+    "woefully",
+    "woodenly",
+    "worriedly",
+    "worshipfully",
+    "wryly",
+    "yearningly",
+    "yieldingly",
+    "zanily",
+    "zealously",
+    "zestfully"
+  ]
+
+  defp normalize_switch(switch) do
+    result =
+      Enum.find(@possible_emotes, fn emote ->
+        String.starts_with?(emote, switch)
+      end)
+
+    if not is_nil(result) do
+      {:ok, result}
+    else
+      {:error, :not_found}
+    end
+  end
+end

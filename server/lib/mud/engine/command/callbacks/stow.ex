@@ -308,7 +308,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         stow_item_on_visible_surfaces_in_area_or_inventory(context)
@@ -326,7 +326,7 @@ defmodule Mud.Engine.Command.Stow do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, true)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         find_item_in_hands(context)

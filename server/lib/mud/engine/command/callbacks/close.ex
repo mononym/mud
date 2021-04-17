@@ -117,10 +117,8 @@ defmodule Mud.Engine.Command.Close do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
-
         # then just handle results as normal
-        handle_search_results(context, {:ok, sorted_results})
+        handle_search_results(context, {:ok, matches})
 
       _ ->
         handle_search_results(context, results)
@@ -181,7 +179,7 @@ defmodule Mud.Engine.Command.Close do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         close_item_with_personal_place(context)
@@ -208,7 +206,7 @@ defmodule Mud.Engine.Command.Close do
 
       _ ->
         area_results =
-          Search.find_matches_in_area(
+          Search.find_matches_on_ground(
             context.character.area_id,
             context.command.ast.thing.input,
             context.character.settings.commands.search_mode
@@ -216,11 +214,29 @@ defmodule Mud.Engine.Command.Close do
 
         case area_results do
           {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
+            handle_search_results(context, {:ok, area_matches})
 
           _ ->
-            close_item_in_inventory(context)
+            close_item_on_visible_surfaces_in_area_or_inventory(context)
         end
+    end
+  end
+
+  # Checks the area for an item and if nothing is found moves on to the inventory
+  defp close_item_on_visible_surfaces_in_area_or_inventory(context) do
+    area_results =
+      Search.find_matches_on_visible_surfaces(
+        context.character.area_id,
+        context.command.ast.thing.input,
+        context.character.settings.commands.search_mode
+      )
+
+    case area_results do
+      {:ok, area_matches} when area_matches != [] ->
+        handle_search_results(context, {:ok, area_matches})
+
+      _ ->
+        close_item_in_inventory(context)
     end
   end
 

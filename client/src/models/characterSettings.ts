@@ -30,6 +30,8 @@ export interface CharacterSettingsInterface {
     ammunition: string;
     shield: string;
     clothing: string;
+    jewelry: string;
+    structure: string;
     misc: string;
 
     // Link Types
@@ -63,6 +65,24 @@ export interface CharacterSettingsInterface {
     play_music: boolean;
     play_ambiance: boolean;
     play_sound_effects: boolean;
+  };
+  directionsWindow: {
+    id: string;
+    active_direction_background_color: string;
+    active_direction_icon_color: string;
+    inactive_direction_background_color: string;
+    inactive_direction_icon_color: string;
+    background_color: string;
+  };
+  statusWindow: {
+    id: string;
+    posture_icon_color: string;
+    background_color: string;
+  };
+  environmentWindow: {
+    id: string;
+    background_color: string;
+    time_text_color: string;
   };
   mapWindow: {
     id: string;
@@ -163,6 +183,24 @@ const state: CharacterSettingsInterface = {
     play_music: true,
     play_ambiance: true,
     play_sound_effects: true,
+  },
+  directionsWindow: {
+    id: "",
+    active_direction_background_color: "",
+    active_direction_icon_color: "",
+    inactive_direction_background_color: "",
+    inactive_direction_icon_color: "",
+    background_color: "",
+  },
+  statusWindow: {
+    id: "",
+    posture_icon_color: "",
+    background_color: "",
+  },
+  environmentWindow: {
+    id: "",
+    background_color: "",
+    time_text_color: "",
   },
   areaWindow: {
     id: "",
@@ -269,6 +307,8 @@ const state: CharacterSettingsInterface = {
     armor: "#ffffff",
     gem: "#ffffff",
     coin: "#FFD700",
+    jewelry: "#FFD700",
+    structure: "#FFD700",
     ammunition: "#ffffff",
     shield: "#ffffff",
     clothing: "#ffffff",

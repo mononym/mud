@@ -1,6 +1,6 @@
 defmodule Mud.Engine.ItemSearch do
   @moduledoc """
-  Helper module for Items which contains all of the different, specific, searches that might need to be made.any()
+  Helper module for Items which contains all of the different, specific, searches that might need to be made.
   """
 
   alias Mud.Engine.Item

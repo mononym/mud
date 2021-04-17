@@ -82,7 +82,6 @@ defmodule Mud.Engine.Command.Wear do
     end
   end
 
-  @spec wear_thing(Context.t(), Mud.Engine.Item.t()) :: Context.t()
   defp wear_thing(context, match, other_matches \\ []) do
     original_item = match.match
 

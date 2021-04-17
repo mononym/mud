@@ -521,6 +521,40 @@
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Jewelry names in both the Story Window and the Area Window."
+      >
+        <label
+          for="jewelryTextColor"
+          class="block text-sm font-medium text-gray-300"
+          >Jewelry Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.jewelry}
+          type="color"
+          name="jewelryTextColor"
+          id="jewelryTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div
+        class="col-span-2"
+        data-tippy-content="The color of Structure names in both the Story Window and the Area Window."
+      >
+        <label
+          for="structureTextColor"
+          class="block text-sm font-medium text-gray-300"
+          >Structure Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.colors.structure}
+          type="color"
+          name="structureTextColor"
+          id="structureTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
       <div class="col-span-2">
         <label
           for="miscTextColor"
@@ -1368,6 +1402,159 @@
           type="color"
           name="backgroundColor"
           id="backgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
+    <div class="col-span-4 grid grid-cols-8 gap-4">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
+      >
+        Status Window
+      </h2>
+      <div class="col-span-4">
+        <label
+          for="postureIconColor"
+          class="block text-sm font-medium text-gray-300"
+          >Posture Icon Color</label
+        >
+        <input
+          bind:value={$characterSettings.statusWindow.posture_icon_color}
+          type="color"
+          name="postureIconColor"
+          id="postureIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="statusWindowBackgroundColor"
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.statusWindow.background_color}
+          type="color"
+          name="statusWindowBackgroundColor"
+          id="statusWindowBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
+    <div class="col-span-4 grid grid-cols-8 gap-4">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
+      >
+        Environment Window
+      </h2>
+      <div class="col-span-4">
+        <label
+          for="environmentWindowTimeTextColor"
+          class="block text-sm font-medium text-gray-300">Time Text Color</label
+        >
+        <input
+          bind:value={$characterSettings.environmentWindow.time_text_color}
+          type="color"
+          name="environmentWindowTimeTextColor"
+          id="environmentWindowTimeTextColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="environmentWindowBackgroundColor"
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.environmentWindow.background_color}
+          type="color"
+          name="environmentWindowBackgroundColor"
+          id="environmentWindowBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+    </div>
+
+    <div class="col-span-4 grid grid-cols-8 gap-4">
+      <h2
+        class="text-center text-gray-300 border-b-2 border-primary col-span-8"
+      >
+        Directions Window
+      </h2>
+      <div class="col-span-4">
+        <label
+          for="directionsWindowActiveDirectionBackgroundColor"
+          class="block text-sm font-medium text-gray-300"
+          >Active Direction Background color</label
+        >
+        <input
+          bind:value={$characterSettings.directionsWindow
+            .active_direction_background_color}
+          type="color"
+          name="directionsWindowActiveDirectionBackgroundColor"
+          id="directionsWindowActiveDirectionBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="directionsWindowActiveDirectionIconColor"
+          class="block text-sm font-medium text-gray-300"
+          >Active Direction Icon color</label
+        >
+        <input
+          bind:value={$characterSettings.directionsWindow
+            .active_direction_icon_color}
+          type="color"
+          name="directionsWindowActiveDirectionIconColor"
+          id="directionsWindowActiveDirectionIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="directionsWindowInactiveDirectionBackgroundColor"
+          class="block text-sm font-medium text-gray-300"
+          >Inactive Direction Background color</label
+        >
+        <input
+          bind:value={$characterSettings.directionsWindow
+            .inactive_direction_background_color}
+          type="color"
+          name="directionsWindowInactiveDirectionBackgroundColor"
+          id="directionsWindowInactiveDirectionBackgroundColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="directionsWindowinactiveDirectionIconColor"
+          class="block text-sm font-medium text-gray-300"
+          >Inactive Direction Icon color</label
+        >
+        <input
+          bind:value={$characterSettings.directionsWindow
+            .inactive_direction_icon_color}
+          type="color"
+          name="directionsWindowInactiveDirectionIconColor"
+          id="directionsWindowInactiveDirectionIconColor"
+          class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+        />
+      </div>
+      <div class="col-span-4">
+        <label
+          for="directionsWindowBackgroundColor"
+          class="block text-sm font-medium text-gray-300"
+          >Background Color</label
+        >
+        <input
+          bind:value={$characterSettings.directionsWindow.background_color}
+          type="color"
+          name="directionsWindowBackgroundColor"
+          id="directionsWindowBackgroundColor"
           class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
         />
       </div>

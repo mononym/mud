@@ -764,7 +764,7 @@ export function createState() {
         otherCharactersInArea.set(msg.otherCharacters);
         resetToi();
         resetOnGround();
-        exitsInArea.set(msg.exits);
+        resetExits(msg.exits);
       } else if (msg.action == "update") {
         addItemsToAreaItemsIndex(msg.items);
         resetToi();
@@ -949,6 +949,7 @@ export function createState() {
     resetOnGround,
     updateOtherCharacters,
     updateExits,
+    resetExits,
     resetToi,
     addExits,
     removeOtherCharacters,

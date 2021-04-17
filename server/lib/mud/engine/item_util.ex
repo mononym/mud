@@ -7,7 +7,6 @@ defmodule Mud.Engine.ItemUtil do
   alias Mud.Engine.Message
   alias Mud.Engine.Item
   alias Mud.Engine.ItemSearch
-  alias Mud.Engine.Command.CallbackUtil
 
   @doc """
   Given a set of items, create a map where the key is the item id and the value is the item itself.
@@ -265,10 +264,10 @@ defmodule Mud.Engine.ItemUtil do
         # Pull out the actual children to display, and then also flag whether or not there were too many
         {children, too_many_children_to_display} =
           if length(child_index[item.id]) > item.surface.show_item_limit do
-            sorted_children = CallbackUtil.sort_items(child_index[item.id], true)
+            sorted_children = sort_items(child_index[item.id], true)
             {Enum.take(sorted_children, item.surface.show_item_limit), true}
           else
-            {CallbackUtil.sort_items(child_index[item.id], true), false}
+            {sort_items(child_index[item.id], true), false}
           end
 
         message =
@@ -297,15 +296,6 @@ defmodule Mud.Engine.ItemUtil do
     end
   end
 
-  defp count_of_children_to_append_string(num_children) do
-    cond do
-      num_children == 1 -> "something"
-      num_children <= 3 -> "a few things"
-      num_children <= 0 -> "several things"
-      true -> "lots of things"
-    end
-  end
-
   defp build_item_description(
          message,
          item,
@@ -315,6 +305,16 @@ defmodule Mud.Engine.ItemUtil do
     Message.append_text(message, item.description.short, Engine.Util.get_item_type(item))
   end
 
+  defp count_of_children_to_append_string(num_children) do
+    cond do
+      num_children == 1 -> "something"
+      num_children <= 3 -> "a few things"
+      num_children <= 6 -> "several things"
+      num_children <= 10 -> "a bunch of things"
+      true -> "lots of things"
+    end
+  end
+
   def get_weight_of_children(item_id, place) do
     ItemSearch.weight_of_immediate_children_with_relationship(
       item_id,
@@ -322,7 +322,7 @@ defmodule Mud.Engine.ItemUtil do
     )
   end
 
-  def sort_items(items, oldest_move_first) do
+  def sort_items(items, newest_move_first) do
     ancestors = Item.list_all_parents(items)
 
     # create ancestor tree index
@@ -390,10 +390,10 @@ defmodule Mud.Engine.ItemUtil do
             # both on the same root layer, so can go by when they were last moved
             Enum.find_index(roots, &(&1 == parent_index[item1.id])) ==
                 Enum.find_index(roots, &(&1 == parent_index[item2.id])) ->
-              if oldest_move_first do
-                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
-              else
+              if newest_move_first do
                 DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+              else
+                DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
               end
           end
 
@@ -401,10 +401,10 @@ defmodule Mud.Engine.ItemUtil do
         layer_index[item1.id] == layer_index[item2.id] ->
           if item1.location.relative_item_id == item2.location.relative_item_id do
             # same layer same parent go by own sort order
-            if oldest_move_first do
-              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
-            else
+            if newest_move_first do
               DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:gt, :eq]
+            else
+              DateTime.compare(item1.location.moved_at, item2.location.moved_at) in [:lt, :eq]
             end
           else
             # same layer different parents go by parents sort order

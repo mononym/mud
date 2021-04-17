@@ -3,7 +3,7 @@
   import { key } from "./state";
 
   const state = getContext(key);
-  const { AudioStore } = state;
+  const { AudioStore, selectedCharacter } = state;
 
   const {
     musicVolume,
@@ -53,6 +53,7 @@
   let player;
 
   onMount(() => {
+    $playMusic = $selectedCharacter.settings.audio.play_music;
     console.log($musicVolume);
     player.volume = $musicVolume;
     randomizeSong();

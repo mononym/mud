@@ -254,10 +254,8 @@ defmodule Mud.Engine.Command.Open do
 
     case results do
       {:ok, matches} ->
-        sorted_results = CallbackUtil.sort_matches(matches, false)
-
         # then just handle results as normal
-        handle_search_results(context, {:ok, sorted_results})
+        handle_search_results(context, {:ok, matches})
 
       _ ->
         handle_search_results(context, results)
@@ -318,7 +316,7 @@ defmodule Mud.Engine.Command.Open do
 
     case area_results do
       {:ok, area_matches} when area_matches != [] ->
-        handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
+        handle_search_results(context, {:ok, area_matches})
 
       _ ->
         open_item_with_personal_place(context)
@@ -348,12 +346,13 @@ defmodule Mud.Engine.Command.Open do
           Search.find_matches_in_area(
             context.character.area_id,
             context.command.ast.thing.input,
-            context.character.settings.commands.search_mode
+            context.character.settings.commands.search_mode,
+            context.character
           )
 
         case area_results do
           {:ok, area_matches} when area_matches != [] ->
-            handle_search_results(context, {:ok, CallbackUtil.sort_matches(area_matches, false)})
+            handle_search_results(context, {:ok, area_matches})
 
           _ ->
             open_item_in_inventory(context)

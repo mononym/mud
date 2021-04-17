@@ -382,6 +382,15 @@ defmodule Mud.Engine.Util do
       item.flags.coin ->
         "coin"
 
+      item.flags.is_jewelry ->
+        "jewelry"
+
+      item.flags.is_structure ->
+        "structure"
+
+      item.flags.is_misc ->
+        "misc"
+
       true ->
         default
     end
@@ -950,6 +959,51 @@ defmodule Mud.Engine.Util do
     cond do
       wearable.slot == Constants.on_back_slot() ->
         {"on", "back"}
+
+      wearable.slot == Constants.around_waist_slot() ->
+        {"around", "waist"}
+
+      wearable.slot == Constants.on_belt_slot() ->
+        {"on", "belt"}
+
+      wearable.slot == Constants.on_finger_slot() ->
+        {"on", "finger"}
+
+      wearable.slot == Constants.over_shoulder_slot() ->
+        {"over", "shoulder"}
+
+      wearable.slot == Constants.over_shoulders_slot() ->
+        {"over", "shoulders"}
+
+      wearable.slot == Constants.on_head_slot() ->
+        {"on", "head"}
+
+      wearable.slot == Constants.in_hair_slot() ->
+        {"in", "hair"}
+
+      wearable.slot == Constants.on_hair_slot() ->
+        {"on", "hair"}
+
+      wearable.slot == Constants.around_neck_slot() ->
+        {"around", "neck"}
+
+      wearable.slot == Constants.on_torso_slot() ->
+        {"on", "torso"}
+
+      wearable.slot == Constants.on_legs_slot() ->
+        {"on", "legs"}
+
+      wearable.slot == Constants.on_feet_slot() ->
+        {"on", "feet"}
+
+      wearable.slot == Constants.on_hands_slot() ->
+        {"on", "hands"}
+
+      wearable.slot == Constants.on_thigh_slot() ->
+        {"on", "thigh"}
+
+      wearable.slot == Constants.on_ankle_slot() ->
+        {"around", "ankle"}
 
       true ->
         {"on", "body"}

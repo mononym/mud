@@ -3,7 +3,6 @@ defmodule Mud.Engine.Item.Pocket do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.ItemSearch
   require Logger
 
   @type id :: String.t()
