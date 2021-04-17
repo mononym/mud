@@ -70,6 +70,22 @@
             <option>silent</option>
           </select>
         </div>
+        <div
+          class="col-span-6"
+          data-tippy-content="If selected the '/emotes' used in the SAY command must be full and exact. There will be no fuzzy/partial matching.."
+        >
+          <label
+            for="sayRequiresExactEmote"
+            class="block text-sm font-medium text-gray-300"
+            >Say Requires Exact Emote</label
+          >
+          <input
+            bind:checked={$characterSettings.commands.say_requires_exact_emote}
+            type="checkbox"
+            name="sayRequiresExactEmote"
+            id="sayRequiresExactEmote"
+          />
+        </div>
       </div>
       <div class="col-span-4 text-right sm:px-6">
         <button

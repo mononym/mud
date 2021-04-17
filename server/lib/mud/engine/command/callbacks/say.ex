@@ -29,6 +29,7 @@ defmodule Mud.Engine.Command.Say do
   alias Mud.Engine.Message
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character}
+  alias Mud.Engine.Util
 
   require Logger
 
@@ -54,6 +55,7 @@ defmodule Mud.Engine.Command.Say do
       words:
         Enum.find(ast_nodes, %{input: nil}, fn node -> node.key in [:words] end)
         |> Map.get(:input)
+        |> Util.upcase_first()
     }
   end
 
@@ -109,7 +111,8 @@ defmodule Mud.Engine.Command.Say do
   end
 
   defp validate_switch(context, ast = %{switch: switch}) do
-    result = normalize_switch(switch)
+    result =
+      normalize_switch(switch, context.character.settings.commands.say_requires_exact_emote)
 
     case result do
       {:ok, normalized_switch} ->
@@ -157,21 +160,35 @@ defmodule Mud.Engine.Command.Say do
 
     # ast = Map.put(ast, :character, match.match.name)
 
+    {self, other} =
+      cond do
+        String.ends_with?(ast.words, "!") ->
+          {"exclaim", "exclaims"}
+
+        String.ends_with?(ast.words, "?") ->
+          {"ask", "asks"}
+
+        true ->
+          {"say", "says"}
+      end
+
     other_msg =
       others
       |> Message.new_story_output()
       |> Message.append_text("#{context.character.name}", "character")
-      |> Message.append_text(" says,", "base")
-      |> maybe_build_optional_string(ast)
-      |> Message.append_text(" \"#{ast.words}\"", "base")
+      |> maybe_add_switch(ast)
+      |> Message.append_text(" #{other}", "base")
+      |> maybe_add_character(ast)
+      |> Message.append_text(", \"#{ast.words}\"", "base")
 
     self_msg =
       context.character.id
       |> Message.new_story_output()
       |> Message.append_text("You", "character")
-      |> Message.append_text(" say,", "base")
-      |> maybe_build_optional_string(ast)
-      |> Message.append_text(" \"#{ast.words}\"", "base")
+      |> maybe_add_switch(ast)
+      |> Message.append_text(" #{self}", "base")
+      |> maybe_add_character(ast)
+      |> Message.append_text(", \"#{ast.words}\"", "base")
 
     context =
       context
@@ -186,9 +203,10 @@ defmodule Mud.Engine.Command.Say do
         target.id
         |> Message.new_story_output()
         |> Message.append_text("#{context.character.name}", "character")
-        |> Message.append_text(" says,", "base")
-        |> maybe_build_optional_string(ast, true)
-        |> Message.append_text(" \"#{ast.words}\"", "base")
+        |> maybe_add_switch(ast)
+        |> Message.append_text(" #{other}", "base")
+        |> maybe_add_character(ast, true)
+        |> Message.append_text(", \"#{ast.words}\"", "base")
 
       Context.append_message(context, target_msg)
     else
@@ -196,38 +214,30 @@ defmodule Mud.Engine.Command.Say do
     end
   end
 
-  defp maybe_build_optional_string(message, ast, is_target \\ false)
+  defp maybe_add_character(message, ast, is_target \\ false)
 
-  defp maybe_build_optional_string(message, %{switch: nil, character: nil}, _is_target) do
+  defp maybe_add_character(message, %{character: nil}, _is_target) do
     message
   end
 
-  defp maybe_build_optional_string(message, %{switch: switch, character: nil}, _is_target) do
-    Message.append_text(message, " #{switch},", "base")
+  defp maybe_add_character(message, %{character: character}, false) do
+    message
+    |> Message.append_text(" to ", "base")
+    |> Message.append_text("#{character}", "character")
   end
 
-  defp maybe_build_optional_string(message, %{switch: nil, character: _}, true) do
-    Message.append_text(message, " to ", "base")
+  defp maybe_add_character(message, %{character: _character}, true) do
+    message
+    |> Message.append_text(" to ", "base")
     |> Message.append_text("you", "character")
-    |> Message.append_text(",", "base")
   end
 
-  defp maybe_build_optional_string(message, %{switch: nil, character: character}, false) do
-    Message.append_text(message, " to ", "base")
-    |> Message.append_text(character, "character")
-    |> Message.append_text(",", "base")
+  defp maybe_add_switch(message, %{switch: nil}) do
+    message
   end
 
-  defp maybe_build_optional_string(message, %{switch: switch, character: _}, true) do
-    Message.append_text(message, " #{switch} to ", "base")
-    |> Message.append_text("you", "character")
-    |> Message.append_text(",", "base")
-  end
-
-  defp maybe_build_optional_string(message, %{switch: switch, character: character}, false) do
-    Message.append_text(message, " #{switch} to ", "base")
-    |> Message.append_text(character, "character")
-    |> Message.append_text(",", "base")
+  defp maybe_add_switch(message, %{switch: switch}) do
+    Message.append_text(message, " #{switch}", "base")
   end
 
   @possible_emotes [
@@ -811,10 +821,14 @@ defmodule Mud.Engine.Command.Say do
     "zestfully"
   ]
 
-  defp normalize_switch(switch) do
+  defp normalize_switch(switch, say_requires_exact_emote) do
     result =
-      Enum.find(@possible_emotes, fn emote ->
-        String.starts_with?(emote, switch)
+      Enum.find(@possible_emotes, nil, fn emote ->
+        if say_requires_exact_emote do
+          emote === switch
+        else
+          String.starts_with?(emote, switch)
+        end
       end)
 
     if not is_nil(result) do

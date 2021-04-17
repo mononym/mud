@@ -26,6 +26,7 @@ defmodule Mud.Engine.Character.Settings do
       @derive Jason.Encoder
       field(:search_mode, :string, default: "simple")
       field(:multiple_matches_mode, :string, default: "full path")
+      field(:say_requires_exact_emote, :boolean, default: false)
     end
 
     embeds_one :directions_window, DirectionsWindow, on_replace: :delete do
@@ -474,7 +475,8 @@ defmodule Mud.Engine.Character.Settings do
     |> cast(params, [
       :id,
       :search_mode,
-      :multiple_matches_mode
+      :multiple_matches_mode,
+      :say_requires_exact_emote
     ])
   end
 
@@ -789,7 +791,8 @@ defmodule Mud.Engine.Character.Settings do
   defp insert_default_commands_settings(attrs) do
     Map.put(attrs, :commands, %{
       search_mode: "simple",
-      multiple_matches_mode: "full path"
+      multiple_matches_mode: "full path",
+      say_requires_exact_emote: false
     })
   end
 end

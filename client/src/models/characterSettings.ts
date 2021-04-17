@@ -168,8 +168,10 @@ export interface CharacterSettingsInterface {
     show_quick_actions: boolean;
   };
   customHotkeys: HotkeyInterface[];
-  characters: {
+  commands: {
     search_mode: string;
+    multiple_matches_mode: string;
+    say_requires_exact_emote: boolean;
   };
 }
 
@@ -345,8 +347,10 @@ const state: CharacterSettingsInterface = {
     select_cli: "CTRL + SHIFT + KeyC",
   },
   customHotkeys: [],
-  characters: {
+  commands: {
     search_mode: "simple",
+    multiple_matches_mode: "full path",
+    say_requires_exact_emote: false,
   },
 };
 
