@@ -30,7 +30,7 @@ defmodule Mud.Engine.Command.Executor do
 
     input =
       if String.starts_with?(input, "'") or String.starts_with?(input, "\"") do
-        "say " <> String.trim(String.slice(input, 1..-1))
+        String.trim("say " <> String.trim(String.slice(input, 1..-1)))
       else
         input
       end

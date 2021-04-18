@@ -833,6 +833,37 @@
           />
         </div>
 
+        <div class="col-span-1">
+          <label
+            for="soundTravelsWhenOpen"
+            class="block text-sm font-medium text-gray-300"
+            >Sound Travels when Open</label
+          >
+          <input
+            bind:checked={$linkUnderConstruction.flags.sound_travels_when_open}
+            type="checkbox"
+            name="soundTravelsWhenOpen"
+            id="soundTravelsWhenOpen"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div class="col-span-1">
+          <label
+            for="soundTravelsWhenClosed"
+            class="block text-sm font-medium text-gray-300"
+            >Sound Travels when Closed</label
+          >
+          <input
+            bind:checked={$linkUnderConstruction.flags
+              .sound_travels_when_closed}
+            type="checkbox"
+            name="soundTravelsWhenClosed"
+            id="soundTravelsWhenClosed"
+            class="mt-1 bg-gray-400 text-black focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+          />
+        </div>
+
         {#if !$linkUnderConstruction.flags.direction}
           <div class="col-span-1 flex flex-col place-content-center">
             <i

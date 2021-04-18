@@ -5,6 +5,8 @@ export interface LinkFlagsInterface {
   portal: boolean;
   direction: boolean;
   object: boolean;
+  sound_travels_when_open: boolean;
+  sound_travels_when_closed: boolean;
 }
 
 const state: LinkFlagsInterface = {
@@ -14,6 +16,8 @@ const state: LinkFlagsInterface = {
   portal: false,
   direction: true,
   object: false,
+  sound_travels_when_open: true,
+  sound_travels_when_closed: false,
 };
 
 export default state;

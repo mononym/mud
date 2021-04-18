@@ -14,7 +14,9 @@ defmodule Mud.Engine.Link.Flags do
              :closable,
              :portal,
              :direction,
-             :object
+             :object,
+             :sound_travels_when_open,
+             :sound_travels_when_closed
            ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "link_flags" do
@@ -23,6 +25,8 @@ defmodule Mud.Engine.Link.Flags do
     field(:portal, :boolean, default: false)
     field(:direction, :boolean, default: false)
     field(:object, :boolean, default: false)
+    field(:sound_travels_when_open, :boolean, default: true)
+    field(:sound_travels_when_closed, :boolean, default: false)
   end
 
   @doc false
@@ -34,7 +38,9 @@ defmodule Mud.Engine.Link.Flags do
       :closable,
       :portal,
       :direction,
-      :object
+      :object,
+      :sound_travels_when_open,
+      :sound_travels_when_closed
     ])
     |> foreign_key_constraint(:link_id)
   end

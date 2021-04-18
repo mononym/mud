@@ -968,7 +968,7 @@ defmodule Mud.Engine.Rules.Commands do
       callback_module: Command.Say,
       parts: [
         %Part{
-          matches: ["say", "scream", "shout", "yell"],
+          matches: ["say"],
           key: :say,
           transformer: &Enum.join/1
         },

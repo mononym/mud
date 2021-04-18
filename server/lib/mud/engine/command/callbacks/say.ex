@@ -30,6 +30,7 @@ defmodule Mud.Engine.Command.Say do
   alias Mud.Engine.Command.Context
   alias Mud.Engine.{Character}
   alias Mud.Engine.Util
+  alias Mud.Engine.Character.Settings
 
   require Logger
 
@@ -41,6 +42,10 @@ defmodule Mud.Engine.Command.Say do
   # In some cases this may not even really be necessary, or at least it can act as simply a passthrough and :ok
   # can be returned.
   def build_ast(ast_nodes) do
+    IO.inspect(ast_nodes,
+      label: :build_ast
+    )
+
     %{
       character:
         Enum.find(ast_nodes, %{input: nil}, fn node ->
@@ -50,12 +55,9 @@ defmodule Mud.Engine.Command.Say do
       switch:
         Enum.find(ast_nodes, %{input: nil}, fn node -> node.key in [:switch] end)
         |> Map.get(:input),
-      volume:
-        Enum.find(ast_nodes, %{input: "say"}, fn node -> node.key == :say end) |> Map.get(:input),
       words:
         Enum.find(ast_nodes, %{input: nil}, fn node -> node.key in [:words] end)
         |> Map.get(:input)
-        |> Util.upcase_first()
     }
   end
 
@@ -74,6 +76,25 @@ defmodule Mud.Engine.Command.Say do
     )
 
     case ast do
+      %{character: nil, switch: nil, words: nil} ->
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            Util.get_module_docs(__MODULE__),
+            "system_info"
+          )
+        )
+
+      %{switch: "emotes", words: nil} ->
+        list_emotes(context)
+
+      %{switch: "emotes", words: "reset"} ->
+        clear_default_emote(context)
+
+      %{switch: "emotes"} ->
+        set_default_emote(context)
+
       %{character: nil} ->
         validate_switch(context, ast)
 
@@ -82,9 +103,72 @@ defmodule Mud.Engine.Command.Say do
     end
   end
 
+  defp clear_default_emote(context) do
+    Settings.update!(context.character.settings, %{
+      commands:
+        Map.from_struct(%{
+          context.character.settings.commands
+          | say_default_emote: nil
+        })
+    })
+
+    Context.append_message(
+      context,
+      Message.new_story_output(
+        context.character.id,
+        "Cleared default emote for the SAY command.",
+        "system_info"
+      )
+    )
+  end
+
+  defp set_default_emote(context) do
+    ast = context.command.ast
+
+    IO.inspect(ast.words,
+      label: :set_default_emote
+    )
+
+    IO.inspect(context.character.settings.commands.say_requires_exact_emote,
+      label: :set_default_emote
+    )
+
+    result =
+      normalize_switch(ast.words, context.character.settings.commands.say_requires_exact_emote)
+
+    case result do
+      {:ok, normalized_switch} ->
+        Settings.update!(context.character.settings, %{
+          commands:
+            Map.from_struct(%{
+              context.character.settings.commands
+              | say_default_emote: normalized_switch
+            })
+        })
+
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "Saved the following emote as the default for the SAY command: #{normalized_switch}",
+            "system_info"
+          )
+        )
+
+      {:error, _} ->
+        Context.append_message(
+          context,
+          Message.new_story_output(
+            context.character.id,
+            "Emote not recognized. No default set.",
+            "system_alert"
+          )
+        )
+    end
+  end
+
   defp find_character_for_say(context) do
     ast = context.command.ast
-    IO.inspect(ast, label: :find_character_for_say)
 
     results = Search.search_characters_in_area(context.character.area_id, ast.character)
 
@@ -107,7 +191,14 @@ defmodule Mud.Engine.Command.Say do
   end
 
   defp validate_switch(context, ast = %{switch: nil}) do
-    say_thing(context, ast)
+    IO.inspect(context.character.settings.commands.say_default_emote, label: :validate_switch)
+    # If there is a default emote while none has been provided by the player, use the default
+    if not is_nil(context.character.settings.commands.say_default_emote) do
+      say_thing(context, %{ast | switch: context.character.settings.commands.say_default_emote})
+    else
+      # No emote has been provided by the player but there is no default emote saved in the character either, just continue
+      say_thing(context, ast)
+    end
   end
 
   defp validate_switch(context, ast = %{switch: switch}) do
@@ -137,13 +228,6 @@ defmodule Mud.Engine.Command.Say do
   end
 
   defp say_thing(context, ast) do
-    IO.inspect(ast, label: :say_thing)
-
-    # if the character does not equal nil check to see if there is a match in the area. If there isn't throw an error, otherwise say the thing
-    # if not is_nil(ast.character) do
-    #   case Search.search_characters_in_area(context.character.area_id, ast.character) do
-    #     {:ok, [match | _matches]} ->
-
     all_characters =
       Character.list_others_active_in_areas(
         context.character.id,
@@ -154,11 +238,7 @@ defmodule Mud.Engine.Command.Say do
 
     others = Enum.filter(all_characters, &(&1.name !== ast.character))
 
-    #
-    # FINISH UP SAY LOGIC HERE: MAKE SURE TO HANDLE MESSAGES TO CHARACTER BEING SPOKEN TO
-    #
-
-    # ast = Map.put(ast, :character, match.match.name)
+    words = Util.upcase_first(ast.words)
 
     {self, other} =
       cond do
@@ -179,7 +259,7 @@ defmodule Mud.Engine.Command.Say do
       |> maybe_add_switch(ast)
       |> Message.append_text(" #{other}", "base")
       |> maybe_add_character(ast)
-      |> Message.append_text(", \"#{ast.words}\"", "base")
+      |> Message.append_text(", \"#{words}\"", "base")
 
     self_msg =
       context.character.id
@@ -188,7 +268,7 @@ defmodule Mud.Engine.Command.Say do
       |> maybe_add_switch(ast)
       |> Message.append_text(" #{self}", "base")
       |> maybe_add_character(ast)
-      |> Message.append_text(", \"#{ast.words}\"", "base")
+      |> Message.append_text(", \"#{words}\"", "base")
 
     context =
       context
@@ -206,7 +286,7 @@ defmodule Mud.Engine.Command.Say do
         |> maybe_add_switch(ast)
         |> Message.append_text(" #{other}", "base")
         |> maybe_add_character(ast, true)
-        |> Message.append_text(", \"#{ast.words}\"", "base")
+        |> Message.append_text(", \"#{words}\"", "base")
 
       Context.append_message(context, target_msg)
     else
@@ -603,10 +683,12 @@ defmodule Mud.Engine.Command.Say do
     "overconfidently",
     "painfully",
     "passionately",
+    "passively",
     "patiently",
     "patronizingly",
     "peevishly",
     "penitently",
+    "pensively",
     "pessimistically",
     "phonily",
     "piously",
@@ -640,6 +722,7 @@ defmodule Mud.Engine.Command.Say do
     "quizzically",
     "rancidly",
     "rancorously",
+    "randily",
     "rapaciously",
     "rapidly",
     "rapturously",
@@ -680,6 +763,7 @@ defmodule Mud.Engine.Command.Say do
     "searchingly",
     "sedately",
     "sensibly",
+    "sentamentally",
     "serenely",
     "seriously",
     "severely",
@@ -810,6 +894,7 @@ defmodule Mud.Engine.Command.Say do
     "witheringly",
     "wittily",
     "woefully",
+    "wonderingly",
     "woodenly",
     "worriedly",
     "worshipfully",
@@ -836,5 +921,26 @@ defmodule Mud.Engine.Command.Say do
     else
       {:error, :not_found}
     end
+  end
+
+  defp list_emotes(context) do
+    chunked_emotes = Enum.chunk_every(@possible_emotes, 4, 4, ["", "", "", ""])
+
+    title = "Available Emotes"
+
+    formatted_table_output =
+      TableRex.Table.new(chunked_emotes)
+      |> TableRex.Table.put_column_meta(:all, align: :center)
+      |> TableRex.Table.put_title(title)
+      |> TableRex.Table.render!(horizontal_style: :all)
+
+    Context.append_message(
+      context,
+      Message.new_story_output(
+        context.character.id,
+        formatted_table_output,
+        "base"
+      )
+    )
   end
 end

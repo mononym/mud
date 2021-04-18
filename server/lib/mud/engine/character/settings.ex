@@ -27,6 +27,7 @@ defmodule Mud.Engine.Character.Settings do
       field(:search_mode, :string, default: "simple")
       field(:multiple_matches_mode, :string, default: "full path")
       field(:say_requires_exact_emote, :boolean, default: false)
+      field(:say_default_emote, :string)
     end
 
     embeds_one :directions_window, DirectionsWindow, on_replace: :delete do
@@ -56,7 +57,7 @@ defmodule Mud.Engine.Character.Settings do
     embeds_one :map_window, MapWindow, on_replace: :delete do
       @derive Jason.Encoder
 
-      field(:unexplored_link_color, :string, default: "#CF3078")
+      field(:unexplored_link_color, :string, default: "#f0ad4e")
       field(:background_color, :string, default: "#28282D")
       field(:highlighted_area_color, :string, default: "#788DF2")
     end
@@ -70,14 +71,14 @@ defmodule Mud.Engine.Character.Settings do
       field(:show_also_present, :boolean, default: true)
       field(:show_exits, :boolean, default: true)
       field(:background, :string, default: "#28282D")
-      field(:description_expansion_mode, :string, default: "manual")
-      field(:toi_expansion_mode, :string, default: "manual")
+      field(:description_expansion_mode, :string, default: "manual-threshold")
+      field(:toi_expansion_mode, :string, default: "manual-threshold")
       field(:toi_collapse_threshold, :integer, default: 10)
-      field(:on_ground_expansion_mode, :string, default: "manual")
+      field(:on_ground_expansion_mode, :string, default: "manual-threshold")
       field(:on_ground_collapse_threshold, :integer, default: 10)
-      field(:also_present_expansion_mode, :string, default: "manual")
+      field(:also_present_expansion_mode, :string, default: "manual-threshold")
       field(:also_present_collapse_threshold, :integer, default: 10)
-      field(:exits_expansion_mode, :string, default: "manual")
+      field(:exits_expansion_mode, :string, default: "manual-threshold")
       field(:exits_collapse_threshold, :integer, default: 10)
       field(:total_count_collapse_threshold, :integer, default: 50)
       field(:total_collapse_mode, :string, default: "largest")
@@ -94,8 +95,8 @@ defmodule Mud.Engine.Character.Settings do
     embeds_one :inventory_window, InventoryWindow, on_replace: :delete do
       @derive Jason.Encoder
 
-      field(:empty_hand, :string, default: "#111827")
-      field(:held_items_label, :string, default: "#d9534f")
+      field(:empty_hand, :string, default: "#f0ad4e")
+      field(:held_items_label, :string, default: "#5bc0de")
       field(:show_held_items, :boolean, default: true)
       field(:worn_containers_label, :string, default: "#fca5a5")
       field(:show_worn_containers, :boolean, default: true)
@@ -129,38 +130,38 @@ defmodule Mud.Engine.Character.Settings do
       field(:system_info, :string, default: "#5bc0de")
       field(:system_warning, :string, default: "#f0ad4e")
       field(:system_alert, :string, default: "#d9534f")
-      field(:area_name, :string, default: "#ffffff")
-      field(:area_description, :string, default: "#ffffff")
-      field(:character, :string, default: "#ffffff")
-      field(:exit, :string, default: "#ffffff")
+      field(:area_name, :string, default: "#D5873F")
+      field(:area_description, :string, default: "#5A8FAF")
+      field(:character, :string, default: "#A99BEE")
+      field(:exit, :string, default: "#EAA353")
       field(:denizen, :string, default: "#ffffff")
       field(:denizen_label, :string, default: "#ffffff")
-      field(:on_ground_label, :string, default: "#ffffff")
-      field(:toi_label, :string, default: "#ffffff")
-      field(:exit_label, :string, default: "#ffffff")
-      field(:character_label, :string, default: "#ffffff")
-      field(:base, :string, default: "#ffffff")
-      field(:echo, :string, default: "#ffffff")
+      field(:on_ground_label, :string, default: "#F57575")
+      field(:toi_label, :string, default: "#C27BDE")
+      field(:exit_label, :string, default: "#5CB777")
+      field(:character_label, :string, default: "#388F85")
+      field(:base, :string, default: "#95DFCE")
+      field(:echo, :string, default: "#61A889")
 
       # Item Types
-      field(:furniture, :string, default: "#ffffff")
-      field(:equipment, :string, default: "#ffffff")
+      field(:furniture, :string, default: "#E8B773")
+      field(:equipment, :string, default: "#73A6E8")
       field(:weapon, :string, default: "#ffffff")
       field(:armor, :string, default: "#ffffff")
       field(:gem, :string, default: "#ffffff")
-      field(:coin, :string, default: "#ffffff")
+      field(:coin, :string, default: "#FFD700")
       field(:ammunition, :string, default: "#ffffff")
       field(:shield, :string, default: "#ffffff")
       field(:clothing, :string, default: "#ffffff")
       field(:structure, :string, default: "#ffffff")
       field(:jewelry, :string, default: "#ffffff")
-      field(:misc, :string, default: "#ffffff")
+      field(:misc, :string, default: "#A098DD")
 
       # Link Types
-      field(:portal, :string, default: "#ffffff")
-      field(:closable, :string, default: "#ffffff")
-      field(:direction, :string, default: "#ffffff")
-      field(:object, :string, default: "#ffffff")
+      field(:portal, :string, default: "#73A6E8")
+      field(:closable, :string, default: "#E8B773")
+      field(:direction, :string, default: "#9BD2EE")
+      field(:object, :string, default: "#FFD700")
 
       # Command Input window colors
       field(:input, :string, default: "#ffffff")
@@ -476,87 +477,39 @@ defmodule Mud.Engine.Character.Settings do
       :id,
       :search_mode,
       :multiple_matches_mode,
-      :say_requires_exact_emote
+      :say_requires_exact_emote,
+      :say_default_emote
     ])
   end
 
   def create(attrs \\ %{}) do
     Logger.debug(inspect(attrs))
 
-    default_colors = %{
-      # Text colors
-      system_alert: "#d9534f",
-      system_info: "#5bc0de",
-      system_warning: "#f0ad4e",
-      area_name: "#D5873F",
-      area_description: "#5A8FAF",
-      character: "#A99BEE",
-      character_label: "#388F85",
-      denizen: "#ffffff",
-      denizen_label: "#ffffff",
-      on_ground_label: "#F57575",
-      exit: "#EAA353",
-      exit_label: "#5CB777",
-      toi_label: "#C27BDE",
-      base: "#95DFCE",
-      echo: "#61A889",
-
-      # Item Types
-      furniture: "#E8B773",
-      equipment: "#73A6E8",
-      misc: "#A098DD",
-      weapon: "#ffffff",
-      armor: "#ffffff",
-      gem: "#ffffff",
-      ammunition: "#ffffff",
-      shield: "#ffffff",
-      clothing: "#ffffff",
-      jewelry: "#ffffff",
-      structure: "#ffffff",
-      coin: "#FFD700",
-
-      # Link Types
-      portal: "#73A6E8",
-      closable: "#E8B773",
-      direction: "#9BD2EE",
-      object: "#FFD700",
-
-      # Command Input window colors
-      input: "#ffffff",
-      input_background: "#374151",
-      input_button_background: "#e5e7eb",
-      input_button_icon: "#ffffff",
-
-      # Story window colors
-      story_background: "#28282D",
-      story_history_icon: "#fca5a5",
-      story_history_border: "#ffffff",
-
-      # UI colors
-      window_toolbar_background: "#111827",
-      window_toolbar_label: "#ffffff",
-      window_lock_unlocked: "#fca5a5",
-      window_lock_locked: "#a7f3d0",
-      window_move_unlocked: "#a7f3d0",
-      window_move_locked: "#6b7280",
-
-      # Story window colors
-      empty_hand_icon: "#374151",
-      held_items_label: "#fca5a5",
-      worn_containers_label: "#ffffff",
-      worn_clothes_label: "#ffffff",
-      worn_armor_label: "#ffffff",
-      worn_weapons_label: "#ffffff",
-      worn_jewelry_label: "#ffffff"
-    }
+    attrs = add_hotkeys_for_create(attrs)
 
     attrs =
-      if Map.has_key?(attrs, :colors) do
-        Map.put(attrs, :colors, Map.merge(default_colors, attrs.colors))
-      else
-        Map.put(attrs, :colors, default_colors)
-      end
+      attrs
+      |> Map.put(:echo, Map.from_struct(%__MODULE__.Echo{}))
+      |> Map.put(:colors, Map.from_struct(%__MODULE__.TextColors{}))
+      |> Map.put(:area_window, Map.from_struct(%__MODULE__.AreaWindow{}))
+      |> Map.put(:inventory_window, Map.from_struct(%__MODULE__.InventoryWindow{}))
+      |> Map.put(:map_window, Map.from_struct(%__MODULE__.MapWindow{}))
+      |> Map.put(:commands, Map.from_struct(%__MODULE__.Commands{}))
+      |> Map.put(:audio, Map.from_struct(%__MODULE__.Audio{}))
+      |> Map.put(:directions_window, Map.from_struct(%__MODULE__.DirectionsWindow{}))
+      |> Map.put(:environment_window, Map.from_struct(%__MODULE__.EnvironmentWindow{}))
+      |> Map.put(:status_window, Map.from_struct(%__MODULE__.StatusWindow{}))
 
+    Logger.debug(inspect(attrs))
+
+    %__MODULE__{}
+    |> changeset(attrs)
+    |> Repo.insert()
+
+    :ok
+  end
+
+  defp add_hotkeys_for_create(attrs) do
     default_preset_hotkeys = %{
       select_cli: "CTRL + SHIFT + KeyC",
       open_settings: "CTRL + SHIFT + KeyS",
@@ -633,49 +586,11 @@ defmodule Mud.Engine.Character.Settings do
       }
     ]
 
-    attrs =
-      if Map.has_key?(attrs, :custom_hotkeys) do
-        Map.put(attrs, :custom_hotkeys, Enum.concat(default_custom_hotkeys, attrs.custom_hotkeys))
-      else
-        Map.put(attrs, :custom_hotkeys, default_custom_hotkeys)
-      end
-
-    default_echo_settings = %{
-      cli_commands_in_story: true,
-      hotkey_commands_in_story: true,
-      ui_commands_in_story: true,
-      ui_commands_replace_ids_in_story: true,
-      cli_commands_in_logs: true,
-      hotkey_commands_in_logs: true,
-      ui_commands_in_logs: true,
-      ui_commands_replace_ids_in_logs: true
-    }
-
-    attrs =
-      if Map.has_key?(attrs, :echo) do
-        Map.put(attrs, :echo, Map.merge(default_echo_settings, attrs.echo))
-      else
-        Map.put(attrs, :echo, default_echo_settings)
-      end
-
-    attrs =
-      attrs
-      |> insert_default_area_window_settings()
-      |> insert_default_inventory_window_settings()
-      |> insert_default_map_window_settings()
-      |> insert_default_commands_settings()
-      |> Map.put(:audio, Map.from_struct(%__MODULE__.Audio{}))
-      |> Map.put(:directions_window, Map.from_struct(%__MODULE__.DirectionsWindow{}))
-      |> Map.put(:environment_window, Map.from_struct(%__MODULE__.EnvironmentWindow{}))
-      |> Map.put(:status_window, Map.from_struct(%__MODULE__.StatusWindow{}))
-
-    Logger.debug(inspect(attrs))
-
-    %__MODULE__{}
-    |> changeset(attrs)
-    |> Repo.insert()
-
-    :ok
+    if Map.has_key?(attrs, :custom_hotkeys) do
+      Map.put(attrs, :custom_hotkeys, Enum.concat(default_custom_hotkeys, attrs.custom_hotkeys))
+    else
+      Map.put(attrs, :custom_hotkeys, default_custom_hotkeys)
+    end
   end
 
   def update!(settings, attrs) do
@@ -715,84 +630,5 @@ defmodule Mud.Engine.Character.Settings do
       where: settings.character_id == ^character_id
     )
     |> Repo.one!()
-  end
-
-  #
-  #
-  # Default settings helper functions
-  #
-  #
-
-  defp insert_default_map_window_settings(attrs) do
-    Map.put(attrs, :map_window, %{
-      unexplored_link_color: "#f0ad4e"
-    })
-  end
-
-  defp insert_default_area_window_settings(attrs) do
-    Map.put(attrs, :area_window, %{
-      show_description: true,
-      show_toi: true,
-      show_on_ground: true,
-      show_also_present: true,
-      show_exits: true,
-      background: "#28282D",
-      description_expansion_mode: "manual-threshold",
-      toi_expansion_mode: "manual-threshold",
-      toi_collapse_threshold: 20,
-      on_ground_expansion_mode: "manual-threshold",
-      on_ground_collapse_threshold: 20,
-      also_present_expansion_mode: "manual-threshold",
-      also_present_collapse_threshold: 20,
-      exits_expansion_mode: "manual-threshold",
-      exits_collapse_threshold: 20,
-      total_count_collapse_threshold: 50,
-      total_collapse_mode: "largest",
-      filter_border_color: "#ffffff",
-      filter_active_icon_color: "#a7f3d0",
-      filter_inactive_icon_color: "#fca5a5",
-      filter_active_background_color: "#28282D",
-      filter_inactive_background_color: "#28282D",
-      enabled_quick_action_color: "#a7f3d0",
-      disabled_quick_action_color: "#6B7280",
-      show_quick_actions: true
-    })
-  end
-
-  defp insert_default_inventory_window_settings(attrs) do
-    Map.put(attrs, :inventory_window, %{
-      empty_hand: "#f0ad4e",
-      held_items_label: "#5bc0de",
-      show_held_items: true,
-      worn_containers_label: "#fca5a5",
-      show_worn_containers: true,
-      worn_clothes_label: "#a7f3d0",
-      show_worn_clothes: true,
-      worn_armor_label: "#a7f3d0",
-      show_worn_armor: true,
-      worn_weapons_label: "#a7f3d0",
-      show_worn_weapons: true,
-      worn_jewelry_label: "#a7f3d0",
-      show_worn_jewelry: true,
-      worn_items_label: "#a7f3d0",
-      show_worn_items: true,
-      background: "#28282D",
-      filter_border_color: "#ffffff",
-      filter_active_icon_color: "#a7f3d0",
-      filter_inactive_icon_color: "#fca5a5",
-      filter_active_background_color: "#28282D",
-      filter_inactive_background_color: "#28282D",
-      enabled_quick_action_color: "#a7f3d0",
-      disabled_quick_action_color: "#6B7280",
-      show_quick_actions: true
-    })
-  end
-
-  defp insert_default_commands_settings(attrs) do
-    Map.put(attrs, :commands, %{
-      search_mode: "simple",
-      multiple_matches_mode: "full path",
-      say_requires_exact_emote: false
-    })
   end
 end

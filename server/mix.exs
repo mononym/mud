@@ -79,6 +79,7 @@ defmodule Mud.MixProject do
       {:slugger, "~> 0.3"},
       {:surface, "~> 0.1.0-alpha.1"},
       {:sweet_xml, "~> 0.6"},
+      {:table_rex, "~> 3.1"},
       {:telemetry, "~> 0.4"},
       {:timex, "~> 3.6.2"},
       {:typed_struct, "~> 0.1.4"},
