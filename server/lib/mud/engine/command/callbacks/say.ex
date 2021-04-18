@@ -23,6 +23,9 @@ defmodule Mud.Engine.Command.Say do
 
   To set a default emote:
     - '/emotes <default>
+
+  To clear default emote:
+    - '/emotes reset
   """
 
   alias Mud.Engine.Search
@@ -42,10 +45,6 @@ defmodule Mud.Engine.Command.Say do
   # In some cases this may not even really be necessary, or at least it can act as simply a passthrough and :ok
   # can be returned.
   def build_ast(ast_nodes) do
-    IO.inspect(ast_nodes,
-      label: :build_ast
-    )
-
     %{
       character:
         Enum.find(ast_nodes, %{input: nil}, fn node ->
@@ -66,14 +65,8 @@ defmodule Mud.Engine.Command.Say do
   # build_ast function above has been called.
   @impl true
   def execute(context) do
-    Logger.debug("Executing Say command")
-    Logger.debug(inspect(context))
     # Extract the ast for ease of access
     ast = context.command.ast
-
-    IO.inspect(ast,
-      label: :execute
-    )
 
     case ast do
       %{character: nil, switch: nil, words: nil} ->
@@ -124,14 +117,6 @@ defmodule Mud.Engine.Command.Say do
 
   defp set_default_emote(context) do
     ast = context.command.ast
-
-    IO.inspect(ast.words,
-      label: :set_default_emote
-    )
-
-    IO.inspect(context.character.settings.commands.say_requires_exact_emote,
-      label: :set_default_emote
-    )
 
     result =
       normalize_switch(ast.words, context.character.settings.commands.say_requires_exact_emote)
@@ -191,7 +176,6 @@ defmodule Mud.Engine.Command.Say do
   end
 
   defp validate_switch(context, ast = %{switch: nil}) do
-    IO.inspect(context.character.settings.commands.say_default_emote, label: :validate_switch)
     # If there is a default emote while none has been provided by the player, use the default
     if not is_nil(context.character.settings.commands.say_default_emote) do
       say_thing(context, %{ast | switch: context.character.settings.commands.say_default_emote})

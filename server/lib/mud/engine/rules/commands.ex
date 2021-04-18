@@ -50,10 +50,11 @@ defmodule Mud.Engine.Rules.Commands do
       define_deposit_command(),
       define_drop_command(),
       define_get_command(),
-      define_kick_command(),
+      # define_kick_command(),
       define_kneel_command(),
       define_lie_command(),
-      define_lock_command(),
+      # define_lock_command(),
+      define_help_command(),
       define_look_command(),
       define_move_command(),
       define_open_command(),
@@ -66,9 +67,10 @@ defmodule Mud.Engine.Rules.Commands do
       define_stand_command(),
       define_store_command(),
       define_stow_command(),
-      define_swap_command(),
-      define_travel_command(),
-      define_unlock_command(),
+      # define_swap_command(),
+      # define_travel_command(),
+      # define_unlock_command(),
+      define_verb_command(),
       define_wealth_command(),
       define_wear_command(),
       define_withdraw_command()
@@ -674,6 +676,46 @@ defmodule Mud.Engine.Rules.Commands do
           matches: ["balance"],
           key: :balance,
           transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_help_command do
+    %Definition{
+      callback_module: Command.Help,
+      parts: [
+        %Part{
+          matches: ["help"],
+          key: :help,
+          transformer: &Enum.join/1
+        }
+      ]
+    }
+  end
+
+  defp define_verb_command do
+    %Definition{
+      callback_module: Command.Verb,
+      parts: [
+        %Part{
+          matches: ["commands", "verb"],
+          key: :verb,
+          transformer: &Enum.join/1
+        },
+        %Part{
+          must_follow: [:verb],
+          matches: [~r/^\/info/],
+          key: :switch,
+          greedy: false,
+          transformer: &trim_slash/1
+        },
+        %Part{
+          must_follow: [:switch],
+          matches: [~r/.*/],
+          key: :target,
+          greedy: true,
+          transformer: &join_with_space_downcase/1
         }
       ]
     }

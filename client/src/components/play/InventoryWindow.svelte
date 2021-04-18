@@ -439,6 +439,7 @@
         <div class="ml-2">
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -458,6 +459,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -477,6 +479,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -496,6 +499,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -516,6 +520,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -536,6 +541,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -556,6 +562,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -576,6 +583,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -595,6 +603,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -615,6 +624,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -634,6 +644,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -654,6 +665,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -674,6 +686,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -693,6 +706,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -713,6 +727,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
@@ -733,6 +748,7 @@
           </div>
           <div>
             <p
+              class="select-none"
               style="color:{$selectedCharacter.settings.inventoryWindow[
                 'slots_label'
               ]}"
