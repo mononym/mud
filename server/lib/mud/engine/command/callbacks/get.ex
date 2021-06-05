@@ -2,17 +2,19 @@ defmodule Mud.Engine.Command.Get do
   @moduledoc """
   The GET command allows the Character to get something from the ground or relative to other items.
 
-  In the case that an item is `in` or `on` another item, such as a sword on a counter or a gem in a box, it is not necessary to specify the exact relationship between the items. The engine will automatically detect the relationship, meaning you can simply use `from` without having to think about it.
+  In the case that an item is `in` another item, such as a gem in a box in a drawer in a closer, it is necessary only to specify immediate parent of the desired item rather than recreating the entire chain. so 'get gem in box' would work just fine.
+
+  If the desired item is on a surface, and all parent items are also either on a surface or on the ground in an area, it is not required to specify the parent item at all except to help disambiguate between targets.
 
   Syntax:
-    - get <item> [from <place>]
+    - get <item> [in|on] <place>
 
   Examples:
     - get backpack
     - get my sword
-    - get pouch from my backpack
-    - get truffle from tray
-    - get topaz from pouch from backpack
+    - get pouch in my backpack
+    - get truffle on tray
+    - get topaz in pouch in backpack
   """
 
   alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateInventory}

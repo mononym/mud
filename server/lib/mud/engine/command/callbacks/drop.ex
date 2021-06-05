@@ -11,6 +11,7 @@ defmodule Mud.Engine.Command.Drop do
     - drop sword
     - drop left
     - drop both
+    - drop all
   """
 
   use Mud.Engine.Command.Callback

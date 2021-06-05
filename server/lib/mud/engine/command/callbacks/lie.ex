@@ -1,8 +1,8 @@
 defmodule Mud.Engine.Command.Lie do
   @moduledoc """
-  The CROUCH command moves the character into a laying down position.
+  The LIE command moves the character into a laying down position.
 
-  If no target is provided, the Character will lie in place.
+  If no target is provided, the Character will lay down in place.
 
   Syntax:
     - lie [on] target

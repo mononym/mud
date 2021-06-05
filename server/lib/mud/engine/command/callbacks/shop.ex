@@ -35,34 +35,35 @@ defmodule Mud.Engine.Command.Shop do
         )
 
       [shop] ->
-        shop_message =
-          Message.new_story_output(
-            context.character.id,
-            "#{shop.name}: #{shop.description}",
-            "base"
-          )
-
-        shop_message = build_shop_products_listing(shop_message, shop.products)
+        shop_text = build_shop_products_listing(shop)
 
         Context.append_message(
           context,
-          shop_message
+          Message.new_story_output(
+            context.character.id,
+            shop_text,
+            "base"
+          )
         )
     end
   end
 
-  defp build_shop_products_listing(message, products) do
-    products = sort_products(products)
+  defp build_shop_products_listing(shop) do
+    products = sort_products(shop.products)
 
     normalized =
       Enum.with_index(products, 1)
       |> Enum.map(fn {product, index} ->
-        {index, product.description, product_price_string(product)}
+        [index, product.description, product_price_string(product)]
       end)
 
-    Enum.reduce(normalized, message, fn {product_num, product_desc, product_price}, message ->
-      Message.append_text(message, "\n#{product_num}) #{product_desc} - #{product_price}", "base")
-    end)
+    title = "#{shop.name}: #{shop.description}"
+    header = ["Order #", "Description", "Price"]
+
+    TableRex.Table.new(normalized, header)
+    |> TableRex.Table.put_column_meta(:all, align: :center)
+    |> TableRex.Table.put_title(title)
+    |> TableRex.Table.render!(horizontal_style: :all)
   end
 
   defp product_price_string(product) do
