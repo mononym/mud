@@ -1,13 +1,11 @@
 defmodule MudWeb.Router do
-  import Phoenix.LiveDashboard.Router
   use MudWeb, :router
 
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
     plug(:fetch_flash)
-    plug(:fetch_live_flash)
-    # plug(:protect_from_forgery)
+    plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(MudWeb.Plug.SetPlayer)
   end
@@ -34,8 +32,18 @@ defmodule MudWeb.Router do
 
     scope "/" do
       pipe_through(:browser)
-      live_dashboard("/dashboard")
     end
+  end
+
+  scope "/auth", MudWeb do
+    pipe_through(:browser)
+
+    get("/:provider", PlayerAuthController, :request)
+    get("/:provider/callback", PlayerAuthController, :callback)
+  end
+
+  scope "/", MudWeb do
+    pipe_through(:browser)
   end
 
   scope "/", MudWeb do

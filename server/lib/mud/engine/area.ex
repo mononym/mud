@@ -5,9 +5,8 @@ defmodule Mud.Engine.Area do
   alias Mud.Engine.{Character, CharactersAreas, Link, Item, Message, Shop}
   alias Mud.Engine.Message.StoryOutput
   alias Mud.Engine
-  alias Mud.Engine.Command.CallbackUtil
   alias Mud.Engine.ItemUtil
-  alias Mud.Engine.Area.{Flags}
+  alias Mud.Engine.Area.{Environment, Flags}
   import Ecto.Query
   require Logger
 
@@ -33,6 +32,9 @@ defmodule Mud.Engine.Area do
 
     field(:description, :string)
     field(:name, :string)
+
+    # The physical environment of the area
+    has_one(:environment, Environment)
 
     ##
     ##

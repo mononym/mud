@@ -23,7 +23,7 @@ config :mud, MudWeb.Endpoint,
     keyfile: "priv/cert/selfsigned_key.pem",
     compress: true
   ],
-  debug_errors: false,
+  debug_errors: true,
   code_reloader: true,
   check_origin: false,
   watchers: [

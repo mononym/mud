@@ -11,10 +11,11 @@ use Mix.Config
 # before starting your production server.
 config :mud, MudWeb.Endpoint,
   check_origin: false,
-  url: [host: "unnamedmud.com"],
+  url: [host: "echoesofanempire.com"],
   http: [port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
-  server: true
+  server: true,
+  force_ssl: [rewrite_on: [:x_forwarded_proto]]
 
 config :mud,
   pubsub: [

@@ -1,7 +1,9 @@
 defmodule MudWeb.PlayerAuthController do
   use MudWeb, :controller
+  plug(Ueberauth)
 
   alias Mud.Account
+  alias Ueberauth.Strategy.Helpers
 
   action_fallback(MudWeb.FallbackController)
 
@@ -65,6 +67,35 @@ defmodule MudWeb.PlayerAuthController do
         conn
         |> put_status(200)
         |> json(%{authenticated: false})
+    end
+  end
+
+  # Start Auth0 flow
+  def request(conn, _params) do
+    render(conn, "request.html", callback_url: Helpers.callback_url(conn))
+  end
+
+  # Failure Auth0
+  def callback(%{assigns: %{ueberauth_failure: _fails}} = conn, _params) do
+    conn
+    |> put_flash(:error, "Failed to authenticate.")
+    |> redirect(to: "/")
+  end
+
+  # Success Auth0
+  def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
+    case Account.from_auth(auth.extra.raw_info.user) do
+      {:ok, user} ->
+        conn
+        |> put_flash(:info, "Successfully authenticated.")
+        |> put_session(:current_user, user)
+        |> configure_session(renew: true)
+        |> redirect(to: "/")
+
+      {:error, reason} ->
+        conn
+        |> put_flash(:error, reason)
+        |> redirect(to: "/")
     end
   end
 end

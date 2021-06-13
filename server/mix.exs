@@ -26,7 +26,7 @@ defmodule Mud.MixProject do
   def application do
     [
       mod: {Mud.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :ueberauth_auth0]
     ]
   end
 
@@ -61,7 +61,6 @@ defmodule Mud.MixProject do
       {:jason, "~> 1.2"},
       {:libgraph, "~> 0.13.3"},
       {:phoenix, "~> 1.5.1"},
-      {:phoenix_live_dashboard, "~> 0.2"},
       {:phoenix_ecto, "~> 4.1"},
       {:phoenix_html, "~> 2.14"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
@@ -77,13 +76,14 @@ defmodule Mud.MixProject do
       {:retry, "~> 0.14.0"},
       {:sandbox, "~> 0.5.0"},
       {:slugger, "~> 0.3"},
-      {:surface, "~> 0.1.0-alpha.1"},
       {:sweet_xml, "~> 0.6"},
       {:table_rex, "~> 3.1"},
       {:telemetry, "~> 0.4"},
       {:timex, "~> 3.6.2"},
       {:typed_struct, "~> 0.1.4"},
       {:uber_multi, github: "mononym/uber_multi"},
+      {:ueberauth, "~> 0.6.3"},
+      {:ueberauth_auth0, "~> 0.8.1"},
       {:uuid, "~> 1.1.8"}
     ]
   end

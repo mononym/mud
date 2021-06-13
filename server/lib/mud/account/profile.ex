@@ -6,13 +6,21 @@ defmodule Mud.Account.Profile do
   import Ecto.Changeset
 
   @primary_key {:player_id, :binary_id, autogenerate: false}
-  @derive {Phoenix.Param, key: :slug}
-  @derive {Jason.Encoder, only: [:player_id, :email, :email_verified, :nickname, :slug, :inserted_at, :updated_at]}
+  @derive {Jason.Encoder,
+           only: [
+             :player_id,
+             :email,
+             :email_verified,
+             :nickname,
+             :picture,
+             :inserted_at,
+             :updated_at
+           ]}
   schema "profiles" do
     field(:email, :string)
     field(:email_verified, :boolean, default: false)
     field(:nickname, :string)
-    field(:slug, Mud.DataType.NicknameSlug.Type)
+    field(:picture, :string)
 
     belongs_to(:player, Mud.Account.Player,
       type: :binary_id,
@@ -30,13 +38,13 @@ defmodule Mud.Account.Profile do
 
   def update(profile, attrs) do
     profile
-    |> cast(attrs, [:nickname, :email, :email_verified])
+    |> cast(attrs, [:nickname, :email, :email_verified, :picture])
     |> validate()
   end
 
   def new(attrs) when is_map(attrs) do
     %__MODULE__{}
-    |> cast(attrs, [:nickname, :email, :email_verified, :player_id])
+    |> cast(attrs, [:nickname, :email, :email_verified, :picture, :player_id])
     |> validate()
   end
 
@@ -60,14 +68,11 @@ defmodule Mud.Account.Profile do
       |> unique_constraint(:nickname)
       |> validate_format(:nickname, nickname_format)
       |> validate_length(:nickname, min: nickname_min_length, max: nickname_max_length)
-      |> Mud.DataType.NicknameSlug.maybe_generate_slug()
-      |> Mud.DataType.NicknameSlug.unique_constraint()
 
     if unsafe do
       profile
       |> unsafe_validate_unique([:email], Mud.Repo)
       |> unsafe_validate_unique([:nickname], Mud.Repo)
-      |> unsafe_validate_unique([:slug], Mud.Repo)
     else
       profile
     end

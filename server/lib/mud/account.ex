@@ -13,7 +13,7 @@ defmodule Mud.Account do
   import Ecto.Query, warn: false
 
   alias Mud.Account
-  alias Mud.Account.{Player, Settings}
+  alias Mud.Account.{Auth, Player, Settings}
   alias Mud.Repo
 
   require Logger
@@ -50,9 +50,7 @@ defmodule Mud.Account do
     case lookup_player_by_auth_email(email_address) do
       {:ok, player_id} ->
         Logger.info(
-          "Starting authentication for existing player `#{player_id}` with token `#{auth_token}` and expiry `#{
-            Application.get_env(:mud, :login_token_ttl)
-          }`"
+          "Starting authentication for existing player `#{player_id}` with token `#{auth_token}` and expiry `#{Application.get_env(:mud, :login_token_ttl)}`"
         )
 
         redis_set_player_auth_token(
@@ -476,6 +474,34 @@ defmodule Mud.Account do
           error = {:error, _} ->
             error
         end
+    end
+  end
+
+  @doc """
+  Create a new account or retrieve an existing one based on the OAuth2 data provided.
+  """
+  def from_auth(user) do
+    Logger.debug(inspect(user["sub"]))
+    # get id that should be checked
+    # try to read account from db
+    case Player.get_by_sub(user["sub"]) do
+      ok_result = {:ok, _} ->
+        ok_result
+
+      _ ->
+        args = %{
+          profile: %Profile{
+            email: user["email"] || "",
+            email_verified: user["email_verified"] || false,
+            nickname: user["nickname"] || "",
+            picture: user["picture"] || ""
+          },
+          settings: %Settings{},
+          status: Account.Constants.PlayerStatus.created(),
+          sub: user["sub"]
+        }
+
+        player = Player.new(args) |> Repo.insert!()
     end
   end
 
