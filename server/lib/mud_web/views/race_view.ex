@@ -24,12 +24,11 @@ defmodule MudWeb.RaceView do
       hairLengths: race.hair_lengths,
       heights: race.heights,
       skinTones: race.skin_tones,
-      portrait: race.portrait,
       description: race.description,
       pronouns: race.pronouns,
       ageMin: race.age_min,
       ageMax: race.age_max,
-      bodyShapes: race.body_shapes
+      bodyTypes: race.body_types
     }
   end
 end

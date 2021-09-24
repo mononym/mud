@@ -52,6 +52,8 @@ defmodule Mud.Engine.Character.Containers do
     %__MODULE__{}
     |> changeset(attrs)
     |> Repo.insert!()
+
+    :ok
   end
 
   def update!(containers_id, attrs) when is_binary(containers_id) do

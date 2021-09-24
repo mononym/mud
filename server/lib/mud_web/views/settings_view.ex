@@ -12,10 +12,10 @@ defmodule MudWeb.SettingsView do
 
   def render("settings.json", %{settings: settings}) do
     %{
-      playerId: settings.player_id,
-      developerFeatureOn: settings.developer_feature_on,
-      insertedAt: settings.inserted_at,
-      updatedAt: settings.updated_at
+      player_id: settings.player_id,
+      developer_feature_on: settings.developer_feature_on,
+      inserted_at: settings.inserted_at,
+      updated_at: settings.updated_at
     }
   end
 end

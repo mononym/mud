@@ -15,6 +15,7 @@ defmodule Mud.Engine.Area do
              :id,
              :description,
              :name,
+             :key,
              :map_x,
              :map_y,
              :map_size,
@@ -32,6 +33,7 @@ defmodule Mud.Engine.Area do
 
     field(:description, :string)
     field(:name, :string)
+    field(:key, :string)
 
     # The physical environment of the area
     has_one(:environment, Environment)
@@ -44,7 +46,7 @@ defmodule Mud.Engine.Area do
 
     field(:map_x, :integer, default: 0)
     field(:map_y, :integer, default: 0)
-    field(:map_size, :integer, default: 21)
+    field(:map_size, :integer, default: 20)
     field(:map_corners, :integer, default: 5)
 
     belongs_to(:map, Engine.Map, type: :binary_id)
@@ -199,9 +201,9 @@ defmodule Mud.Engine.Area do
   @spec update(area :: %__MODULE__{}, attributes :: map()) ::
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(area, attrs) do
-    if Map.has_key?(attrs, "flags") do
-      Flags.update!(area.flags, attrs["flags"]) |> IO.inspect(label: :flagupdate)
-    end
+    # if Map.has_key?(attrs, "flags") do
+    #   Flags.update!(area.flags, attrs["flags"]) |> IO.inspect(label: :flagupdate)
+    # end
 
     res =
       area
@@ -392,7 +394,8 @@ defmodule Mud.Engine.Area do
       :map_corners,
       :border_color,
       :border_width,
-      :color
+      :color,
+      :key
     ])
     |> validate_required([
       :name,
@@ -533,13 +536,11 @@ defmodule Mud.Engine.Area do
         fn link, message ->
           desc =
             if link.flags.closable do
-              "#{link.short_description} (#{
-                if link.closable.open do
-                  "open"
-                else
-                  "closed"
-                end
-              })"
+              "#{link.short_description} (#{if link.closable.open do
+                "open"
+              else
+                "closed"
+              end})"
             else
               link.short_description
             end

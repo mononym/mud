@@ -3,6 +3,7 @@ defmodule Mud.Engine.Map do
   import Ecto.Changeset
   alias Mud.Repo
   alias Mud.Engine.{Area, Link, CharactersAreas}
+  alias Mud.Engine.Map.Label
   import Ecto.Query
   require Protocol
 
@@ -12,29 +13,12 @@ defmodule Mud.Engine.Map do
     @derive Jason.Encoder
     field(:description, :string)
     field(:name, :string)
+    field(:key, :string)
     field(:view_size, :integer, default: 250)
     field(:grid_size, :integer, default: 50)
-    field(:minimum_zoom_index, :integer, default: 4)
-    field(:maximum_zoom_index, :integer, default: 8)
-    field(:permanently_explored, :boolean, default: false)
-
-    embeds_many :labels, Label, on_replace: :delete do
-      @derive Jason.Encoder
-      field(:text, :string, default: "")
-      field(:x, :integer, default: 0)
-      field(:y, :integer, default: 0)
-      field(:vertical_offset, :integer, default: 0)
-      field(:horizontal_offset, :integer, default: 0)
-      field(:rotation, :integer, default: 0)
-      field(:color, :string, default: "white")
-      field(:size, :integer, default: 20)
-      field(:inline_size, :integer, default: 200)
-      field(:style, :string, default: "normal")
-      field(:weight, :string, default: "normal")
-      field(:family, :string, default: "sans-sarif")
-    end
 
     has_many(:areas, Area)
+    has_many(:labels, Label)
 
     timestamps()
 
@@ -75,9 +59,7 @@ defmodule Mud.Engine.Map do
       from(map in Mud.Engine.Map,
         left_join: character_map in Mud.Engine.CharactersMaps,
         on: character_map.map_id == map.id,
-        where:
-          map.id == ^new_map_id and
-            (character_map.character_id == ^character_id or map.permanently_explored),
+        where: map.id == ^new_map_id and character_map.character_id == ^character_id,
         select: count(map.id)
       )
     ) == 1
@@ -160,9 +142,6 @@ defmodule Mud.Engine.Map do
 
     known_or_public_areas = known_or_public_areas_query |> Repo.all() |> Repo.preload([:flags])
 
-    permanently_explored_area_ids =
-      Stream.filter(known_or_public_areas, & &1.flags.permanently_explored) |> Enum.map(& &1.id)
-
     known_area_ids = Enum.map(known_or_public_areas, & &1.id)
 
     known_links = base_links_from_areas_query(known_or_public_areas_query) |> Repo.all()
@@ -194,13 +173,10 @@ defmodule Mud.Engine.Map do
         )
       )
 
-    all_known_character_areas =
-      Enum.concat(permanently_explored_area_ids, explored_character_areas)
-
     %{
       areas: Enum.concat([external_areas, known_or_public_areas]) |> Repo.preload([:flags]),
       links: known_links |> Repo.preload([:closable, :flags]),
-      explored_areas: all_known_character_areas
+      explored_areas: explored_character_areas
     }
   end
 
@@ -248,10 +224,15 @@ defmodule Mud.Engine.Map do
         )
       )
 
+    labels = Label.get_map_labels(map_id)
+
+    IO.inspect(labels)
+
     %{
       areas:
         Enum.concat([external_areas, internal_areas])
         |> Repo.preload([:flags, shops: [:products]]),
+      labels: labels,
       links: links |> Repo.preload([:closable, :flags])
     }
   end
@@ -306,18 +287,14 @@ defmodule Mud.Engine.Map do
       :description,
       :view_size,
       :grid_size,
-      :maximum_zoom_index,
-      :minimum_zoom_index,
-      :permanently_explored
+      :key
     ])
     |> validate_required([
       :name,
       :description,
       :view_size,
       :grid_size,
-      :maximum_zoom_index,
-      :minimum_zoom_index,
-      :permanently_explored
+      :key
     ])
     |> cast_embed(:labels, with: &labels_changeset/2)
   end
@@ -361,9 +338,7 @@ defmodule Mud.Engine.Map do
       on: character_area.area_id == area.id,
       inner_join: area_flags in Area.Flags,
       on: area.id == area_flags.area_id,
-      where:
-        area.map_id == ^map_id and
-          (character_area.character_id == ^character_id or area_flags.permanently_explored)
+      where: area.map_id == ^map_id and character_area.character_id == ^character_id
     )
   end
 

@@ -36,3 +36,14 @@ config :ex_aws,
   secret_access_key: ["opSaKW/pppjZXv1hVXo3b4JQ2h7OcE8PKI8NYEnM", :instance_role]
 
 config :ex_aws, :hackney_opts, recv_timeout: 30_000
+
+config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
+  domain: System.get_env("AUTH0_DOMAIN"),
+  client_id: System.get_env("AUTH0_CLIENT_ID"),
+  client_secret: System.get_env("AUTH0_CLIENT_SECRET")
+
+config :mud, :ecwid,
+  client_id: System.get_env("ECWID_CLIENT_ID"),
+  client_secret: System.get_env("ECWID_CLIENT_SECRET"),
+  public_token: System.get_env("ECWID_PUBLIC_TOKEN"),
+  private_token: System.get_env("ECWID_PRIVATE_TOKEN")

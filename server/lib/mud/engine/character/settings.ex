@@ -208,12 +208,6 @@ defmodule Mud.Engine.Character.Settings do
       field(:cli_commands_in_story, :boolean, default: true)
       field(:hotkey_commands_in_story, :boolean, default: true)
       field(:ui_commands_in_story, :boolean, default: true)
-      field(:ui_commands_replace_ids_in_story, :boolean, default: true)
-
-      field(:cli_commands_in_logs, :boolean, default: true)
-      field(:hotkey_commands_in_logs, :boolean, default: true)
-      field(:ui_commands_in_logs, :boolean, default: true)
-      field(:ui_commands_replace_ids_in_logs, :boolean, default: true)
     end
   end
 

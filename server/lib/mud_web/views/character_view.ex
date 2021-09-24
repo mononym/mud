@@ -3,15 +3,18 @@ defmodule MudWeb.CharacterView do
   alias MudWeb.CharacterView
   alias MudWeb.CharacterSettingsView
   alias MudWeb.CharacterBankView
+  alias MudWeb.CharacterContainersView
   alias MudWeb.CharacterSlotsView
+  alias MudWeb.CharacterStatusView
   alias MudWeb.CharacterWealthView
   alias MudWeb.RaceView
+  alias MudWeb.Views.Character.PhysicalFeaturesView
 
   def render("character-creation-data.json", %{races: races}) do
     render_many(races, RaceView, "race.json")
   end
 
-  def render("index.json", %{characters: characters}) do
+  def render("index.json", %{character: characters}) do
     render_many(characters, CharacterView, "character.json")
   end
 
@@ -20,48 +23,59 @@ defmodule MudWeb.CharacterView do
   end
 
   def render("character.json", %{character: character}) do
-    character
-    |> Map.from_struct()
-    |> Map.delete(:area)
-    |> Map.delete(:player)
-    |> Map.delete(:skills)
-    |> Map.delete(:held_items)
-    |> Map.delete(:worn_items)
-    |> Map.delete(:raw_skills)
-    |> Map.delete(:maps)
-    |> Map.delete(:__meta__)
-    |> Map.put(
-      :settings,
-      render_one(
-        character.settings,
-        CharacterSettingsView,
-        "character_settings.json"
-      )
-    )
-    |> Map.put(
-      :slots,
-      render_one(
-        character.slots,
-        CharacterSlotsView,
-        "character_slots.json"
-      )
-    )
-    |> Map.put(
-      :wealth,
-      render_one(
-        character.wealth,
-        CharacterWealthView,
-        "character_wealth.json"
-      )
-    )
-    |> Map.put(
-      :bank,
-      render_one(
-        character.bank,
-        CharacterBankView,
-        "character_bank.json"
-      )
-    )
-    |> Recase.Enumerable.convert_keys(&Recase.to_camel/1)
+    %{
+      bank:
+        render_one(
+          character.bank,
+          CharacterBankView,
+          "character_bank.json"
+        ),
+      containers:
+        render_one(
+          character.containers,
+          CharacterContainersView,
+          "character_containers.json"
+        ),
+      physical_features:
+        render_one(
+          character.physical_features,
+          PhysicalFeaturesView,
+          "physical_feature.json"
+        ),
+      settings:
+        render_one(
+          character.settings,
+          CharacterSettingsView,
+          "character_settings.json"
+        ),
+      slots:
+        render_one(
+          character.slots,
+          CharacterSlotsView,
+          "character_slots.json"
+        ),
+      status:
+        render_one(
+          character.status,
+          CharacterStatusView,
+          "character_status.json"
+        ),
+      wealth:
+        render_one(
+          character.wealth,
+          CharacterWealthView,
+          "character_wealth.json"
+        ),
+      id: character.id,
+      name: character.name,
+      active: character.active,
+      pronoun: character.pronoun,
+      race: character.race,
+      area_id: character.area_id,
+      player_id: character.player_id,
+      moved_at: character.moved_at,
+      inserted_at: character.inserted_at,
+      updated_at: character.updated_at
+    }
   end
 end

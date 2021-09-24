@@ -6,8 +6,17 @@ defmodule Mud.Engine.Character do
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item, Shop}
   alias Mud.Engine.Util
-  alias Mud.Engine.Character.{Bank, Containers, Settings, Skill, Slots, Status, Wealth}
-  alias Mud.DataType.NameSlug
+
+  alias Mud.Engine.Character.{
+    Bank,
+    Containers,
+    PhysicalFeatures,
+    Settings,
+    Skill,
+    Slots,
+    Status,
+    Wealth
+  }
 
   require Logger
 
@@ -16,21 +25,46 @@ defmodule Mud.Engine.Character do
   # Defining the data object
   ##
   ##
-
+  @derive {Jason.Encoder,
+           only: [
+             :id,
+             :settings,
+             :bank,
+             :wealth,
+             :containers,
+             :slots,
+             :status,
+             :physical_features,
+             :name,
+             :active,
+             :moved_at,
+             :agility,
+             :charisma,
+             :constitution,
+             :dexterity,
+             :intelligence,
+             :reflexes,
+             :stamina,
+             :strength,
+             :wisdom,
+             :race,
+             :pronoun,
+             :area,
+             :player
+           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "characters" do
-    @derive Jason.Encoder
     has_one(:settings, Settings)
     has_one(:bank, Bank)
     has_one(:wealth, Wealth)
     has_one(:containers, Containers)
     has_one(:slots, Slots)
     has_one(:status, Status)
+    has_one(:physical_features, PhysicalFeatures)
 
     timestamps()
     # Naming and Titles
     field(:name, :string)
-    field(:slug, NameSlug.Type)
 
     # Game Status
     field(:active, :boolean, default: false)
@@ -47,38 +81,13 @@ defmodule Mud.Engine.Character do
     field(:strength, :integer, default: 10)
     field(:wisdom, :integer, default: 10)
 
-    # Physical Features
-    field(:age, :integer, default: 18)
-    field(:eye_color, :string, default: "brown")
-    field(:eye_color_type, :string, default: "solid")
-    field(:eye_accent_color, :string, default: "brown")
-    field(:hair_color, :string, default: "brown")
-    field(:hair_length, :string, default: "short")
-    field(:hair_style, :string, default: "loose")
+    # # Physical Features
     field(:race, :string, default: "Human")
-    field(:skin_tone, :string, default: "brown")
-    field(:height, :string, default: "average")
 
-    # Which hand is the primary hand
-    field(:handedness, :string, default: "right")
+    # Pronoun
+    field(:pronoun, :string, default: "neutral")
 
-    # Gender pronoun
-    field(:gender_pronoun, :string, default: "neutral")
-
-    #
-    # Physical Status
-    #
-
-    # standing, sitting, kneeling, etc...
-    field(:position, :string, default: "standing")
-
-    # on, under, over, in
-    # field(:relative_position, :string)
-
-    # the thing the Character is relative to
-    # belongs_to(:relative_item, Item, type: :binary_id)
-
-    # The Object where the
+    # The Area that the Character is in
     belongs_to(:area, Area, type: :binary_id)
 
     #
@@ -86,15 +95,6 @@ defmodule Mud.Engine.Character do
     #
 
     belongs_to(:player, Mud.Account.Player, type: :binary_id)
-
-    #
-    # Settings
-    #
-
-    field(:auto_open_containers, :boolean, default: false)
-    field(:auto_close_containers, :boolean, default: false)
-    field(:auto_unlock_containers, :boolean, default: false)
-    field(:auto_lock_containers, :boolean, default: false)
 
     #
     # Skills
@@ -123,43 +123,32 @@ defmodule Mud.Engine.Character do
     character
     |> Ecto.Changeset.cast(attrs, [
       :active,
-      :age,
       :agility,
       :area_id,
       :charisma,
       :constitution,
       :dexterity,
-      :eye_accent_color,
-      :eye_color,
-      :eye_color_type,
-      :gender_pronoun,
-      :height,
-      :hair_color,
-      :hair_length,
-      :hair_style,
+      :pronoun,
       :intelligence,
       :name,
       :player_id,
-      :position,
       :race,
       :reflexes,
-      :skin_tone,
       :stamina,
       :strength,
       :wisdom,
-      :handedness,
       :moved_at
     ])
     |> validate_required([
+      :pronoun,
       :name,
+      :race,
       :player_id
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
     |> unsafe_validate_unique(:name, Mud.Repo)
     |> unique_constraint(:name)
-    |> NameSlug.maybe_generate_slug()
-    |> NameSlug.unique_constraint()
   end
 
   @topic inspect(__MODULE__)
@@ -196,49 +185,50 @@ defmodule Mud.Engine.Character do
   """
   @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def create(attrs \\ %{}) do
-    # Just grab something random for Alpha, as long as it is permanently explored
-    area = Area.list_all() |> Enum.filter(& &1.flags.permanently_explored) |> Enum.random()
+    Mud.Repo.transaction(fn ->
+      # Just grab something random for Alpha, as long as it is permanently explored
+      area = Area.list_all() |> Enum.filter(& &1.flags.permanently_explored) |> Enum.random()
 
-    Logger.debug(inspect(area))
-    Logger.debug(inspect(attrs))
+      Logger.debug(inspect(attrs))
 
-    # TODO: Figure out where to create characters and how to present the options.
-    # This random selection is just for prototype.
-    attrs =
-      attrs
-      |> Map.put("area_id", area.id)
-      |> Map.put("moved_at", DateTime.utc_now())
+      # This random selection is just for prototype.
+      attrs =
+        attrs
+        |> Map.put("area_id", area.id)
+        |> Map.put("moved_at", DateTime.utc_now())
 
-    result =
-      %__MODULE__{}
-      |> changeset(attrs)
-      |> Repo.insert()
+      result =
+        %__MODULE__{}
+        |> changeset(attrs)
+        |> Repo.insert()
 
-    case result do
-      {:ok, character} ->
-        Logger.info("Character `#{character.name}` created in area `#{area.id}:#{area.name}`")
+      case result do
+        {:ok, character} ->
+          Logger.info("Character `#{character.name}` created in area `#{area.id}:#{area.name}`")
 
-        # Set up skills
-        :ok = Skill.initialize(character.id)
+          # Set up skills
+          :ok = Skill.initialize(character.id)
 
-        # Set up settings and make sure they are loaded
-        :ok = Settings.create(%{character_id: character.id})
-        :ok = Wealth.create(%{character_id: character.id})
-        :ok = Bank.create(%{character_id: character.id})
-        :ok = Slots.create(%{character_id: character.id})
-        :ok = Status.create(%{character_id: character.id})
-        Containers.create(%{character_id: character.id})
+          # Set up settings and make sure they are loaded
+          :ok = Settings.create(%{character_id: character.id})
+          :ok = Wealth.create(%{character_id: character.id})
+          :ok = Bank.create(%{character_id: character.id})
+          :ok = Slots.create(%{character_id: character.id})
+          :ok = Status.create(%{character_id: character.id})
+          :ok = Containers.create(%{character_id: character.id})
 
-        character =
-          Repo.preload(character, [:bank, :containers, :settings, :slots, :status, :wealth])
+          :ok =
+            PhysicalFeatures.create(
+              Map.merge(attrs["physical_features"], %{"character_id" => character.id})
+            )
 
-        # setup_default_items(character)
+          preload(character)
 
-        {:ok, character |> preload()}
-
-      error ->
-        error
-    end
+        error ->
+          IO.inspect(error)
+          Mud.Repo.rollback(error)
+      end
+    end)
   end
 
   # defp setup_default_items(character) do
@@ -264,7 +254,7 @@ defmodule Mud.Engine.Character do
       map in Mud.Engine.Map,
       left_join: character_map in Mud.Engine.CharactersMaps,
       on: character_map.map_id == map.id,
-      where: character_map.character_id == ^character_id or map.permanently_explored
+      where: character_map.character_id == ^character_id
     )
     |> Repo.all()
   end
@@ -272,7 +262,7 @@ defmodule Mud.Engine.Character do
   @doc """
   In general, characters only 'know about' maps that they have visited at least one room in before.
 
-  This function loads up all the maps which meet that criteria.
+  This function marks one or more maps as being known by a character.
 
   ## Examples
 
@@ -310,9 +300,7 @@ defmodule Mud.Engine.Character do
         "a"
       end
 
-    "#{character.name} is #{a_or_an} #{character.race}. They have #{character.hair_color} hair, #{
-      character.eye_color
-    } eyes, and #{character.skin_tone} skin."
+    "#{character.name} is #{a_or_an} #{character.race}. They have #{character.physical_features.hair_color} hair, #{character.physical_features.eye_color} eyes, and #{character.physical_features.skin_tone} skin."
   end
 
   @doc """
@@ -563,45 +551,6 @@ defmodule Mud.Engine.Character do
     |> preload()
   end
 
-  @doc """
-  Gets a single character.
-
-  Raises `Ecto.NoResultsError` if the Character does not exist.
-
-  ## Examples
-
-      iex> get_by_slug!(123)
-      %Character{}
-
-      iex> get_by_slug!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  @spec get_by_slug!(String.t()) :: %__MODULE__{} | nil
-  def get_by_slug!(character_slug) do
-    Repo.one!(from(character in __MODULE__, where: character.slug == ^character_slug))
-    |> preload()
-  end
-
-  @doc """
-  Gets a single character.
-
-  Raises `Ecto.NoResultsError` if the Character does not exist.
-
-  ## Examples
-
-      iex> get_with_skills_by_id!(123)
-      %Character{}
-
-      iex> get_with_skills_by_id!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  @spec get_with_skills_by_id!(String.t()) :: %__MODULE__{} | nil
-  def get_with_skills_by_id!(character_id) do
-    Repo.one!(base_skills_query(character_id)) |> preload()
-  end
-
   @spec list_known_shops(String.t()) :: [%__MODULE__{}]
   def list_known_shops(character_id) do
     character_shops =
@@ -723,12 +672,16 @@ defmodule Mud.Engine.Character do
   @spec standing :: <<_::64>>
   def standing, do: "standing"
 
+  @spec sitting :: <<_::56>>
   def sitting, do: "sitting"
 
+  @spec kneeling :: <<_::64>>
   def kneeling, do: "kneeling"
 
+  @spec crouching :: <<_::72>>
   def crouching, do: "crouching"
 
+  @spec prone :: <<_::40>>
   def prone, do: "prone"
 
   defp base_no_skills_query() do
@@ -747,6 +700,7 @@ defmodule Mud.Engine.Character do
       character in __MODULE__,
       join: bank in assoc(character, :bank),
       join: containers in assoc(character, :containers),
+      join: physical_features in assoc(character, :physical_features),
       join: settings in assoc(character, :settings),
       join: slots in assoc(character, :slots),
       join: status in assoc(character, :status),
@@ -754,6 +708,7 @@ defmodule Mud.Engine.Character do
       preload: [
         bank: bank,
         containers: containers,
+        physical_features: physical_features,
         settings: settings,
         slots: slots,
         status: status,
@@ -762,16 +717,11 @@ defmodule Mud.Engine.Character do
     )
   end
 
-  defp base_skills_query(character_id) do
-    from(
-      character in __MODULE__,
-      join: skills in assoc(character, :skills),
-      where: character.id == ^character_id,
-      preload: [skills: skills]
-    )
-  end
-
   defp preload(character) do
-    Repo.preload(character, [:bank, :containers, :settings, :slots, :status, :wealth], force: true)
+    Repo.preload(
+      character,
+      [:bank, :containers, :physical_features, :settings, :slots, :status, :wealth],
+      force: true
+    )
   end
 end

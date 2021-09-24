@@ -12,11 +12,12 @@ defmodule MudWeb.Router do
 
   pipeline :api do
     plug(:accepts, ["json"])
-    plug(MudWeb.Plug.PutSecretKeyBase)
-    plug(:fetch_session)
+    # plug(MudWeb.Plug.PutSecretKeyBase)
+    plug(MudWeb.Plug.HandleApiSession)
+    # plug(:fetch_session)
     # plug(:put_secure_browser_headers)
-    plug(MudWeb.Plug.SlidingSessionTimeout, timeout_after_seconds: 604_800)
-    plug(MudWeb.Plug.SetPlayer)
+    # plug(MudWeb.Plug.SlidingSessionTimeout, timeout_after_seconds: 604_800)
+    # plug(MudWeb.Plug.SetPlayer)
   end
 
   pipeline :enforce_authentication do
@@ -29,10 +30,6 @@ defmodule MudWeb.Router do
 
   if Mix.env() == :dev do
     forward("/sent_emails", Bamboo.SentEmailViewerPlug)
-
-    scope "/" do
-      pipe_through(:browser)
-    end
   end
 
   scope "/auth", MudWeb do
@@ -44,15 +41,25 @@ defmodule MudWeb.Router do
 
   scope "/", MudWeb do
     pipe_through(:browser)
+
+    # The pages that actually make up the website
+    get("/", PageController, :index)
   end
 
   scope "/", MudWeb do
+    pipe_through([:browser, :enforce_authentication])
+
+    # The pages that actually make up the website
+    get("/play", PageController, :play)
+    # Wrapper around Ecwid store
+    get("/store", PageController, :store)
+  end
+
+  scope "/api", MudWeb do
     pipe_through([:api])
 
     # Auth related stuff
-    post("/authenticate/email", PlayerAuthController, :authenticate_via_email)
-    post("/authenticate/token", PlayerAuthController, :validate_auth_token)
-    get("/authenticate/sync", PlayerAuthController, :sync_status)
+    post("/authenticateClient", PlayerAuthController, :authenticate_client)
 
     #
     #
@@ -69,17 +76,6 @@ defmodule MudWeb.Router do
     # Auth related stuff
     post("/authenticate/logout", PlayerAuthController, :logout)
 
-    # Player related stuff
-    # post("/players/create", PlayerController, :create)
-    # post("/players/delete", PlayerController, :delete)
-    # post("/players/get", PlayerController, :get)
-    # post("/players/update", PlayerController, :update)
-
-    # Authenticated Player stuff
-    # get("/player", PlayerController, :get_authenticated_player)
-    # get("/player/settings", PlayerController, :get_authenticated_player_settings)
-    # post("/player/settings", PlayerController, :save_authenticated_player_settings)
-
     # Character related stuff
     get("/characters/player/:player_id", CharacterController, :list_player_characters)
     delete("/characters/:character_id", CharacterController, :delete)
@@ -92,8 +88,12 @@ defmodule MudWeb.Router do
 
     # Map related stuff
     resources("/maps", MapController, except: [:new, :edit])
+    get("/maps/:map_id/labels", MapLabelController, :fetch_for_map)
     get("/maps/:map_id/data", MapController, :fetch_data)
     get("/maps/:map_id/data/:character_id", MapController, :fetch_character_data)
+
+    # Map Label related stuff
+    resources("/maps/labels", MapLabelController, except: [:new, :edit])
 
     # Area related stuff
     resources("/areas", AreaController, except: [:new, :edit])
@@ -107,6 +107,9 @@ defmodule MudWeb.Router do
 
     # Lua related stuff
     resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
+
+    # Player
+    get("/player/sync", PlayerAuthController, :sync)
 
     # Character race stuff
     # resources("/character_races", CharacterRaceController, except: [:new, :edit])
@@ -124,11 +127,11 @@ defmodule MudWeb.Router do
     # post("/character_races/upload_image", CharacterRaceController, :upload_image)
 
     # Character template stuff
-    resources("/character_templates", CharacterTemplateController, except: [:new, :edit])
-    post("/character_templates/preview", CharacterTemplateController, :preview)
+    # resources("/character_templates", CharacterTemplateController, except: [:new, :edit])
+    # post("/character_templates/preview", CharacterTemplateController, :preview)
 
     # Commands stuff
-    resources("/commands", CommandController, except: [:new, :edit])
+    # resources("/commands", CommandController, except: [:new, :edit])
 
     # Items stuff
     get("/items/area/:area_id", ItemController, :load_items_for_area)

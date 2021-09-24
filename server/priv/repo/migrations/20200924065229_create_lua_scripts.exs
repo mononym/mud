@@ -6,6 +6,7 @@ defmodule Mud.Repo.Migrations.CreateLuaScripts do
       add(:id, :binary_id, primary_key: true)
       add(:name, :string)
       add(:type, :string)
+      add(:key, :string)
       add(:code, :text)
       add(:description, :text)
 

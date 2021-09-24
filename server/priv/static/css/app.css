@@ -18232,7 +18232,6 @@ video {
 .select-all {
   -webkit-user-select: all;
      -moz-user-select: all;
-      -ms-user-select: all;
           user-select: all;
 }
 
@@ -21535,48 +21534,6 @@ video {
 .animate-bounce {
   -webkit-animation: bounce 1s infinite;
           animation: bounce 1s infinite;
-}
-
-div[data-phx-view="MudClientLive"] {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  height: 100vh;
-  width: 100vw;
-  max-height: 100vh;
-}
-
-div[name="message"] {
-  white-space: pre-line;
-}
-
-#story div,
-#story span {
-  flex-shrink: 0;
-}
-
-.while-submitting {
-  display: none;
-}
-
-.inputs {
-  display: block;
-}
-
-.phx-submit-loading .while-submitting {
-  display: block;
-}
-
-.phx-submit-loading .inputs {
-  display: none;
-}
-
-.jstree_no_checkbox > i.jstree-checkbox {
-  display: none;
-}
-
-.half-height {
-  height: 50%;
 }
 
 @media (min-width: 640px) {
@@ -39222,7 +39179,6 @@ div[name="message"] {
   .sm\:select-all {
     -webkit-user-select: all;
        -moz-user-select: all;
-        -ms-user-select: all;
             user-select: all;
   }
 
@@ -60105,7 +60061,6 @@ div[name="message"] {
   .md\:select-all {
     -webkit-user-select: all;
        -moz-user-select: all;
-        -ms-user-select: all;
             user-select: all;
   }
 
@@ -80988,7 +80943,6 @@ div[name="message"] {
   .lg\:select-all {
     -webkit-user-select: all;
        -moz-user-select: all;
-        -ms-user-select: all;
             user-select: all;
   }
 
@@ -101871,7 +101825,6 @@ div[name="message"] {
   .xl\:select-all {
     -webkit-user-select: all;
        -moz-user-select: all;
-        -ms-user-select: all;
             user-select: all;
   }
 

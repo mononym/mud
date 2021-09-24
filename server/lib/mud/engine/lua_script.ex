@@ -3,12 +3,12 @@ defmodule Mud.Engine.LuaScript do
   import Ecto.Changeset
   import Ecto.Query
   alias Mud.Repo
-  alias Mud.Engine.Instance
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
   schema "lua_scripts" do
     field(:code, :string, default: "")
+    field(:key, :string)
     field(:name, :string)
     field(:type, :string)
     field(:description, :string)
@@ -20,8 +20,10 @@ defmodule Mud.Engine.LuaScript do
   @doc false
   def changeset(lua_script, attrs) do
     lua_script
-    |> cast(attrs, [:name, :type, :code, :description])
-    |> validate_required([:name, :type, :code, :description])
+    |> cast(attrs, [:key, :name, :type, :code, :description])
+    |> validate_required([:key, :name, :type, :code, :description])
+    |> unique_constraint(:key)
+    |> unique_constraint(:name)
   end
 
   @doc """

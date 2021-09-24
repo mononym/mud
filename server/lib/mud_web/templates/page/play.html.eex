@@ -1,0 +1,4 @@
+<div class="h-full flex flex-col justify-center content-center">
+    <p class="text-center">Enter the below session token into your desktop client within the next 5 minutes to start your game session!</p>
+    <p class="text-4xl text-center"><%= @session_token %></p>
+</div>

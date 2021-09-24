@@ -4,8 +4,8 @@ defmodule Mud.Engine.Link do
 
   In the simple example you have a directional exit from a room, such as 'east' or 'north'.
 
-  In a more complex case you might have magical connections between areas that changes can propogate, and the links
-  serve as a way to tie the areas together.
+  In a more complex case you might have magical connections between areas that changes can propogate through, and the
+  links serve as a way to tie the areas together.
   """
   use Mud.Schema
   import Ecto.Changeset
@@ -34,7 +34,8 @@ defmodule Mud.Engine.Link do
     field(:type, :string, default: "direction")
     field(:line_width, :integer, default: 2)
     field(:line_color, :string, default: "#FFFFFF")
-    field(:line_dash, :integer, default: 0)
+    field(:line_dash, :string, default: "4,2")
+    field(:line_dashed, :boolean, default: false)
     field(:corners, :integer, default: 5)
     field(:line_start_horizontal_offset, :integer, default: 0)
     field(:line_start_vertical_offset, :integer, default: 0)
@@ -56,7 +57,8 @@ defmodule Mud.Engine.Link do
     field(:local_from_x, :integer, default: 0)
     field(:local_from_y, :integer, default: 0)
     field(:local_from_line_width, :integer, default: 2)
-    field(:local_from_line_dash, :integer, default: 0)
+    field(:local_from_line_dash, :string, default: "4,2")
+    field(:local_from_line_dashed, :boolean, default: false)
     field(:local_from_line_color, :string, default: "#FFFFFF")
     field(:local_from_border_width, :integer, default: 2)
     field(:local_from_border_color, :string, default: "#FFFFFF")
@@ -74,7 +76,8 @@ defmodule Mud.Engine.Link do
     field(:local_to_x, :integer, default: 0)
     field(:local_to_y, :integer, default: 0)
     field(:local_to_line_width, :integer, default: 2)
-    field(:local_to_line_dash, :integer, default: 0)
+    field(:local_to_line_dash, :string, default: "4,2")
+    field(:local_to_line_dashed, :boolean, default: false)
     field(:local_to_line_color, :string, default: "#FFFFFF")
     field(:local_to_border_width, :integer, default: 2)
     field(:local_to_border_color, :string, default: "#FFFFFF")

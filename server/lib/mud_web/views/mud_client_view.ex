@@ -21,7 +21,7 @@ defmodule MudWeb.MudClientView do
       mapData: %{
         areas: render_many(map_data.areas, MudWeb.AreaView, "area.json"),
         links: render_many(map_data.links, MudWeb.LinkView, "link.json"),
-        exploredAreas: map_data.explored_areas
+        explored_areas: map_data.explored_areas
       },
       inventory: render_many(inventory, MudWeb.ItemView, "item.json"),
       maps: render_many(maps, MudWeb.MapView, "map.json"),
@@ -35,7 +35,7 @@ defmodule MudWeb.MudClientView do
     %{
       action: event.action,
       area: render_one(event.area, MudWeb.AreaView, "area.json"),
-      otherCharacters:
+      other_characters:
         render_many(event.other_characters, MudWeb.CharacterView, "character.json"),
       items: render_many(event.items, MudWeb.ItemView, "item.json"),
       exits: render_many(event.exits, MudWeb.LinkView, "link.json")

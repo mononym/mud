@@ -3,23 +3,11 @@ defmodule MudWeb.PlayerAuthController do
   plug(Ueberauth)
 
   alias Mud.Account
+  alias Mud.Engine.Character
+
   alias Ueberauth.Strategy.Helpers
 
   action_fallback(MudWeb.FallbackController)
-
-  def authenticate_via_email(conn, %{"email" => email}) do
-    case Account.authenticate_via_email(email) do
-      {:ok, _} ->
-        conn
-        |> resp(200, "ok")
-        |> send_resp()
-
-      {:error, _} ->
-        conn
-        |> resp(501, "Something went wrong.")
-        |> send_resp()
-    end
-  end
 
   def logout(conn, _params) do
     conn
@@ -28,46 +16,52 @@ defmodule MudWeb.PlayerAuthController do
     |> send_resp()
   end
 
-  def validate_auth_token(conn, %{"token" => token}) do
-    case Account.validate_auth_token(token) do
-      {:ok, player} ->
-        conn
-        |> put_session("player_id", player.id)
-        |> put_view(MudWeb.PlayerView)
-        |> render("player.json", player: player)
+  def authenticate_client(conn, params) do
+    token = params["token"]
 
-      _error ->
+    result =
+      Redix.command!(:redix, [
+        "GET",
+        "client-session-token:#{token}"
+      ])
+
+    case result do
+      nil ->
+        # There is no matching token. This is a bad request/hacking attempt or someone waited too long (5+ minutes)
+
         conn
-        |> resp(404, "The provided token was invalid.")
-        |> send_resp()
+        |> send_resp(400, "Bad Request")
+
+      player_id ->
+        Redix.command!(:redix, [
+          "DEL",
+          "client-session-token:#{token}"
+        ])
+
+        token = Phoenix.Token.sign(MudWeb.Endpoint, "client_session", player_id)
+
+        conn
+        |> send_resp(200, Jason.encode!(%{token: token}))
     end
   end
 
-  def sync_status(conn, _) do
-    with true <- conn.assigns.player_authenticated?,
-         {:ok, player} <- Mud.Account.get_player(conn.assigns.player_id) do
-      player =
-        Map.from_struct(player)
-        |> Map.delete(:profile)
-        |> Map.delete(:__meta__)
-        |> Map.delete(:auth_email)
-        |> Map.delete(:settings)
+  def sync(conn, _) do
+    {:ok, player} = Mud.Account.Player.get(conn.assigns.player_id)
 
-      conn
-      |> put_status(200)
-      |> json(%{authenticated: true, player: player})
-    else
-      {:error, _} ->
-        conn
-        |> clear_session()
-        |> put_status(200)
-        |> json(%{authenticated: false})
+    player =
+      Map.from_struct(player)
+      |> Map.delete(:__meta__)
+      |> Map.delete(:settings)
 
-      _ ->
-        conn
-        |> put_status(200)
-        |> json(%{authenticated: false})
-    end
+    characters = Character.list_by_player_id(player.id)
+
+    conn
+    |> put_status(200)
+    |> put_view(MudWeb.Views.Api.V1)
+    |> render("sync_player_characters.json", %{
+      player: player,
+      characters: characters
+    })
   end
 
   # Start Auth0 flow
@@ -85,11 +79,11 @@ defmodule MudWeb.PlayerAuthController do
   # Success Auth0
   def callback(%{assigns: %{ueberauth_auth: auth}} = conn, _params) do
     case Account.from_auth(auth.extra.raw_info.user) do
-      {:ok, user} ->
+      {:ok, player} ->
         conn
-        |> put_flash(:info, "Successfully authenticated.")
-        |> put_session(:current_user, user)
         |> configure_session(renew: true)
+        |> put_flash(:info, "Successfully authenticated.")
+        |> put_session(:player_id, player.id)
         |> redirect(to: "/")
 
       {:error, reason} ->

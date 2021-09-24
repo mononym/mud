@@ -11,6 +11,13 @@ defmodule MudWeb.LuaScriptView do
   end
 
   def render("lua_script.json", %{lua_script: lua_script}) do
-    %{id: lua_script.id, name: lua_script.name, type: lua_script.type, code: lua_script.code}
+    %{
+      id: lua_script.id,
+      name: lua_script.name,
+      type: lua_script.type,
+      code: lua_script.code,
+      key: lua_script.key,
+      description: lua_script.description
+    }
   end
 end

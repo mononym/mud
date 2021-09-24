@@ -19,7 +19,6 @@ alias Mud.Engine
     description: "The complete grounds of the Torinthian Royal Palace",
     view_size: 250,
     grid_size: 50,
-    permanently_explored: true
   })
 
 {:ok, map2} =

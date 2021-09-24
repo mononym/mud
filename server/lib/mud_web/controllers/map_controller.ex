@@ -2,6 +2,7 @@ defmodule MudWeb.MapController do
   use MudWeb, :controller
 
   alias Mud.Engine
+  require Logger
 
   action_fallback(MudWeb.FallbackController)
 
@@ -10,7 +11,7 @@ defmodule MudWeb.MapController do
     render(conn, "index.json", maps: maps)
   end
 
-  def create(conn, %{"map" => map_params}) do
+  def create(conn, map_params) do
     with {:ok, %Engine.Map{} = map} <- Engine.Map.create(map_params) do
       conn
       |> put_status(:created)
@@ -24,7 +25,7 @@ defmodule MudWeb.MapController do
     render(conn, "show.json", map: map)
   end
 
-  def update(conn, %{"id" => id, "map" => map_params}) do
+  def update(conn, map_params = %{"id" => id}) do
     map = Engine.Map.get!(id)
 
     with {:ok, %Engine.Map{} = map} <- Engine.Map.update(map, map_params) do
@@ -45,6 +46,9 @@ defmodule MudWeb.MapController do
   end
 
   def fetch_data(conn, %{"map_id" => map_id}) do
-    render(conn, "data.json", Engine.Map.fetch_data(map_id))
+    Logger.debug("fetching data for map")
+    data = Engine.Map.fetch_data(map_id)
+    Logger.debug("fetched data for map")
+    render(conn, "data.json", data)
   end
 end

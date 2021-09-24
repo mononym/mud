@@ -4,7 +4,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     defstruct singular: nil,
               plural: nil,
               adjective: nil,
-              portrait: "",
               description: "",
               eye_colors: [],
               eye_shapes: [],
@@ -18,7 +17,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
               pronouns: [],
               age_min: 0,
               age_max: 0,
-              body_shapes: []
+              body_types: []
   end
 
   def races do
@@ -35,7 +34,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Human",
       plural: "Humans",
       adjective: "Human",
-      portrait: "https://d148p4q18vviek.cloudfront.net/Human.jpg",
       description:
         "The most numerous of the young races, Humans can be found almost everywhere there is civilization, and many places where there is none. They are also the most adaptable of all the races, and can be found engaging and excelling in every profession.",
       eye_colors: common_eye_colors(),
@@ -48,7 +46,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_styles: common_hair_styles(),
       heights: common_heights(),
       pronouns: common_pronouns(),
-      body_shapes: common_body_shapes(),
+      body_types: common_body_types(),
       age_min: 18,
       age_max: 60
     }
@@ -59,7 +57,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Elf",
       plural: "Elfs",
       adjective: "Elven",
-      portrait: "https://d148p4q18vviek.cloudfront.net/Elf.jpg",
       description:
         "The oldest and longest lived of the old races, Elves are often haughty when dealing with those they consider to be lesser than them. Which is often everyone.",
       eye_colors: common_eye_colors(),
@@ -72,7 +69,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_styles: common_hair_styles(),
       heights: common_heights(),
       pronouns: common_pronouns(),
-      body_shapes: common_body_shapes(),
+      body_types: common_body_types(),
       age_min: 50,
       age_max: 120
     }
@@ -83,7 +80,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       singular: "Dwarf",
       plural: "Dwarves",
       adjective: "Dwarven",
-      portrait: "https://d148p4q18vviek.cloudfront.net/Dwarf.jpg",
       description: "Second only to Elves in lifespan, Dwarfen kind couldn't be more different.",
       eye_colors: common_eye_colors(),
       eye_shapes: common_eye_shapes(),
@@ -95,13 +91,13 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_styles: common_hair_styles(),
       heights: common_heights(),
       pronouns: common_pronouns(),
-      body_shapes: common_body_shapes(),
+      body_types: common_body_types(),
       age_min: 40,
       age_max: 100
     }
   end
 
-  defp common_body_shapes do
+  defp common_body_types do
     [
       "thin",
       "skinny",

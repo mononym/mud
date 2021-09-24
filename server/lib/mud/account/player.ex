@@ -4,29 +4,31 @@ defmodule Mud.Account.Player do
   use Mud.Schema
 
   import Ecto.Changeset
+  import Ecto.Query
 
   alias Mud.Account
   alias Mud.Repo
   require Logger
 
   @derive {Jason.Encoder,
-           only: [
-             :id,
-             :auth,
-             :inserted_at,
-             :profile,
-             :settings,
-             :status,
-             :sub,
-             :tos_accepted,
-             :updated_at
-           ]}
+   only: [
+     :id,
+     :inserted_at,
+     :profile,
+     :purchases,
+     #  :settings,
+     :status,
+     :sub,
+     :tos_accepted,
+     :updated_at
+   ]}
   schema "players" do
     field(:status, Account.Enums.PlayerStatus)
     field(:tos_accepted, :boolean, default: false)
     field(:sub, :string)
 
     has_one(:profile, Account.Profile)
+    has_one(:purchases, Account.Purchases)
     has_one(:settings, Account.Settings)
 
     timestamps()
@@ -68,6 +70,35 @@ defmodule Mud.Account.Player do
   end
 
   @doc """
+  Gets a single Player struct by their email.
+
+  ## Examples
+
+      iex> get_by_email("a@b")
+      {:ok, %Player{}}
+
+      iex> get_by_email("a@d")
+      {:error, :not_found}
+
+  """
+  def get_by_email(email) do
+    from(
+      player in __MODULE__,
+      left_join: profile in assoc(player, :profile),
+      as: :profile,
+      where: profile.email == ^email
+    )
+    |> Repo.one()
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      player ->
+        {:ok, preload(player)}
+    end
+  end
+
+  @doc """
   Gets a single Player struct by the sub id.
 
   ## Examples
@@ -80,8 +111,6 @@ defmodule Mud.Account.Player do
 
   """
   def get_by_sub(sub) do
-    Logger.debug(sub)
-
     case Repo.get_by(__MODULE__, sub: sub) do
       nil ->
         {:error, :not_found}
@@ -105,7 +134,7 @@ defmodule Mud.Account.Player do
     |> validate()
   end
 
-  defp preload(player), do: Repo.preload(player, [:profile, :settings])
+  defp preload(player), do: Repo.preload(player, [:profile, :purchases, :settings])
 
   defp validate(player) do
     player

@@ -20,10 +20,11 @@ defmodule Mud.Application do
       Mud.Vault,
       {Registry, keys: :unique, name: Mud.Engine.CharacterSessionRegistry},
       {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.CharacterSessionSupervisor},
-      {Task.Supervisor, name: Mud.Engine.TaskSupervisor},
+      {Task.Supervisor, name: Mud.TaskSupervisor},
       {Registry, keys: :unique, name: :scripts},
       {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.ScriptSupervisor},
-      Mud.Engine.System.Time
+      Mud.Engine.System.Time,
+      Mud.StoreManager
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

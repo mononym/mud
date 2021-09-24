@@ -13,7 +13,7 @@ defmodule Mud.Account do
   import Ecto.Query, warn: false
 
   alias Mud.Account
-  alias Mud.Account.{Auth, Player, Settings}
+  alias Mud.Account.{Auth, Player, Purchases, Settings}
   alias Mud.Repo
 
   require Logger
@@ -289,44 +289,6 @@ defmodule Mud.Account do
   end
 
   @doc """
-  Gets a single player.
-
-  ## Examples
-
-      iex> get_player(123)
-      {:ok, %Player{}}
-
-      iex> get_player(456)
-      {:error, :not_found}
-
-  """
-  def get_player(id) do
-    case Repo.get(Player, id) do
-      nil ->
-        {:error, :not_found}
-
-      player ->
-        {:ok, player}
-    end
-  end
-
-  @doc """
-  Gets a single player.
-
-  Raises `Ecto.NoResultsError` if the Player does not exist.
-
-  ## Examples
-
-      iex> get_player!(123)
-      %Player{}
-
-      iex> get_player!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_player!(id), do: Repo.get!(Player, id)
-
-  @doc """
   Deletes a Player.
 
   ## Examples
@@ -496,12 +458,25 @@ defmodule Mud.Account do
             nickname: user["nickname"] || "",
             picture: user["picture"] || ""
           },
-          settings: %Settings{},
           status: Account.Constants.PlayerStatus.created(),
           sub: user["sub"]
         }
 
         player = Player.new(args) |> Repo.insert!()
+
+        profile =
+          Ecto.build_assoc(player, :profile, %{
+            email: user["email"] || "",
+            email_verified: user["email_verified"] || false,
+            nickname: user["nickname"] || "",
+            picture: user["picture"] || ""
+          })
+          |> Repo.insert!()
+
+        purchases = Ecto.build_assoc(player, :purchases, %{}) |> Repo.insert!()
+        settings = Ecto.build_assoc(player, :settings, %{}) |> Repo.insert!()
+
+        {:ok, %{player | profile: profile, purchases: purchases, settings: settings}}
     end
   end
 

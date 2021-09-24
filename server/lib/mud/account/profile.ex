@@ -2,6 +2,7 @@ defmodule Mud.Account.Profile do
   @moduledoc false
 
   use Mud.Schema
+  alias Mud.Repo
 
   import Ecto.Changeset
 
@@ -30,6 +31,18 @@ defmodule Mud.Account.Profile do
     )
 
     timestamps()
+  end
+
+  @doc """
+  Gets a single profile struct by the id, throws an error if there are no purchases.
+
+  ## Examples
+
+      iex> get!(123)
+      %Profile{}
+  """
+  def get!(player_id) do
+    Repo.get!(__MODULE__, player_id)
   end
 
   def changeset(profile) do

@@ -2,7 +2,9 @@ defmodule MudWeb.MapView do
   use MudWeb, :view
   alias MudWeb.AreaView
   alias MudWeb.LinkView
+  alias MudWeb.MapLabelView
   alias MudWeb.MapView
+  require Logger
 
   def render("index.json", %{maps: maps}) do
     render_many(maps, MapView, "map.json")
@@ -17,12 +19,9 @@ defmodule MudWeb.MapView do
       id: map.id,
       name: map.name,
       description: map.description,
-      viewSize: map.view_size,
-      gridSize: map.grid_size,
-      labels: map.labels,
-      minimumZoomIndex: map.minimum_zoom_index,
-      maximumZoomIndex: map.maximum_zoom_index,
-      permanently_explored: map.permanently_explored,
+      key: map.key,
+      view_size: map.view_size,
+      grid_size: map.grid_size,
       inserted_at: map.inserted_at,
       updated_at: map.updated_at
     }
@@ -32,14 +31,19 @@ defmodule MudWeb.MapView do
     %{
       areas: render_many(data.areas, AreaView, "area.json"),
       links: render_many(data.links, LinkView, "link.json"),
-      exploredAreas: data.explored_areas
+      explored_areas: data.explored_areas
     }
   end
 
   def render("data.json", data) do
+    areas = render_many(data.areas, AreaView, "area.json")
+    labels = render_many(data.labels, MapLabelView, "map_label.json")
+    links = render_many(data.links, LinkView, "link.json")
+
     %{
-      areas: render_many(data.areas, AreaView, "area.json"),
-      links: render_many(data.links, LinkView, "link.json")
+      areas: areas,
+      labels: labels,
+      links: links
     }
   end
 end

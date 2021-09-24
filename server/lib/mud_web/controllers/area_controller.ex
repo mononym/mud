@@ -15,7 +15,7 @@ defmodule MudWeb.AreaController do
     render(conn, "index.json", areas: areas)
   end
 
-  def create(conn, %{"area" => area_params}) do
+  def create(conn, area_params) do
     with {:ok, %Area{} = area} <-
            Area.create(Recase.Enumerable.convert_keys(area_params, &Recase.to_snake/1)) do
       conn
@@ -30,7 +30,7 @@ defmodule MudWeb.AreaController do
     render(conn, "show.json", area: area)
   end
 
-  def update(conn, %{"id" => id, "area" => area_params}) do
+  def update(conn, area_params = %{"id" => id}) do
     area = Area.get!(id)
 
     with {:ok, %Area{} = area} <-
