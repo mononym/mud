@@ -16,7 +16,7 @@ defmodule Mud.Engine.Item.Wearable do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_wearables" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:slot, :string, required: true)
+    field(:slot, :string)
   end
 
   @doc false

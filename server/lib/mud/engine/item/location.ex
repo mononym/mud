@@ -35,7 +35,7 @@ defmodule Mud.Engine.Item.Location do
     belongs_to(:relative_item, Mud.Engine.Item, type: :binary_id)
     field(:worn_on_character, :boolean, default: false)
     belongs_to(:character, Mud.Engine.Character, type: :binary_id)
-    field(:moved_at, :utc_datetime_usec, required: true)
+    field(:moved_at, :utc_datetime_usec)
     belongs_to(:stow_home, Mud.Engine.Item, type: :binary_id)
   end
 

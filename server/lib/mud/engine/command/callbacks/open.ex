@@ -343,11 +343,10 @@ defmodule Mud.Engine.Command.Open do
 
       _ ->
         area_results =
-          Search.find_matches_in_area(
+          Search.find_matches_on_ground_and_surfaces_in_area(
             context.character.area_id,
             context.command.ast.thing.input,
-            context.character.settings.commands.search_mode,
-            context.character
+            context.character.settings.commands.search_mode
           )
 
         case area_results do

@@ -54,8 +54,7 @@ defmodule Mud.Engine.Command.Lock do
     {input, which_target} = extract_input_and_target(context.command.ast)
 
     result =
-      Search.find_matches_in_area_v2(
-        target_types(),
+      Search.find_matches_on_ground_and_surfaces_in_area(
         context.character.area_id,
         input,
         which_target
@@ -72,10 +71,7 @@ defmodule Mud.Engine.Command.Lock do
         SingleTargetCallback.handle_multiple_matches(context, matches, multi_error, too_many)
 
       {:error, _} ->
-        character = Repo.preload(context.character, :worn_items)
-        worn_items = character.worn_items
-
-        case Search.generate_matches(worn_items, input, which_target) do
+        case Search.find_matches_in_worn_items(context.character.id, input, which_target) do
           {:ok, [match]} ->
             do_thing_to_match(context, match, true)
 

@@ -450,78 +450,78 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_travel_command do
-    %Definition{
-      callback_module: Command.Travel,
-      parts: [
-        %Part{
-          matches: ["travel"],
-          key: :travel,
-          transformer: &Enum.join/1
-        },
-        %Part{
-          follows: [:travel],
-          matches: [~r/.*/],
-          key: :thing,
-          greedy: true,
-          transformer: &join_with_space_downcase/1
-        }
-      ]
-    }
-  end
+  # defp define_travel_command do
+  #   %Definition{
+  #     callback_module: Command.Travel,
+  #     parts: [
+  #       %Part{
+  #         matches: ["travel"],
+  #         key: :travel,
+  #         transformer: &Enum.join/1
+  #       },
+  #       %Part{
+  #         follows: [:travel],
+  #         matches: [~r/.*/],
+  #         key: :thing,
+  #         greedy: true,
+  #         transformer: &join_with_space_downcase/1
+  #       }
+  #     ]
+  #   }
+  # end
 
-  defp define_swap_command do
-    %Definition{
-      callback_module: Command.Swap,
-      parts: [
-        %Part{
-          matches: ["swap"],
-          key: :swap,
-          transformer: &Enum.join/1
-        }
-      ]
-    }
-  end
+  # defp define_swap_command do
+  #   %Definition{
+  #     callback_module: Command.Swap,
+  #     parts: [
+  #       %Part{
+  #         matches: ["swap"],
+  #         key: :swap,
+  #         transformer: &Enum.join/1
+  #       }
+  #     ]
+  #   }
+  # end
 
-  defp define_lock_command do
-    %Definition{
-      callback_module: Command.Lock,
-      parts: [
-        %Part{
-          matches: ["lock"],
-          key: :lock,
-          transformer: &Enum.join/1
-        },
-        %Part{
-          follows: [:lock],
-          matches: [~r/.*/],
-          key: :target,
-          greedy: true,
-          transformer: &join_with_space_downcase/1
-        }
-      ]
-    }
-  end
+  # defp define_lock_command do
+  #   %Definition{
+  #     callback_module: Command.Lock,
+  #     parts: [
+  #       %Part{
+  #         matches: ["lock"],
+  #         key: :lock,
+  #         transformer: &Enum.join/1
+  #       },
+  #       %Part{
+  #         follows: [:lock],
+  #         matches: [~r/.*/],
+  #         key: :target,
+  #         greedy: true,
+  #         transformer: &join_with_space_downcase/1
+  #       }
+  #     ]
+  #   }
+  # end
 
-  defp define_unlock_command do
-    %Definition{
-      callback_module: Command.Unlock,
-      parts: [
-        %Part{
-          matches: ["unlock"],
-          key: :unlock,
-          transformer: &Enum.join/1
-        },
-        %Part{
-          follows: [:unlock],
-          matches: [~r/.*/],
-          key: :target,
-          greedy: true,
-          transformer: &join_with_space_downcase/1
-        }
-      ]
-    }
-  end
+  # defp define_unlock_command do
+  #   %Definition{
+  #     callback_module: Command.Unlock,
+  #     parts: [
+  #       %Part{
+  #         matches: ["unlock"],
+  #         key: :unlock,
+  #         transformer: &Enum.join/1
+  #       },
+  #       %Part{
+  #         follows: [:unlock],
+  #         matches: [~r/.*/],
+  #         key: :target,
+  #         greedy: true,
+  #         transformer: &join_with_space_downcase/1
+  #       }
+  #     ]
+  #   }
+  # end
 
   defp define_store_command do
     %Definition{
@@ -862,25 +862,25 @@ defmodule Mud.Engine.Rules.Commands do
     }
   end
 
-  defp define_kick_command do
-    %Definition{
-      callback_module: Command.Kick,
-      parts: [
-        %Part{
-          matches: ["kick"],
-          key: :kick,
-          transformer: &Enum.join/1
-        },
-        %Part{
-          follows: [:kick],
-          matches: [~r/.*/],
-          key: :target,
-          greedy: true,
-          transformer: &join_with_space_downcase/1
-        }
-      ]
-    }
-  end
+  # defp define_kick_command do
+  #   %Definition{
+  #     callback_module: Command.Kick,
+  #     parts: [
+  #       %Part{
+  #         matches: ["kick"],
+  #         key: :kick,
+  #         transformer: &Enum.join/1
+  #       },
+  #       %Part{
+  #         follows: [:kick],
+  #         matches: [~r/.*/],
+  #         key: :target,
+  #         greedy: true,
+  #         transformer: &join_with_space_downcase/1
+  #       }
+  #     ]
+  #   }
+  # end
 
   defp define_lie_command do
     %Definition{

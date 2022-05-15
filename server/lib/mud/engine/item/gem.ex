@@ -35,13 +35,13 @@ defmodule Mud.Engine.Item.Gem do
   schema "item_gems" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
     # diamond, agate, etc...
-    field(:type, :string, required: true)
+    field(:type, :string)
 
     # oblong, princess, fine round, half rose
-    field(:cut_type, :string, required: false, default: "uncut")
+    field(:cut_type, :string, default: "uncut")
 
     # Scale 0-10 with 10 being flawless cut and 1 being a really shitty unmatched up cut with poor facets and so on
-    field(:cut_quality, :integer, required: false, default: 10)
+    field(:cut_quality, :integer, default: 10)
 
     # Scale 0-10 with 10 being flawless clarity and 1 being heavily included
     field(:clarity, :integer, default: 10)
@@ -70,20 +70,20 @@ defmodule Mud.Engine.Item.Gem do
     # Tone (or value) is lightness or darkness in color.
     # There are 10 stages of tone, ranging from 1 (for colorless) through 10 (for black).
     # In general, a "5" (Medium) or a "6" (Medium Dark) would be idealб but as color perception is somewhat subjective; this is debatable.
-    field(:tone, :integer, required: false, default: 5)
+    field(:tone, :integer, default: 5)
 
     # Hue
     # Hue is the first impression we get when seeing color, but then in it's purest opaque form.
     # There are over 16 million hues; the human eye, however, is not capable of distinguishing them all.
     # In the trade, we normally use 31 hues based on the RGB model (red-green-blue).
     # All the hues get their own color-code, as the B for blue.
-    field(:hue, :string, required: false, default: "clear")
+    field(:hue, :string, default: "clear")
 
     field(:carat, :float, default: 1.0)
 
     # String modifiers that can be attached to the front and back of a gem description to further make each gem unique.
-    field(:pre_mod, :string, required: false)
-    field(:post_mod, :string, required: false)
+    field(:pre_mod, :string)
+    field(:post_mod, :string)
   end
 
   @doc false

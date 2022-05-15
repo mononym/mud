@@ -324,6 +324,22 @@ defmodule Mud.Account do
     |> notify_subscribers([:player, :updated])
   end
 
+  @doc """
+  Gets a single player.
+
+  Raises `Ecto.NoResultsError` if the Player does not exist.
+
+  ## Examples
+
+      iex> get_player!(123)
+      %Player{}
+
+      iex> get_player!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_player!(id), do: Repo.get!(Player, id)
+
   alias Mud.Account.Profile
 
   @doc """

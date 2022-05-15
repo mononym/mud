@@ -1,8 +1,8 @@
 defmodule Mud.Engine.Command do
   use Ecto.Schema
   import Ecto.Changeset
-  import Ecto.Query
   alias Mud.Repo
+  alias Mud.Engine.Command.Segment
   require Protocol
 
   @derive Jason.Encoder

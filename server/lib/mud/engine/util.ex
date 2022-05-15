@@ -7,7 +7,6 @@ defmodule Mud.Engine.Util do
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
   alias Mud.Engine.{Area, Character, Link, Item, Util}
-  alias Mud.Engine.Event.Client.UpdateInventory
   alias Mud.Engine.Constants
 
   def clear_continuation_from_context(context) do

@@ -20,7 +20,7 @@ defmodule Mud.Engine.Item.Coin do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_coins" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:count, :integer, required: true)
+    field(:count, :integer)
     field(:copper, :boolean, default: false)
     field(:bronze, :boolean, default: false)
     field(:silver, :boolean, default: false)

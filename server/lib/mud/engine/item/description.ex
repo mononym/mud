@@ -18,9 +18,9 @@ defmodule Mud.Engine.Item.Description do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_descriptions" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:short, :string, required: true)
-    field(:details, :string, required: true, default: "There is nothing unusual to see.")
-    field(:key, :string, required: true)
+    field(:short, :string)
+    field(:details, :string, default: "There is nothing unusual to see.")
+    field(:key, :string)
   end
 
   @doc false

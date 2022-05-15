@@ -6,8 +6,6 @@ defmodule Mud.StoreManager do
   """
   use GenServer
 
-  alias Mud.Engine.Event.Client.UpdateTime
-  alias Mud.Engine.Message
   alias Mud.Account.Player
   alias Mud.Account.Purchases
   alias Mud.Repo
@@ -105,6 +103,7 @@ defmodule Mud.StoreManager do
     end
   end
 
+  @impl true
   # The task completed successfully
   def handle_info({ref, _answer}, %{store_task: ref} = state) do
     state = %{state | store_task: nil}
@@ -113,11 +112,13 @@ defmodule Mud.StoreManager do
     {:noreply, state}
   end
 
+  @impl true
   # The task failed
   def handle_info({:DOWN, ref, :process, _pid, _reason}, %{ref: ref} = state) do
     {:noreply, %{state | ref: nil}}
   end
 
+  @impl true
   # The task failed
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, state}
@@ -176,7 +177,7 @@ defmodule Mud.StoreManager do
               body = %{"fulfillmentStatus" => "DELIVERED"} |> Jason.encode!()
 
               headers = [{"Content-type", "application/json"}]
-              response = HTTPoison.put!(url, body, headers) |> IO.inspect(label: :update_response)
+              HTTPoison.put!(url, body, headers)
             end
           end
         end)

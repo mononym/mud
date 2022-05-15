@@ -8,7 +8,7 @@
 // from the params if you are not using authentication.
 import { Socket } from "phoenix"
 
-import LiveSocket from "phoenix_live_view"
+import { LiveSocket } from "phoenix_live_view"
 
 let socket = new Socket("/socket")
 
@@ -81,22 +81,6 @@ Hooks.CharacterInventoryWindow = {
 let storyWindowScrolledToBottom = true;
 let storywindow;
 let scrolltobottom;
-
-Hooks.Tooltip = {
-    mounted() {
-        let instance =
-            tippy(this.el, {
-                content: this.el.dataset.tooltip,
-                placement: this.el.dataset.tooltip_placement
-            })
-
-        this.el.dataset.instance = instance
-    },
-
-    before_destroy() {
-        this.el.dataset.instance.destroy()
-    }
-}
 
 Hooks.Story = {
     mounted() {

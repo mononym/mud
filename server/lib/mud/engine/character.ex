@@ -68,7 +68,7 @@ defmodule Mud.Engine.Character do
 
     # Game Status
     field(:active, :boolean, default: false)
-    field(:moved_at, :utc_datetime_usec, required: true)
+    field(:moved_at, :utc_datetime_usec)
 
     # Attributes
     field(:agility, :integer, default: 10)

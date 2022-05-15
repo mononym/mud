@@ -4,7 +4,7 @@ defmodule Mud.Engine.Event.Client.UpdateMap do
   @derive {Jason.Encoder,
            only: [
              :action,
-             :area,
+             :areas,
              :links,
              :explored
            ]}

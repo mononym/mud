@@ -22,7 +22,7 @@ defmodule Mud.Engine.Shop.Product do
   schema "shop_products" do
     belongs_to(:shop, Mud.Engine.Shop, type: :binary_id)
     belongs_to(:template, Mud.Engine.Template, type: :binary_id)
-    field(:description, :string, required: true)
+    field(:description, :string)
     field(:copper, :integer, default: 0)
     field(:bronze, :integer, default: 0)
     field(:silver, :integer, default: 0)

@@ -15,7 +15,7 @@ defmodule MudWeb.PlayerRoleController do
     with {:ok, %PlayerRole{} = player_role} <- Account.create_player_role(player_role_params) do
       conn
       |> put_status(:created)
-      |> put_resp_header("location", Routes.player_role_path(conn, :show, player_role))
+      # |> put_resp_header("location", Routes.player_role_path(conn, :show, player_role))
       |> render("show.json", player_role: player_role)
     end
   end

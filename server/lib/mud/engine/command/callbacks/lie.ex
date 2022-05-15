@@ -124,7 +124,7 @@ defmodule Mud.Engine.Command.Lie do
          relative_place,
          other_matches \\ []
        ) do
-    furniture_slots_used = Furniture.slots_used(thing.match.id, context.character.id)
+    furniture_slots_used = Surface.character_slots_used(thing.match.id, context.character.id)
 
     if furniture_slots_used + 3 > thing.match.furniture.external_surface_size do
       CallbackUtil.furniture_full_error(context, thing.match, relative_place)
