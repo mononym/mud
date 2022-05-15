@@ -33,12 +33,12 @@ defmodule MudWeb.Router do
     forward("/sent_emails", Bamboo.SentEmailViewerPlug)
   end
 
-  scope "/auth", MudWeb do
-    pipe_through(:browser)
+  # scope "/auth", MudWeb do
+  #   pipe_through(:browser)
 
-    get("/:provider", PlayerAuthController, :request)
-    get("/:provider/callback", PlayerAuthController, :callback)
-  end
+  #   get("/:provider", PlayerAuthController, :request)
+  #   get("/:provider/callback", PlayerAuthController, :callback)
+  # end
 
   scope "/", MudWeb do
     pipe_through(:browser)
@@ -47,17 +47,17 @@ defmodule MudWeb.Router do
     get("/", PageController, :index)
   end
 
-  scope "/", MudWeb do
-    pipe_through([:browser, :enforce_authentication])
+  # scope "/", MudWeb do
+  #   pipe_through([:browser, :enforce_authentication])
 
-    # The pages that actually make up the website
-    get("/play", PageController, :play)
-    # Wrapper around Ecwid store
-    get("/store", PageController, :store)
-  end
+  #   # The pages that actually make up the website
+  #   get("/play", PageController, :play)
+  #   # Wrapper around Ecwid store
+  #   get("/store", PageController, :store)
+  # end
 
-  scope "/api", MudWeb do
-    pipe_through([:api])
+  # scope "/api", MudWeb do
+    # pipe_through([:api])
 
     # Auth related stuff
     # post("/authenticateClient", PlayerAuthController, :authenticate_client)
@@ -68,8 +68,8 @@ defmodule MudWeb.Router do
     #
     #
 
-    get("/health", HealthController, :health_check)
-  end
+  #   get("/health", HealthController, :health_check)
+  # end
 
   # scope "/", MudWeb do
   #   pipe_through([:api, :enforce_authentication])
