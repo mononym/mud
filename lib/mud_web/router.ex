@@ -4,21 +4,22 @@ defmodule MudWeb.Router do
   pipeline :browser do
     plug(:accepts, ["html"])
     plug(:fetch_session)
-    plug(:fetch_flash)
+    plug(:fetch_live_flash)
+    plug(:put_root_layout, {MudWeb.LayoutView, :root})
     plug(:protect_from_forgery)
     plug(:put_secure_browser_headers)
     plug(MudWeb.Plug.SetPlayer)
   end
 
-  pipeline :api do
-    plug(:accepts, ["json"])
+  # pipeline :api do
+  #   plug(:accepts, ["json"])
     # plug(MudWeb.Plug.PutSecretKeyBase)
-    plug(MudWeb.Plug.HandleApiSession)
+    # plug(MudWeb.Plug.HandleApiSession)
     # plug(:fetch_session)
     # plug(:put_secure_browser_headers)
     # plug(MudWeb.Plug.SlidingSessionTimeout, timeout_after_seconds: 604_800)
     # plug(MudWeb.Plug.SetPlayer)
-  end
+  # end
 
   pipeline :enforce_authentication do
     plug(MudWeb.Plug.EnforceAuthentication)
@@ -59,7 +60,7 @@ defmodule MudWeb.Router do
     pipe_through([:api])
 
     # Auth related stuff
-    post("/authenticateClient", PlayerAuthController, :authenticate_client)
+    # post("/authenticateClient", PlayerAuthController, :authenticate_client)
 
     #
     #
@@ -70,46 +71,46 @@ defmodule MudWeb.Router do
     get("/health", HealthController, :health_check)
   end
 
-  scope "/", MudWeb do
-    pipe_through([:api, :enforce_authentication])
+  # scope "/", MudWeb do
+  #   pipe_through([:api, :enforce_authentication])
 
     # Auth related stuff
-    post("/authenticate/logout", PlayerAuthController, :logout)
+    # post("/authenticate/logout", PlayerAuthController, :logout)
 
     # Character related stuff
-    get("/characters/player/:player_id", CharacterController, :list_player_characters)
-    delete("/characters/:character_id", CharacterController, :delete)
-    post("/characters/create", CharacterController, :create)
-    patch("/characters/settings/:settings_id", CharacterController, :update_settings)
+    # get("/characters/player/:player_id", CharacterController, :list_player_characters)
+    # delete("/characters/:character_id", CharacterController, :delete)
+    # post("/characters/create", CharacterController, :create)
+    # patch("/characters/settings/:settings_id", CharacterController, :update_settings)
     # post "/characters/delete", CharacterController, :delete
     # post("/characters/get", CharacterController, :get)
     # post "/characters/update", CharacterController, :update
-    get("/characters/get-creation-data", CharacterController, :get_creation_data)
+    # get("/characters/get-creation-data", CharacterController, :get_creation_data)
 
     # Map related stuff
-    resources("/maps", MapController, except: [:new, :edit])
-    get("/maps/:map_id/labels", MapLabelController, :fetch_for_map)
-    get("/maps/:map_id/data", MapController, :fetch_data)
-    get("/maps/:map_id/data/:character_id", MapController, :fetch_character_data)
+    # resources("/maps", MapController, except: [:new, :edit])
+    # get("/maps/:map_id/labels", MapLabelController, :fetch_for_map)
+    # get("/maps/:map_id/data", MapController, :fetch_data)
+    # get("/maps/:map_id/data/:character_id", MapController, :fetch_character_data)
 
     # Map Label related stuff
-    resources("/maps/labels", MapLabelController, except: [:new, :edit])
+    # resources("/maps/labels", MapLabelController, except: [:new, :edit])
 
     # Area related stuff
-    resources("/areas", AreaController, except: [:new, :edit])
-    get("/areas/map/:map_id", AreaController, :list_by_map)
-    post("/areas/attach_shop", AreaController, :attach_shop)
-    post("/areas/detach_shop", AreaController, :detach_shop)
+    # resources("/areas", AreaController, except: [:new, :edit])
+    # get("/areas/map/:map_id", AreaController, :list_by_map)
+    # post("/areas/attach_shop", AreaController, :attach_shop)
+    # post("/areas/detach_shop", AreaController, :detach_shop)
 
     # Link related stuff
-    resources("/links", LinkController, except: [:new, :edit, :index])
-    get("/links/map/:map_id", LinkController, :list_by_map)
+    # resources("/links", LinkController, except: [:new, :edit, :index])
+    # get("/links/map/:map_id", LinkController, :list_by_map)
 
     # Lua related stuff
-    resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
+    # resources("/lua_scripts", LuaScriptController, except: [:new, :edit])
 
     # Player
-    get("/player/sync", PlayerAuthController, :sync)
+    # get("/player/sync", PlayerAuthController, :sync)
 
     # Character race stuff
     # resources("/character_races", CharacterRaceController, except: [:new, :edit])
@@ -134,29 +135,29 @@ defmodule MudWeb.Router do
     # resources("/commands", CommandController, except: [:new, :edit])
 
     # Items stuff
-    get("/items/area/:area_id", ItemController, :load_items_for_area)
-    post("/items/create", ItemController, :create)
-    patch("/items/:item_id", ItemController, :update)
-    delete("/items/:item_id", ItemController, :delete)
-    post("/items/update_moved_at/:item_id", ItemController, :update_moved_at)
+    # get("/items/area/:area_id", ItemController, :load_items_for_area)
+    # post("/items/create", ItemController, :create)
+    # patch("/items/:item_id", ItemController, :update)
+    # delete("/items/:item_id", ItemController, :delete)
+    # post("/items/update_moved_at/:item_id", ItemController, :update_moved_at)
 
     # Shops stuff
-    get("/shops", ShopController, :index)
-    get("/shops/builder", ShopController, :load_shops_for_builder)
-    post("/shops/create", ShopController, :create)
-    patch("/shops/:shop_id", ShopController, :update)
-    delete("/shops/:shop_id", ShopController, :delete)
+    # get("/shops", ShopController, :index)
+    # get("/shops/builder", ShopController, :load_shops_for_builder)
+    # post("/shops/create", ShopController, :create)
+    # patch("/shops/:shop_id", ShopController, :update)
+    # delete("/shops/:shop_id", ShopController, :delete)
 
     # Shop Products stuff
-    post("/shops/products/create", ShopProductController, :create)
-    patch("/shops/products/:shop_product_id", ShopProductController, :update)
-    delete("/shops/products/:shop_product_id", ShopProductController, :delete)
+    # post("/shops/products/create", ShopProductController, :create)
+    # patch("/shops/products/:shop_product_id", ShopProductController, :update)
+    # delete("/shops/products/:shop_product_id", ShopProductController, :delete)
 
     # Templates stuff
-    get("/templates", TemplateController, :index)
-    post("/templates/create", TemplateController, :create)
-    patch("/templates/:template_id", TemplateController, :update)
-    delete("/templates/:template_id", TemplateController, :delete)
+    # get("/templates", TemplateController, :index)
+    # post("/templates/create", TemplateController, :create)
+    # patch("/templates/:template_id", TemplateController, :update)
+    # delete("/templates/:template_id", TemplateController, :delete)
 
     #
     #
@@ -164,7 +165,7 @@ defmodule MudWeb.Router do
     #
     #
 
-    get("/start-game-session/:character_id", MudClientController, :start_game_session)
-    get("/init-client-data/:character_id", MudClientController, :init_client_data)
-  end
+    # get("/start-game-session/:character_id", MudClientController, :start_game_session)
+    # get("/init-client-data/:character_id", MudClientController, :init_client_data)
+  # end
 end
