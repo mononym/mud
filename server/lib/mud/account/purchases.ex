@@ -59,7 +59,6 @@ defmodule Mud.Account.Purchases do
   def update(purchases, attrs) when is_struct(purchases) and is_map(attrs) do
     purchases
     |> cast(attrs, @all_fields -- [:player_id])
-    |> validate_required(@all_fields)
     |> validate()
   end
 
@@ -70,12 +69,13 @@ defmodule Mud.Account.Purchases do
   def new(attrs) when is_map(attrs) do
     %__MODULE__{}
     |> cast(attrs, @all_fields)
-    |> validate_required(@all_fields)
     |> validate()
   end
 
   @spec validate(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate(purchases) when is_struct(purchases) do
     purchases
+    |> validate_required(@all_fields)
+    |> validate()
   end
 end

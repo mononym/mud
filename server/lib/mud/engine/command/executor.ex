@@ -356,7 +356,7 @@ defmodule Mud.Engine.Command.Executor do
 
   defp list_children(current_part, all_children) do
     Stream.filter(all_children, fn {_key, child} ->
-      Enum.any?(child.must_follow, &(&1 == current_part.key))
+      Enum.any?(child.follows, &(&1 == current_part.key))
     end)
     |> Enum.map(fn tuple -> elem(tuple, 1) end)
   end

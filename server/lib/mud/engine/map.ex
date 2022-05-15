@@ -1,4 +1,7 @@
 defmodule Mud.Engine.Map do
+  @moduledoc """
+  A Map is a
+  """
   use Ecto.Schema
   import Ecto.Changeset
   alias Mud.Repo
@@ -226,8 +229,6 @@ defmodule Mud.Engine.Map do
 
     labels = Label.get_map_labels(map_id)
 
-    IO.inspect(labels)
-
     %{
       areas:
         Enum.concat([external_areas, internal_areas])
@@ -295,39 +296,6 @@ defmodule Mud.Engine.Map do
       :view_size,
       :grid_size,
       :key
-    ])
-    |> cast_embed(:labels, with: &labels_changeset/2)
-  end
-
-  defp labels_changeset(schema, params) do
-    schema
-    |> cast(params, [
-      :text,
-      :x,
-      :y,
-      :rotation,
-      :color,
-      :size,
-      :inline_size,
-      :style,
-      :weight,
-      :family,
-      :horizontal_offset,
-      :vertical_offset
-    ])
-    |> validate_required([
-      :text,
-      :x,
-      :y,
-      :rotation,
-      :color,
-      :size,
-      :inline_size,
-      :style,
-      :weight,
-      :family,
-      :horizontal_offset,
-      :vertical_offset
     ])
   end
 

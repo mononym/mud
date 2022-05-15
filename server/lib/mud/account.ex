@@ -528,4 +528,196 @@ defmodule Mud.Account do
 
   defp get_id(%Account.Player{id: id}), do: id
   defp get_id(%{player_id: id}), do: id
+
+  alias Mud.Account.Role
+
+  @doc """
+  Returns the list of roles.
+
+  ## Examples
+
+      iex> list_roles()
+      [%Role{}, ...]
+
+  """
+  def list_roles do
+    Repo.all(Role)
+  end
+
+  @doc """
+  Gets a single role.
+
+  Raises `Ecto.NoResultsError` if the Role does not exist.
+
+  ## Examples
+
+      iex> get_role!(123)
+      %Role{}
+
+      iex> get_role!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_role!(id), do: Repo.get!(Role, id)
+
+  @doc """
+  Creates a role.
+
+  ## Examples
+
+      iex> create_role(%{field: value})
+      {:ok, %Role{}}
+
+      iex> create_role(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_role(attrs \\ %{}) do
+    %Role{}
+    |> Role.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a role.
+
+  ## Examples
+
+      iex> update_role(role, %{field: new_value})
+      {:ok, %Role{}}
+
+      iex> update_role(role, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_role(%Role{} = role, attrs) do
+    role
+    |> Role.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a role.
+
+  ## Examples
+
+      iex> delete_role(role)
+      {:ok, %Role{}}
+
+      iex> delete_role(role)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_role(%Role{} = role) do
+    Repo.delete(role)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking role changes.
+
+  ## Examples
+
+      iex> change_role(role)
+      %Ecto.Changeset{data: %Role{}}
+
+  """
+  def change_role(%Role{} = role, attrs \\ %{}) do
+    Role.changeset(role, attrs)
+  end
+
+  alias Mud.Account.PlayerRole
+
+  @doc """
+  Returns the list of player_roles.
+
+  ## Examples
+
+      iex> list_player_roles()
+      [%PlayerRole{}, ...]
+
+  """
+  def list_player_roles do
+    Repo.all(PlayerRole)
+  end
+
+  @doc """
+  Gets a single player_role.
+
+  Raises `Ecto.NoResultsError` if the Player role does not exist.
+
+  ## Examples
+
+      iex> get_player_role!(123)
+      %PlayerRole{}
+
+      iex> get_player_role!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_player_role!(id), do: Repo.get!(PlayerRole, id)
+
+  @doc """
+  Creates a player_role.
+
+  ## Examples
+
+      iex> create_player_role(%{field: value})
+      {:ok, %PlayerRole{}}
+
+      iex> create_player_role(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_player_role(attrs \\ %{}) do
+    %PlayerRole{}
+    |> PlayerRole.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a player_role.
+
+  ## Examples
+
+      iex> update_player_role(player_role, %{field: new_value})
+      {:ok, %PlayerRole{}}
+
+      iex> update_player_role(player_role, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_player_role(%PlayerRole{} = player_role, attrs) do
+    player_role
+    |> PlayerRole.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a player_role.
+
+  ## Examples
+
+      iex> delete_player_role(player_role)
+      {:ok, %PlayerRole{}}
+
+      iex> delete_player_role(player_role)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_player_role(%PlayerRole{} = player_role) do
+    Repo.delete(player_role)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking player_role changes.
+
+  ## Examples
+
+      iex> change_player_role(player_role)
+      %Ecto.Changeset{data: %PlayerRole{}}
+
+  """
+  def change_player_role(%PlayerRole{} = player_role, attrs \\ %{}) do
+    PlayerRole.changeset(player_role, attrs)
+  end
 end

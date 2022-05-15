@@ -30,6 +30,7 @@ defmodule Mud.Account.Player do
     has_one(:profile, Account.Profile)
     has_one(:purchases, Account.Purchases)
     has_one(:settings, Account.Settings)
+    many_to_many(:roles, Account.Role, join_through: "player_roles")
 
     timestamps()
   end
@@ -134,7 +135,7 @@ defmodule Mud.Account.Player do
     |> validate()
   end
 
-  defp preload(player), do: Repo.preload(player, [:profile, :purchases, :settings])
+  defp preload(player), do: Repo.preload(player, [:profile, :purchases, :roles, :settings])
 
   defp validate(player) do
     player

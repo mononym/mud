@@ -13,7 +13,7 @@ defmodule Mud.Engine.Command.Definition do
       # This segment can only be processed if a segment with the specified key has been
       # successfully populated. For example, there should be no character name segment for
       # the following partial command: "say /slowly Goodbye"
-      field(:must_follow, [atom()], default: [])
+      field(:follows, [atom()], default: [])
       # How the part will be uniquely known in the AST. Also used for building/matching the input
       field(:key, atom(), required: true)
 

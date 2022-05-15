@@ -6,8 +6,10 @@ defmodule MudWeb.PlayerController do
 
   action_fallback(MudWeb.FallbackController)
 
-  plug MudWeb.Plug.EnforceAuthentication when action in [:create, :delete, :get_authenticated_player, :index, :show, :update]
-
+  plug(
+    MudWeb.Plug.EnforceAuthentication
+    when action in [:create, :delete, :get_authenticated_player, :index, :show, :update]
+  )
 
   def index(conn, params) do
     page = Map.get(params, "page", 1)
@@ -68,7 +70,7 @@ defmodule MudWeb.PlayerController do
   end
 
   def get_authenticated_player(conn, _params) do
-    if conn.assigns.player_authenticated? do
+    if conn.assigns.player_authenticated do
       render(conn, "show.json", settings: conn.assigns.player)
     else
       conn
@@ -79,7 +81,7 @@ defmodule MudWeb.PlayerController do
   end
 
   def get_authenticated_player_settings(conn, _params) do
-    if conn.assigns.player_authenticated? do
+    if conn.assigns.player_authenticated do
       conn
       |> put_view(MudWeb.SettingsView)
       |> render("show.json", settings: conn.assigns.player.settings)
@@ -92,7 +94,7 @@ defmodule MudWeb.PlayerController do
   end
 
   def save_authenticated_player_settings(conn, params) do
-    if conn.assigns.player_authenticated? do
+    if conn.assigns.player_authenticated do
       case Account.save_player_settings(%{
              developer_feature_on: params["developerFeatureOn"],
              player_id: params["playerId"]

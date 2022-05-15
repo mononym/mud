@@ -6,7 +6,7 @@ defmodule MudWeb.Plug.RedirectAnonymousPlayer do
   end
 
   def call(conn, path) do
-    if not conn.assigns.player_authenticated? do
+    if not conn.assigns.player_authenticated do
       if path == nil do
         case List.keyfind(conn.req_headers, "referer", 0) do
           {"referer", referer} ->

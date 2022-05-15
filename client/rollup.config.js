@@ -8,10 +8,16 @@ import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
 import scss from 'rollup-plugin-scss'
 import replace from "@rollup/plugin-replace";
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 // const production = !process.env.ROLLUP_WATCH;
 var environment = process.env.NODE_ENV
 var production = environment !== 'development'
+
+// Add here external dependencies that actually you use.
+const globals = {
+	'lodash': 'lodash'
+};
 
 function serve() {
 	let server;
@@ -41,9 +47,11 @@ export default {
 		format: 'iife',
 		name: 'app',
 		file: 'public/build/bundle.js',
-		inlineDynamicImports: true
+		inlineDynamicImports: true,
+		globals: globals
 	},
 	plugins: [
+		nodePolyfills(),
 		replace({
 			preventAssignment: true,
 			'BASE_URL': production ? 'https://gameserver.unnamedmud.com' : 'https://localhost:4000',
@@ -71,7 +79,12 @@ export default {
 			browser: true,
 			dedupe: ['svelte']
 		}),
-		commonjs(),
+		commonjs({
+			include: /node_modules/,
+			namedExports: {
+				'node_modules/lodash/lodash.js': ['cloneDeep'],
+			}
+		}),
 		typescript({
 			sourceMap: true,
 			inlineSources: !production

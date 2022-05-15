@@ -38,7 +38,13 @@ defmodule MudWeb.PlayerAuthController do
           "client-session-token:#{token}"
         ])
 
-        token = Phoenix.Token.sign(MudWeb.Endpoint, "client_session", player_id)
+        [machine_id] = get_req_header(conn, "eoae-mid")
+
+        token =
+          Phoenix.Token.sign(MudWeb.Endpoint, "client_session", %{
+            player_id: player_id,
+            machine_id: machine_id
+          })
 
         conn
         |> send_resp(200, Jason.encode!(%{token: token}))

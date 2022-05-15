@@ -3,10 +3,12 @@ import {
   logoutPlayer,
   submitEmailForAuth,
   submitTokenForAuth,
-  syncPlayer
+  syncPlayer,
 } from "../api/server";
-import {player} from './player'
-import PlayerState from './../models/player'
+import { player } from "./player";
+import PlayerState from "./../models/player";
+import { remote } from "electron";
+// const authService = remote.require("./services/auth-service");
 
 function createAuthStore() {
   const authenticated = writable(false);
@@ -14,56 +16,61 @@ function createAuthStore() {
   const isSyncing = writable(false);
   const loggingOut = writable(false);
 
-  async function sync(){
-    isSyncing.set(true)
+  async function sync() {
+    isSyncing.set(true);
     try {
-      const res = (await syncPlayer()).data;
-      if (res.authenticated) {
-        player.set(res.player)
-      }
+      // const res = (await syncPlayer()).data;
+      // if (res.authenticated) {
+      //   player.set(res.player)
+      // }
 
-      authenticated.set(res.authenticated)
+      // authenticated.set(res.authenticated)
+      // const profile = authService.getProfile();
+      console.log(
+        "AUTH SERVICE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+      );
+      // console.log(profile);
     } catch (e) {
       alert(e.message);
     } finally {
-      isSyncing.set(false)
+      isSyncing.set(false);
     }
   }
-    
-  async function initLoginWithEmail(email: string){
-    isAuthenticating.set(true)
+
+  async function initLoginWithEmail(email: string) {
+    isAuthenticating.set(true);
     try {
       await submitEmailForAuth(email);
     } catch (e) {
       alert(e.message);
     } finally {
-      isAuthenticating.set(false)
-    }
-  }
-    
-  async function completeLoginWithToken(token: string){
-    isAuthenticating.set(true)
-    try {
-      const res = await submitTokenForAuth(token);
-      player.set(res.data)
-      authenticated.set(true)
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      isAuthenticating.set(false)
+      isAuthenticating.set(false);
     }
   }
 
-  async function logout(){
-    loggingOut.set(true)
+  async function completeLoginWithToken(token: string) {
+    isAuthenticating.set(true);
     try {
-      await logoutPlayer();
-      authenticated.set(false)
-      player.set({...PlayerState})
+      const res = await submitTokenForAuth(token);
+      player.set(res.data);
+      authenticated.set(true);
     } catch (e) {
       alert(e.message);
     } finally {
-      loggingOut.set(false)
+      isAuthenticating.set(false);
+    }
+  }
+
+  async function logout() {
+    loggingOut.set(true);
+    try {
+      await logoutPlayer();
+      authenticated.set(false);
+      player.set({ ...PlayerState });
+    } catch (e) {
+      alert(e.message);
+    } finally {
+      loggingOut.set(false);
     }
   }
 
@@ -75,27 +82,27 @@ function createAuthStore() {
     sync,
     initLoginWithEmail,
     completeLoginWithToken,
-    logout
-    }
+    logout,
+  };
 
-//   /* Optimistic UI update. Updating the UI before sending the request to the web service */
-//     removeHero: async id => {
-//       const confirmation = confirm("You sure you want to delete this?");
-//       if (!confirmation) return;
+  //   /* Optimistic UI update. Updating the UI before sending the request to the web service */
+  //     removeHero: async id => {
+  //       const confirmation = confirm("You sure you want to delete this?");
+  //       if (!confirmation) return;
 
-//       let previousHeroes;
-//       update(state => {
-//         previousHeroes = state.heroes;
-//         const updatedHeroes = state.heroes.filter(h => h._id !== id);
-//         return (state = { ...state, heroes: updatedHeroes }); // need to return the state only
-//       });
-//       try {
-//         await deleteHero(id);
-//       } catch (e) {
-//         alert(e.message);
-//         update(state => (state = { ...state, heroes: previousHeroes })); // rolling back. =)
-//       }
-//     },
+  //       let previousHeroes;
+  //       update(state => {
+  //         previousHeroes = state.heroes;
+  //         const updatedHeroes = state.heroes.filter(h => h._id !== id);
+  //         return (state = { ...state, heroes: updatedHeroes }); // need to return the state only
+  //       });
+  //       try {
+  //         await deleteHero(id);
+  //       } catch (e) {
+  //         alert(e.message);
+  //         update(state => (state = { ...state, heroes: previousHeroes })); // rolling back. =)
+  //       }
+  //     },
 }
 
 export const AuthStore = createAuthStore();
