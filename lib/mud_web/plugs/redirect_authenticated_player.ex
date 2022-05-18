@@ -6,7 +6,7 @@ defmodule MudWeb.Plug.RedirectAuthenticatedPlayer do
   end
 
   def call(conn, path) do
-    if conn.assigns.player_authenticated do
+    if conn.assigns.current_player do
       Phoenix.Controller.redirect(conn, to: path)
       |> halt()
     else

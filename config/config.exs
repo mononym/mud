@@ -12,6 +12,15 @@ config :mud,
   ecto_repos: [Mud.Repo],
   generators: [binary_id: true]
 
+# Configures the mailer
+#
+# By default it uses the "Local" adapter which stores the emails
+# locally. You can see the emails in your browser, at "/dev/mailbox".
+#
+# For production it's recommended to configure a different adapter
+# at the `config/runtime.exs`.
+config :mud, Mud.Mailer, adapter: Swoosh.Adapters.Local
+
 config :mud,
   pubsub: [adapter: Phoenix.PubSub.Redis, host: "localhost", name: Mud.PubSub]
 
@@ -25,16 +34,7 @@ config :mud, MudWeb.Endpoint,
   pubsub_server: Mud.PubSub,
   render_errors: [view: MudWeb.ErrorView, accepts: ~w(html json)],
   secret_key_base: "iff1P8hsrga25XbaqXbai+qItD2JpKH1kAb8znVlaSTG2s5+VZR6MO19i7mAEAIB",
-  url: [host: "localhost"],
-  force_ssl: [rewrite_on: [:x_forwarded_proto]],
-  live_reload: [
-    patterns: [
-      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif)$},
-      ~r{web/views/.*(ex)$},
-      ~r{web/templates/.*(eex)$},
-      ~r{lib/.*(ex)$}
-    ]
-  ]
+  url: [host: "localhost"]
 
 # Configures Elixir's Logger
 config :logger, :console,
@@ -48,19 +48,23 @@ config :phoenix, :json_library, Jason
 config :hammer,
   backend: {Hammer.Backend.ETS, [expiry_ms: 60_000 * 60 * 4, cleanup_interval_ms: 60_000 * 10]}
 
-config :ueberauth, Ueberauth,
-  # default is "/auth"
-  base_path: "/auth",
-  providers: [
-    auth0: {Ueberauth.Strategy.Auth0, []}
-  ]
-
 config :esbuild,
   version: "0.14.0",
   default: [
-    args: ~w(js/app.js --bundle --target=es2016 --outdir=../priv/static/assets),
+    args: ~w(js/app.js --bundle --target=es2017 --outdir=../priv/static/assets --external:/fonts/* --external:/images/*),
     cd: Path.expand("../assets", __DIR__),
     env: %{"NODE_PATH" => Path.expand("../deps", __DIR__)}
+  ]
+
+config :tailwind,
+  version: "3.0.24",
+  default: [
+    args: ~w(
+    --config=tailwind.config.js
+    --input=css/app.css
+    --output=../priv/static/assets/app.css
+  ),
+    cd: Path.expand("../assets", __DIR__)
   ]
 
 # Import environment specific config. This must remain at the bottom

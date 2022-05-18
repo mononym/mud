@@ -407,7 +407,8 @@ defmodule Mud.Engine.Area do
       :map_corners,
       :border_width,
       :border_color,
-      :color
+      :color,
+      :key
     ])
   end
 

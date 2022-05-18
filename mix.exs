@@ -5,7 +5,7 @@ defmodule Mud.MixProject do
     [
       app: :mud,
       version: "0.0.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:phoenix, :gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
@@ -26,7 +26,7 @@ defmodule Mud.MixProject do
   def application do
     [
       mod: {Mud.Application, []},
-      extra_applications: [:logger, :runtime_tools, :ueberauth_auth0]
+      extra_applications: [:logger, :runtime_tools]
     ]
   end
 
@@ -39,18 +39,11 @@ defmodule Mud.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:bcrypt_elixir, "~> 3.0"},
       {:arbor, "~> 1.1"},
-      {:bamboo, "~> 2.2"},
-      {:bamboo_ses, "~> 0.3.0"},
-      {:castore, ">= 0.1.17"},
-      {:cloak, "1.1.1"},
-      {:corsica, "~> 1.2"},
       {:ecto, "~> 3.8", override: true},
       {:ecto_sql, "~> 3.8"},
-      {:ecto_enum, "~> 1.4.0"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
-      {:ex_aws, "~> 2.3.2", override: true},
-      {:ex_aws_s3, "~> 2.3"},
       {:floki, ">= 0.0.0", only: :test},
       {:gen_state_machine, "~> 3.0.0"},
       {:gettext, "~> 0.19.1"},
@@ -73,19 +66,18 @@ defmodule Mud.MixProject do
       {:postgrex, ">= 0.0.0"},
       {:pp, "~> 0.1.1"},
       {:recase, "~> 0.7.0"},
-      {:redix, "~> 1.1.5", override: true},
       {:retry, "~> 0.16.0"},
       {:sandbox, "~> 0.5.0"},
       {:sweet_xml, "~> 0.7.3"},
+      {:swoosh, "~> 1.3"},
       {:table_rex, "~> 3.1"},
+      {:tailwind, "~> 0.1", runtime: Mix.env() == :dev},
       {:telemetry, "~> 1.1", override: true},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:timex, "~> 3.6.2"},
       {:typed_struct, "~> 0.3.0"},
       {:uber_multi, "~> 1.0.1"},
-      {:ueberauth, "~> 0.7.0"},
-      {:ueberauth_auth0, "~> 2.0.0"},
       {:uuid, "~> 1.1.8"}
     ]
   end
@@ -100,7 +92,12 @@ defmodule Mud.MixProject do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      "assets.deploy": ["esbuild default --minify", "phx.digest"]
+      "assets.deploy": [
+        "cmd --cd assets npm install",
+        "tailwind default --minify",
+        "esbuild default --minify",
+        "phx.digest"
+      ]
     ]
   end
 end

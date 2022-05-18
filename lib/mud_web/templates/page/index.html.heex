@@ -1,7 +1,7 @@
 <div class="leading-normal tracking-normal text-white gradient" style="font-family: 'Source Sans Pro', sans-serif;">
     <!--Nav-->
     <nav id="header" class="fixed w-full z-30 top-0 text-white">
-      <div class="w-full container mx-auto flex flex-wrap items-center justify-between mt-0 py-2">
+      <div class="w-full container mx-auto flex flex-wrap items-center justify-between mt-0 py-0.5">
         <div class="pl-4 flex items-center">
           <a class="toggleColour text-white no-underline hover:no-underline font-bold text-2xl lg:text-4xl" href="#">
             <!--Icon from: http://www.potlabicons.com/ -->
@@ -16,7 +16,7 @@
           </a>
         </div>
         <div class="block lg:hidden pr-4">
-          <button id="nav-toggle" class="flex items-center p-1 text-pink-800 hover:text-gray-900 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+          <button id="nav-toggle" class="flex items-center p-1 text-pink-800 hover:text-neutral-900 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
             <svg class="fill-current h-6 w-6" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <title>Menu</title>
               <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
@@ -25,22 +25,22 @@
         </div>
         <div class="w-full flex-grow lg:flex lg:items-center lg:w-auto hidden mt-2 lg:mt-0 bg-white lg:bg-transparent text-black p-4 lg:p-0 z-20" id="nav-content">
           <ul class="list-reset lg:flex justify-end flex-1 items-center">
-            <li class="mr-3">
-              <a class="inline-block py-2 px-4 text-black font-bold no-underline" href="/">Home</a>
+            <li class="mr-0.75">
+              <a class="inline-block py-0.5 px-1 text-black font-bold no-underline" href="/">Home</a>
             </li>
-            <li class="mr-3">
-              <a class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4" href="https://forums.echoesofanempire.com">Forums</a>
+            <li class="mr-0.75">
+              <a class="inline-block text-black no-underline hover:text-neutral-800 hover:text-underline py-0.5 px-1" href="https://forums.echoesofanempire.com">Forums</a>
             </li>
-            <li class="mr-3">
-              <a class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4" href="https://wiki.echoesofanempire.com">Wiki</a>
+            <li class="mr-0.75">
+              <a class="inline-block text-black no-underline hover:text-neutral-800 hover:text-underline py-0.5 px-1" href="https://wiki.echoesofanempire.com">Wiki</a>
             </li>
-            <li class="mr-3">
-              <a class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4" href="https://store.echoesofanempire.com">Store</a>
+            <li class="mr-0.75">
+              <a class="inline-block text-black no-underline hover:text-neutral-800 hover:text-underline py-0.5 px-1" href="https://store.echoesofanempire.com">Store</a>
             </li>
           </ul>
           <button
             id="navAction"
-            class="mx-auto lg:mx-0 hover:underline bg-white text-gray-800 font-bold rounded-full mt-4 lg:mt-0 py-4 px-8 shadow opacity-75 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out"
+            class="mx-auto lg:mx-0 hover:underline bg-white text-neutral-800 font-bold rounded-full mt-4 lg:mt-0 py-1 px-8 shadow opacity-75 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out"
           >
             Venture Forth
           </button>
@@ -51,17 +51,17 @@
     <div class="w-full flex-col items-center">
     <!--Hero-->
     <div class="pt-24">
-      <div class="container px-3 mx-auto flex flex-wrap flex-col md:flex-row items-center">
+      <div class="container px-0.75 mx-auto flex flex-wrap flex-col md:flex-row items-center">
         <!--Left Col-->
         <div class="flex flex-col w-full md:w-2/5 justify-center items-start text-center md:text-left">
           <%# <p class="uppercase tracking-loose w-full">What business are you?</p> %>
-          <h1 class="my-4 text-5xl font-bold leading-tight">
+          <h1 class="my-1 text-5xl font-bold leading-tight">
             A land long since broken. An Empire reborn.
           </h1>
           <p class="leading-normal text-2xl mb-8">
             After a thousand years of struggling to rebuild, a shattered world must confront the demons of the past while forging a new future for itself.
           </p>
-          <button class="mx-auto lg:mx-0 hover:underline bg-white text-gray-800 font-bold rounded-full mt-4 lg:mt-0 py-4 px-8 shadow opacity-75 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out"
+          <button class="mx-auto lg:mx-0 hover:underline bg-white text-neutral-800 font-bold rounded-full mt-4 lg:mt-0 py-1 px-8 shadow opacity-75 focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out"
             id="heroAction">
             Venture Forth
           </button>
@@ -93,7 +93,7 @@
     </div>
     <section class="bg-white border-b py-8">
       <div class="container max-w-5xl mx-auto m-8">
-        <h1 class="w-full my-2 text-5xl font-bold leading-tight text-center text-gray-800">
+        <h1 class="w-full my-0.5 text-5xl font-bold leading-tight text-center text-neutral-800">
           What's This?
         </h1>
         <div class="w-full mb-4">
@@ -101,10 +101,10 @@
         </div>
         <div class="flex flex-wrap">
           <div class="w-5/6 sm:w-1/2 p-6">
-            <h3 class="text-3xl text-gray-800 font-bold leading-none mb-3">
+            <h3 class="text-3xl text-neutral-800 font-bold leading-none mb-3">
               A text-based adventure
             </h3>
-            <p class="text-gray-600 mb-8">
+            <p class="text-neutral-600 mb-8">
               While it has the slickness of a modern UI the beating heart of Echoes of an Empire is text. The written word.
               <br />
               <br />
@@ -397,10 +397,10 @@
           </div>
           <div class="w-full sm:w-1/2 p-6 mt-6">
             <div class="align-middle">
-              <h3 class="text-3xl text-gray-800 font-bold leading-none mb-3">
+              <h3 class="text-3xl text-neutral-800 font-bold leading-none mb-3">
                 Join players from around the world!
               </h3>
-              <p class="text-gray-600 mb-8">
+              <p class="text-neutral-600 mb-8">
                 With a persistent online world players from all over are able to gather and adventure together. Join today and help to build the sort of friendly thriving community that <strong>you</strong> want to partake in.
                 <br />
                 <br />
@@ -415,7 +415,7 @@
     </section>
     <section class="bg-white border-b py-8">
       <div class="container mx-auto flex flex-wrap pt-4 pb-12">
-        <h1 class="w-full my-2 text-5xl font-bold leading-tight text-center text-gray-800">
+        <h1 class="w-full my-0.5 text-5xl font-bold leading-tight text-center text-neutral-800">
           Title
         </h1>
         <div class="w-full mb-4">
@@ -424,20 +424,20 @@
         <div class="w-full md:w-1/3 p-6 flex flex-col flex-grow flex-shrink">
           <div class="flex-1 bg-white rounded-t rounded-b-none overflow-hidden shadow">
             <a href="#" class="flex flex-wrap no-underline hover:no-underline">
-              <p class="w-full text-gray-600 text-xs md:text-sm px-6">
+              <p class="w-full text-neutral-600 text-xs md:text-sm px-6">
                 xGETTING STARTED
               </p>
-              <div class="w-full font-bold text-xl text-gray-800 px-6">
+              <div class="w-full font-bold text-xl text-neutral-800 px-6">
                 Lorem ipsum dolor sit amet.
               </div>
-              <p class="text-gray-800 text-base px-6 mb-5">
+              <p class="text-neutral-800 text-base px-6 mb-5">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at ipsum eu nunc commodo posuere et sit amet ligula.
               </p>
             </a>
           </div>
           <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
             <div class="flex items-center justify-start">
-              <button class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+              <button class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                 Action
               </button>
             </div>
@@ -446,20 +446,20 @@
         <div class="w-full md:w-1/3 p-6 flex flex-col flex-grow flex-shrink">
           <div class="flex-1 bg-white rounded-t rounded-b-none overflow-hidden shadow">
             <a href="#" class="flex flex-wrap no-underline hover:no-underline">
-              <p class="w-full text-gray-600 text-xs md:text-sm px-6">
+              <p class="w-full text-neutral-600 text-xs md:text-sm px-6">
                 xGETTING STARTED
               </p>
-              <div class="w-full font-bold text-xl text-gray-800 px-6">
+              <div class="w-full font-bold text-xl text-neutral-800 px-6">
                 Lorem ipsum dolor sit amet.
               </div>
-              <p class="text-gray-800 text-base px-6 mb-5">
+              <p class="text-neutral-800 text-base px-6 mb-5">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at ipsum eu nunc commodo posuere et sit amet ligula.
               </p>
             </a>
           </div>
           <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
             <div class="flex items-center justify-center">
-              <button class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+              <button class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                 Action
               </button>
             </div>
@@ -468,13 +468,13 @@
         <div class="w-full md:w-1/3 p-6 flex flex-col flex-grow flex-shrink">
           <div class="flex-1 bg-white rounded-t rounded-b-none overflow-hidden shadow">
             <a href="#" class="flex flex-wrap no-underline hover:no-underline">
-              <p class="w-full text-gray-600 text-xs md:text-sm px-6">
+              <p class="w-full text-neutral-600 text-xs md:text-sm px-6">
                 On the shoulders of Giants
               </p>
-              <div class="w-full font-bold text-xl text-gray-800 px-6">
+              <div class="w-full font-bold text-xl text-neutral-800 px-6">
                 The code is custom, but the foundations...
               </div>
-              <p class="text-gray-800 text-base px-6 mb-5">
+              <p class="text-neutral-800 text-base px-6 mb-5">
                 Echoes of an Empire was built from the ground up with custom code for the server and the client, but it's heart comes from decades of history and countless hours spent sharing adventures among friends. This game would not exist if it weren't for the likes of D&D, Pathfinder, Zork, and the myriad of text-based games that followed.
                 <br/><br/>
                 To learn more about the history of MUD games, please visit Wikipedia.
@@ -483,7 +483,7 @@
           </div>
           <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
             <div class="flex items-center justify-end">
-              <button id="wikipedia" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+              <button id="wikipedia" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                 Wikipedia
               </button>
             </div>
@@ -492,32 +492,32 @@
       </div>
     </section>
     <section class="bg-gray-100 py-8">
-      <div class="container mx-auto px-2 pt-4 pb-12 text-gray-800">
-        <h1 class="w-full my-2 text-5xl font-bold leading-tight text-center text-gray-800">
+      <div class="container mx-auto px-0.5 pt-4 pb-12 text-neutral-800">
+        <h1 class="w-full my-0.5 text-5xl font-bold leading-tight text-center text-neutral-800">
           Pricing
         </h1>
         <div class="w-full mb-4">
           <div class="h-1 mx-auto gradient w-64 opacity-25 my-0 py-0 rounded-t"></div>
         </div>
-        <div class="flex flex-col sm:flex-row justify-center pt-12 my-12 sm:my-4">
+        <div class="flex flex-col sm:flex-row justify-center pt-12 my-12 sm:my-1">
           <div class="flex flex-col w-5/6 lg:w-1/4 mx-auto lg:mx-0 rounded-none lg:rounded-l-lg bg-white mt-4">
-            <div class="flex-1 bg-white text-gray-600 rounded-t rounded-b-none overflow-hidden shadow">
+            <div class="flex-1 bg-white text-neutral-600 rounded-t rounded-b-none overflow-hidden shadow">
               <div class="p-8 text-3xl font-bold text-center border-b-4">
                 Free
               </div>
               <ul class="w-full text-center text-sm">
-                <li class="border-b py-4">1 Character</li>
-                <li class="border-b py-4">Thing</li>
-                <li class="border-b py-4">Thing</li>
+                <li class="border-b py-1">1 Character</li>
+                <li class="border-b py-1">Thing</li>
+                <li class="border-b py-1">Thing</li>
               </ul>
             </div>
             <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
-              <div class="w-full pt-6 text-3xl text-gray-600 font-bold text-center">
+              <div class="w-full pt-6 text-3xl text-neutral-600 font-bold text-center">
                 $0
                 <span class="text-base">/ month</span>
               </div>
               <div class="flex items-center justify-center">
-                <button id="signup1" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+                <button id="signup1" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                   Sign Up
                 </button>
               </div>
@@ -528,10 +528,10 @@
               <div class="w-full p-8 text-3xl font-bold text-center">Basic</div>
               <div class="h-1 w-full gradient my-0 py-0 rounded-t"></div>
               <ul class="w-full text-center text-base font-bold">
-                <li class="border-b py-4">5 Characters</li>
-                <li class="border-b py-4">Thing</li>
-                <li class="border-b py-4">Thing</li>
-                <li class="border-b py-4">Thing</li>
+                <li class="border-b py-1">5 Characters</li>
+                <li class="border-b py-1">Thing</li>
+                <li class="border-b py-1">Thing</li>
+                <li class="border-b py-1">Thing</li>
               </ul>
             </div>
             <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
@@ -540,30 +540,30 @@
                 <span class="text-base">/ month</span>
               </div>
               <div class="flex items-center justify-center">
-                <button id="signup2" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+                <button id="signup2" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                   Sign Up
                 </button>
               </div>
             </div>
           </div>
           <div class="flex flex-col w-5/6 lg:w-1/4 mx-auto lg:mx-0 rounded-none lg:rounded-l-lg bg-white mt-4">
-            <div class="flex-1 bg-white text-gray-600 rounded-t rounded-b-none overflow-hidden shadow">
+            <div class="flex-1 bg-white text-neutral-600 rounded-t rounded-b-none overflow-hidden shadow">
               <div class="p-8 text-3xl font-bold text-center border-b-4">
                 Premium
               </div>
               <ul class="w-full text-center text-sm">
-                <li class="border-b py-4">10 Characters</li>
-                <li class="border-b py-4">10% Discount on Store</li>
-                <li class="border-b py-4">Thing</li>
+                <li class="border-b py-1">10 Characters</li>
+                <li class="border-b py-1">10% Discount on Store</li>
+                <li class="border-b py-1">Thing</li>
               </ul>
             </div>
             <div class="flex-none mt-auto bg-white rounded-b rounded-t-none overflow-hidden shadow p-6">
-              <div class="w-full pt-6 text-3xl text-gray-600 font-bold text-center">
+              <div class="w-full pt-6 text-3xl text-neutral-600 font-bold text-center">
                 $25
                 <span class="text-base">/ month</span>
               </div>
               <div class="flex items-center justify-center">
-                <button id="signup3" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+                <button id="signup3" class="mx-auto lg:mx-0 hover:underline gradient text-white font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
                   Sign Up
                 </button>
               </div>
@@ -595,16 +595,16 @@
       </g>
     </svg>
     <section class="container mx-auto text-center py-6 mb-12">
-      <h1 class="w-full my-2 text-5xl font-bold leading-tight text-center text-white">
+      <h1 class="w-full my-0.5 text-5xl font-bold leading-tight text-center text-white">
         Call to Action
       </h1>
       <div class="w-full mb-4">
         <div class="h-1 mx-auto bg-white w-1/6 opacity-25 my-0 py-0 rounded-t"></div>
       </div>
-      <h3 class="my-4 text-3xl leading-tight">
+      <h3 class="my-1 text-3xl leading-tight">
         Main Hero Message to sell yourself!
       </h3>
-      <button class="mx-auto lg:mx-0 hover:underline bg-white text-gray-800 font-bold rounded-full my-6 py-4 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
+      <button class="mx-auto lg:mx-0 hover:underline bg-white text-neutral-800 font-bold rounded-full my-1.5 py-1 px-8 shadow-lg focus:outline-none focus:shadow-outline transform transition hover:scale-105 duration-300 ease-in-out">
         Action!
       </button>
     </section>
@@ -626,61 +626,61 @@
             </a>
           </div>
           <div class="flex-1">
-            <p class="uppercase text-gray-500 md:mb-6">Links</p>
+            <p class="uppercase text-neutral-500 md:mb-6">Links</p>
             <ul class="list-reset mb-6">
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">FAQ</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">FAQ</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Help</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Help</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Support</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Support</a>
               </li>
             </ul>
           </div>
           <div class="flex-1">
-            <p class="uppercase text-gray-500 md:mb-6">Legal</p>
+            <p class="uppercase text-neutral-500 md:mb-6">Legal</p>
             <ul class="list-reset mb-6">
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Terms</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Terms</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Privacy</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Privacy</a>
               </li>
             </ul>
           </div>
           <div class="flex-1">
-            <p class="uppercase text-gray-500 md:mb-6">Social</p>
+            <p class="uppercase text-neutral-500 md:mb-6">Social</p>
             <ul class="list-reset mb-6">
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Facebook</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Facebook</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Linkedin</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Linkedin</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Twitter</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Twitter</a>
               </li>
             </ul>
           </div>
           <div class="flex-1">
-            <p class="uppercase text-gray-500 md:mb-6">Company</p>
+            <p class="uppercase text-neutral-500 md:mb-6">Company</p>
             <ul class="list-reset mb-6">
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Official Blog</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Official Blog</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">About Us</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">About Us</a>
               </li>
-              <li class="mt-2 inline-block mr-2 md:block md:mr-0">
-                <a href="#" class="no-underline hover:underline text-gray-800 hover:text-pink-500">Contact</a>
+              <li class="mt-2 inline-block mr-0.5 md:block md:mr-0">
+                <a href="#" class="no-underline hover:underline text-neutral-800 hover:text-pink-500">Contact</a>
               </li>
             </ul>
           </div>
         </div>
       </div>
-      <a href="https://www.freepik.com/free-photos-vectors/background" class="text-gray-500">Background vector created by freepik - www.freepik.com</a>
+      <a href="https://www.freepik.com/free-photos-vectors/background" class="text-neutral-500">Background vector created by freepik - www.freepik.com</a>
     </footer>
     </div>
     <script>
@@ -712,11 +712,11 @@
           header.classList.add("bg-white");
           navaction.classList.remove("bg-white");
           navaction.classList.add("gradient");
-          navaction.classList.remove("text-gray-800");
+          navaction.classList.remove("text-neutral-800");
           navaction.classList.add("text-white");
           //Use to switch toggleColour colours
           for (var i = 0; i < toToggle.length; i++) {
-            toToggle[i].classList.add("text-gray-800");
+            toToggle[i].classList.add("text-neutral-800");
             toToggle[i].classList.remove("text-white");
           }
           header.classList.add("shadow");
@@ -727,11 +727,11 @@
           navaction.classList.remove("gradient");
           navaction.classList.add("bg-white");
           navaction.classList.remove("text-white");
-          navaction.classList.add("text-gray-800");
+          navaction.classList.add("text-neutral-800");
           //Use to switch toggleColour colours
           for (var i = 0; i < toToggle.length; i++) {
             toToggle[i].classList.add("text-white");
-            toToggle[i].classList.remove("text-gray-800");
+            toToggle[i].classList.remove("text-neutral-800");
           }
 
           header.classList.remove("shadow");

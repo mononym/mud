@@ -6,8 +6,6 @@ defmodule MudWeb.PageController do
 
   action_fallback(MudWeb.FallbackController)
 
-  plug(MudWeb.Plug.SetPlayer when action in [:store])
-
   def store(conn, _params) do
     timestamp = DateTime.utc_now() |> DateTime.to_unix()
     ecwid_config = Application.get_env(:mud, :ecwid)
@@ -38,20 +36,20 @@ defmodule MudWeb.PageController do
     render(conn, "store.html", ecwid_sso_string: final_string)
   end
 
-  def play(conn, _params) do
-    # create token to save/reference which can be linked to their player
-    session_token = String.replace(UUID.uuid4(), "-", "")
+  # def play(conn, _params) do
+  #   # create token to save/reference which can be linked to their player
+  #   session_token = String.replace(UUID.uuid4(), "-", "")
 
-    Redix.command!(:redix, [
-      "SET",
-      "client-session-token:#{session_token}",
-      "#{conn.assigns.player_id}",
-      "EX",
-      300
-    ])
+  #   Redix.command!(:redix, [
+  #     "SET",
+  #     "client-session-token:#{session_token}",
+  #     "#{conn.assigns.player_id}",
+  #     "EX",
+  #     300
+  #   ])
 
-    render(conn, "play.html", session_token: session_token)
-  end
+  #   render(conn, "play.html", session_token: session_token)
+  # end
 
   def index(conn, _params) do
     render(conn, "index.html")

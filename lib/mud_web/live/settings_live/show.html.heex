@@ -1,0 +1,114 @@
+<div id="settings" class="container flex justify-center flex-col w-fit h-full">
+  <div class="flex-shrink">
+    <h1 class="text-center mb-2 font-bold">Settings</h1>
+
+    <h3 class="text-center mb-2">Change email</h3>
+
+    <.form let={f} for={@email_changeset} phx-submit="update_email" id="update_email" class={"bg-neutral-800 shadow-md rounded px-8 pt-6 pb-8 mb-4"}>
+      <%= if @email_changeset.action do %>
+        <div class="alert alert-danger">
+          <div>Oops, something went wrong! Please check the errors below.</div>
+        </div>
+      <% end %>
+
+      <%= hidden_input f, :action, name: "action", value: "update_email" %>
+
+      <div class="mb-4">
+        <%= label f, :email, class: "block text-sm font-bold mb-2" %>
+        <%= email_input f, :email, required: true, class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :email %>
+      </div>
+
+      <div class="mb-4">
+        <%= label f, :current_password, for: "current_password_for_email", class: "block text-sm font-bold mb-2" %>
+        <%= password_input f, :current_password, required: true, name: "current_password", id: "current_password_for_email", class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :current_password %>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex-grow mr-0.25.5">
+          <%= submit "Change email", class: "bg-blue-700 hover:bg-blue-600 font-bold py-0.5 px-1 rounded" %>
+        </div>
+      </div>
+    </.form>
+  </div>
+
+  <div class="flex-shrink">
+    <h3 class="text-center mb-2">Change password</h3>
+
+    <.form let={f} for={@password_changeset} phx-submit="update_password" id="update_password" class={"bg-neutral-800 shadow-md rounded px-8 pt-6 pb-8 mb-4"}>
+      <%= if @password_changeset.action do %>
+        <div class="alert alert-danger">
+          <div>Oops, something went wrong! Please check the errors below.</div>
+        </div>
+      <% end %>
+
+      <%= hidden_input f, :action, name: "action", value: "update_password" %>
+
+      <div class="mb-4">
+        <%= label f, :password, "New password", class: "block text-sm font-bold mb-2" %>
+        <%= password_input f, :password, required: true, class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :password %>
+      </div>
+
+      <div class="mb-4">
+        <%= label f, :password_confirmation, "Confirm new password", class: "block text-sm font-bold mb-2" %>
+        <%= password_input f, :password_confirmation, required: true, class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :password_confirmation %>
+      </div>
+
+      <div class="mb-4">
+        <%= label f, :current_password, for: "current_password_for_password", class: "block text-sm font-bold mb-2" %>
+        <%= password_input f, :current_password, required: true, name: "current_password", id: "current_password_for_password", class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :current_password %>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex-grow mr-0.25.5">
+          <%= submit "Change password", class: "bg-blue-700 hover:bg-blue-600 font-bold py-0.5 px-1 rounded" %>
+        </div>
+      </div>
+    </.form>
+  </div>
+
+  <div class="flex-shrink">
+    <h3 class="text-center mb-2">Change Timezone</h3>
+
+    <.form let={f} for={@timezone_changeset}  phx-submit="update_timezone" id="update_timezone" class={"bg-neutral-800 shadow-md rounded px-8 pt-6 pb-8 mb-4"}>
+      <%= if @timezone_changeset.action do %>
+        <div class="alert alert-danger">
+          <div>Oops, something went wrong! Please check the errors below.</div>
+        </div>
+      <% end %>
+
+      <%= hidden_input f, :action, name: "action", value: "update_timezone" %>
+
+      <div class="mb-4">
+        <%= label f, :timezone, "Timezone", class: "block text-sm font-bold mb-2" %>
+        <%= select f, :timezone, Tzdata.canonical_zone_list(), required: true, selected: Ecto.Changeset.get_field(@timezone_changeset, :timezone), class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+        <%= error_tag f, :timezone %>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <div class="flex-grow mr-0.25.5">
+          <%= submit "Change timezone", class: "bg-blue-700 hover:bg-blue-600 font-bold py-0.5 px-1 rounded" %>
+        </div>
+      </div>
+    </.form>
+  </div>
+
+  <div class="flex-shrink">
+    <button phx-click="delete_player" phx-throttle="1000" class="btn-red w-full">Delete Player</button>
+  </div>
+
+  <%= if @delete_player do %>
+    <ConfirmationModal.content target="#settings">
+      <:header>Delete Player: <%= @current_player.nickname %></:header>
+      <div>Deleting a player cannot be undone. Everything except conversations with other players will be permanently deleted, and other players will see '[deleted]' in already started conversations rather than your nickname.</div>
+      <:footer>
+        <ConfirmationModal.cancel_button target="#settings">Keep player</ConfirmationModal.cancel_button>
+        <ConfirmationModal.confirm_button event="confirm_delete_player" target="#settings">Delete player and all data</ConfirmationModal.confirm_button>
+      </:footer>
+    </ConfirmationModal.content>
+  <% end %>
+</div>

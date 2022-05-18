@@ -38,4 +38,30 @@ defmodule MudWeb.ConnCase do
 
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
+
+  @doc """
+  Setup helper that registers and logs in players.
+
+      setup :register_and_log_in_player
+
+  It stores an updated connection and a registered player in the
+  test context.
+  """
+  def register_and_log_in_player(%{conn: conn}) do
+    player = Mud.AccountFixtures.player_fixture()
+    %{conn: log_in_player(conn, player), player: player}
+  end
+
+  @doc """
+  Logs the given `player` into the `conn`.
+
+  It returns an updated `conn`.
+  """
+  def log_in_player(conn, player) do
+    token = Mud.Account.generate_player_session_token(player)
+
+    conn
+    |> Phoenix.ConnTest.init_test_session(%{})
+    |> Plug.Conn.put_session(:player_token, token)
+  end
 end

@@ -1,0 +1,77 @@
+<div class="w-full border-black border-b">
+  <%= if @current_player do %>
+    <nav x-data="{show: false}" class="flex items-center justify-between bg-neutral-800 h-3.5 sticky top-0 z-40 relative">
+      <div class="block 900:hidden h-full flex flex-col justify-center ml-1">
+        <button @click="show = !show" class="flex items-center px-0.75 py-0.5 border rounded border-neutral-400 hover:hover:border-gray-300">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+      <div id="nav-links" :class="{'invisible': !show}" class="w-full 900:h-full z-40 invisible 900:visible block flex-grow 900:flex 900:items-center 900:w-auto absolute 900:static origin-top-left top-12 bg-neutral-800 rounded border-neutral-900 border-y 900:border-0">
+        <div class="flex items-center flex-shrink-0 mr-0.5 h-full ml-0.5">
+          <%= live_redirect "Echoes of an Empire", to: Routes.home_show_path(@socket, :show), class: "font-medium text-xl tracking-tight" %>
+        </div>
+      </div>
+      <%# User Menu %>
+      <%= if @current_player do %>
+        <div class="lg:flex-shrink h-full" x-data="{ open: false }" id="usermenu">
+          <div class="relative inline-block text-left h-full">
+            <button type="button" @click="open = !open; document.getElementById('user-menu-wrapper').removeAttribute('hidden');" @keydown.escape.window="open = false" @click.away="open = false" class="inline-flex justify-center items-center w-full bg-neutral-800 shadow-sm pl-2 h-full text-sm font-medium hover:bg-neutral-600" id="menu-button" aria-expanded="true" aria-haspopup="true">
+              <span class="text-xl"><%= @current_player.nickname %></span>
+              <div class="h-3 w-3 flex justify-center items-center">
+                <i :class="{'rotated90': !open}" class="fas fa-angle-double-down rotated90"></i>
+              </div>
+            </button>
+
+            <!--
+              Dropdown menu, show/hide based on menu state.
+
+              Entering: "transition ease-out duration-100"
+                From: "transform opacity-0 scale-95"
+                To: "transform opacity-100 scale-100"
+              Leaving: "transition ease-in duration-75"
+                From: "transform opacity-100 scale-100"
+                To: "transform opacity-0 scale-95"
+            -->
+            <div 
+                id="user-menu-wrapper"
+                x-cloak
+                x-show="open"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="transform opacity-0 scale-95"
+                x-transition:enter-end="transform opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="transform opacity-100 scale-100"
+                x-transition:leave-end="transform opacity-0 scale-95"
+                hidden
+                class="menu origin-top-right absolute right-0 w-56 rounded shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 divide-y divide-neutral-900 focus:outline-none z-50" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+              <div role="none">
+                <%= link "Log out", to: Routes.player_session_path(@socket, :delete), method: :delete, class: "nothyperlink rounded-b text-center !text-red-300 block px-0.5 py-0.5 hover:bg-neutral-500", role: "menuitem", tabindex: "-1", id: "menu-item-4" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+      <%# User Menu End %>
+    </nav>
+  <% else %>
+    <nav x-data="{show: false}" class="flex items-center justify-between bg-neutral-800 h-3.5 sticky top-0 z-40 relative">
+      <div class="block 900:hidden h-full flex flex-col justify-center ml-1">
+        <button @click="show = !show" class="flex items-center px-0.75 py-0.5 border rounded border-neutral-400 hover:hover:border-gray-300">
+          <i class="fas fa-bars fa-lg"></i>
+        </button>
+      </div>
+      <div id="nav-links" :class="{'invisible': !show}" class="w-full 900:h-full z-40 invisible 900:visible block flex-grow 900:flex 900:items-center 900:w-auto absolute 900:static origin-top-left top-12 bg-neutral-800 rounded border-neutral-900 border-y 900:border-0">
+        <div class="flex items-center flex-shrink-0 mr-0.25.5 h-full ml-0.5">
+          <%= live_redirect "Echoes of an Empire", to: "/", class: "font-medium text-xl tracking-tight" %>
+        </div>
+        <div class="flex-grow"/>
+        <div class="flex items-center flex-shrink-0 mr-0.25.5 h-full ml-0.5">
+          <%= live_redirect "Log In", to: Routes.player_session_new_path(@socket, :login), class: "hover:bg-neutral-700 px-0.5 py-0.5 flex items-center h-full font-bold" %>
+        </div>
+        <div class="flex items-center flex-shrink-0 mr-0.25.5 h-full ml-0.5">
+          <%= live_redirect "Register", to: Routes.player_registration_new_path(@socket, :register), class: "hover:bg-neutral-700 px-0.5 py-0.5 flex items-center h-full font-bold" %>
+        </div>
+      </div>
+    </nav>
+  <% end %>
+</div>

@@ -7,7 +7,7 @@ defmodule Mud.Schema do
 
       @foreign_key_type :binary_id
       @primary_key {:id, :binary_id, autogenerate: true}
-      @timestamps_opts [type: :utc_datetime_usec]
+      @timestamps_opts [type: :utc_datetime]
     end
   end
 end

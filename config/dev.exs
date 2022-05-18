@@ -27,7 +27,16 @@ config :mud, MudWeb.Endpoint,
   code_reloader: true,
   check_origin: false,
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]}
+    esbuild: {Esbuild, :install_and_run, [:default, ~w(--sourcemap=inline --watch)]},
+    tailwind: {Tailwind, :install_and_run, [:default, ~w(--watch)]}
+  ],
+  live_reload: [
+    patterns: [
+      ~r{priv/static/.*(js|css|png|jpeg|jpg|gif)$},
+      ~r{web/views/.*(ex)$},
+      ~r{web/templates/.*(eex)$},
+      ~r{lib/.*(ex)$}
+    ]
   ]
 
 # ## SSL Support
@@ -77,9 +86,3 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
-
-# Configure email
-config :mud, Mud.Mailer, adapter: Bamboo.LocalAdapter
-
-config :mud,
-  redis_endpoint: "localhost"

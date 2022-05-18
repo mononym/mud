@@ -5,8 +5,7 @@ defmodule MudWeb.Plug.EnforceAuthentication do
   end
 
   def call(conn, _) do
-    if not Map.has_key?(conn.assigns, :player_authenticated) or
-         not conn.assigns.player_authenticated do
+    if Map.get(conn.assigns, :current_player, false) do
       conn
       |> send_resp(401, "Not authenticated")
       |> halt()

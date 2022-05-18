@@ -10,7 +10,6 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias Mud.Engine.{Area, Link}
-alias Mud.Engine
 
 # Map insertions
 {:ok, map} =
@@ -19,6 +18,7 @@ alias Mud.Engine
     description: "The complete grounds of the Torinthian Royal Palace",
     view_size: 250,
     grid_size: 50,
+    key: "torinthian_palace_exterior"
   })
 
 {:ok, map2} =
@@ -27,7 +27,8 @@ alias Mud.Engine
     description: "The interior of the Royal Castle",
     view_size: 250,
     grid_size: 50,
-    labels: []
+    labels: [],
+    key: "torinthian_royal_castle"
   })
 
 {:ok, center_room2} =
@@ -37,7 +38,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map2.id,
     name: "Great Hall",
-    description: "The huge hall spans the length of the castle."
+    description: "The huge hall spans the length of the castle.",
+    key: "great_hall"
   })
 
 # Room insertions
@@ -50,7 +52,8 @@ alias Mud.Engine
     name: "Water Fountain",
     description:
       "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "water_fountain"
   })
 
 {:ok, east_room} =
@@ -62,7 +65,8 @@ alias Mud.Engine
     name: "East Garden Path",
     description:
       "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "east_garden_path"
   })
 
 {:ok, west_room} =
@@ -74,7 +78,8 @@ alias Mud.Engine
     name: "West Garden Path",
     description:
       "White rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "west_garden_path"
   })
 
 {:ok, north_room} =
@@ -86,7 +91,8 @@ alias Mud.Engine
     name: "North Garden Path",
     description:
       "Yellow rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "north_garden_path"
   })
 
 {:ok, south_room} =
@@ -98,7 +104,8 @@ alias Mud.Engine
     name: "South Garden Path",
     description:
       "Pink rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction. The exit from the maze is barred to entry from this side by a one-way turnstyle.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "south_garden_path"
   })
 
 {:ok, northeast_room} =
@@ -107,10 +114,11 @@ alias Mud.Engine
     map_y: 1,
     map_size: 20,
     map_id: map.id,
-    name: "NorthEast Garden Path",
+    name: "Northeast Garden Path",
     description:
       "Orange rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "northeast_garden_path"
   })
 
 {:ok, southeast_room} =
@@ -119,10 +127,11 @@ alias Mud.Engine
     map_y: -1,
     map_size: 20,
     map_id: map.id,
-    name: "SouthEast Garden Path",
+    name: "Southeast Garden Path",
     description:
       "Purple rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "southeast_garden_path"
   })
 
 {:ok, northwest_room} =
@@ -131,10 +140,11 @@ alias Mud.Engine
     map_y: 1,
     map_size: 20,
     map_id: map.id,
-    name: "NorthWest Garden Path",
+    name: "Northwest Garden Path",
     description:
       "Blue rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "northwest_garden_path"
   })
 
 {:ok, southwest_room} =
@@ -143,10 +153,11 @@ alias Mud.Engine
     map_y: -1,
     map_size: 20,
     map_id: map.id,
-    name: "SouthWest Garden Path",
+    name: "Southwest Garden Path",
     description:
       "Green rose bushes dot the area haphazardly, the path winding between thorny branches seemingly without direction.",
-    flags: %{permanently_explored: true}
+    flags: %{permanently_explored: true},
+    key: "southwest_garden_path"
   })
 
 # Maze
@@ -159,7 +170,8 @@ alias Mud.Engine
     map_id: map.id,
     name: "Maze Entrance",
     description:
-      "The openness of the gardens to the west are in contrast to the confinement of the maze to the east."
+      "The openness of the gardens to the west are in contrast to the confinement of the maze to the east.",
+    key: "maze_entrance"
   })
 
 {:ok, _} =
@@ -188,7 +200,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "The entrance from the west is the only break in the otherwise endless hegerows."
+    description: "The entrance from the west is the only break in the otherwise endless hegerows.",
+    key: "maze_2",
   })
 
 {:ok, _} =
@@ -232,7 +245,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_3",
   })
 
 {:ok, _} =
@@ -276,7 +290,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_4",
   })
 
 {:ok, _} =
@@ -320,7 +335,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_5",
   })
 
 {:ok, _} =
@@ -364,7 +380,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_6",
   })
 
 {:ok, _} =
@@ -408,7 +425,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_7",
   })
 
 {:ok, _} =
@@ -452,7 +470,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_8",
   })
 
 {:ok, _} =
@@ -496,7 +515,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_9",
   })
 
 {:ok, _} =
@@ -540,7 +560,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_10",
   })
 
 {:ok, _} =
@@ -584,7 +605,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_11",
   })
 
 {:ok, _} =
@@ -628,7 +650,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_12",
   })
 
 {:ok, _} =
@@ -672,7 +695,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_13",
   })
 
 {:ok, _} =
@@ -716,7 +740,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_14",
   })
 
 {:ok, _} =
@@ -760,7 +785,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_15",
   })
 
 {:ok, _} =
@@ -804,7 +830,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_16",
   })
 
 {:ok, _} =
@@ -848,7 +875,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_17",
   })
 
 {:ok, _} =
@@ -892,7 +920,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_18",
   })
 
 {:ok, _} =
@@ -936,7 +965,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_19",
   })
 
 {:ok, _} =
@@ -980,7 +1010,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_20",
   })
 
 {:ok, _} =
@@ -1024,7 +1055,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_21",
   })
 
 {:ok, _} =
@@ -1068,7 +1100,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_22",
   })
 
 {:ok, _} =
@@ -1112,7 +1145,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_23",
   })
 
 {:ok, _} =
@@ -1156,7 +1190,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_24",
   })
 
 {:ok, _} =
@@ -1200,7 +1235,8 @@ alias Mud.Engine
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "Endless hegerows tower above, providing no clue as to entrance or exit."
+    description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
+    key: "maze_25",
   })
 
 {:ok, _} =
@@ -1271,7 +1307,8 @@ alias Mud.Engine
     map_size: 10,
     map_id: map.id,
     name: "Bathhouse",
-    description: "It's a bathhouse. It has a bath. And nudity. So. Much. Nudity."
+    description: "It's a bathhouse. It has a bath. And nudity. So. Much. Nudity.",
+    key: "bathhouse",
   })
 
 {:ok, _} =
@@ -1324,7 +1361,8 @@ alias Mud.Engine
     description: "It's a bank. It has a vault, and money, and stuff. And a Teller. Boom.",
     flags: %{
       bank: true
-    }
+    },
+    key: "bank",
   })
 
 {:ok, _} =

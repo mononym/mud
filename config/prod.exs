@@ -10,7 +10,8 @@ use Mix.Config
 # which you should run after static files are built and
 # before starting your production server.
 config :mud, MudWeb.Endpoint,
-  check_origin: false,
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  check_origin: ["https://*.echoesofanempire.com"]
   url: [host: "echoesofanempire.com"],
   http: [port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
@@ -27,14 +28,6 @@ config :mud,
 # Do not print debug messages in production
 config :logger, level: :info
 
-config :mud, Mud.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "mud",
-  hostname: "alpha.cluster-c3nd1btjw5ts.us-east-1.rds.amazonaws.com",
-  pool_size: 10
-
-config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
@@ -75,3 +68,5 @@ config :mud, Mud.Mailer, adapter: Bamboo.SesAdapter
 
 config :mud,
   redis_endpoint: "alpha.nkawqv.ng.0001.use1.cache.amazonaws.com"
+
+config :swoosh, :api_client, Swoosh.ApiClient.Hackney

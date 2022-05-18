@@ -1,0 +1,45 @@
+<div class="container flex flex-col max-w-xl mt-2 sm:mt-6">
+  <h1 class="text-center mb-2 text-lg font-bold">Log in</h1>
+
+  <.form let={f} for={@changeset}
+    action={Routes.player_session_path(@socket, :create)}
+    phx-trigger-action={@trigger_submit}
+    phx-change="validate"
+    phx-submit="save"
+    class={"bg-neutral-800 shadow-md rounded px-2 pt-1.5 pb-2"}>
+    
+    <div class="mb-1">
+      <%= label f, :email, class: "block text-sm font-bold mb-0.5" %>
+      <%= email_input f, :email, required: true, aria_label: "Email address", phx_debounce: "1000", class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      <%= error_tag f, :email %>
+    </div>
+
+    <div class="mb-1">
+      <%= label f, :password, class: "block text-sm font-bold mb-0.5" %>
+      <%= password_input f, :password, value: input_value(f, :password), phx_debounce: "500", required: true, aria_label: "Password", class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      <%= error_tag f, :password %>
+    </div>
+
+    <div class="mb-1">
+      <%= checkbox f, :remember_me %>
+      <%= label f, :remember_me, "Keep me logged in for 60 days", class: "mb-0.5 ml-0.5" %>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <div class="flex-grow flex gap-1">
+        <%= if @changeset.valid? do %>
+          <%= submit "Log in", id: "valid-submit", phx_disable_with: "Registering...", class: "btn-green flex items-center" %>
+        <% else %>
+          <%= submit id: "invalid-submit", class: "relative cursor-not-allowed bg-red-700 font-bold py-0.5 px-1 rounded" do %>
+            <.tooltip text="All fields must be valid." />
+            Log in
+          <% end %>
+        <% end %>
+        <%= live_redirect "Cancel", to: Routes.landing_page_show_path(@socket, :show), class: "btn-red flex items-center" %>
+      </div>
+      <%= live_redirect "Register", to: Routes.player_registration_new_path(@socket, :register), class: "mr-0.5" %>
+      <span>|</span>
+      <%= live_redirect "Forgot your password?", to: Routes.player_reset_password_start_path(@socket, :reset_password_start), class: "ml-0.5"  %>
+    </div>
+  </.form>
+</div>

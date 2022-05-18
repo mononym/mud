@@ -1,0 +1,39 @@
+<div class="container flex flex-col max-w-xl mt-2 sm:mt-6">
+  <h1 class="text-center mb-2 text-lg font-bold">Reset password</h1>
+
+  <.form
+    let={f}
+    for={@changeset}
+    phx-submit="complete_password_reset"
+    phx-change="validate"
+    phx-throttle="500"
+    class={"bg-neutral-800 shadow-md rounded px-2 pt-1.5 pb-1"}>
+
+    <div class="mb-1">
+      <%= label f, :password, "New password", class: "block text-sm font-bold mb-0.5" %>
+      <%= password_input f, :password, value: input_value(f, :password), required: true, class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      <%= error_tag f, :password %>
+    </div>
+
+    <div class="mb-1">
+      <%= label f, :password_confirmation, "Confirm new password", class: "block text-sm font-bold mb-0.5" %>
+      <%= password_input f, :password_confirmation, value: input_value(f, :password_confirmation), required: true, class: "shadow appearance-none border rounded w-full py-0.5 px-0.75 text-neutral-700 leading-tight focus:outline-none focus:shadow-outline" %>
+      <%= error_tag f, :password_confirmation %>
+    </div>
+
+    <div class="flex items-center justify-between">
+      <div class="flex-grow">
+          <%= if @changeset.valid? do %>
+            <%= submit "Reset password", id: "valid-submit", phx_disable_with: "Resetting...", class: "btn-green" %>
+          <% else %>
+            <%= submit id: "invalid-submit", class: "relative cursor-not-allowed bg-red-700 font-bold py-0.5 px-1 rounded" do %>
+              <.tooltip text="Must be a valid password." />
+              Reset password
+            <% end %>
+          <% end %>
+      </div>
+      <%= live_redirect "Register", to: Routes.player_registration_new_path(@socket, :register), class: "mr-0.5" %> <span>|</span>
+      <%= live_redirect "Log in", to: Routes.player_session_new_path(@socket, :login), class: "ml-0.5"  %>
+    </div>
+  </.form>
+</div>
