@@ -16,8 +16,6 @@ defmodule Mud.Application do
       # Start the endpoint when the application starts
       MudWeb.Endpoint,
       # Session Cache
-      {Redix, host: Application.get_env(:mud, :redis_endpoint), name: :redix},
-      Mud.Vault,
       {Registry, keys: :unique, name: Mud.Engine.CharacterSessionRegistry},
       {DynamicSupervisor, strategy: :one_for_one, name: Mud.Engine.CharacterSessionSupervisor},
       {Task.Supervisor, name: Mud.TaskSupervisor},

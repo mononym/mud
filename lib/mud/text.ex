@@ -51,7 +51,7 @@ defmodule Mud.Text do
   end
 
   defp tag_to_text_color("echo") do
-    "text-gray-700"
+    "text-neutral-700"
   end
 
   defp tag_to_text_color("error") do
@@ -59,7 +59,7 @@ defmodule Mud.Text do
   end
 
   defp tag_to_text_color("info") do
-    "text-gray-700"
+    "text-neutral-700"
   end
 
   defp tag_to_text_color("warning") do
@@ -67,6 +67,6 @@ defmodule Mud.Text do
   end
 
   defp tag_to_text_color(_tag) do
-    "text-gray-700"
+    "text-neutral-700"
   end
 end

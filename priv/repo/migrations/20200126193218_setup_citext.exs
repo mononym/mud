@@ -2,7 +2,7 @@ defmodule Mud.Repo.Migrations.SetupCitext do
   use Ecto.Migration
 
   def up do
-    execute("CREATE EXTENSION citext")
+    execute("CREATE EXTENSION IF NOT EXISTS citext", "")
   end
 
   def down do

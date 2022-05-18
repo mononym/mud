@@ -10,7 +10,7 @@ import { Socket } from "phoenix"
 
 import { LiveSocket } from "phoenix_live_view"
 
-let socket = new Socket("/socket")
+// let socket = new Socket("/socket")
 
 let Hooks = {}
 
@@ -18,6 +18,43 @@ Hooks.Input = {
     mounted() {
         this.el.focus()
     }
+}
+
+const auto_flash_timers = {}
+
+Hooks.AutoHideFlash = {
+  mounted() {
+    const self = this
+    const element = this.el
+    const id = element.id
+
+    if (auto_flash_timers[id]) {
+      clearTimeout(auto_flash_timers[id])
+    }
+
+    const timeout = setTimeout(function () {
+      element.classList.add("fade-out")
+      self.pushEventTo(element, "lv:clear-flash", {}, (_reply, _ref) => { })
+    }, 15000);
+
+    auto_flash_timers[id] = timeout
+  },
+  updated() {
+    const self = this
+    const element = this.el
+    const id = element.id
+
+    if (auto_flash_timers[id]) {
+      clearTimeout(auto_flash_timers[id])
+    }
+
+    const timeout = setTimeout(function () {
+      element.classList.add("fade-out")
+      self.pushEventTo(element, "lv:clear-flash", {}, (_reply, _ref) => { })
+    }, 15000);
+
+    auto_flash_timers[id] = timeout
+  }
 }
 
 Hooks.draggable_pane = {
@@ -145,7 +182,7 @@ liveSocket.connect()
 
 // When you connect, you'll often need to authenticate the client.
 // For example, imagine you have an authentication plug, `MyAuth`,
-// which authenticates the session and assigns a `:current_user`.
+// which authenticates the session and assigns a `:current_player`.
 // If the current user exists you can assign the user's token in
 // the connection for use in the layout.
 //
@@ -158,8 +195,8 @@ liveSocket.connect()
 //     end
 //
 //     defp put_user_token(conn, _) do
-//       if current_user = conn.assigns[:current_user] do
-//         token = Phoenix.Token.sign(conn, "user socket", current_user.id)
+//       if current_player = conn.assigns[:current_player] do
+//         token = Phoenix.Token.sign(conn, "user socket", current_player.id)
 //         assign(conn, :user_token, token)
 //       else
 //         conn
@@ -202,4 +239,4 @@ liveSocket.connect()
 //     .receive("ok", resp => { console.log("Joined successfully", resp) })
 //     .receive("error", resp => { console.log("Unable to join", resp) })
 // console.log(channel)
-export default socket
+// export default socket

@@ -5,7 +5,7 @@ defmodule MudWeb.Plug.RejectAuthenticatedUser do
   end
 
   def call(conn, _params) do
-    if conn.assigns.player_authenticated do
+    if conn.assigns.current_player do
       conn
       |> put_status(401)
       |> Phoenix.Controller.put_view(MudWeb.ErrorView)

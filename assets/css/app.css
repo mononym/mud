@@ -1,4 +1,377 @@
-/* This file is for your main application css. */
-
 /* Tailwind stuff */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+@layer components {
+  .btn-blue {
+    background-color: theme("colors.blue.700");
+    color: theme("colors.neutral.200");
+    font-weight: bold;
+    border-radius: 0.25rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .btn-blue:hover {
+    background-color: theme("colors.blue.600");
+  }
+  .btn-green {
+    background-color: theme("colors.green.800");
+    color: theme("colors.neutral.200");
+    font-weight: bold;
+    border-radius: 0.25rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .btn-green:hover {
+    background-color: theme("colors.green.700");
+  }
+  .btn-red {
+    background-color: theme("colors.red.700");
+    color: theme("colors.neutral.200");
+    font-weight: bold;
+    border-radius: 0.25rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  .btn-red:hover {
+    background-color: theme("colors.red.600");
+  }
+}
+
+.hyperlinks a {
+  @apply underline text-blue-400;
+}
+.hyperlinks a:hover {
+  @apply text-blue-500;
+}
+.hyperlinks a:visited {
+  @apply text-blue-500;
+}
+
+a {
+  @apply underline text-blue-400;
+}
+a:hover {
+  @apply underline text-blue-500;
+}
+a:visited {
+  @apply underline text-blue-500;
+}
+
+a.hyperlink[data-phx-link] {
+  @apply underline text-blue-400;
+}
+a.hyperlink[data-phx-link]:hover {
+  @apply text-blue-500;
+}
+a.hyperlink[data-phx-link]:visited {
+  @apply text-blue-500;
+}
+
+a[data-phx-link] {
+  text-decoration: none;
+  color: rgb(212, 212, 212);
+}
+
+a.nothyperlink {
+  text-decoration: none;
+  color: rgb(212, 212, 212);
+}
+
+/* Alerts and form errors used by phx.new */
+.alert {
+  padding: 15px;
+  margin-bottom: 20px;
+  border: 1px solid transparent;
+}
+.alert-info {
+  color: #31708f;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+}
+.alert-warning {
+  color: #8a6d3b;
+  background-color: #fcf8e3;
+  border-color: #faebcc;
+}
+.alert-danger {
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}
+.alert p {
+  margin-bottom: 0;
+}
+.alert:empty {
+  display: none;
+}
+.invalid-feedback {
+  color: #a94442;
+  display: block;
+  /* margin: -2rem 1rem 2rem; */
+  text-align: right;
+}
+
+/* LiveView specific classes for your customization */
+.phx-no-feedback.invalid-feedback,
+.phx-no-feedback .invalid-feedback {
+  display: none;
+}
+
+.phx-click-loading {
+  opacity: 0.5;
+  transition: opacity 1s ease-out;
+}
+
+.phx-loading {
+  cursor: wait;
+}
+
+.phx-modal {
+  opacity: 1 !important;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.phx-modal-close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 2rem;
+  width: 2rem;
+}
+
+.phx-modal-close:hover,
+.phx-modal-close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.fade-in-scale {
+  animation: 0.2s ease-in 0s normal forwards 1 fade-in-scale-keys;
+}
+
+.fade-out-scale {
+  animation: 0.2s ease-out 0s normal forwards 1 fade-out-scale-keys;
+}
+
+.fade-in {
+  animation: 0.2s ease-out 0s normal forwards 1 fade-in-keys;
+}
+.fade-out {
+  animation: 0.2s ease-out 0s normal forwards 1 fade-out-keys;
+}
+
+@keyframes fade-in-scale-keys {
+  0% {
+    scale: 0.95;
+    opacity: 0;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out-scale-keys {
+  0% {
+    scale: 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 0.95;
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in-keys {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out-keys {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+ul {
+  list-style: inside;
+}
+
+ol {
+  list-style: inside;
+  list-style-type: decimal;
+}
+
+.rotated90 {
+  transform: rotate(-90deg);
+  display: inline-block;
+}
+
+.collapsed-element {
+  display: none;
+}
+
+.menu {
+  background-color: #333;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: max-content;
+  background-color: #333;
+  color: white;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  transform: translate(-50%, -10px);
+  font-size: 14px;
+  border-color: black;
+  pointer-events: none;
+}
+
+.tooltip .tooltiptext::after {
+  content: " ";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 0);
+  border-width: 8px;
+  border-style: solid;
+  border-color: #333 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.tooltip .tooltiptext.\!left-0::after {
+  left: 75% !important;
+}
+
+.tooltip .tooltiptext.\!left-full::after {
+  left: 25% !important;
+}
+
+.fix-position {
+  position: fixed;
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+ul ul {
+  margin-left: 1rem;
+}
+
+ul ol {
+  margin-left: 1rem;
+}
+
+ol ul {
+  margin-left: 1rem;
+}
+
+ol ol {
+  margin-left: 1rem;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 2rem;
+  color: rgb(212, 212, 212);
+}
+
+h2 {
+  font-weight: 700;
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  color: rgb(212, 212, 212);
+}
+
+h3 {
+  font-weight: 700;
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+  color: rgb(212, 212, 212);
+}
+
+h4 {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  color: rgb(212, 212, 212);
+}
+
+li {
+  text-indent: -1rem;
+  margin-left: 1rem;
+}
+
+blockquote {
+  font-style: italic;
+  padding-left: 2rem;
+  border-left: 4px solid rgb(212, 212, 212);
+  line-height: 1.6;
+  position: relative;
+}
+
+/* Firefox */
+html {
+  scrollbar-color: #737373 #171717;
+  scrollbar-width: thin;
+}
+
+/* WebKit and Chromiums */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+  background-color: #171717;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #737373;
+  border-radius: 5px;
+}
+
+option:disabled:hover {
+  background-color: transparent;
+}

@@ -14,5 +14,7 @@ defmodule Mud.Repo.Migrations.CreateLuaScripts do
     end
 
     create(unique_index(:lua_scripts, [:name]))
+    create(unique_index(:lua_scripts, [:key]))
+    create(index(:lua_scripts, [:type]))
   end
 end

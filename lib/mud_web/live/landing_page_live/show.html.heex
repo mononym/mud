@@ -1,0 +1,7 @@
+<div class="w-full flex flex-col items-center mt-6">
+  <image src={Routes.static_path(@socket, "/images/square_with_text_web.png")}/>
+  <div class="text-lg text-center mt-4 max-w-7xl">
+    A text-based adventure set in a high fantasy world.
+  </div>
+  <%= live_redirect "Play Now", to: Routes.player_session_new_path(@socket, :login), class: "btn-green mt-2" %>
+</div>

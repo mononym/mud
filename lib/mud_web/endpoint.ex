@@ -6,7 +6,7 @@ defmodule MudWeb.Endpoint do
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "sid",
+    key: "_eoae_key",
     encryption_salt: "ADkmDSNE",
     signing_salt: "auFTRIdU",
     key_length: 64,
@@ -14,9 +14,8 @@ defmodule MudWeb.Endpoint do
     max_age: 14 * 24 * 60 * 60
   ]
 
-  socket("/socket", MudWeb.UserSocket,
-    websocket: true,
-    longpoll: false
+  socket("/live", Phoenix.LiveView.Socket,
+    websocket: [compress: true, connect_info: [session: @session_options]]
   )
 
   # socket("/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]])
@@ -29,7 +28,7 @@ defmodule MudWeb.Endpoint do
     at: "/",
     from: :mud,
     gzip: false,
-    only: ~w(assets fonts images favicon.ico robots.txt)
+    only: ~w(assets fonts images js favicon.ico robots.txt)
   )
 
   # Code reloading can be explicitly enabled under the
@@ -38,10 +37,17 @@ defmodule MudWeb.Endpoint do
     socket("/phoenix/live_reload/socket", Phoenix.LiveReloader.Socket)
     plug(Phoenix.LiveReloader)
     plug(Phoenix.CodeReloader)
+    plug(Phoenix.Ecto.CheckRepoStatus, otp_app: :mud)
   end
+
+  plug(Phoenix.LiveDashboard.RequestLogger,
+    param_key: "request_logger",
+    cookie_key: "request_logger"
+  )
 
   plug(Plug.RequestId)
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
+  plug(Plug.RewriteOn, :x_forwarded_proto)
 
   plug(Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
@@ -49,7 +55,6 @@ defmodule MudWeb.Endpoint do
     json_decoder: Phoenix.json_library()
   )
 
-  plug(Corsica, max_age: 600, origins: "*", allow_headers: :all, expose_headers: ~w(Set-Token x-csrf-token), allow_credentials: true)
   plug(Plug.MethodOverride)
   plug(Plug.Head)
   plug(Plug.Session, @session_options)

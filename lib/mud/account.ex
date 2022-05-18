@@ -12,8 +12,7 @@ defmodule Mud.Account do
 
   import Ecto.Query, warn: false
 
-  alias Mud.Account
-  alias Mud.Account.{Auth, Player, Purchases, Settings}
+  alias Mud.Account.{Player, PlayerToken, Role, Settings}
   alias Mud.Repo
 
   require Logger
@@ -39,219 +38,6 @@ defmodule Mud.Account do
   end
 
   @doc """
-  Send a login or welcome email out based on whether or not a Player exists that uses the provided email.
-
-  New Players will be directed to the TOS page. Returning Players will be directed to the Player Dashboard.
-  """
-  def authenticate_via_email(email_address) do
-    auth_token = UUID.uuid4() |> String.replace("-", "")
-
-    # TODO: Sort out what happens when email is submitted second time before account creation finished
-    case lookup_player_by_auth_email(email_address) do
-      {:ok, player_id} ->
-        Logger.info(
-          "Starting authentication for existing player `#{player_id}` with token `#{auth_token}` and expiry `#{Application.get_env(:mud, :login_token_ttl)}`"
-        )
-
-        redis_set_player_auth_token(
-          auth_token,
-          "login",
-          player_id,
-          Application.get_env(:mud, :login_token_ttl)
-        )
-
-        Mud.Account.Emails.login_email(
-          email_address,
-          Application.get_env(:mud, :no_reply_email_address),
-          auth_token
-        )
-        |> Mud.Mailer.deliver_later()
-
-        {:ok, :player_found}
-
-      {:error, :not_found} ->
-        signup_new_player(email_address, auth_token)
-    end
-  end
-
-  defp signup_new_player(email_address, auth_token) do
-    email_hash = hash_email(email_address)
-    encrypted_email = Mud.Vault.encrypt!(email_address)
-
-    player_changeset = Player.new(%{status: Account.Constants.PlayerStatus.pending()})
-
-    Ecto.Multi.new()
-    |> perform_email_hash_precheck(email_address, email_hash)
-    |> Ecto.Multi.insert(:insert_player, player_changeset)
-    |> insert_player_auth(encrypted_email, email_hash)
-    |> insert_settings()
-    |> insert_profile()
-    |> Repo.transaction()
-    |> case do
-      {:ok, %{insert_player: player}} ->
-        redis_set_player_auth_token(
-          auth_token,
-          "signup",
-          player.id,
-          Application.get_env(:mud, :create_player_token_ttl)
-        )
-
-        Mud.Account.Emails.welcome_email(
-          email_address,
-          Application.get_env(:mud, :no_reply_email_address),
-          auth_token
-        )
-        |> Mud.Mailer.deliver_later()
-
-        {:ok, :player_created}
-
-      _error ->
-        {:error, :player_not_created}
-    end
-  end
-
-  defp perform_email_hash_precheck(multi, email_address, email_hash) do
-    Ecto.Multi.run(multi, :precheck, fn _repo, _ ->
-      Repo.all(
-        from(auth_email in Mud.Account.AuthEmail,
-          where: auth_email.hash == ^email_hash,
-          select: auth_email.email
-        )
-      )
-      |> Enum.filter(fn encrypted_email ->
-        Mud.Vault.decrypt!(encrypted_email) === email_address
-      end)
-      |> case do
-        [] ->
-          {:ok, :not_found}
-
-        [_] ->
-          {:error, :email_in_use}
-      end
-    end)
-  end
-
-  defp insert_player_auth(multi, encrypted_email, email_hash) do
-    multi
-    |> UberMulti.run(
-      :build_auth,
-      [:insert_player, :auth_email, %{email: encrypted_email, hash: email_hash}],
-      &Ecto.build_assoc/3,
-      true
-    )
-    |> UberMulti.run(:insert_auth, [:build_auth], &Repo.insert/1)
-  end
-
-  defp insert_settings(multi) do
-    multi
-    |> UberMulti.run(
-      :build_settings,
-      [:insert_player, :settings, %{}],
-      &Ecto.build_assoc/3,
-      true
-    )
-    |> UberMulti.run(:insert_settings, [:build_settings], &Repo.insert/1)
-  end
-
-  defp insert_profile(multi) do
-    multi
-    |> UberMulti.run(
-      :build_profile,
-      [:insert_player, :profile, %{}],
-      &Ecto.build_assoc/3,
-      true
-    )
-    |> UberMulti.run(:insert_profile, [:build_profile], &Repo.insert/1)
-  end
-
-  defp redis_set_player_auth_token(auth_token, type, player_id, expiry) do
-    Redix.command!(:redix, [
-      "SET",
-      "player-auth-token:#{auth_token}",
-      "#{type}:#{player_id}",
-      "EX",
-      expiry
-    ])
-  end
-
-  @doc """
-  Verify an auth token and, if valid, return the Player it points to.
-
-  ## Examples
-
-      iex> validate_auth_token(token)
-      {:ok, %Player{}}
-
-      iex> validate_auth_token(bad_token)
-      {:error, :invalid}
-  """
-  def validate_auth_token(auth_token) do
-    case Redix.command!(:redix, ["GET", "player-auth-token:#{auth_token}"]) do
-      nil ->
-        {:error, :invalid}
-
-      string ->
-        Redix.command!(:redix, ["DEL", "player-auth-token:#{auth_token}"])
-
-        [type, player_id] = String.split(string, ":")
-        player_update_query = from(player in Account.Player, where: player.id == ^player_id)
-
-        player_select_query =
-          from(player in Account.Player,
-            join: settings in Account.Settings,
-            on: settings.player_id == player.id,
-            join: profile in Account.Profile,
-            on: profile.player_id == player.id,
-            where: player.id == ^player_id,
-            preload: [:profile, :settings]
-          )
-
-        case type do
-          "signup" ->
-            from(auth_email in Account.AuthEmail, where: auth_email.player_id == ^player_id)
-            |> Mud.Repo.update_all(set: [email_verified: true])
-
-            Mud.Repo.update_all(player_update_query,
-              set: [status: Account.Constants.PlayerStatus.created()]
-            )
-
-            player = Mud.Repo.one!(player_select_query)
-
-            {:ok, player}
-
-          "login" ->
-            player = Mud.Repo.one!(player_select_query)
-
-            {:ok, player}
-        end
-    end
-  end
-
-  @doc """
-  Facilitates the creation of a Player with an Email and Nickname.
-
-  While the Player must supply the Email address and Nickname, these actually belong to the Profile rather than the
-  Player. This function handles the creation and linking of the Player and Profile as well as the instantion of
-  anything else required for an Account to work correctly, such as Roles etc...
-
-  Will return a changeset if there was an error.
-
-  ## Examples
-
-      iex> create_player(params)
-      {:ok, %Player{}}
-
-      iex> create_player(bad_params)
-      {:error, %Ecto.Changeset{}}
-  """
-  def create_player(params) when is_map(params) do
-    params
-    |> Player.new()
-    |> Repo.insert()
-    |> notify_subscribers([:player, :created])
-  end
-
-  @doc """
   Returns the list of players in a paginated manner, wrapped in a success tuple.
 
   ## Examples
@@ -263,26 +49,6 @@ defmodule Mud.Account do
      Repo.all(
        from(player in Player,
          order_by: [asc: player.inserted_at],
-         preload: :profile
-       )
-     )}
-  end
-
-  @doc """
-  Returns the list of players in a paginated manner, wrapped in a success tuple.
-
-  ## Examples
-      iex> list_players(1, 100)
-      {:ok, [%Player{}, ...]}
-  """
-  def list_players(page, page_size)
-      when is_integer(page) and page > 0 and is_integer(page_size) and page_size > 0 do
-    {:ok,
-     Repo.all(
-       from(player in Player,
-         order_by: [asc: player.inserted_at],
-         offset: ^((page - 1) * page_size),
-         limit: ^page_size,
          preload: :profile
        )
      )}
@@ -306,25 +72,6 @@ defmodule Mud.Account do
   end
 
   @doc """
-  Updates a player.
-
-  ## Examples
-
-      iex> update_player(player, %{field: new_value})
-      {:ok, %Player{}}
-
-      iex> update_player(player, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_player(%Player{} = player, attrs) do
-    player
-    |> Player.update(attrs)
-    |> Repo.update()
-    |> notify_subscribers([:player, :updated])
-  end
-
-  @doc """
   Gets a single player.
 
   Raises `Ecto.NoResultsError` if the Player does not exist.
@@ -339,106 +86,6 @@ defmodule Mud.Account do
 
   """
   def get_player!(id), do: Repo.get!(Player, id)
-
-  alias Mud.Account.Profile
-
-  @doc """
-  Returns the list of profiles.
-
-  ## Examples
-
-      iex> list_profiles()
-      {:ok, [%Profile{}, ...]}
-
-  """
-  def list_profiles do
-    Profile
-    |> Repo.all()
-    |> (&{:ok, &1}).()
-  end
-
-  @doc """
-  Gets a single profile.
-
-  Raises `Ecto.NoResultsError` if the Profile does not exist.
-
-  ## Examples
-
-      iex> get_profile!(123)
-      %Profile{}
-
-      iex> get_profile!(456)
-      ** (Ecto.NoResultsError)
-
-  """
-  def get_profile!(id), do: Repo.get!(Profile, id)
-
-  @doc """
-  Creates a profile.
-
-  ## Examples
-
-      iex> create_profile(%{field: value})
-      {:ok, %Profile{}}
-
-      iex> create_profile(%{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def create_profile(attrs \\ %{}) do
-    Profile.new(attrs)
-    |> Repo.insert()
-    |> notify_subscribers([:profile, :created])
-  end
-
-  @doc """
-  Updates a profile.
-
-  ## Examples
-
-      iex> update_profile(profile, %{field: new_value})
-      {:ok, %Profile{}}
-
-      iex> update_profile(profile, %{field: bad_value})
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def update_profile(%Profile{} = profile, attrs) do
-    profile
-    |> Profile.update(attrs)
-    |> Repo.update()
-    |> notify_subscribers([:profile, :updated])
-  end
-
-  @doc """
-  Deletes a Profile.
-
-  ## Examples
-
-      iex> delete_profile(profile)
-      {:ok, %Profile{}}
-
-      iex> delete_profile(profile)
-      {:error, %Ecto.Changeset{}}
-
-  """
-  def delete_profile(%Profile{} = profile) do
-    Repo.delete(profile)
-    |> notify_subscribers([:profile, :deleted])
-  end
-
-  @doc """
-  Returns an `%Ecto.Changeset{}` for tracking profile changes.
-
-  ## Examples
-
-      iex> change_profile(profile)
-      %Ecto.Changeset{source: %Profile{}}
-
-  """
-  def change_profile(%Profile{} = profile) do
-    Profile.changeset(profile)
-  end
 
   def save_player_settings(params) do
     case Repo.get!(Settings, params.player_id) do
@@ -455,97 +102,17 @@ defmodule Mud.Account do
     end
   end
 
-  @doc """
-  Create a new account or retrieve an existing one based on the OAuth2 data provided.
-  """
-  def from_auth(user) do
-    Logger.debug(inspect(user["sub"]))
-    # get id that should be checked
-    # try to read account from db
-    case Player.get_by_sub(user["sub"]) do
-      ok_result = {:ok, _} ->
-        ok_result
-
-      _ ->
-        args = %{
-          profile: %Profile{
-            email: user["email"] || "",
-            email_verified: user["email_verified"] || false,
-            nickname: user["nickname"] || "",
-            picture: user["picture"] || ""
-          },
-          status: Account.Constants.PlayerStatus.created(),
-          sub: user["sub"]
-        }
-
-        player = Player.new(args) |> Repo.insert!()
-
-        profile =
-          Ecto.build_assoc(player, :profile, %{
-            email: user["email"] || "",
-            email_verified: user["email_verified"] || false,
-            nickname: user["nickname"] || "",
-            picture: user["picture"] || ""
-          })
-          |> Repo.insert!()
-
-        purchases = Ecto.build_assoc(player, :purchases, %{}) |> Repo.insert!()
-        settings = Ecto.build_assoc(player, :settings, %{}) |> Repo.insert!()
-
-        {:ok, %{player | profile: profile, purchases: purchases, settings: settings}}
-    end
-  end
-
   #
   # Private functions
   #
 
-  defp hash_email(email_address), do: :crypto.hash(:sha, email_address) |> String.slice(0..4)
-
-  defp lookup_player_by_auth_email(email) do
-    email_hash = hash_email(email)
-
-    Repo.all(
-      from(player in Player,
-        join: auth_email in Mud.Account.AuthEmail,
-        where: player.id == auth_email.player_id and auth_email.hash == ^email_hash,
-        select: %{player: player.id, email: auth_email.email}
-      )
-    )
-    |> Enum.find(fn %{email: encrypted_email} ->
-      Mud.Vault.decrypt!(encrypted_email) === email
-    end)
-    |> case do
-      nil ->
-        {:error, :not_found}
-
-      %{player: player_id} ->
-        {:ok, player_id}
-    end
-  end
-
-  defp notify_subscribers(result, event, global_only \\ false)
-
-  defp notify_subscribers({:ok, result}, event, global_only) do
+  defp notify_subscribers({:ok, result}, event) do
     Phoenix.PubSub.broadcast(Mud.PubSub, @topic, {__MODULE__, event, result})
-
-    if not global_only do
-      Phoenix.PubSub.broadcast(
-        Mud.PubSub,
-        @topic <> ":#{get_id(result)}",
-        {__MODULE__, event, result}
-      )
-    end
 
     {:ok, result}
   end
 
-  defp notify_subscribers({:error, reason}, _event, _global_only), do: {:error, reason}
-
-  defp get_id(%Account.Player{id: id}), do: id
-  defp get_id(%{player_id: id}), do: id
-
-  alias Mud.Account.Role
+  defp notify_subscribers({:error, reason}, _event), do: {:error, reason}
 
   @doc """
   Returns the list of roles.
@@ -735,5 +302,460 @@ defmodule Mud.Account do
   """
   def change_player_role(%PlayerRole{} = player_role, attrs \\ %{}) do
     PlayerRole.changeset(player_role, attrs)
+  end
+
+  alias Mud.Account.{Player, PlayerToken, PlayerNotifier}
+
+  ## Database getters
+
+  @doc """
+  Gets a player by email.
+
+  ## Examples
+
+      iex> get_player_by_email("foo@example.com")
+      %Player{}
+
+      iex> get_player_by_email("unknown@example.com")
+      nil
+
+  """
+  def get_player_by_email(email) when is_binary(email) do
+    Repo.get_by(Player, email: email)
+  end
+
+  @doc """
+  Gets a player by email and password.
+
+  ## Examples
+
+      iex> get_player_by_email_and_password("foo@example.com", "correct_password")
+      %Player{}
+
+      iex> get_player_by_email_and_password("foo@example.com", "invalid_password")
+      nil
+
+  """
+  def get_player_by_email_and_password(email, password)
+      when is_binary(email) and is_binary(password) do
+    player = Repo.get_by(Player, email: email)
+    if Player.valid_password?(player, password), do: player
+  end
+
+  ## Player registration
+
+  @doc """
+  Facilitates the creation of a Player with an Email and Nickname.
+
+  While the Player must supply the Email address and Nickname, these actually belong to the Profile rather than the
+  Player. This function handles the creation and linking of the Player and Profile as well as the instantion of
+  anything else required for an Account to work correctly, such as Roles etc...
+
+  Will return a changeset if there was an error.
+
+  ## Examples
+
+      iex> register_player(params)
+      {:ok, %Player{}}
+
+      iex> register_player(bad_params)
+      {:error, %Ecto.Changeset{}}
+  """
+  def register_player(attrs) do
+    player_changeset = Player.registration_changeset(%Player{}, attrs)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:insert_player, player_changeset)
+    |> insert_settings()
+    |> insert_purchases()
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{insert_player: player}} ->
+        {:ok, player}
+
+      _error ->
+        {:error, :player_not_created}
+    end
+  end
+
+  defp insert_purchases(multi) do
+    multi
+    |> UberMulti.run(
+      :build_purchases,
+      [:insert_player, :purchases, %{}],
+      &Ecto.build_assoc/3,
+      true
+    )
+    |> UberMulti.run(:insert_purchases, [:build_purchases], &Repo.insert/1)
+  end
+
+  defp insert_settings(multi) do
+    multi
+    |> UberMulti.run(
+      :build_settings,
+      [:insert_player, :settings, %{}],
+      &Ecto.build_assoc/3,
+      true
+    )
+    |> UberMulti.run(:insert_settings, [:build_settings], &Repo.insert/1)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking player changes.
+
+  ## Examples
+
+      iex> change_player_registration(player)
+      %Ecto.Changeset{data: %Player{}}
+
+  """
+  def change_player_registration(%Player{} = player, attrs \\ %{}) do
+    Player.registration_changeset(player, attrs, hash_password: false)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking player changes.
+
+  ## Examples
+
+      iex> change_player_login(player)
+      %Ecto.Changeset{data: %Player{}}
+
+  """
+  def change_player_login(%Player{} = player, attrs \\ %{}) do
+    Player.login_changeset(player, attrs)
+  end
+
+  ## Settings
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the player timezone.
+
+  ## Examples
+
+      iex> change_player_timezone(player)
+      %Ecto.Changeset{data: %Player{}}
+
+  """
+  def change_player_timezone(player, attrs \\ %{}) do
+    Player.timezone_changeset(player, attrs)
+  end
+
+  @doc """
+  Updates the player timezone.
+
+  ## Examples
+
+      iex> update_player_timezone(user, "valid timezone")
+      {:ok, %Player{}}
+
+      iex> update_player_timezone(user, "invalid timezone")
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_player_timezone(player, timezone) do
+    changeset =
+      player
+      |> Player.timezone_changeset(timezone)
+
+    Repo.update(changeset)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the player email.
+
+  ## Examples
+
+      iex> change_player_email(player)
+      %Ecto.Changeset{data: %Player{}}
+
+  """
+  def change_player_email(player, attrs \\ %{}) do
+    Player.email_changeset(player, attrs)
+  end
+
+  @doc """
+  Emulates that the email will change without actually changing
+  it in the database.
+
+  ## Examples
+
+      iex> apply_player_email(player, "valid password", %{email: ...})
+      {:ok, %Player{}}
+
+      iex> apply_player_email(player, "invalid password", %{email: ...})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def apply_player_email(player, password, attrs) do
+    player
+    |> Player.email_changeset(attrs)
+    |> Player.validate_current_password(password)
+    |> Ecto.Changeset.apply_action(:update)
+  end
+
+  @doc """
+  Updates the player email using the given token.
+
+  If the token matches, the player email is updated and the token is deleted.
+  The confirmed_at date is also updated to the current time.
+  """
+  def update_player_email(player, token) do
+    context = "change:#{player.email}"
+
+    with {:ok, query} <- PlayerToken.verify_change_email_token_query(token, context),
+         %PlayerToken{sent_to: email} <- Repo.one(query),
+         {:ok, _} <- Repo.transaction(player_email_multi(player, email, context)) do
+      :ok
+    else
+      _ -> :error
+    end
+  end
+
+  defp player_email_multi(player, email, context) do
+    changeset =
+      player
+      |> Player.email_changeset(%{email: email})
+      |> Player.confirm_changeset()
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:player, changeset)
+    |> Ecto.Multi.delete_all(:tokens, PlayerToken.player_and_contexts_query(player, [context]))
+  end
+
+  @doc """
+  Delivers the update email instructions to the given player.
+
+  ## Examples
+
+      iex> deliver_update_email_instructions(player, current_email, &Routes.player_update_email_url(conn, :edit, &1))
+      {:ok, %{to: ..., body: ...}}
+
+  """
+  def deliver_update_email_instructions(%Player{} = player, current_email, update_email_url_fun)
+      when is_function(update_email_url_fun, 1) do
+    {encoded_token, player_token} = PlayerToken.build_email_token(player, "change:#{current_email}")
+
+    Repo.insert!(player_token)
+    PlayerNotifier.deliver_update_email_instructions(player, update_email_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for changing the player password.
+
+  ## Examples
+
+      iex> change_player_password(player)
+      %Ecto.Changeset{data: %Player{}}
+
+  """
+  def change_player_password(player, attrs \\ %{}) do
+    Player.password_changeset(player, attrs, hash_password: false)
+  end
+
+  @doc """
+  Updates the player password.
+
+  ## Examples
+
+      iex> update_player_password(player, "valid password", %{password: ...})
+      {:ok, %Player{}}
+
+      iex> update_player_password(player, "invalid password", %{password: ...})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_player_password(player, password, attrs) do
+    changeset =
+      player
+      |> Player.password_changeset(attrs)
+      |> Player.validate_current_password(password)
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:player, changeset)
+    |> Ecto.Multi.delete_all(:tokens, PlayerToken.player_and_contexts_query(player, :all))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{player: player}} -> {:ok, player}
+      {:error, :player, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  ## Session
+
+  @doc """
+  Generates a session token.
+  """
+  def generate_player_session_token(player) do
+    {token, player_token} = PlayerToken.build_session_token(player)
+    Repo.insert!(player_token)
+    token
+  end
+
+  @doc """
+  Gets the player with the given signed token.
+  """
+  def get_player_by_session_token(token) do
+    {:ok, query} = PlayerToken.verify_session_token_query(token)
+    Repo.one(query)
+  end
+
+  @doc """
+  Deletes the signed token with the given context.
+  """
+  def delete_session_token(token) do
+    Repo.delete_all(PlayerToken.token_and_context_query(token, "session"))
+    :ok
+  end
+
+  ## Confirmation
+
+  @doc """
+  Delivers the confirmation email instructions to the given player.
+
+  ## Examples
+
+      iex> deliver_player_confirmation_instructions(player, &Routes.player_confirmation_url(conn, :edit, &1))
+      {:ok, %{to: ..., body: ...}}
+
+      iex> deliver_player_confirmation_instructions(confirmed_player, &Routes.player_confirmation_url(conn, :edit, &1))
+      {:error, :already_confirmed}
+
+  """
+  def deliver_player_confirmation_instructions(%Player{} = player, confirmation_url_fun)
+      when is_function(confirmation_url_fun, 1) do
+    if player.confirmed_at do
+      {:error, :already_confirmed}
+    else
+      {encoded_token, player_token} = PlayerToken.build_email_token(player, "confirm")
+      Repo.insert!(player_token)
+      PlayerNotifier.deliver_confirmation_instructions(player, confirmation_url_fun.(encoded_token))
+    end
+  end
+
+  @doc """
+  Confirms a player by the given token.
+
+  If the token matches, the player account is marked as confirmed
+  and the token is deleted.
+  """
+  def confirm_player(token) do
+    with {:ok, query} <- PlayerToken.verify_email_token_query(token, "confirm"),
+         %Player{} = player <- Repo.one(query),
+         {:ok, %{player: player}} <- Repo.transaction(confirm_player_multi(player)) do
+      {:ok, player}
+    else
+      _ -> :error
+    end
+  end
+
+  defp confirm_player_multi(player) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:player, Player.confirm_changeset(player))
+    |> Ecto.Multi.delete_all(:tokens, PlayerToken.player_and_contexts_query(player, ["confirm"]))
+  end
+
+  ## Reset password
+
+  @doc """
+  Delivers the reset password email to the given player.
+
+  ## Examples
+
+      iex> deliver_player_reset_password_instructions(player, &Routes.player_reset_password_url(conn, :edit, &1))
+      {:ok, %{to: ..., body: ...}}
+
+  """
+  def deliver_player_reset_password_instructions(%Player{} = player, reset_password_url_fun)
+      when is_function(reset_password_url_fun, 1) do
+    {encoded_token, player_token} = PlayerToken.build_email_token(player, "reset_password")
+    Repo.insert!(player_token)
+    PlayerNotifier.deliver_reset_password_instructions(player, reset_password_url_fun.(encoded_token))
+  end
+
+  @doc """
+  Gets the player by reset password token.
+
+  ## Examples
+
+      iex> get_player_by_reset_password_token("validtoken")
+      %Player{}
+
+      iex> get_player_by_reset_password_token("invalidtoken")
+      nil
+
+  """
+  def get_player_by_reset_password_token(token) do
+    with {:ok, query} <- PlayerToken.verify_email_token_query(token, "reset_password"),
+         %Player{} = player <- Repo.one(query) do
+      player
+    else
+      _ -> nil
+    end
+  end
+
+  @doc """
+  Resets the player password.
+
+  ## Examples
+
+      iex> reset_player_password(player, %{password: "new long password", password_confirmation: "new long password"})
+      {:ok, %Player{}}
+
+      iex> reset_player_password(player, %{password: "valid", password_confirmation: "not the same"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def reset_player_password(player, attrs) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:player, Player.password_changeset(player, attrs))
+    |> Ecto.Multi.delete_all(:tokens, PlayerToken.player_and_contexts_query(player, :all))
+    |> Repo.transaction()
+    |> case do
+      {:ok, %{player: player}} -> {:ok, player}
+      {:error, :player, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  @doc """
+  Gets all the session tokens for a player.
+
+  ## Examples
+
+  iex> list_session_tokens(123)
+  [%PlayerToken{}]
+
+  """
+  @spec list_session_tokens(binary) :: any
+  def list_session_tokens(id) do
+    query =
+      from(
+        token in PlayerToken,
+        where: token.player_id == ^id and token.context == "session",
+        select: token.token
+      )
+
+    Repo.all(query)
+  end
+
+  @doc """
+  Deletes all the session tokens for a player.
+
+  ## Examples
+
+  iex> delete_session_tokens(123)
+  :ok
+
+  """
+  @spec delete_session_tokens(binary) :: any
+  def delete_session_tokens(id) do
+    query =
+      from(
+        token in PlayerToken,
+        where: token.player_id == ^id and token.context == "session"
+      )
+
+    Repo.delete_all(query)
+    :ok
   end
 end
