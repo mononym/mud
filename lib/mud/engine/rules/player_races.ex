@@ -12,6 +12,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
               hair_types: [],
               hair_styles: [],
               hair_lengths: [],
+              hair_features: [],
               heights: [],
               skin_tones: [],
               pronouns: [],
@@ -26,7 +27,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       elven_race(),
       dwarfen_race()
     ]
-    |> Enum.into(%{}, &{&1.singular, &1})
+    # |> Enum.into(%{}, &{&1.singular, &1})
   end
 
   defp human_race do
@@ -44,6 +45,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
       hair_styles: common_hair_styles(),
+      hair_features: common_hair_features(),
       heights: common_heights(),
       pronouns: common_pronouns(),
       body_types: common_body_types(),
@@ -67,6 +69,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
       hair_styles: common_hair_styles(),
+      hair_features: common_hair_features(),
       heights: common_heights(),
       pronouns: common_pronouns(),
       body_types: common_body_types(),
@@ -89,6 +92,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       hair_colors: common_hair_colors(),
       hair_types: common_hair_types(),
       hair_styles: common_hair_styles(),
+      hair_features: common_hair_features(),
       heights: common_heights(),
       pronouns: common_pronouns(),
       body_types: common_body_types(),
@@ -130,12 +134,10 @@ defmodule Mud.Engine.Rules.PlayerRaces do
 
   defp common_eye_colors do
     [
-      # amber
       "amber",
       "dark amber",
       "light amber",
       "black",
-      # blue
       "blue",
       "sky blue",
       "dark blue",
@@ -173,7 +175,8 @@ defmodule Mud.Engine.Rules.PlayerRaces do
       "dark brown",
       "black",
       "ebony",
-      "ivory"
+      "ivory",
+      "pitch black"
     ]
     |> Enum.sort()
   end
@@ -223,7 +226,7 @@ defmodule Mud.Engine.Rules.PlayerRaces do
   end
 
   defp common_heights do
-    ["short", "very short", "average", "tall", "very tall"]
+    ["very short", "short", "average", "tall", "very tall"]
     |> Enum.sort()
   end
 
@@ -290,8 +293,44 @@ defmodule Mud.Engine.Rules.PlayerRaces do
     |> Enum.sort()
   end
 
+  defp common_hair_features do
+    [
+      "dull",
+      "shiny",
+      "oily",
+      "greasy",
+      "fine",
+      "thick",
+      "thin",
+      "sparse",
+      "full"
+    ]
+    |> Enum.sort()
+  end
+
   defp common_hair_styles do
-    [%{"style" => "worn in a simple, loose style", "lengths" => ["short", "very short"]}]
+    [
+      %{
+        "style" => "worn in a simple, loose style",
+        "lengths" => [
+          "short",
+          "very short",
+          "closely cut",
+          "pixie cut",
+          "long",
+          "very long",
+          "shoulder length",
+          "hip length",
+          "mid back"
+        ]
+      },
+      %{
+        "style" => "none",
+        "lengths" => [
+          "bald"
+        ]
+      }
+    ]
   end
 
   defp common_hair_lengths do
@@ -312,10 +351,6 @@ defmodule Mud.Engine.Rules.PlayerRaces do
 
   def list_race_names do
     Enum.map(races(), & &1.name)
-  end
-
-  def list_races do
-    races()
   end
 
   def get_race_by_name(name) do

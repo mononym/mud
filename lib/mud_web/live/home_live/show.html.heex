@@ -1,7 +1,12 @@
 <div class="h-full w-full flex justify-center text-lg py-3.5">
   <div class="max-w-7xl flex flex-col gap-1">
     <div class="h-3 w-full bg-neutral-800 flex rounded items-center justify-center">   
-      <div class="text-center"> Your Characters</div>
+      <div class="text-center flex-1"> Your Characters</div>
+      <%# right icon %>
+      <%= live_redirect to: Routes.character_new_path(@socket, :create), class: "relative w-3 h-3 flex justify-center items-center hover:bg-neutral-500 rounded-r border-l border-neutral-900" do %>
+        <.tooltip text="Create New Character" />
+        <i class="fas fa-plus fa-lg"></i>
+      <% end %>
     </div>
     <%= if length(@characters) == 0 do %>
     <div class="py-1 px-1 flex justify-center bg-neutral-800 rounded">

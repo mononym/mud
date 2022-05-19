@@ -362,6 +362,7 @@ defmodule Mud.Account do
       {:error, %Ecto.Changeset{}}
   """
   def register_player(attrs) do
+    attrs = Map.put(attrs, "tos_accepted_at", DateTime.utc_now())
     player_changeset = Player.registration_changeset(%Player{}, attrs)
 
     Ecto.Multi.new()

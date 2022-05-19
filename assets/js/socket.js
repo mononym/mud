@@ -10,8 +10,6 @@ import { Socket } from "phoenix"
 
 import { LiveSocket } from "phoenix_live_view"
 
-// let socket = new Socket("/socket")
-
 let Hooks = {}
 
 Hooks.Input = {
@@ -173,6 +171,13 @@ let liveSocket = new LiveSocket("/live", Socket, {
                 clientY: e.clientY
             }
         }
+    },
+    dom: {
+      onBeforeElUpdated(from, to) {
+        if (from._x_dataStack) {
+          window.Alpine.clone(from, to);
+        }
+      },
     },
     hooks: Hooks
 });

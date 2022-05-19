@@ -18,6 +18,9 @@ defmodule Mud.Engine.Character.PhysicalFeatures do
              :eye_shape,
              :eye_feature,
              :eye_color,
+             :eye_color_secondary,
+             :eye_side_primary,
+             :heterochromia,
              :hair_color,
              :hair_feature,
              :hair_length,
@@ -38,10 +41,13 @@ defmodule Mud.Engine.Character.PhysicalFeatures do
     field(:eye_shape, :string, default: "none")
     field(:eye_feature, :string, default: "none")
     field(:eye_color, :string, default: "brown")
+    field(:eye_color_secondary, :string, default: "brown")
+    field(:eye_side_primary, :string, default: "right")
+    field(:heterochromia, :boolean, default: false)
     field(:hair_color, :string, default: "brown")
     field(:hair_feature, :string, default: "none")
     field(:hair_length, :string, default: "shoulder length")
-    field(:hair_style, :string, default: "none")
+    field(:hair_style, :string, default: "worn in a simple, loose style")
     field(:hair_type, :string, default: "wavy")
     field(:skin_tone, :string, default: "brown")
     field(:height, :string, default: "average")
@@ -63,11 +69,14 @@ defmodule Mud.Engine.Character.PhysicalFeatures do
       :eye_shape,
       :eye_feature,
       :eye_color,
+      :eye_color_secondary,
+      :eye_side_primary,
       :hair_color,
       :hair_feature,
       :hair_length,
       :hair_style,
       :hair_type,
+      :heterochromia,
       :skin_tone,
       :height,
       :body_type

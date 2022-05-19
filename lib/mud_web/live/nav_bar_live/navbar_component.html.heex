@@ -15,9 +15,9 @@
       <%= if @current_player do %>
         <div class="lg:flex-shrink h-full" x-data="{ open: false }" id="usermenu">
           <div class="relative inline-block text-left h-full">
-            <button type="button" @click="open = !open; document.getElementById('user-menu-wrapper').removeAttribute('hidden');" @keydown.escape.window="open = false" @click.away="open = false" class="inline-flex justify-center items-center w-full bg-neutral-800 shadow-sm pl-2 h-full text-sm font-medium hover:bg-neutral-600" id="menu-button" aria-expanded="true" aria-haspopup="true">
+            <button type="button" @click="open = !open; document.getElementById('user-menu-wrapper').removeAttribute('hidden');" @keydown.escape.window="open = false" @click.away="open = false" class="inline-flex justify-center items-center w-full bg-neutral-800 shadow-sm pl-0.5 h-full text-sm font-medium hover:bg-neutral-600" id="menu-button" aria-expanded="true" aria-haspopup="true">
               <span class="text-xl"><%= @current_player.nickname %></span>
-              <div class="h-3 w-3 flex justify-center items-center">
+              <div class="h-1.5 w-1.5 flex justify-center items-center">
                 <i :class="{'rotated90': !open}" class="fas fa-angle-double-down rotated90"></i>
               </div>
             </button>
@@ -43,7 +43,7 @@
                 x-transition:leave-start="transform opacity-100 scale-100"
                 x-transition:leave-end="transform opacity-0 scale-95"
                 hidden
-                class="menu origin-top-right absolute right-0 w-56 rounded shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 divide-y divide-neutral-900 focus:outline-none z-50" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+                class="menu origin-top-right absolute right-0 w-14 rounded shadow-lg bg-neutral-800 ring-1 ring-black ring-opacity-5 divide-y divide-neutral-900 focus:outline-none z-50" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
               <div role="none">
                 <%= link "Log out", to: Routes.player_session_path(@socket, :delete), method: :delete, class: "nothyperlink rounded-b text-center !text-red-300 block px-0.5 py-0.5 hover:bg-neutral-500", role: "menuitem", tabindex: "-1", id: "menu-item-4" %>
               </div>
