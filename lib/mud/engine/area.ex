@@ -35,9 +35,6 @@ defmodule Mud.Engine.Area do
     field(:name, :string)
     field(:key, :string)
 
-    # The physical environment of the area
-    has_one(:environment, Environment)
-
     ##
     ##
     # Map stuff

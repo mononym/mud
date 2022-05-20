@@ -1,7 +1,7 @@
 <div class="h-full w-full flex justify-center text-lg py-3.5">
   <div class="max-w-7xl flex flex-col gap-1">
     <div class="h-3 w-full bg-neutral-800 flex rounded items-center justify-center">   
-      <div class="text-center flex-1"> Your Characters</div>
+      <div class="text-center flex-1 px-2"> Your Characters</div>
       <%# right icon %>
       <%= live_redirect to: Routes.character_new_path(@socket, :create), class: "relative w-3 h-3 flex justify-center items-center hover:bg-neutral-500 rounded-r border-l border-neutral-900" do %>
         <.tooltip text="Create New Character" />
@@ -12,6 +12,16 @@
     <div class="py-1 px-1 flex justify-center bg-neutral-800 rounded">
       <div>You do not have any created characters.</div>
     </div>
+    <% else %>
+      <%= for character <- @characters do %>
+        <div class="flex bg-neutral-800 rounded itemx-center">
+          <div class="flex-1 text-center flex items-center justify-center"><%= character.name %></div>
+          <%= live_redirect to: Routes.character_new_path(@socket, :create), class: "relative w-3 h-3 flex justify-center items-center hover:bg-neutral-500 rounded-r border-l border-neutral-900" do %>
+            <.tooltip text={"Play #{character.name}"} />
+            <i class="fas fa-play fa-lg"></i>
+          <% end %>
+        </div>
+      <% end %>
     <% end %>
   </div>
 </div>

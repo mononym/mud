@@ -38,9 +38,12 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
        eye_feature_options: [],
        skin_tone_options: [],
        height_options: [],
-       body_type_options: []
+       body_type_options: [],
+       pronoun_options: [],
+       description_preview: ""
      )
-     |> normalize_features(true)}
+     |> normalize_features(true)
+     |> generate_preview_description()}
   end
 
   @impl true
@@ -53,7 +56,13 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
       end
 
     {:noreply,
-     assign(socket, selected_race_index: new_index)
+     assign(socket,
+       selected_race_index: new_index,
+       character_changeset:
+         Character.changeset(socket.assigns.character_changeset, %{
+           race: Map.get(Enum.at(@races, new_index), :singular)
+         })
+     )
      |> normalize_features()}
   end
 
@@ -67,7 +76,29 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
       end
 
     {:noreply,
-     assign(socket, selected_race_index: new_index)
+     assign(socket,
+       selected_race_index: new_index,
+       character_changeset:
+         Character.changeset(socket.assigns.character_changeset, %{
+           race: Map.get(Enum.at(@races, new_index), :singular)
+         })
+     )
+     |> normalize_features()}
+  end
+
+  @impl true
+  def handle_event(
+        "validate_character",
+        %{"character" => character},
+        socket
+      ) do
+    character_changeset =
+      Character.changeset(%Character{player_id: socket.assigns.current_player.id}, character)
+      |> Map.put(:action, :validate)
+
+    {:noreply,
+     socket
+     |> assign(character_changeset: character_changeset)
      |> normalize_features()}
   end
 
@@ -89,6 +120,43 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
   @impl true
   def handle_event("select_race", _params, socket) do
     {:noreply, assign(socket, wizard_page_index: 1)}
+  end
+
+  @impl true
+  def handle_event("back_to_select_race", _params, socket) do
+    {:noreply, assign(socket, wizard_page_index: 0)}
+  end
+
+  @impl true
+  def handle_event("back_to_select_features", _params, socket) do
+    {:noreply, assign(socket, wizard_page_index: 1)}
+  end
+
+  @impl true
+  def handle_event("accept_physical_features", _params, socket) do
+    {:noreply, assign(socket, wizard_page_index: 2)}
+  end
+
+  @impl true
+  def handle_event("create_character", _params, socket) do
+    character_params =
+      Map.put(
+        socket.assigns.character_changeset.changes,
+        :player_id,
+        socket.assigns.current_player.id
+      )
+
+    case Character.create(
+           character_params,
+           socket.assigns.physical_features_changeset.changes
+         ) do
+      {:ok, _} ->
+        {:noreply, push_redirect(socket, to: Routes.home_show_path(socket, :show))}
+
+      {:error, _} ->
+        send_self_flash_error("Something went wrong creating the character, please try again.")
+        {:noreply, socket}
+    end
   end
 
   #
@@ -119,6 +187,9 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
     |> select_body_type_options()
     |> select_valid_body_type(randomize)
     |> configure_eye_options_visibility()
+    |> select_pronoun_options()
+    |> select_valid_pronoun(randomize)
+    |> generate_preview_description()
   end
 
   defp select_hair_length_options(socket) do
@@ -197,7 +268,8 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
 
   defp select_hair_feature_options(socket) do
     assign(socket,
-      hair_feature_options: Map.get(Enum.at(@races, socket.assigns.selected_race_index), :hair_features)
+      hair_feature_options:
+        Map.get(Enum.at(@races, socket.assigns.selected_race_index), :hair_features)
     )
   end
 
@@ -309,7 +381,8 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
 
   defp select_eye_feature_options(socket) do
     assign(socket,
-      eye_feature_options: Map.get(Enum.at(@races, socket.assigns.selected_race_index), :eye_features)
+      eye_feature_options:
+        Map.get(Enum.at(@races, socket.assigns.selected_race_index), :eye_features)
     )
   end
 
@@ -401,5 +474,37 @@ defmodule MudWeb.CharacterLive.CharacterWizardComponent do
           )
       )
     end
+  end
+
+  defp select_pronoun_options(socket) do
+    assign(socket,
+      pronoun_options: Map.get(Enum.at(@races, socket.assigns.selected_race_index), :pronouns)
+    )
+  end
+
+  defp select_valid_pronoun(socket, randomize) do
+    valid_pronouns = socket.assigns.pronoun_options
+
+    if Changeset.fetch_field!(socket.assigns.character_changeset, :pronoun) in valid_pronouns and
+         not randomize do
+      socket
+    else
+      assign(socket,
+        character_changeset:
+          Changeset.put_change(
+            socket.assigns.character_changeset,
+            :pronoun,
+            Enum.random(valid_pronouns)
+          )
+      )
+    end
+  end
+
+  defp generate_preview_description(socket) do
+    physical_features = Changeset.apply_changes(socket.assigns.physical_features_changeset)
+    character = Changeset.apply_changes(socket.assigns.character_changeset)
+    character = Map.put(character, :physical_features, physical_features)
+    description = Character.personal_description(character)
+    assign(socket, description_preview: description)
   end
 end

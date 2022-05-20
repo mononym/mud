@@ -147,6 +147,10 @@ defmodule Mud.Engine.Character do
     ])
     |> foreign_key_constraint(:player_id)
     |> validate_inclusion(:active, [true, false])
+    |> validate_format(:name, ~r/^[A-Z][a-z]+$/,
+      message: "must start with a capital and contain only lowercase after, a-z only"
+    )
+    |> validate_length(:name, min: 3, max: 20)
     |> unsafe_validate_unique(:name, Mud.Repo)
     |> unique_constraint(:name)
   end
@@ -176,26 +180,24 @@ defmodule Mud.Engine.Character do
 
   ## Examples
 
-      iex> create(%{field: value})
+      iex> create(character_params, physical_features_params)
       {:ok, %__MODULE__{}}
 
-      iex> create(%{field: bad_value})
+      iex> create(character_params, physical_features_params)
       {:error, %Ecto.Changeset{}}
 
   """
-  @spec create(attributes :: map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
-  def create(attrs \\ %{}) do
+  @spec create(map(), map()) :: {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
+  def create(character_params, physical_features_params) do
     Mud.Repo.transaction(fn ->
       # Just grab something random for Alpha, as long as it is permanently explored
       area = Area.list_all() |> Enum.filter(& &1.flags.permanently_explored) |> Enum.random()
 
-      Logger.debug(inspect(attrs))
-
       # This random selection is just for prototype.
       attrs =
-        attrs
-        |> Map.put("area_id", area.id)
-        |> Map.put("moved_at", DateTime.utc_now())
+        character_params
+        |> Map.put(:area_id, area.id)
+        |> Map.put(:moved_at, DateTime.utc_now())
 
       result =
         %__MODULE__{}
@@ -219,13 +221,12 @@ defmodule Mud.Engine.Character do
 
           :ok =
             PhysicalFeatures.create(
-              Map.merge(attrs["physical_features"], %{"character_id" => character.id})
+              Map.merge(physical_features_params, %{character_id: character.id})
             )
 
           preload(character)
 
         error ->
-          IO.inspect(error)
           Mud.Repo.rollback(error)
       end
     end)
@@ -280,6 +281,79 @@ defmodule Mud.Engine.Character do
     Repo.update!(char_with_map)
 
     :ok
+  end
+
+  @doc """
+  Describes a character's physical features from their perspective.
+
+  ## Examples
+
+      iex> personal_description(character)
+      "You are a Human. You have..."
+
+  """
+  @spec personal_description(%Character{}) :: String.t()
+  def personal_description(character) do
+    race_a_or_an = a_or_an(character.race)
+    body_a_or_an = a_or_an(character.physical_features.body_type)
+
+    hair_description = describe_hair(character.physical_features, true)
+    eye_description = describe_eyes(character.physical_features)
+
+    "You are #{race_a_or_an} #{character.race}. You #{hair_description}, #{eye_description}, and #{character.physical_features.skin_tone} skin. You are #{describe_height(character.physical_features)}, with #{body_a_or_an} #{character.physical_features.body_type} physique"
+  end
+
+  defp a_or_an(text) do
+    if Regex.match?(~r/^[aeiouAEIOU]/, text) do
+      "an"
+    else
+      "a"
+    end
+  end
+
+  defp describe_hair(%{hair_length: "bald"}, personal_or_they) do
+    prefix =
+      if personal_or_they do
+        "are"
+      else
+        "is"
+      end
+
+    "#{prefix} bald"
+  end
+
+  defp describe_hair(physical_features, personal_or_they) do
+    prefix =
+      if personal_or_they do
+        "have"
+      else
+        "has"
+      end
+
+    "#{prefix} #{physical_features.hair_feature} #{physical_features.hair_type} #{physical_features.hair_color} colored hair which is #{physical_features.hair_style}"
+  end
+
+  defp describe_eyes(%{heterochromia: true} = physical_features) do
+    other_eye =
+      if physical_features.eye_side_primary == "right" do
+        "left"
+      else
+        "right"
+      end
+
+    "#{physical_features.eye_feature} eyes where the #{physical_features.eye_side_primary} is #{physical_features.eye_color} and the #{other_eye} is #{physical_features.eye_color_secondary}"
+  end
+
+  defp describe_eyes(physical_features) do
+    "#{physical_features.eye_feature} #{physical_features.eye_color} eyes"
+  end
+
+  defp describe_height(%{height: "average"}) do
+    "of average height"
+  end
+
+  defp describe_height(physical_features) do
+    physical_features.height
   end
 
   @doc """

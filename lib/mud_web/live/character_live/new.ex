@@ -10,4 +10,9 @@ defmodule MudWeb.CharacterLive.New do
        page_title: "Character Creation"
      )}
   end
+
+  @impl true
+  def handle_info({:flash, type, message}, socket) do
+    {:noreply, put_flash(socket, type, message)}
+  end
 end

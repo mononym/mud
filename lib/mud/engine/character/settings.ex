@@ -457,11 +457,11 @@ defmodule Mud.Engine.Character.Settings do
       :cli_commands_in_story,
       :hotkey_commands_in_story,
       :ui_commands_in_story,
-      :ui_commands_replace_ids_in_story,
-      :cli_commands_in_logs,
-      :hotkey_commands_in_logs,
-      :ui_commands_in_logs,
-      :ui_commands_replace_ids_in_logs
+      # :ui_commands_replace_ids_in_story,
+      # :cli_commands_in_logs,
+      # :hotkey_commands_in_logs,
+      # :ui_commands_in_logs,
+      # :ui_commands_replace_ids_in_logs
     ])
   end
 
