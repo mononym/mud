@@ -70,16 +70,20 @@ defmodule Mud.Engine.Character.Settings do
       field(:show_on_ground, :boolean, default: true)
       field(:show_also_present, :boolean, default: true)
       field(:show_exits, :boolean, default: true)
+      field(:show_denizens, :boolean, default: true)
       field(:background, :string, default: "#28282D")
-      field(:description_expansion_mode, :string, default: "manual-threshold")
-      field(:toi_expansion_mode, :string, default: "manual-threshold")
+      field(:description_collapse_mode, :string, default: "manual-threshold")
+      field(:description_collapse_threshold, :integer, default: 430)
+      field(:toi_collapse_mode, :string, default: "manual-threshold")
       field(:toi_collapse_threshold, :integer, default: 10)
-      field(:on_ground_expansion_mode, :string, default: "manual-threshold")
+      field(:on_ground_collapse_mode, :string, default: "manual-threshold")
       field(:on_ground_collapse_threshold, :integer, default: 10)
-      field(:also_present_expansion_mode, :string, default: "manual-threshold")
+      field(:also_present_collapse_mode, :string, default: "manual-threshold")
       field(:also_present_collapse_threshold, :integer, default: 10)
-      field(:exits_expansion_mode, :string, default: "manual-threshold")
+      field(:exits_collapse_mode, :string, default: "manual-threshold")
       field(:exits_collapse_threshold, :integer, default: 10)
+      field(:denizens_collapse_mode, :string, default: "manual-threshold")
+      field(:denizens_collapse_threshold, :integer, default: 10)
       field(:total_count_collapse_threshold, :integer, default: 50)
       field(:total_collapse_mode, :string, default: "largest")
       field(:filter_border_color, :string, default: "#ffffff")
@@ -317,15 +321,19 @@ defmodule Mud.Engine.Character.Settings do
       :show_on_ground,
       :show_also_present,
       :show_exits,
+      :show_denizens,
       :background,
-      :description_expansion_mode,
-      :toi_expansion_mode,
+      :description_collapse_mode,
+      :description_collapse_threshold,
+      :denizens_collapse_mode,
+      :denizens_collapse_threshold,
+      :toi_collapse_mode,
       :toi_collapse_threshold,
-      :on_ground_expansion_mode,
+      :on_ground_collapse_mode,
       :on_ground_collapse_threshold,
-      :also_present_expansion_mode,
+      :also_present_collapse_mode,
       :also_present_collapse_threshold,
-      :exits_expansion_mode,
+      :exits_collapse_mode,
       :exits_collapse_threshold,
       :total_count_collapse_threshold,
       :total_collapse_mode,

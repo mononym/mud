@@ -87,6 +87,9 @@ defmodule MudWeb.Router do
       # Settings routes
       live("/settings", SettingsLive.Show, :edit)
       live("/settings/confirm_email/:token", SettingsLive.Show, :confirm_email)
+
+      # Play game routes
+      live("/play/:character_name", ClientLive.Play, :play)
     end
   end
 end

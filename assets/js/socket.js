@@ -113,53 +113,17 @@ Hooks.CharacterInventoryWindow = {
 
 }
 
-let storyWindowScrolledToBottom = true;
-let storywindow;
-let scrolltobottom;
-
-Hooks.Story = {
-    mounted() {
-        storywindow = this.el
-
-        // let channel = socket.channel("character:" + document.querySelector('meta[name="character_id"]').content, {})
-
-        // channel.on("output:story", payload => {
-        //     let message = document.createRange().createContextualFragment(payload.body)
-        //     storywindow.appendChild(message)
-        //     if (storyWindowScrolledToBottom) {
-        //         scrolltobottom.scrollIntoView(false)
-        //     }
-        // })
-        // console.log(channel)
-        // channel.join()
-        //     .receive("ok", resp => { console.log("Joined successfully", resp) })
-        //     .receive("error", resp => { console.log("Unable to join", resp) })
-        // console.log(channel)
+Hooks.MainStoryWindowTrim = {
+    updated() {
+        const element = this.el;
+        console.log(element.children.length)
+        if (element.children.length > 50) {
+            do {
+                element.removeChild(element.children[0])
+            } while (element.children.length > 50)
+        }
     }
-}
-
-Hooks.MessageWrapper = {
-    // updated() {
-        // if (storyWindowScrolledToBottom) {
-            // storywindow.scrollTop = storywindow.scrollHeight;
-        //     scrolltobottom.scrollIntoView(false)
-        // }
-    // }
-}
-
-function handleIntersect(entries, observer) {
-    storyWindowScrolledToBottom = entries[0].isIntersecting;
-}
-
-Hooks.ScrollToBottom = {
-    // mounted() {
-    //     scrolltobottom = this.el;
-
-    //     const io = new IntersectionObserver(handleIntersect, { threshold: [0, 1] })
-
-    //     io.observe(this.el)
-    // },
-}
+  }
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {

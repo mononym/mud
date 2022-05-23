@@ -130,10 +130,10 @@ defmodule Mud.Engine.Session do
   @doc false
   @impl true
   def init(args) do
-    # IO.inspect(args, label: "Mud.Engine.Session.init/1")
+    IO.inspect(args, label: "Mud.Engine.Session.init/1")
     # Load or initialize character session state
     state = load_character_session_data(args.character_id)
-    # IO.inspect(state, label: "Mud.Engine.Session.init/1")
+    IO.inspect(state, label: "Mud.Engine.Session.init/1")
 
     # Set character to active
     state.character_id
@@ -168,7 +168,7 @@ defmodule Mud.Engine.Session do
       if map_size(state.subscribers) != 0 do
         Map.values(state.subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, convert_event(event))
+          GenServer.cast(subscriber.pid, event.event)
         end)
 
         state
@@ -189,7 +189,8 @@ defmodule Mud.Engine.Session do
       if map_size(state.subscribers) != 0 do
         Map.values(state.subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(subscriber.pid, {:story_output, [convert_output(output)]})
+          # GenServer.cast(subscriber.pid, {:story_output, [convert_output(output)]})
+          GenServer.cast(subscriber.pid, convert_output(output))
         end)
 
         state
@@ -291,7 +292,7 @@ defmodule Mud.Engine.Session do
       if length(state.text_buffer) > 0 do
         GenServer.cast(
           subscriber.pid,
-          {:story_output, Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)}
+          Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)
         )
       end
     end)
@@ -304,7 +305,7 @@ defmodule Mud.Engine.Session do
         |> Enum.each(fn subscriber ->
           GenServer.cast(
             subscriber.pid,
-            {:story_output, Enum.reverse(state.undelivered_text) |> Enum.map(&convert_output/1)}
+            Enum.reverse(state.undelivered_text) |> Enum.map(&convert_output/1)
           )
         end)
 
@@ -320,7 +321,7 @@ defmodule Mud.Engine.Session do
           GenServer.cast(
             subscriber.pid,
             # TODO: fix this, the event is wrong
-            {:story_output, Enum.reverse(state.undelivered_events) |> Enum.map(&convert_event/1)}
+            {:events, Enum.reverse(state.undelivered_events)}
           )
         end)
 
@@ -356,10 +357,7 @@ defmodule Mud.Engine.Session do
 
     GenServer.cast(
       process,
-      {:update_area,
-       Phoenix.View.render_one(UpdateArea.new(params), MudWeb.MudClientView, "update_area.json",
-         as: :event
-       )}
+      UpdateArea.new(params)
     )
 
     Logger.debug("Finished subscription request from: #{inspect(process)}")
@@ -449,52 +447,54 @@ defmodule Mud.Engine.Session do
   #
   #
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
-    {:update_inventory,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_inventory.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateInventory{}}) do
+  #   {:update_inventory,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_inventory.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
-    {:update_area,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_area.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateArea{}}) do
+  #   {:update_area,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_area.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredArea{}}) do
-    {:update_explored_area,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_area.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredArea{}}) do
+  #   {:update_explored_area,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_area.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredMap{}}) do
-    {:update_explored_map,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_map.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateExploredMap{}}) do
+  #   {:update_explored_map,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_explored_map.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateMap{}}) do
-    {:update_map,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_map.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateMap{}}) do
+  #   {:update_map,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_map.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateShops{}}) do
-    {:update_shops,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_shops.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateShops{}}) do
+  #   {:update_shops,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_shops.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateTime{}}) do
-    {:update_time,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_time.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateTime{}}) do
+  #   {:update_time,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_time.json", as: :event)}
+  # end
 
-  defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
-    {:update_character,
-     Phoenix.View.render_one(event, MudWeb.MudClientView, "update_character.json", as: :event)}
-  end
+  # defp convert_event(%Event{event: event = %Mud.Engine.Event.Client.UpdateCharacter{}}) do
+  #   {:update_character,
+  #    Phoenix.View.render_one(event, MudWeb.MudClientView, "update_character.json", as: :event)}
+  # end
 
   defp convert_output(output = %Mud.Engine.Message.Output{}) do
-    %{type: output.type, text: output.text}
+    # %{type: output.type, text: output.text}
+    output
   end
 
   defp convert_output(output = %Mud.Engine.Message.StoryOutput{}) do
-    %{type: "text", segments: Enum.reverse(output.segments)}
+    Map.put(output, :segments, Enum.reverse(output.segments))
+    # %{type: "text", segments: Enum.reverse(output.segments)}
   end
 
   defp persist_state(state) do

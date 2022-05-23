@@ -190,7 +190,7 @@ defmodule Mud.Engine.Command.Move do
   def attempt_move_link(context, link, other_links \\ []) do
     char = context.character
 
-    if char.position == Character.standing() do
+    if char.status.position == Character.standing() do
       # maybe_move(context, link, other_links)
       move(context, link, other_links)
     else

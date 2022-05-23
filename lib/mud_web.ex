@@ -45,6 +45,22 @@ defmodule MudWeb do
     end
   end
 
+  def client_live_view do
+    quote do
+      use Phoenix.LiveView,
+        layout: {MudWeb.LayoutView, "live_client.html"},
+        container: {:div, class: "flex-grow overflow-hidden h-screen flex flex-col"}
+
+        import MudWeb.ViewHelpers
+        import MudWeb.Components
+        import MudWeb.LiveHelpers
+
+        alias MudWeb.Live.Components.ConfirmationModal
+
+      unquote(view_helpers())
+    end
+  end
+
   def live_view do
     quote do
       use Phoenix.LiveView,

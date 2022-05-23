@@ -302,12 +302,12 @@ defmodule Mud.Engine.Area do
     newOutput
     |> build_area_name(area)
     |> build_area_desc(area)
+    |> maybe_build_exits(area)
     |> maybe_build_things_of_interest(area)
     |> maybe_build_on_ground(area)
-    |> maybe_build_hostiles(area)
-    |> maybe_build_denizens(area)
+    # |> maybe_build_hostiles(area)
     |> maybe_build_also_present(area, character)
-    |> maybe_build_exits(area)
+    |> maybe_build_denizens(area)
   end
 
   def long_description_to_story_output(area_id, character) do
