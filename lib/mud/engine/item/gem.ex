@@ -87,8 +87,8 @@ defmodule Mud.Engine.Item.Gem do
   end
 
   @doc false
-  def changeset(coin, attrs) do
-    coin
+  def changeset(gem, attrs) do
+    gem
     |> change()
     |> cast(attrs, [
       :item_id,
@@ -114,14 +114,14 @@ defmodule Mud.Engine.Item.Gem do
     |> Repo.insert!()
   end
 
-  def update!(coin, attrs) do
-    coin
+  def update!(gem, attrs) do
+    gem
     |> changeset(attrs)
     |> Repo.update!()
   end
 
-  def update(coin, attrs) do
-    coin
+  def update(gem, attrs) do
+    gem
     |> changeset(attrs)
     |> Repo.update()
   end
@@ -129,8 +129,8 @@ defmodule Mud.Engine.Item.Gem do
   @spec get!(id :: binary) :: %__MODULE__{}
   def get!(id) when is_binary(id) do
     from(
-      coin in __MODULE__,
-      where: coin.id == ^id
+      gem in __MODULE__,
+      where: gem.id == ^id
     )
     |> Repo.one!()
   end
@@ -138,8 +138,8 @@ defmodule Mud.Engine.Item.Gem do
   @spec get(id :: binary) :: nil | %__MODULE__{}
   def get(id) when is_binary(id) do
     from(
-      coin in __MODULE__,
-      where: coin.id == ^id
+      gem in __MODULE__,
+      where: gem.id == ^id
     )
     |> Repo.one()
   end

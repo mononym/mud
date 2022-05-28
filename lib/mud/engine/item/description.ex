@@ -26,7 +26,6 @@ defmodule Mud.Engine.Item.Description do
   @doc false
   def changeset(description, attrs) do
     description
-    |> change()
     |> cast(attrs, [
       :item_id,
       :details,

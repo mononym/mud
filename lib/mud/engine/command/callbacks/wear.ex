@@ -72,7 +72,7 @@ defmodule Mud.Engine.Command.Wear do
 
     case results do
       {:ok, matches} ->
-        [first | last] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+        [first | last] = CallbackUtil.sort_held_matches(matches, context.character.physical_features.dominant_hand)
 
         # then just handle results as normal
         wear_thing(context, first, List.wrap(last))
@@ -85,7 +85,7 @@ defmodule Mud.Engine.Command.Wear do
   defp wear_thing(context, match, other_matches \\ []) do
     original_item = match.match
 
-    if original_item.flags.wearable and original_item.flags.wear do
+    if original_item.flags.is_wearable and original_item.flags.wear do
       count =
         ItemSearch.count_worn_items_in_slot(context.character.id, original_item.wearable.slot)
 

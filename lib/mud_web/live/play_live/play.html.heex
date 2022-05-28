@@ -1,13 +1,22 @@
-<div class="h-screen w-screen flex text-lg">
+<div class="h-screen w-screen flex text-lg" phx-hook="GameClient" id="GameClient">
   <div id="left_column" class="basis-1/5 flex flex-col grow border-r border-neutral-700">
     <div class="flex-1 border-b border-neutral-700">Map</div>
-    <div class="flex-1">Inventory</div>
+    <div class="flex-1">
+      <.live_component
+          module={MudWeb.PlayLive.InventoryPanel}
+          id="inventory"
+          settings={@character.settings}
+          inventory_settings={@character.settings.inventory_window}
+          colors_settings={@character.settings.colors}
+          slots={@character.slots}
+          inventory={@inventory} />
+    </div>
   </div>
   <div id="center_column" class="basis-3/5 max-w-5xl flex flex-col border-r border-neutral-700">
     <%# <div class={"flex-1 #{if not @show_story_history, do: "hidden"}"}>History</div> %>
     <div id="main_story_panel" phx-hook="MainStoryWindowTrim" class="flex-1 flex flex-col justify-end border-b border-neutral-700 overflow-hidden px-1 pb-1" phx-update="append">
       <%= for output <- @story_output do %>
-        <p id={UUID.uuid4()} class="whitespace-pre-wrap"><%= for segment <- output.segments do %><span style={"color:#{text_type_to_color(@character, segment.type)}"}><%= segment.text %></span><% end %></p>
+        <p id={UUID.uuid4()} class="whitespace-pre-wrap"><%= for segment <- output.segments do %><span style={"color:#{text_type_to_color(@character.settings.colors, segment.type)}"}><%= segment.text %></span><% end %></p>
       <% end %>
     </div>
     <div class="flex shrink">
@@ -29,11 +38,12 @@
           module={MudWeb.PlayLive.AreaPanel}
           id="area"
           character={@character}
+          area_settings={@character.settings.area_window}
+          colors_settings={@character.settings.colors}
           area={@current_area}
           characters={@current_area_characters}
           exits={@current_area_exits}
-          things_of_interest={@current_area_items_of_interest}
-          items_on_ground={@current_area_items_on_ground} />
+          items={@current_area_items} />
     </div>
     <div class="flex-1">Status</div>
   </div>

@@ -19,10 +19,10 @@ defmodule Mud.Engine.Item.Physics do
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_physics" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
-    field(:length, :integer, default: 0)
-    field(:width, :integer, default: 0)
-    field(:height, :integer, default: 0)
-    field(:weight, :integer, default: 0)
+    field(:length, :integer, default: 1)
+    field(:width, :integer, default: 1)
+    field(:height, :integer, default: 1)
+    field(:weight, :integer, default: 1)
   end
 
   @doc false

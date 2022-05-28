@@ -7,48 +7,14 @@ defmodule Mud.Engine.Item.Flags do
 
   @type id :: String.t()
 
-  @derive {Jason.Encoder,
-           only: [
-             :id,
-             :item_id,
-             :close,
-             :coin,
-             :drop,
-             :gem,
-             :hidden,
-             :hold,
-             :look,
-             :open,
-             :remove,
-             :stow,
-             :trash,
-             :wear,
-             :armor,
-             :is_clothing,
-             :furniture,
-             :gem_pouch,
-             :instrument,
-             :is_jewelry,
-             :is_misc,
-             :material,
-             :scenery,
-             :shield,
-             :is_closable,
-             :is_equipment,
-             :is_structure,
-             :has_physics,
-             :has_pocket,
-             :has_surface,
-             :shop_display,
-             :weapon,
-             :wearable
-           ]}
   @primary_key {:id, :binary_id, autogenerate: true}
   schema "item_flags" do
     belongs_to(:item, Mud.Engine.Item, type: :binary_id)
     #
     # Behaviors
     #
+
+    # Whether an item can be closed
     field(:close, :boolean, default: false)
     # Whether an item can be dropped on the ground
     field(:drop, :boolean, default: false)
@@ -78,13 +44,15 @@ defmodule Mud.Engine.Item.Flags do
     #
     # What an item is
     #
-    field(:armor, :boolean, default: false)
-    field(:coin, :boolean, default: false)
+    field(:is_armor, :boolean, default: false)
+    field(:is_coin, :boolean, default: false)
 
     # While clothing is functional and worn, and equipment is functional and some of it is worn, the difference is that
     # clothes are primarily for covering the body while equipment has functions that serve a different purpose, even
     # if worn. Armor is a thing on its own.
     field(:is_clothing, :boolean, default: false)
+    # Equipment covers a lot of different things. In general they are useful tools, some worn but much of it not, that
+    # are part of someone's 'kit' that helps them do whatever. So a backpack is equipment, but so is a flint, and a mortar/pestle
     field(:is_equipment, :boolean, default: false)
     field(:is_structure, :boolean, default: false)
     field(:is_jewelry, :boolean, default: false)
@@ -92,34 +60,34 @@ defmodule Mud.Engine.Item.Flags do
 
     # This doesn't actually say what types of surfaces or interactions the specific piece of furniture might have.
     # You can't really lie down in a chair, but you can sit in it. Can't sit on a coat rack but can hang things on it.
-    field(:furniture, :boolean, default: false)
-    field(:gem, :boolean, default: false)
-    field(:gem_pouch, :boolean, default: false)
-    field(:instrument, :boolean, default: false)
-    field(:material, :boolean, default: false)
-    field(:shield, :boolean, default: false)
+    field(:is_furniture, :boolean, default: false)
+    field(:is_gem, :boolean, default: false)
+    field(:is_gem_pouch, :boolean, default: false)
+    field(:is_instrument, :boolean, default: false)
+    field(:is_material, :boolean, default: false)
+    field(:is_shield, :boolean, default: false)
     # A shop display might be a container, such as a box or a chest,
     # or it might be a surface such as a table or a shelf or a coat rack etc...
-    field(:shop_display, :boolean, default: false)
-    field(:weapon, :boolean, default: false)
-    field(:wearable, :boolean, default: false)
+    field(:is_shop_display, :boolean, default: false)
+    field(:is_weapon, :boolean, default: false)
 
     #
     # What behaviors item has, for example a piece of furniture may or may not have a surface on it.
     #
 
+    field(:is_wearable, :boolean, default: false)
     field(:has_physics, :boolean, default: false)
     field(:has_pocket, :boolean, default: false)
     field(:has_surface, :boolean, default: false)
     field(:is_closable, :boolean, default: false)
+
     # Any item can be a piece of scenery.
-    field(:scenery, :boolean, default: false)
+    field(:is_scenery, :boolean, default: false)
   end
 
   @doc false
   def changeset(flags, attrs) do
     flags
-    |> change()
     |> cast(attrs, [
       :item_id,
       #
@@ -138,24 +106,24 @@ defmodule Mud.Engine.Item.Flags do
       #
       # What an item is
       #
-      :armor,
+      :is_armor,
       :is_clothing,
-      :coin,
-      :furniture,
-      :gem,
-      :gem_pouch,
-      :instrument,
+      :is_coin,
+      :is_furniture,
+      :is_gem,
+      :is_gem_pouch,
+      :is_instrument,
       :is_closable,
       :is_equipment,
       :is_structure,
       :is_jewelry,
       :is_misc,
-      :material,
-      :shield,
-      :shop_display,
-      :weapon,
-      :scenery,
-      :wearable,
+      :is_material,
+      :is_shield,
+      :is_shop_display,
+      :is_weapon,
+      :is_scenery,
+      :is_wearable,
       #
       # What an item has as part of it
       #

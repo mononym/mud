@@ -277,8 +277,8 @@ defmodule Mud.Engine.Command.CallbackUtil do
     )
   end
 
-  def sort_held_matches(matches, handedness) do
-    if List.first(matches).match.location.hand == handedness do
+  def sort_held_matches(matches, dominant_hand) do
+    if List.first(matches).match.location.hand == dominant_hand do
       matches
     else
       Enum.reverse(matches)
@@ -334,10 +334,6 @@ defmodule Mud.Engine.Command.CallbackUtil do
     parents = Item.list_all_parents(items)
     parent_index = Util.build_item_index(parents)
 
-    IO.inspect("construct_item_current_location_message")
-    IO.inspect(items, label: :items)
-    IO.inspect(parents, label: :parents)
-
     message =
       message
       |> Message.append_text(
@@ -360,7 +356,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
         other_character = Character.get_by_id!(item.location.character_id)
 
         are_or_is =
-          if other_character.gender_pronoun == "neutral" do
+          if other_character.pronoun == "neutral" do
             "are"
           else
             "is"
@@ -511,7 +507,7 @@ defmodule Mud.Engine.Command.CallbackUtil do
           )
 
         are_or_is =
-          if character.gender_pronoun == "neutral" do
+          if character.pronoun == "neutral" do
             "are"
           else
             "is"

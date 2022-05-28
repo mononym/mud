@@ -199,7 +199,7 @@ defmodule Mud.Engine.Area do
           {:ok, %__MODULE__{}} | {:error, %Ecto.Changeset{}}
   def update(area, attrs) do
     # if Map.has_key?(attrs, "flags") do
-    #   Flags.update!(area.flags, attrs["flags"]) |> IO.inspect(label: :flagupdate)
+    #   Flags.update!(area.flags, attrs["flags"])
     # end
 
     res =
@@ -209,7 +209,7 @@ defmodule Mud.Engine.Area do
 
     case res do
       {:ok, result} ->
-        {:ok, Repo.preload(result, [:flags], force: true)} |> IO.inspect()
+        {:ok, Repo.preload(result, [:flags], force: true)}
 
       error ->
         error

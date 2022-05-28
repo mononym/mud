@@ -102,9 +102,6 @@ defmodule Mud.Engine.ItemUtil do
   def items_fit_on_surface(items_being_placed, item_with_surface) do
     items_being_placed = List.wrap(items_being_placed)
 
-    IO.inspect(items_being_placed, label: :items_fit_on_surface)
-    IO.inspect(item_with_surface, label: :items_fit_on_surface)
-
     with true <-
            items_fit_surface_by_dimensions(
              Enum.map(items_being_placed, & &1.physics),
@@ -338,7 +335,7 @@ defmodule Mud.Engine.ItemUtil do
           item.location.held_in_hand ->
             Map.put(index, item.id, "held")
 
-          item.flags.scenery ->
+          item.flags.is_scenery ->
             Map.put(index, item.id, "scenery")
 
           item.location.on_ground ->

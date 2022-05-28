@@ -132,14 +132,14 @@ defmodule Mud.Engine.Item do
     attrs = template_keys_to_atoms(attrs)
 
     keys_map = %{
-      closable: [:closable],
-      coin: [:coin],
-      furniture: [:furniture],
-      material: [],
-      scenery: [],
-      gem: [:gem],
-      lockable: [:lockable],
-      wearable: [:wearable],
+      is_closable: [:closable],
+      is_coin: [:coin],
+      is_furniture: [:furniture],
+      is_material: [],
+      is_scenery: [],
+      is_gem: [:gem],
+      is_lockable: [:lockable],
+      is_wearable: [:wearable],
       has_surface: [:surface],
       is_equipment: [:equipment],
       has_pocket: [:pocket],
@@ -170,20 +170,15 @@ defmodule Mud.Engine.Item do
         end
       end)
 
-    Logger.debug("Purged attributes: #{inspect(purged_attrs)}")
+    Logger.debug("Attributes after purge: #{inspect(purged_attrs)}")
 
     # Make sure the item is described
     cond do
-      Map.has_key?(purged_attrs[:flags], :gem) and purged_attrs[:flags][:gem] ->
-        Map.put(purged_attrs, :description, %{
-          short: Gem.generate_short_description(purged_attrs.gem),
-          details: Gem.generate_short_description(purged_attrs.gem)
-        })
-
       Map.has_key?(purged_attrs[:flags], :coin) and purged_attrs[:flags][:coin] ->
         Map.put(purged_attrs, :description, %{
           short: "some coins",
-          details: "some coins"
+          details: "some coins",
+          key: if(purged_attrs.coin.count > 1, do: "coins", else: "coin")
         })
 
       true ->
@@ -198,7 +193,7 @@ defmodule Mud.Engine.Item do
   end
 
   defp maybe_setup_optional_component(item, attrs, :description, Description) do
-    if item.flags.gem do
+    if item.flags.is_gem do
       short = Gem.generate_short_description(item.gem)
       desc = Map.get(attrs, :description, %{})
 
@@ -207,6 +202,7 @@ defmodule Mud.Engine.Item do
         |> Map.put(:item_id, item.id)
         |> Map.put(:short, short)
         |> Map.put(:long, short)
+        |> Map.put(:key, attrs.gem.type)
         |> Description.create()
 
       %{item | :description => description}
@@ -442,7 +438,6 @@ defmodule Mud.Engine.Item do
 
   def list_all_parents(items) do
     ids = items_to_ids(items)
-    # IO.inspect(ids, label: :list_all_parents)
 
     Repo.all(list_all_recursive_parent_query(ids, true))
     |> preload()
@@ -554,7 +549,7 @@ defmodule Mud.Engine.Item do
   def list_held_or_worn_items_and_children(character_id) do
     character_id
     |> held_or_worn_and_children_query()
-    |> order_by([i], i.moved_at)
+    |> order_by([location: location], location.moved_at)
     |> Repo.all()
     |> preload()
   end
@@ -579,8 +574,6 @@ defmodule Mud.Engine.Item do
     wrapped_item = List.wrap(item)
     parents = list_all_parents(wrapped_item)
     parent_index = build_item_index(parents)
-    # IO.inspect(wrapped_item, label: :build_parent_string_itemx)
-    # IO.inspect(parents, label: :build_parent_string_parents)
 
     build_parent_list(item, parent_index, [])
   end
@@ -604,8 +597,6 @@ defmodule Mud.Engine.Item do
     items = List.wrap(items)
     parents = list_all_parents(items)
     parent_index = build_item_index(parents)
-    # IO.inspect(items, label: :build_parent_string_itemx)
-    # IO.inspect(parents, label: :build_parent_string_parents)
 
     Enum.map(items, fn item ->
       build_parent_string(item, parent_index)
@@ -613,16 +604,11 @@ defmodule Mud.Engine.Item do
   end
 
   defp build_parent_string(item, parent_index) do
-    # IO.inspect(item, label: :build_parent_string_item)
-    # IO.inspect(parent_index, label: :build_parent_string_parent_index)
-
     cond do
       item.location.relative_to_item ->
-        "#{item.description.short} from #{
-          build_parent_string(parent_index[item.location.relative_item_id], parent_index)
-        }"
+        "#{item.description.short} from #{build_parent_string(parent_index[item.location.relative_item_id], parent_index)}"
 
-      item.flags.scenery ->
+      item.flags.is_scenery ->
         item.description.short
 
       item.location.on_ground ->
@@ -641,7 +627,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
-          flags.has_pocket == true and flags.wearable and flags.gem_pouch,
+          flags.has_pocket == true and flags.is_wearable and flags.is_gem_pouch,
       order_by: [desc: location.moved_at]
     )
     |> Repo.all()
@@ -653,7 +639,7 @@ defmodule Mud.Engine.Item do
       [description: description, location: location, flags: flags] in base_query_for_description_and_location_and_flags(),
       where:
         location.character_id == ^character_id and location.worn_on_character and
-          flags.has_pocket == true and flags.wearable,
+          flags.has_pocket == true and flags.is_wearable,
       order_by: [desc: location.moved_at]
     )
     |> Repo.all()
@@ -783,8 +769,10 @@ defmodule Mud.Engine.Item do
   def list_worn_by(character_id) do
     from(
       item in __MODULE__,
+      join: location in Location,
+      on: location.item_id == item.id,
       where: item.wearable_worn_by_id == ^character_id,
-      order_by: item.moved_at
+      order_by: location.moved_at
     )
     |> Repo.all()
     |> preload()
@@ -892,7 +880,7 @@ defmodule Mud.Engine.Item do
   defp items_on_ground_query(area_id) do
     from(
       [item, location: location, flags: flags] in base_query_without_preload(),
-      where: location.on_ground == true and location.area_id == ^area_id and not flags.scenery,
+      where: location.on_ground == true and location.area_id == ^area_id and not flags.is_scenery,
       order_by: [desc: location.moved_at]
     )
   end
@@ -904,7 +892,7 @@ defmodule Mud.Engine.Item do
       as: :location,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      where: location.area_id == ^area_id and flags.scenery,
+      where: location.area_id == ^area_id and flags.is_scenery,
       order_by: [desc: location.moved_at]
     )
   end
@@ -995,8 +983,6 @@ defmodule Mud.Engine.Item do
         area_id,
         search_string
       ) do
-    IO.inspect(search_string, label: :specific_nested_item_area_initial_query)
-
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -1010,8 +996,6 @@ defmodule Mud.Engine.Item do
         character_id,
         search_string
       ) do
-    # IO.inspect(search_string, label: :specific_nested_item_inventory_initial_query)
-
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -1025,8 +1009,6 @@ defmodule Mud.Engine.Item do
         character_id,
         search_string
       ) do
-    IO.inspect(search_string, label: :specific_nested_item_in_hands_initial_query)
-
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -1040,8 +1022,6 @@ defmodule Mud.Engine.Item do
         previous_query,
         search_string
       ) do
-    # IO.inspect(search_string, label: :specific_nested_item_mid_level_query)
-
     from(
       [description: description, location: location] in base_query_without_preload(),
       where:
@@ -1057,8 +1037,6 @@ defmodule Mud.Engine.Item do
         search_string,
         thing_is_immediate_child \\ true
       ) do
-    # IO.inspect(search_string, label: :specific_nested_item_top_level_query)
-
     query =
       if thing_is_immediate_child do
         child_ids_query(previous_query)
@@ -1256,7 +1234,7 @@ defmodule Mud.Engine.Item do
       as: :location,
       left_join: flags in assoc(item, :flags),
       as: :flags,
-      where: location.area_id == ^area_id and flags.scenery
+      where: location.area_id == ^area_id and flags.is_scenery
     )
   end
 
@@ -1417,8 +1395,6 @@ defmodule Mud.Engine.Item do
       "surface" => Surface,
       "wearable" => Wearable
     }
-
-    IO.inspect({key, attrs}, label: :update_component)
 
     callback = key_callback_map[key]
 

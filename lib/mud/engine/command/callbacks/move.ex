@@ -117,8 +117,6 @@ defmodule Mud.Engine.Command.Move do
         context.character.settings.commands.search_mode
       )
 
-    # IO.inspect(result, label: :attempt_move_direction)
-
     case result do
       {:ok, [match | matches]}
       when is_integer(which) and which > 0 and which <= length(matches) ->
@@ -411,8 +409,6 @@ defmodule Mud.Engine.Command.Move do
     message =
       character.id
       |> Message.new_story_output()
-
-    # IO.inspect(link, label: :link)
 
     cond do
       # Heading through the closed thing, so craft message about it being opened as character goes through

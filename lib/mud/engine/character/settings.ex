@@ -102,8 +102,8 @@ defmodule Mud.Engine.Character.Settings do
       field(:empty_hand, :string, default: "#f0ad4e")
       field(:held_items_label, :string, default: "#5bc0de")
       field(:show_held_items, :boolean, default: true)
-      field(:worn_containers_label, :string, default: "#fca5a5")
-      field(:show_worn_containers, :boolean, default: true)
+      field(:worn_equipment_label, :string, default: "#fca5a5")
+      field(:show_worn_equipment, :boolean, default: true)
       field(:worn_clothes_label, :string, default: "#a7f3d0")
       field(:show_worn_clothes, :boolean, default: true)
       field(:worn_armor_label, :string, default: "#a7f3d0")
@@ -112,8 +112,6 @@ defmodule Mud.Engine.Character.Settings do
       field(:show_worn_weapons, :boolean, default: true)
       field(:worn_jewelry_label, :string, default: "#6b7280")
       field(:show_worn_jewelry, :boolean, default: true)
-      field(:worn_items_label, :string, default: "#6b7280")
-      field(:show_worn_items, :boolean, default: true)
       field(:slots_label, :string, default: "#6b7280")
       field(:show_slots, :boolean, default: true)
       field(:background, :string, default: "#28282D")
@@ -221,7 +219,6 @@ defmodule Mud.Engine.Character.Settings do
     Logger.debug(inspect(attrs))
 
     settings
-    |> change()
     |> cast(attrs, [
       :character_id
     ])
@@ -238,7 +235,6 @@ defmodule Mud.Engine.Character.Settings do
     |> cast_embed(:directions_window, with: &directions_changeset/2)
     |> cast_embed(:environment_window, with: &environment_changeset/2)
     |> cast_embed(:status_window, with: &status_changeset/2)
-    |> IO.inspect(label: :changeset_settings)
   end
 
   defp colors_changeset(schema, params) do
@@ -356,8 +352,8 @@ defmodule Mud.Engine.Character.Settings do
       :empty_hand,
       :held_items_label,
       :show_held_items,
-      :worn_containers_label,
-      :show_worn_containers,
+      :worn_equipment_label,
+      :show_worn_equipment,
       :worn_clothes_label,
       :show_worn_clothes,
       :worn_armor_label,
@@ -366,8 +362,6 @@ defmodule Mud.Engine.Character.Settings do
       :show_worn_weapons,
       :worn_jewelry_label,
       :show_worn_jewelry,
-      :worn_items_label,
-      :show_worn_items,
       :slots_label,
       :show_slots,
       :background,

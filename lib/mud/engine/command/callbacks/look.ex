@@ -113,8 +113,6 @@ defmodule Mud.Engine.Command.Look do
         look_item(context, match)
 
       {:ok, all_matches = [match | matches]} ->
-        IO.inspect(context.command.ast, label: :handle_search_results)
-
         case context.command.ast do
           # If which is greater than 0, then more than one match was anticipated.
           # Make sure provided selection is not more than the number of items that were found
@@ -229,12 +227,10 @@ defmodule Mud.Engine.Command.Look do
     in_area = Item.in_area?(item.id, context.character.area_id)
     in_inventory = Item.in_inventory?(item.id, context.character.id)
     is_visible = ItemUtil.is_available_for_look?(item)
-    IO.inspect({in_area, in_inventory, is_visible}, label: :look_item)
 
     cond do
       is_visible and (in_area or in_inventory) ->
         switch = context.command.ast.thing.switch
-        IO.inspect({item.flags, switch}, label: :look_item)
 
         cond do
           switch in ["@", "at", nil] ->

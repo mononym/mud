@@ -38,9 +38,6 @@ defmodule MudWeb.ItemController do
     location = Location.get_by_item_id!(id)
     Location.update!(location, %{moved_at: DateTime.utc_now()})
 
-    IO.inspect("update_moved_at")
-    IO.inspect(id)
-
     render(conn, "show.json", item: Item.get!(id))
   end
 

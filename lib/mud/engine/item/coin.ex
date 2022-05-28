@@ -30,7 +30,6 @@ defmodule Mud.Engine.Item.Coin do
   @doc false
   def changeset(coin, attrs) do
     coin
-    |> change()
     |> cast(attrs, [
       :item_id,
       :count,

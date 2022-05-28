@@ -364,7 +364,7 @@ defmodule Mud.Engine.Command.Get do
        ) do
     cond do
       # Make sure the coin can also be held
-      original_item.flags.coin and original_item.flags.hold ->
+      original_item.flags.is_coin and original_item.flags.hold ->
         pick_up_yer_coins(context, original_item)
 
       # Item can be held which means it can be picked up
@@ -391,12 +391,12 @@ defmodule Mud.Engine.Command.Get do
 
   # Take a guess what this one does
   defp pick_up_yer_item(context, original_item, other_matches, items_in_hands, in_area) do
-    # As flavoring, figure out where to put the item based on what is in the hands and what the character's handedness
+    # As flavoring, figure out where to put the item based on what is in the hands and what the character's dominant hand
     # preference is set to.
     hand =
       cond do
         length(items_in_hands) == 0 ->
-          context.character.handedness
+          context.character.physical_features.dominant_hand
 
         true ->
           if List.first(items_in_hands).location.hand == "right" do
@@ -418,7 +418,7 @@ defmodule Mud.Engine.Command.Get do
 
     # Start construction of the message to the other players.
     other_msg =
-      [context.character.id | others]
+      others
       |> Message.new_story_output()
       |> Message.append_text("#{context.character.name}", "character")
       |> Message.append_text(" gets ", "base")

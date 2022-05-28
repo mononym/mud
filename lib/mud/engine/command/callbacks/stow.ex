@@ -166,7 +166,7 @@ defmodule Mud.Engine.Command.Stow do
       # Stow everything in the hands
       %TAP{place: place, thing: %Thing{input: input}}
       when input in ["all", "both"] and (place == nil or place.switch != nil) ->
-        if context.character.handedness == "right" do
+        if context.character.physical_features.dominant_hand == "right" do
           context
           |> stow_thing_in_right_hand(true)
           |> stow_thing_in_left_hand(true)
@@ -447,7 +447,7 @@ defmodule Mud.Engine.Command.Stow do
 
     cond do
       available_for_look and (in_area or in_hands) ->
-        if original_item.flags.coin do
+        if original_item.flags.is_coin do
           # update character wealth
           wealth_attrs =
             CallbackUtil.coin_to_wealth_update_attrs(
@@ -670,19 +670,19 @@ defmodule Mud.Engine.Command.Stow do
   defp get_stow_target_container(containers, %{flags: flags}) do
     dest_id =
       case flags do
-        %{armor: true} ->
+        %{is_armor: true} ->
           containers.armor_id
 
         %{is_clothing: true} ->
           containers.clothing_id
 
-        %{gem: true} ->
+        %{is_gem: true} ->
           containers.gem_id
 
-        %{shield: true} ->
+        %{is_shield: true} ->
           containers.shield_id
 
-        %{weapon: true} ->
+        %{is_weapon: true} ->
           containers.weapon_id
 
         _ ->
@@ -690,7 +690,7 @@ defmodule Mud.Engine.Command.Stow do
       end
 
     if is_nil(dest_id) do
-      if flags.gem do
+      if flags.is_gem do
         # since there is no default, search on worn self for a gem pouch
         # if there is a gem pouch worn, put gem in there, otherwise fallback to default
         case Item.list_worn_gem_pouches(containers.character_id) do

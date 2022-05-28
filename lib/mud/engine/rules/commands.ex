@@ -22,8 +22,6 @@ defmodule Mud.Engine.Rules.Commands do
   def find_command_definition(input) do
     case Enum.find(list_all_command_definitions(), fn command ->
            command_part = List.first(command.parts)
-           IO.inspect(input, label: "find_command_definition")
-           IO.inspect(command_part.matches, label: "find_command_definition")
 
            Enum.any?(command_part.matches, fn match_string ->
              Util.check_equiv(match_string, input)

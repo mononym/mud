@@ -50,7 +50,6 @@ defmodule Mud.Engine.Session do
 
     Enum.each(to, fn dest ->
       msg = %{message_or_event | to: dest}
-      # IO.inspect(msg, label: "cast_message_or_event/1")
       GenServer.cast(via(dest), msg)
     end)
   end
@@ -77,8 +76,6 @@ defmodule Mud.Engine.Session do
   def send_event_to_all_active_characters(event) do
     all_active_character_ids =
       Registry.select(Mud.Engine.CharacterSessionRegistry, [{{:"$1", :_, :_}, [], [:"$1"]}])
-
-    IO.inspect(event)
 
     cast_message_or_event(%{event | to: all_active_character_ids})
   end
@@ -130,20 +127,13 @@ defmodule Mud.Engine.Session do
   @doc false
   @impl true
   def init(args) do
-    IO.inspect(args, label: "Mud.Engine.Session.init/1")
     # Load or initialize character session state
     state = load_character_session_data(args.character_id)
-    IO.inspect(state, label: "Mud.Engine.Session.init/1")
 
     # Set character to active
     state.character_id
     |> Mud.Engine.Character.get_by_id!()
-    # |> IO.inspect()
     |> Mud.Engine.Character.update(%{active: true})
-
-    # |> IO.inspect(label: "update")
-
-    # IO.inspect("update", label: "Mud.Engine.Session.init/1")
 
     # Start inactivity timer
     state =
@@ -154,8 +144,6 @@ defmodule Mud.Engine.Session do
           :character_inactivity_timeout_warning
         )
       )
-
-    # IO.inspect("ok", label: "Mud.Engine.Session.init/1")
 
     {:ok, state}
   end
@@ -180,10 +168,10 @@ defmodule Mud.Engine.Session do
   end
 
   def handle_cast(%Mud.Engine.Message.StoryOutput{} = output, state) do
-    Logger.debug("#{inspect(output)}", label: "session_handle_cast")
+    Logger.debug("#{inspect(output)}")
     Logger.debug("Subscribers: #{inspect(state.subscribers)}")
 
-    state = update_buffer(state, output)
+    # state = update_buffer(state, output)
 
     state =
       if map_size(state.subscribers) != 0 do
@@ -285,19 +273,20 @@ defmodule Mud.Engine.Session do
     Logger.debug("Recieved subscription request from: #{inspect(process)}")
     ref = Process.monitor(process)
 
+    new_subscriber = [%Subscriber{pid: process}]
     updated_subscribers = Map.put(state.subscribers, ref, %Subscriber{pid: process})
 
-    Map.values(updated_subscribers)
-    |> Enum.each(fn subscriber ->
-      if length(state.text_buffer) > 0 do
-        GenServer.cast(
-          subscriber.pid,
-          Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)
-        )
-      end
-    end)
+    # Map.values(updated_subscribers)
+    # |> Enum.each(fn subscriber ->
+      # if length(state.text_buffer) > 0 do
+      #   GenServer.cast(
+      #     process,
+      #     Enum.reverse(state.text_buffer) |> Enum.map(&convert_output/1)
+      #   )
+      # end
+    # end)
 
-    state = %{state | text_buffer: []}
+    # state = %{state | text_buffer: []}
 
     state =
       if length(state.undelivered_text) != 0 do
@@ -318,11 +307,13 @@ defmodule Mud.Engine.Session do
       if length(state.undelivered_events) != 0 do
         Map.values(updated_subscribers)
         |> Enum.each(fn subscriber ->
-          GenServer.cast(
-            subscriber.pid,
-            # TODO: fix this, the event is wrong
-            {:events, Enum.reverse(state.undelivered_events)}
-          )
+          events = Enum.reverse(state.undelivered_events)
+          Enum.each(events, fn event ->
+            GenServer.cast(
+              subscriber.pid,
+              event
+            )
+          end)
         end)
 
         %{state | undelivered_events: []}

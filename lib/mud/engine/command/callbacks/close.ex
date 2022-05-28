@@ -113,8 +113,6 @@ defmodule Mud.Engine.Command.Close do
         context.character.settings.commands.search_mode
       )
 
-    # IO.inspect(results, label: :close_item_in_inventory)
-
     case results do
       {:ok, matches} ->
         # then just handle results as normal

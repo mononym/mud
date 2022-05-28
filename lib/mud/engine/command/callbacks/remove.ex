@@ -129,7 +129,7 @@ defmodule Mud.Engine.Command.Remove do
             "right"
           end
         else
-          context.character.handedness
+          context.character.physical_features.dominant_hand
         end
 
       updated_location =

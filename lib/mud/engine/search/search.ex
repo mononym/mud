@@ -301,7 +301,6 @@ defmodule Mud.Engine.Search do
         thing,
         mode
       )
-      |> IO.inspect(label: :find_matches_relative_to_place_in_hands)
 
     case things_to_match(items) do
       [] ->
@@ -378,7 +377,6 @@ defmodule Mud.Engine.Search do
         mode,
         thing_is_immediate_child
       )
-      |> IO.inspect(label: :find_matches_with_pocket_relative_to_place_in_inventory)
       |> Enum.filter(& &1.flags.has_pocket)
 
     case things_to_match(items) do

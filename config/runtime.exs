@@ -15,9 +15,9 @@ config :mud,
   character_context_buffer_max_size:
     String.to_integer(System.get_env("CHARACTER_CONTEXT_BUFFER_MAX_SIZE", "1200")),
   character_inactivity_timeout_warning:
-    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "600000000000")),
+    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_WARNING", "600000")),
   character_inactivity_timeout_final:
-    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "12000000000000")),
+    String.to_integer(System.get_env("CHARACTER_INACTIVITY_TIMEOUT_FINAL", "720000")),
   create_player_token_ttl: String.to_integer(System.get_env("CREATE_PLAYER_TOKEN_TTL", "1800")),
   race_image_cf_domain:
     System.get_env(

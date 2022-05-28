@@ -114,7 +114,7 @@ defmodule Mud.Engine.Command.Drop do
             Util.hands_already_empty(context)
 
           matches ->
-            matches = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+            matches = CallbackUtil.sort_held_matches(matches, context.character.physical_features.dominant_hand)
 
             # then just handle results as normal
             Enum.reduce(matches, context, fn match, context ->
@@ -128,7 +128,7 @@ defmodule Mud.Engine.Command.Drop do
             Util.hands_already_empty(context)
 
           matches ->
-            matches = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+            matches = CallbackUtil.sort_held_matches(matches, context.character.physical_features.dominant_hand)
 
             # then just handle results as normal
             Enum.reduce(matches, context, fn match, context ->
@@ -146,7 +146,7 @@ defmodule Mud.Engine.Command.Drop do
 
         case results do
           {:ok, matches} ->
-            [first | last] = CallbackUtil.sort_held_matches(matches, context.character.handedness)
+            [first | last] = CallbackUtil.sort_held_matches(matches, context.character.physical_features.dominant_hand)
 
             # then just handle results as normal
             drop_item(context, first, List.wrap(last))

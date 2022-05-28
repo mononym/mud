@@ -65,7 +65,6 @@ defmodule Mud.Engine.Command.AstUtil do
         }
 
       _ ->
-        IO.inspect(rest, label: :build_tap_ast)
         place = populate_place(%AstNode.Place{}, rest) |> normalize_personal()
 
         case place.input do

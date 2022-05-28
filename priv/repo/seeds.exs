@@ -200,8 +200,9 @@ alias Mud.Engine.{Area, Link}
     map_size: 20,
     map_id: map.id,
     name: "Maze",
-    description: "The entrance from the west is the only break in the otherwise endless hegerows.",
-    key: "maze_2",
+    description:
+      "The entrance from the west is the only break in the otherwise endless hegerows.",
+    key: "maze_2"
   })
 
 {:ok, _} =
@@ -246,7 +247,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_3",
+    key: "maze_3"
   })
 
 {:ok, _} =
@@ -291,7 +292,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_4",
+    key: "maze_4"
   })
 
 {:ok, _} =
@@ -336,7 +337,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_5",
+    key: "maze_5"
   })
 
 {:ok, _} =
@@ -381,7 +382,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_6",
+    key: "maze_6"
   })
 
 {:ok, _} =
@@ -426,7 +427,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_7",
+    key: "maze_7"
   })
 
 {:ok, _} =
@@ -471,7 +472,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_8",
+    key: "maze_8"
   })
 
 {:ok, _} =
@@ -516,7 +517,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_9",
+    key: "maze_9"
   })
 
 {:ok, _} =
@@ -561,7 +562,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_10",
+    key: "maze_10"
   })
 
 {:ok, _} =
@@ -606,7 +607,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_11",
+    key: "maze_11"
   })
 
 {:ok, _} =
@@ -651,7 +652,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_12",
+    key: "maze_12"
   })
 
 {:ok, _} =
@@ -696,7 +697,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_13",
+    key: "maze_13"
   })
 
 {:ok, _} =
@@ -741,7 +742,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_14",
+    key: "maze_14"
   })
 
 {:ok, _} =
@@ -786,7 +787,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_15",
+    key: "maze_15"
   })
 
 {:ok, _} =
@@ -831,7 +832,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_16",
+    key: "maze_16"
   })
 
 {:ok, _} =
@@ -876,7 +877,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_17",
+    key: "maze_17"
   })
 
 {:ok, _} =
@@ -921,7 +922,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_18",
+    key: "maze_18"
   })
 
 {:ok, _} =
@@ -966,7 +967,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_19",
+    key: "maze_19"
   })
 
 {:ok, _} =
@@ -1011,7 +1012,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_20",
+    key: "maze_20"
   })
 
 {:ok, _} =
@@ -1056,7 +1057,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_21",
+    key: "maze_21"
   })
 
 {:ok, _} =
@@ -1101,7 +1102,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_22",
+    key: "maze_22"
   })
 
 {:ok, _} =
@@ -1146,7 +1147,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_23",
+    key: "maze_23"
   })
 
 {:ok, _} =
@@ -1191,7 +1192,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_24",
+    key: "maze_24"
   })
 
 {:ok, _} =
@@ -1236,7 +1237,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Maze",
     description: "Endless hegerows tower above, providing no clue as to entrance or exit.",
-    key: "maze_25",
+    key: "maze_25"
   })
 
 {:ok, _} =
@@ -1308,7 +1309,7 @@ alias Mud.Engine.{Area, Link}
     map_id: map.id,
     name: "Bathhouse",
     description: "It's a bathhouse. It has a bath. And nudity. So. Much. Nudity.",
-    key: "bathhouse",
+    key: "bathhouse"
   })
 
 {:ok, _} =
@@ -1362,7 +1363,7 @@ alias Mud.Engine.{Area, Link}
     flags: %{
       bank: true
     },
-    key: "bank",
+    key: "bank"
   })
 
 {:ok, _} =
@@ -2094,7 +2095,8 @@ Mud.Engine.Item.create(%{
     look: true,
     stow: true,
     trash: true,
-    material: true
+    is_material: true,
+    has_physics: true
   },
   location: %{area_id: north_room.id, on_ground: true},
   physics: %{
@@ -2115,7 +2117,8 @@ Mud.Engine.Item.create(%{
     look: true,
     stow: true,
     trash: true,
-    material: true
+    is_material: true,
+    has_physics: true
   },
   location: %{area_id: north_room.id, on_ground: true},
   physics: %{
@@ -2136,7 +2139,8 @@ Mud.Engine.Item.create(%{
     look: true,
     stow: true,
     trash: true,
-    material: true
+    is_material: true,
+    has_physics: true
   },
   location: %{area_id: north_room.id, on_ground: true},
   physics: %{
@@ -2155,8 +2159,9 @@ Mud.Engine.Item.create(%{
   flags: %{
     hidden: true,
     look: true,
-    scenery: true,
-    has_surface: true
+    is_scenery: true,
+    has_surface: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   surface: %{
@@ -2166,7 +2171,8 @@ Mud.Engine.Item.create(%{
     item_weight_limit: 0,
     show_item_contents: true,
     show_item_limit: 5
-  }
+  },
+  physics: %{}
 })
 
 Mud.Engine.Item.create(%{
@@ -2178,9 +2184,10 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true,
-    scenery: true,
-    has_surface: true
+    is_furniture: true,
+    is_scenery: true,
+    has_surface: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   furniture: %{},
@@ -2191,7 +2198,8 @@ Mud.Engine.Item.create(%{
     item_weight_limit: 0,
     show_item_contents: true,
     show_item_limit: 5
-  }
+  },
+  physics: %{}
 })
 
 Mud.Engine.Item.create(%{
@@ -2203,9 +2211,10 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true,
-    scenery: true,
-    has_surface: true
+    is_furniture: true,
+    is_scenery: true,
+    has_surface: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   furniture: %{},
@@ -2216,7 +2225,8 @@ Mud.Engine.Item.create(%{
     item_weight_limit: 0,
     show_item_contents: true,
     show_item_limit: 5
-  }
+  },
+  physics: %{}
 })
 
 Mud.Engine.Item.create(%{
@@ -2228,9 +2238,10 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true,
-    scenery: true,
-    has_surface: true
+    is_furniture: true,
+    is_scenery: true,
+    has_surface: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   furniture: %{},
@@ -2241,7 +2252,8 @@ Mud.Engine.Item.create(%{
     item_weight_limit: 0,
     show_item_contents: true,
     show_item_limit: 5
-  }
+  },
+  physics: %{}
 })
 
 Mud.Engine.Item.create(%{
@@ -2253,9 +2265,10 @@ Mud.Engine.Item.create(%{
   },
   flags: %{
     look: true,
-    furniture: true,
-    scenery: true,
-    has_surface: true
+    is_furniture: true,
+    is_scenery: true,
+    has_surface: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   furniture: %{},
@@ -2266,7 +2279,8 @@ Mud.Engine.Item.create(%{
     item_weight_limit: 0,
     show_item_contents: true,
     show_item_limit: 5
-  }
+  },
+  physics: %{}
 })
 
 Mud.Engine.Item.create(%{
@@ -2275,14 +2289,19 @@ Mud.Engine.Item.create(%{
     short: "a simple wooden chest",
     details: "The chest is big enough to fit an average human, and is bolted to the ground."
   },
+  closable: %{
+    open: true
+  },
   flags: %{
     look: true,
     open: true,
     close: true,
-    container: true
+    has_pocket: true,
+    is_closable: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  container: %{
+  pocket: %{
     capacity: 2000,
     length: 100,
     width: 50,
@@ -2302,6 +2321,9 @@ Mud.Engine.Item.create(%{
     short: "a ragged leather backpack",
     details: "The backpack has clearly seen better days."
   },
+  closable: %{
+    open: true
+  },
   flags: %{
     look: true,
     open: true,
@@ -2312,11 +2334,14 @@ Mud.Engine.Item.create(%{
     drop: true,
     hold: true,
     stow: true,
-    container: true,
-    wearable: true
+    has_pocket: true,
+    is_closable: true,
+    is_wearable: true,
+    has_physics: true,
+    is_equipment: true
   },
   location: %{area_id: center_room.id, on_ground: true},
-  container: %{
+  pocket: %{
     capacity: 1000,
     length: 75,
     width: 50,
@@ -2346,7 +2371,8 @@ Mud.Engine.Item.create(%{
     look: true,
     stow: true,
     trash: true,
-    material: true
+    is_material: true,
+    has_physics: true
   },
   location: %{area_id: center_room.id, on_ground: true},
   physics: %{
@@ -2458,14 +2484,17 @@ Mud.Engine.Item.create_from_template_for_area(
 Mud.Engine.Item.create_from_template_for_area(
   Mud.Engine.ItemTemplate.Gem,
   %{
-    type: "amethyst",
-    carat: 6,
-    clarity: 10,
-    hue: "violet",
-    saturation: 5,
-    tone: 8,
-    cut_type: "emerald",
-    cut_quality: 10
+    description: %{key: "amethyst"},
+    gem: %{
+      type: "amethyst",
+      carat: 6,
+      clarity: 10,
+      hue: "violet",
+      saturation: 5,
+      tone: 8,
+      cut_type: "emerald",
+      cut_quality: 10
+    }
   },
   west_room.id
 )
@@ -2473,14 +2502,17 @@ Mud.Engine.Item.create_from_template_for_area(
 Mud.Engine.Item.create_from_template_for_area(
   Mud.Engine.ItemTemplate.Gem,
   %{
-    type: "emerald",
-    carat: 4,
-    clarity: 5,
-    hue: "green",
-    saturation: 8,
-    tone: 4,
-    cut_type: "emerald",
-    cut_quality: 8
+    description: %{key: "emerald"},
+    gem: %{
+      type: "emerald",
+      carat: 4,
+      clarity: 5,
+      hue: "green",
+      saturation: 8,
+      tone: 4,
+      cut_type: "emerald",
+      cut_quality: 8
+    }
   },
   northwest_room.id
 )
@@ -2488,14 +2520,17 @@ Mud.Engine.Item.create_from_template_for_area(
 Mud.Engine.Item.create_from_template_for_area(
   Mud.Engine.ItemTemplate.Gem,
   %{
-    type: "spinel",
-    carat: 2,
-    clarity: 6,
-    hue: "red",
-    saturation: 8,
-    tone: 3,
-    cut_type: "uncut",
-    cut_quality: 4
+    description: %{key: "spinel"},
+    gem: %{
+      type: "spinel",
+      carat: 2,
+      clarity: 6,
+      hue: "red",
+      saturation: 8,
+      tone: 3,
+      cut_type: "uncut",
+      cut_quality: 4
+    }
   },
   northeast_room.id
 )
@@ -2503,14 +2538,17 @@ Mud.Engine.Item.create_from_template_for_area(
 Mud.Engine.Item.create_from_template_for_area(
   Mud.Engine.ItemTemplate.Gem,
   %{
-    type: "topaz",
-    carat: 0.75,
-    clarity: 3,
-    hue: "blue",
-    saturation: 1,
-    tone: 9,
-    cut_type: "uncut",
-    cut_quality: 3
+    description: %{key: "topaz"},
+    gem: %{
+      type: "topaz",
+      carat: 0.75,
+      clarity: 3,
+      hue: "blue",
+      saturation: 1,
+      tone: 9,
+      cut_type: "uncut",
+      cut_quality: 3
+    }
   },
   east_room.id
 )

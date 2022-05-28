@@ -30,8 +30,8 @@ defmodule Mud.Engine.Shop.Product do
   end
 
   @doc false
-  def changeset(coin, attrs) do
-    coin
+  def changeset(product, attrs) do
+    product
     |> change()
     |> cast(attrs, [
       :shop_id,
@@ -52,14 +52,14 @@ defmodule Mud.Engine.Shop.Product do
     |> Repo.insert()
   end
 
-  def update!(coin, attrs) do
-    coin
+  def update!(product, attrs) do
+    product
     |> changeset(attrs)
     |> Repo.update!()
   end
 
-  def update(coin, attrs) do
-    coin
+  def update(product, attrs) do
+    product
     |> changeset(attrs)
     |> Repo.update()
   end

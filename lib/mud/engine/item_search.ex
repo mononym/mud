@@ -344,7 +344,7 @@ defmodule Mud.Engine.ItemSearch do
     |> modify_query_search_descriptions(search_string)
     |> Repo.all()
     |> Item.preload()
-    |> Enum.filter(& &1.flags.furniture)
+    |> Enum.filter(& &1.flags.is_furniture)
     |> ItemUtil.sort_items(true)
   end
 

@@ -72,10 +72,6 @@ defmodule Mud.Engine.Character.Containers do
   end
 
   def update!(containers, attrs) do
-    IO.inspect("update")
-    IO.inspect(containers)
-    IO.inspect(attrs)
-
     containers
     |> changeset(attrs)
     |> Repo.update!()

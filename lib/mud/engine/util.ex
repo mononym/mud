@@ -369,16 +369,16 @@ defmodule Mud.Engine.Util do
       item.flags.is_equipment ->
         "equipment"
 
-      item.flags.gem ->
+      item.flags.is_gem ->
         "gem"
 
-      item.flags.weapon ->
+      item.flags.is_weapon ->
         "weapon"
 
-      item.flags.furniture ->
+      item.flags.is_furniture ->
         "furniture"
 
-      item.flags.coin ->
+      item.flags.is_coin ->
         "coin"
 
       item.flags.is_jewelry ->
@@ -432,21 +432,21 @@ defmodule Mud.Engine.Util do
     end
   end
 
-  def him_her_them(%{gender_pronoun: "neutral"}), do: "them"
-  def him_her_them(%{gender_pronoun: "female"}), do: "her"
-  def him_her_them(%{gender_pronoun: "male"}), do: "him"
+  def him_her_them(%{pronoun: "neutral"}), do: "them"
+  def him_her_them(%{pronoun: "female"}), do: "her"
+  def him_her_them(%{pronoun: "male"}), do: "him"
 
-  def his_her_their(%{gender_pronoun: "neutral"}), do: "their"
-  def his_her_their(%{gender_pronoun: "female"}), do: "her"
-  def his_her_their(%{gender_pronoun: "male"}), do: "his"
+  def his_her_their(%{pronoun: "neutral"}), do: "their"
+  def his_her_their(%{pronoun: "female"}), do: "her"
+  def his_her_their(%{pronoun: "male"}), do: "his"
 
-  def his_hers_theirs(%{gender_pronoun: "neutral"}), do: "theirs"
-  def his_hers_theirs(%{gender_pronoun: "female"}), do: "hers"
-  def his_hers_theirs(%{gender_pronoun: "male"}), do: "his"
+  def his_hers_theirs(%{pronoun: "neutral"}), do: "theirs"
+  def his_hers_theirs(%{pronoun: "female"}), do: "hers"
+  def his_hers_theirs(%{pronoun: "male"}), do: "his"
 
-  def he_she_they(%{gender_pronoun: "neutral"}), do: "they"
-  def he_she_they(%{gender_pronoun: "female"}), do: "she"
-  def he_she_they(%{gender_pronoun: "male"}), do: "he"
+  def he_she_they(%{pronoun: "neutral"}), do: "they"
+  def he_she_they(%{pronoun: "female"}), do: "she"
+  def he_she_they(%{pronoun: "male"}), do: "he"
 
   def build_item_index(items) do
     Enum.reduce(List.wrap(items), %{}, fn item, map -> Map.put(map, item.id, item) end)
@@ -516,7 +516,7 @@ defmodule Mud.Engine.Util do
         original_item.location.on_ground ->
           message
           |> Message.append_text(
-            " which was on the ground into ",
+            " which was on the ground inside ",
             "base"
           )
 
@@ -531,7 +531,7 @@ defmodule Mud.Engine.Util do
             "character"
           )
           |> Message.append_text(
-            " hand into ",
+            " hand inside ",
             "base"
           )
 
@@ -552,7 +552,7 @@ defmodule Mud.Engine.Util do
             "you"
           )
           |> Message.append_text(
-            " into ",
+            " inside ",
             "base"
           )
       end
@@ -594,7 +594,7 @@ defmodule Mud.Engine.Util do
         original_item.location.on_ground ->
           message
           |> Message.append_text(
-            " which was on the ground into ",
+            " which was on the ground inside ",
             "base"
           )
 
@@ -609,7 +609,7 @@ defmodule Mud.Engine.Util do
             "character"
           )
           |> Message.append_text(
-            " hand into ",
+            " hand inside ",
             "base"
           )
 
@@ -621,9 +621,6 @@ defmodule Mud.Engine.Util do
                 possible_parent.id == original_item.location.relative_item_id
             end)
 
-          IO.inspect(original_path, label: :original_path)
-          IO.inspect(outermost_item, label: :outermost_item)
-
           cond do
             outermost_item.location.on_ground ->
               Message.append_text(message, " from ", "base")
@@ -632,7 +629,7 @@ defmodule Mud.Engine.Util do
                 get_item_type(outermost_item)
               )
               |> Message.append_text(
-                " which is on the ground into ",
+                " which is on the ground inside ",
                 "base"
               )
 
@@ -651,7 +648,7 @@ defmodule Mud.Engine.Util do
                 "character"
               )
               |> Message.append_text(
-                " are holding into ",
+                " are holding inside ",
                 "base"
               )
 
@@ -670,7 +667,7 @@ defmodule Mud.Engine.Util do
                 "character"
               )
               |> Message.append_text(
-                " are wearing into ",
+                " are wearing inside ",
                 "base"
               )
 
@@ -687,7 +684,7 @@ defmodule Mud.Engine.Util do
                 Util.he_she_they(character)
               )
               |> Message.append_text(
-                " into ",
+                " inside ",
                 "base"
               )
           end
@@ -710,7 +707,7 @@ defmodule Mud.Engine.Util do
     )
 
     # are_or_is =
-    #   if character.gender_pronoun == "neutral" do
+    #   if character.pronoun == "neutral" do
     #     "are"
     #   else
     #     "is"
@@ -832,7 +829,7 @@ defmodule Mud.Engine.Util do
           )
 
         are_or_is =
-          if character.gender_pronoun == "neutral" do
+          if character.pronoun == "neutral" do
             "are"
           else
             "is"

@@ -55,11 +55,18 @@ Hooks.AutoHideFlash = {
   }
 }
 
+Hooks.GameClient = {
+    mounted() {
+        window.addEventListener("beforeunload", event => {
+          event.returnValue = "Leaving the page without explicitly logging out will leave your character active for a short time. Do you want to continue?";
+        })
+    }
+}
+
 Hooks.draggable_pane = {
     mounted() {
         this.el.addEventListener("dragstart", e => {
             e.dataTransfer.dropEffect = "move";
-            console.log(e)
             var which = $(this.el).parents('div[name ="window"]').first().data("window")
             e.dataTransfer.setData("text/plain", which + ":" + e.target.id); // save the elements id as a payload
         })
@@ -116,7 +123,6 @@ Hooks.CharacterInventoryWindow = {
 Hooks.MainStoryWindowTrim = {
     updated() {
         const element = this.el;
-        console.log(element.children.length)
         if (element.children.length > 50) {
             do {
                 element.removeChild(element.children[0])

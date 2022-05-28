@@ -145,7 +145,7 @@ defmodule MudWeb.PlayerAuth do
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: Routes.player_session_path(conn, :new))
+      |> redirect(to: Routes.player_session_path(conn, :create))
       |> halt()
     end
   end

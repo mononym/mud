@@ -72,14 +72,12 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   def start_link(context) do
     registered_name = Script.gen_server_id(context.thing, context.key)
 
-    IO.inspect(registered_name, label: :start_link)
-
     case GenServer.start_link(__MODULE__, context, name: registered_name) do
       {:error, {:already_started, _pid}} ->
-        {:error, :already_started} |> IO.inspect(label: :start_link)
+        {:error, :already_started}
 
       result ->
-        result |> IO.inspect(label: :start_link)
+        result
     end
   end
 
@@ -90,9 +88,6 @@ defmodule Mud.Engine.Worker.ScriptWorker do
   @doc false
   @spec init(context) :: {:ok, term(), {:continue, :init}}
   def init(context) do
-    IO.inspect("INIT SCRIPT WORKER")
-    IO.inspect(context)
-
     {:ok, context, {:continue, :init}}
 
     # if context.initialized do
@@ -110,9 +105,7 @@ defmodule Mud.Engine.Worker.ScriptWorker do
     #         Script.thing_to_id_key(context.thing) => context.thing.id,
     #         :key => context.key
     #       }
-    #       |> IO.inspect
     #       |> ScriptData.create!()
-    #       |> IO.inspect("CREATE", label: :init)
 
     #     context = %{context | script: script}
 

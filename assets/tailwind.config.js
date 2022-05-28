@@ -19,7 +19,10 @@ module.exports = {
       },
       fontWeight: {
         'story': 'bolder'
-      }
+      },
+      scale: {
+        flip: '-1',
+      },
     },
     screens: {
       'smphone': '260px',

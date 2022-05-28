@@ -28,8 +28,6 @@ defmodule Mud.Engine.Command.Buy do
   require Logger
 
   def build_ast(ast_nodes) do
-    IO.inspect(ast_nodes, label: :buy_build_ast)
-
     case ast_nodes do
       [_] ->
         nil
@@ -102,7 +100,7 @@ defmodule Mud.Engine.Command.Buy do
           hand =
             cond do
               length(held_items) == 0 ->
-                context.character.handedness
+                context.character.physical_features.dominant_hand
 
               true ->
                 if List.first(held_items).location.hand == "right" do

@@ -271,8 +271,6 @@ defmodule Mud.Engine.Link do
         |> __MODULE__.changeset(normalized_attrs)
         |> Repo.insert()
 
-      IO.inspect(insert_result, label: :insert_result)
-
       case insert_result do
         {:ok, link} ->
           link
@@ -281,8 +279,6 @@ defmodule Mud.Engine.Link do
           |> preload()
 
         {:error, changeset} ->
-          IO.inspect(Keyword.get(changeset.errors, :type, false), label: :insert_result)
-
           if Keyword.get(changeset.errors, :type, false) != false do
             Repo.rollback(:duplicate_link)
           else

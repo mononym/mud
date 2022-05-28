@@ -4,8 +4,10 @@ defmodule MudWeb.PlayLive.AreaPanel do
   alias Ecto.Changeset
   alias Mud.Engine.{Area, Character}
   alias Mud.Engine.Character.Settings
+  alias MudWeb.PlayLive.Util
 
   import MudWeb.PlayLive.Util
+  import MudWeb.PlayLive.Components
 
   require Logger
 
@@ -16,10 +18,12 @@ defmodule MudWeb.PlayLive.AreaPanel do
        area: %Area{},
        character: %Character{settings: %Settings{}},
        other_characters: [],
-       items_on_ground: [],
-       things_of_interest: [],
+       items_on_ground_ids: [],
+       things_of_interest_ids: [],
+       items: %{},
        exits: [],
        denizens: [],
+       parent_child_ids_map: %{},
        area_description_collapsed: false,
        area_description_collapsed_manually: false,
        area_toi_collapsed: false,
@@ -38,7 +42,11 @@ defmodule MudWeb.PlayLive.AreaPanel do
   @impl true
   def update(assigns, socket) do
     socket = assign(socket, assigns)
-    {:ok, maybe_collapse_sections(socket)}
+
+    {:ok,
+     socket
+     |> process_items()
+     |> maybe_collapse_sections()}
   end
 
   @impl true
@@ -98,6 +106,22 @@ defmodule MudWeb.PlayLive.AreaPanel do
   #
   # Internal Functions
   #
+
+  defp process_items(socket) do
+    toi_ids = Stream.filter(Map.values(socket.assigns.items), & &1.flags.is_scenery) |> Util.sort_by_moved_at() |> Enum.map(& &1.id)
+
+    items_on_ground_ids =
+      Stream.filter(Map.values(socket.assigns.items), & &1.location.on_ground and not &1.flags.is_scenery) |> Util.sort_by_moved_at() |> Enum.map(& &1.id)
+
+    parent_child_map = Util.build_parent_child_map(socket.assigns.items)
+
+    assign(socket,
+      items_on_ground_ids: items_on_ground_ids,
+      things_of_interest_ids: toi_ids,
+      parent_child_ids_map: parent_child_map
+    )
+  end
+
   defp maybe_collapse_sections(socket) do
     socket
     |> calculate_area_description_collapsed()
@@ -118,7 +142,9 @@ defmodule MudWeb.PlayLive.AreaPanel do
         if String.length(socket.assigns.area.description || "") > threshold do
           assign(socket, area_description_collapsed: true)
         else
-          assign(socket, area_description_collapsed: socket.assigns.area_description_collapsed_manually)
+          assign(socket,
+            area_description_collapsed: socket.assigns.area_description_collapsed_manually
+          )
         end
 
       "open" ->
@@ -145,7 +171,7 @@ defmodule MudWeb.PlayLive.AreaPanel do
         socket
 
       "manual-threshold" ->
-        if length(socket.assigns.things_of_interest) > threshold do
+        if length(socket.assigns.things_of_interest_ids) > threshold do
           assign(socket, area_toi_collapsed: true)
         else
           assign(socket, area_toi_collapsed: socket.assigns.area_toi_collapsed_manually)
@@ -155,7 +181,7 @@ defmodule MudWeb.PlayLive.AreaPanel do
         assign(socket, area_toi_collapsed: false)
 
       "open-threshold" ->
-        if socket.assigns.things_of_interest > threshold do
+        if length(socket.assigns.things_of_interest_ids) > threshold do
           assign(socket, area_toi_collapsed: true)
         else
           assign(socket, area_toi_collapsed: false)
@@ -175,7 +201,7 @@ defmodule MudWeb.PlayLive.AreaPanel do
         socket
 
       "manual-threshold" ->
-        if length(socket.assigns.items_on_ground) > threshold do
+        if length(socket.assigns.items_on_ground_ids) > threshold do
           assign(socket, area_tog_collapsed: true)
         else
           assign(socket, area_tog_collapsed: socket.assigns.area_tog_collapsed_manually)
@@ -185,7 +211,7 @@ defmodule MudWeb.PlayLive.AreaPanel do
         assign(socket, area_tog_collapsed: false)
 
       "open-threshold" ->
-        if socket.assigns.items_on_ground > threshold do
+        if length(socket.assigns.items_on_ground_ids) > threshold do
           assign(socket, area_tog_collapsed: true)
         else
           assign(socket, area_tog_collapsed: false)
@@ -215,7 +241,7 @@ defmodule MudWeb.PlayLive.AreaPanel do
         assign(socket, area_exits_collapsed: false)
 
       "open-threshold" ->
-        if socket.assigns.exits > threshold do
+        if length(socket.assigns.exits) > threshold do
           assign(socket, area_exits_collapsed: true)
         else
           assign(socket, area_exits_collapsed: false)
