@@ -228,156 +228,158 @@ defmodule Mud.Engine.Command.Look do
     in_inventory = Item.in_inventory?(item.id, context.character.id)
     is_visible = ItemUtil.is_available_for_look?(item)
 
-    cond do
-      is_visible and (in_area or in_inventory) ->
-        switch = context.command.ast.thing.switch
+    if is_visible and (in_area or in_inventory) do
+      switch = context.command.ast.thing.switch
 
-        cond do
-          switch in ["@", "at", nil] ->
-            # get desc for item and spit it out
-            self_msg =
-              context.character.id
-              |> Message.new_story_output()
-              |> Message.append_text(
-                Util.upcase_first(item.description.details),
-                Mud.Engine.Util.get_item_type(item)
-              )
+      cond do
+        switch in ["@", "at", nil] ->
+          # get desc for item and spit it out
+          self_msg =
+            context.character.id
+            |> Message.new_story_output()
+            |> Message.append_text(
+              Util.upcase_first(item.description.details),
+              Mud.Engine.Util.get_item_type(item)
+            )
 
-            Context.append_message(context, self_msg)
+          Context.append_message(context, self_msg)
 
-          switch == "in" and item.flags.has_pocket ->
-            items = Item.list_immediate_children_with_relationship(item, "in")
+        switch == "in" and item.flags.has_pocket and item.flags.is_closable and
+            not item.closable.open ->
+          msg =
+            Message.new_story_output(
+              context.character.id,
+              "#{String.capitalize(item.description.short)} ",
+              Util.get_item_type(item)
+            )
+            |> Message.append_text("must be opened first.", "base")
 
-            case items do
-              [] ->
-                self_msg =
-                  context.character.id
-                  |> Message.new_story_output()
-                  |> Message.append_text(
-                    Util.upcase_first(item.description.short),
-                    Mud.Engine.Util.get_item_type(item)
-                  )
-                  |> Message.append_text(" is empty.", "base")
-
-                Context.append_message(context, self_msg)
-
-              items ->
-                self_msg =
-                  context.character.id
-                  |> Message.new_story_output()
-                  |> Message.append_text(
-                    "You",
-                    "character"
-                  )
-                  |> Message.append_text(
-                    " see: ",
-                    "base"
-                  )
-
-                self_msg =
-                  Enum.reduce(items, self_msg, fn itm, msg ->
-                    msg
-                    |> ItemUtil.build_item_description(itm)
-                    |> Message.append_text(
-                      "; ",
-                      "base"
-                    )
-                  end)
-                  |> Message.drop_last_text()
-                  |> Message.maybe_add_oxford_comma()
-
-                Context.append_message(context, self_msg)
-                |> Context.append_event(
-                  context.character_id,
-                  UpdateArea.new(%{
-                    action: :add,
-                    items: Item.list_all_recursive_surface_children(items)
-                  })
-                )
-            end
-
-          switch == "on" and item.flags.has_surface ->
-            items = Item.list_immediate_children_with_relationship(item, "on")
-
-            case items do
-              [] ->
-                self_msg =
-                  context.character.id
-                  |> Message.new_story_output()
-                  |> Message.append_text(
-                    Util.upcase_first(item.description.short),
-                    Mud.Engine.Util.get_item_type(item)
-                  )
-                  |> Message.append_text(" has nothing on it.", "base")
-
-                Context.append_message(context, self_msg)
-
-              items ->
-                self_msg =
-                  context.character.id
-                  |> Message.new_story_output()
-                  |> Message.append_text(
-                    "You",
-                    "character"
-                  )
-                  |> Message.append_text(
-                    " see: ",
-                    "base"
-                  )
-
-                self_msg =
-                  Enum.reduce(items, self_msg, fn itm, msg ->
-                    msg
-                    |> ItemUtil.build_item_description(itm)
-                    |> Message.append_text(
-                      "; ",
-                      "base"
-                    )
-                  end)
-                  |> Message.drop_last_text()
-                  |> Message.maybe_add_oxford_comma()
-
-                Context.append_message(context, self_msg)
-                |> Context.append_event(
-                  context.character_id,
-                  UpdateArea.new(%{
-                    action: :add,
-                    items: Item.list_all_recursive_surface_children(items)
-                  })
-                )
-            end
-
-          true ->
-            Util.dave_error_v2(context)
-        end
-
-      item.flags.has_pocket and item.flags.is_closable and not item.closable.open ->
-        msg =
-          Message.new_story_output(
-            context.character.id,
-            "#{String.capitalize(item.description.short)} ",
-            Util.get_item_type(item)
+          Context.append_message(
+            context,
+            msg
           )
-          |> Message.append_text("must be opened first.", "base")
 
-        Context.append_message(
-          context,
-          msg
-        )
+        switch == "in" and not item.flags.has_pocket ->
+          self_msg =
+            context.character.id
+            |> Message.new_story_output()
+            |> Message.append_text("You", "character")
+            |> Message.append_text(" cannot look inside ", "base")
+            |> Message.append_text(item.description.short, Util.get_item_type(item))
+            |> Message.append_text(".", "base")
 
-      not item.flags.has_pocket ->
-        self_msg =
-          context.character.id
-          |> Message.new_story_output()
-          |> Message.append_text("You", "character")
-          |> Message.append_text(" cannot look inside ", "base")
-          |> Message.append_text(item.description.short, Util.get_item_type(item))
-          |> Message.append_text(".", "base")
+          Context.append_message(
+            context,
+            self_msg
+          )
 
-        Context.append_message(
-          context,
-          self_msg
-        )
+        switch == "in" and item.flags.has_pocket and item.flags.is_closable and item.closable.open ->
+          items = Item.list_immediate_children_with_relationship(item, "in")
+
+          case items do
+            [] ->
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text(
+                  Util.upcase_first(item.description.short),
+                  Mud.Engine.Util.get_item_type(item)
+                )
+                |> Message.append_text(" is empty.", "base")
+
+              Context.append_message(context, self_msg)
+
+            items ->
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text(
+                  "You",
+                  "character"
+                )
+                |> Message.append_text(
+                  " see: ",
+                  "base"
+                )
+
+              self_msg =
+                Enum.reduce(items, self_msg, fn itm, msg ->
+                  msg
+                  |> ItemUtil.build_item_description(itm)
+                  |> Message.append_text(
+                    "; ",
+                    "base"
+                  )
+                end)
+                |> Message.drop_last_text()
+                |> Message.maybe_add_oxford_comma()
+
+              Context.append_message(context, self_msg)
+              |> Context.append_event(
+                context.character_id,
+                UpdateArea.new(%{
+                  action: :add,
+                  items: Item.list_all_recursive_surface_children(items)
+                })
+              )
+          end
+
+        switch == "on" and item.flags.has_surface ->
+          items = Item.list_immediate_children_with_relationship(item, "on")
+
+          case items do
+            [] ->
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text(
+                  Util.upcase_first(item.description.short),
+                  Mud.Engine.Util.get_item_type(item)
+                )
+                |> Message.append_text(" has nothing on it.", "base")
+
+              Context.append_message(context, self_msg)
+
+            items ->
+              self_msg =
+                context.character.id
+                |> Message.new_story_output()
+                |> Message.append_text(
+                  "You",
+                  "character"
+                )
+                |> Message.append_text(
+                  " see: ",
+                  "base"
+                )
+
+              self_msg =
+                Enum.reduce(items, self_msg, fn itm, msg ->
+                  msg
+                  |> ItemUtil.build_item_description(itm)
+                  |> Message.append_text(
+                    "; ",
+                    "base"
+                  )
+                end)
+                |> Message.drop_last_text()
+                |> Message.maybe_add_oxford_comma()
+
+              Context.append_message(context, self_msg)
+              |> Context.append_event(
+                context.character_id,
+                UpdateArea.new(%{
+                  action: :add,
+                  items: Item.list_all_recursive_surface_children(items)
+                })
+              )
+          end
+
+        true ->
+          Util.dave_error_v2(context)
+      end
+    else
+      Util.dave_error_v2(context)
     end
   end
 end
