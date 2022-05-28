@@ -7,7 +7,7 @@
       </div>
       <p style={"color:#{@inventory_settings.held_items_label}"}>Held Items</p>
     </div>
-    <div class={"pl-1.5 #{if @held_items_collapsed, do: "hidden"}"}>
+    <div class={"pl-1.5 #{if @held_items_collapsed or not @inventory_settings.show_held_items, do: "hidden"}"}>
       <div class="flex items-center">
         <i class="fa-solid fa-hand mr-0.5 scale-x-flip"></i>
         <%= if not is_nil(@held_item_left_hand_id) do %>
@@ -33,7 +33,7 @@
       </div>
       <p style={"color:#{@inventory_settings.worn_weapons_label}"}>Worn Weapons</p>
     </div>
-    <div class={"ml-1 #{if @worn_weapons_collapsed, do: "hidden"}"}>
+    <div class={"ml-1 #{if @worn_weapons_collapsed or not @inventory_settings.show_worn_weapons, do: "hidden"}"}>
       <%= for item_id <- @worn_weapons_ids do %>
         <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
       <% end %>
@@ -46,7 +46,7 @@
       </div>
       <p style={"color:#{@inventory_settings.worn_armor_label}"}>Worn Armor</p>
     </div>
-    <div class={"ml-1 #{if @worn_armor_collapsed, do: "hidden"}"}>
+    <div class={"ml-1 #{if @worn_armor_collapsed or not @inventory_settings.show_worn_armor, do: "hidden"}"}>
       <%= for item_id <- @worn_armor_ids do %>
         <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
       <% end %>
@@ -59,7 +59,7 @@
       </div>
       <p style={"color:#{@inventory_settings.worn_equipment_label}"}>Worn Equipment</p>
     </div>
-    <div class={"ml-1 #{if @worn_equipment_collapsed, do: "hidden"}"}>
+    <div class={"ml-1 #{if @worn_equipment_collapsed or not @inventory_settings.show_worn_equipment, do: "hidden"}"}>
       <%= for item_id <- @worn_equipment_ids do %>
         <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
       <% end %>
@@ -72,7 +72,7 @@
       </div>
       <p style={"color:#{@inventory_settings.worn_clothes_label}"}>Worn Clothes</p>
     </div>
-    <div class={"ml-1 #{if @worn_clothes_collapsed, do: "hidden"}"}>
+    <div class={"ml-1 #{if @worn_clothes_collapsed or not @inventory_settings.show_worn_clothes, do: "hidden"}"}>
       <%= for item_id <- @worn_clothes_ids do %>
         <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
       <% end %>
@@ -85,7 +85,7 @@
       </div>
       <p style={"color:#{@inventory_settings.worn_jewelry_label}"}>Worn Jewelry</p>
     </div>
-    <div class={"ml-1 #{if @worn_jewelry_collapsed, do: "hidden"}"}>
+    <div class={"ml-1 #{if @worn_jewelry_collapsed or not @inventory_settings.show_worn_jewelry, do: "hidden"}"}>
       <%= for item_id <- @worn_jewelry_ids do %>
         <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
       <% end %>
@@ -250,6 +250,16 @@
     <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_equipment"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
       <.tooltip text={"#{if @inventory_settings.show_worn_equipment, do: "Hide", else: "Show"} Worn Equipment"} />
       <i class="fas fa-backpack fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_clothes"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+      <.tooltip text={"#{if @inventory_settings.show_worn_clothes, do: "Hide", else: "Show"} Worn Clothes"} />
+      <i class="fas fa-shirt fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_jewelry"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+      <.tooltip text={"#{if @inventory_settings.show_worn_jewelry, do: "Hide", else: "Show"} Worn Jewelry"} />
+      <i class="fas fa-ring fa-lg"></i>
     </div>
 
     <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_slots"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">

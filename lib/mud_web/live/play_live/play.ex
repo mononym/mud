@@ -105,9 +105,9 @@ defmodule MudWeb.ClientLive.Play do
 
     {:noreply,
      assign(socket,
-       current_area_characters: event.other_characters ++ socket.assigns.current_area_characters,
+       current_area_characters: Enum.uniq_by(event.other_characters ++ socket.assigns.current_area_characters, & &1),
        current_area_items: Map.merge(socket.assigns.current_area_items, all_items_map),
-       current_area_exits: event.exits ++ socket.assigns.current_area_exits
+       current_area_exits: Enum.uniq_by(event.exits ++ socket.assigns.current_area_exits, & &1.id)
      )}
   end
 

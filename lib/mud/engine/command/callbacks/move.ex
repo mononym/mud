@@ -69,11 +69,7 @@ defmodule Mud.Engine.Command.Move do
         )
 
       ast.command not in ["go", "move"] ->
-        direction =
-          ast.command
-          |> normalize_direction()
-
-        attempt_move_direction(direction, context, 0)
+        attempt_move_direction(ast.command, context, 0)
 
       true ->
         cond do
@@ -125,12 +121,12 @@ defmodule Mud.Engine.Command.Move do
       {:ok, matches} when is_integer(which) and which > 0 and which > length(matches) ->
         Util.not_found_error(context)
 
-      {:ok, [match]} ->
+      {:ok, [match]} when normalized_direction != "out" or (normalized_direction == "out" and match.short_description == "out") ->
         attempt_move_link(context, match.match)
 
-      {:ok, matches} ->
+      {:ok, matches} when normalized_direction != "out" ->
         match_fun = fn match ->
-          match.match.short_description == direction
+          match.match.short_description == normalized_direction
         end
 
         matches =

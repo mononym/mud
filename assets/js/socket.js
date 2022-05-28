@@ -13,9 +13,9 @@ import { LiveSocket } from "phoenix_live_view"
 let Hooks = {}
 
 Hooks.Input = {
-    mounted() {
-        this.el.focus()
-    }
+  mounted() {
+    this.el.focus()
+  }
 }
 
 const auto_flash_timers = {}
@@ -55,101 +55,155 @@ Hooks.AutoHideFlash = {
   }
 }
 
+function buildKeyStringFromKeydownEvent(event) {
+  var string = ""
+
+  if (event.ctrlKey) {
+    string += "CTRL "
+  }
+
+  if (event.altKey) {
+    string += "ALT "
+  }
+
+  if (event.shiftKey) {
+    string += "SHIFT "
+  }
+
+  if (event.metaKey) {
+    string += "META "
+  }
+
+  string += event.code
+
+  return string
+}
+
+const hotkeys = {
+  "Numpad7": "move northwest",
+  "Numpad8": "move north",
+  "Numpad9": "move northeast",
+  "Numpad4": "move west",
+  "Numpad5": "move out",
+  "Numpad6": "move east",
+  "Numpad1": "move southwest",
+  "Numpad2": "move south",
+  "Numpad3": "move southeast",
+  "Numpad0": "move down",
+  "NumpadDecimal": "move up",
+  "NumpadEnter": "move bridge",
+  "NumpadAdd": "move path",
+  "NumpadSubtract": "move gate",
+  "NumpadMultiply": "move door",
+  "NumpadDivide": "move portal"
+}
+
 Hooks.GameClient = {
-    mounted() {
-        window.addEventListener("beforeunload", event => {
-          event.returnValue = "Leaving the page without explicitly logging out will leave your character active for a short time. Do you want to continue?";
-        })
-    }
+  mounted() {
+    window.addEventListener("beforeunload", event => {
+      event.returnValue = "Leaving the page without explicitly logging out will leave your character active for a short time. Do you want to continue?";
+    })
+
+    window.addEventListener("keydown", event => {
+      var hotkeyString = buildKeyStringFromKeydownEvent(event)
+      if (hotkeyString in hotkeys) {
+        event.preventDefault()
+        this.pushEvent("submit_text_input", { "input": { "text": hotkeys[hotkeyString] } })
+
+        var element = document.getElementById("text_input")
+        element.focus()
+      }
+    })
+  }
 }
 
 Hooks.draggable_pane = {
-    mounted() {
-        this.el.addEventListener("dragstart", e => {
-            e.dataTransfer.dropEffect = "move";
-            var which = $(this.el).parents('div[name ="window"]').first().data("window")
-            e.dataTransfer.setData("text/plain", which + ":" + e.target.id); // save the elements id as a payload
-        })
-    }
+  mounted() {
+    this.el.addEventListener("dragstart", e => {
+      e.dataTransfer.dropEffect = "move";
+      var which = $(this.el).parents('div[name ="window"]').first().data("window")
+      e.dataTransfer.setData("text/plain", which + ":" + e.target.id); // save the elements id as a payload
+    })
+  }
 }
 
 
 Hooks.draggable_pane_drop_zone = {
-    mounted() {
-        this.el.addEventListener("dragover", e => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-        })
+  mounted() {
+    this.el.addEventListener("dragover", e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+    })
 
-        this.el.addEventListener("drop", e => {
-            e.preventDefault();
-            var data = e.dataTransfer.getData("text/plain");
-            var which = $(this.el).parents('div[name ="window"]').first().data("window")
-            this.pushEvent("move_pane", data + ":" + which)
-        })
-    }
+    this.el.addEventListener("drop", e => {
+      e.preventDefault();
+      var data = e.dataTransfer.getData("text/plain");
+      var which = $(this.el).parents('div[name ="window"]').first().data("window")
+      this.pushEvent("move_pane", data + ":" + which)
+    })
+  }
 }
 
 const toggleMenu = command => {
-    menu.style.display = command === "show" ? "block" : "none";
+  menu.style.display = command === "show" ? "block" : "none";
 };
 
 const setPosition = ({ top, left }) => {
-    menu.style.left = `${left}px`;
-    menu.style.top = `${top}px`;
-    toggleMenu('show');
+  menu.style.left = `${left}px`;
+  menu.style.top = `${top}px`;
+  toggleMenu('show');
 };
 
 Hooks.CharacterInventoryWindow = {
-    mounted() {
-        // this.el.addEventListener("click", e => {
-        //     if (menuVisible) toggleMenu("hide");
-        // });
+  mounted() {
+    // this.el.addEventListener("click", e => {
+    //     if (menuVisible) toggleMenu("hide");
+    // });
 
-        // this.el.addEventListener("contextmenu", e => {
-        //     e.preventDefault();
-        // });
+    // this.el.addEventListener("contextmenu", e => {
+    //     e.preventDefault();
+    // });
 
-        // const origin = {
-        //     left: e.pageX,
-        //     top: e.pageY
-        // };
-        // setPosition(origin);
-        // return false;
-    }
+    // const origin = {
+    //     left: e.pageX,
+    //     top: e.pageY
+    // };
+    // setPosition(origin);
+    // return false;
+  }
 
 }
 
 Hooks.MainStoryWindowTrim = {
-    updated() {
-        const element = this.el;
-        if (element.children.length > 50) {
-            do {
-                element.removeChild(element.children[0])
-            } while (element.children.length > 50)
-        }
+  updated() {
+    const element = this.el;
+    if (element.children.length > 50) {
+      do {
+        element.removeChild(element.children[0])
+      } while (element.children.length > 50)
     }
   }
+}
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content");
 let liveSocket = new LiveSocket("/live", Socket, {
-    params: { _csrf_token: csrfToken },
-    metadata: {
-        click: (e, el) => {
-            return {
-                clientX: e.clientX,
-                clientY: e.clientY
-            }
-        }
+  params: { _csrf_token: csrfToken },
+  metadata: {
+    click: (e, el) => {
+      return {
+        clientX: e.clientX,
+        clientY: e.clientY
+      }
+    }
+  },
+  dom: {
+    onBeforeElUpdated(from, to) {
+      if (from._x_dataStack) {
+        window.Alpine.clone(from, to);
+      }
     },
-    dom: {
-      onBeforeElUpdated(from, to) {
-        if (from._x_dataStack) {
-          window.Alpine.clone(from, to);
-        }
-      },
-    },
-    hooks: Hooks
+  },
+  hooks: Hooks
 });
 liveSocket.connect()
 
