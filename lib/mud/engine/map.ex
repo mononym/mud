@@ -18,7 +18,7 @@ defmodule Mud.Engine.Map do
     field(:name, :string)
     field(:key, :string)
     field(:view_size, :integer, default: 250)
-    field(:grid_size, :integer, default: 50)
+    field(:grid_size, :integer, default: 10)
 
     has_many(:areas, Area)
     has_many(:labels, Label)
@@ -141,13 +141,13 @@ defmodule Mud.Engine.Map do
     # returned so that in the front end the map can be properly constructed to show a partial/unexplored link.
 
     # All rooms character knows about or are public
-    known_or_public_areas_query = base_known_character_areas_query(character_id, map_id)
+    known_areas_query = base_known_character_areas_query(character_id, map_id)
 
-    known_or_public_areas = known_or_public_areas_query |> Repo.all() |> Repo.preload([:flags])
+    known_areas = known_areas_query |> Repo.all() |> Repo.preload([:flags])
 
-    known_area_ids = Enum.map(known_or_public_areas, & &1.id)
+    known_area_ids = Enum.map(known_areas, & &1.id)
 
-    known_links = base_links_from_areas_query(known_or_public_areas_query) |> Repo.all()
+    known_links = base_links_from_areas_query(known_areas_query) |> Repo.all()
 
     external_ids =
       known_links
@@ -177,7 +177,7 @@ defmodule Mud.Engine.Map do
       )
 
     %{
-      areas: Enum.concat([external_areas, known_or_public_areas]) |> Repo.preload([:flags]),
+      areas: Enum.concat([external_areas, known_areas]) |> Repo.preload([:flags]),
       links: known_links |> Repo.preload([:closable, :flags]),
       explored_areas: explored_character_areas
     }

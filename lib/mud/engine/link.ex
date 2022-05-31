@@ -34,9 +34,8 @@ defmodule Mud.Engine.Link do
     field(:type, :string, default: "direction")
     field(:line_width, :integer, default: 2)
     field(:line_color, :string, default: "#FFFFFF")
-    field(:line_dash, :string, default: "4,2")
+    field(:line_dash, :string, default: "2")
     field(:line_dashed, :boolean, default: false)
-    field(:corners, :integer, default: 5)
     field(:line_start_horizontal_offset, :integer, default: 0)
     field(:line_start_vertical_offset, :integer, default: 0)
     field(:line_end_horizontal_offset, :integer, default: 0)
@@ -100,7 +99,6 @@ defmodule Mud.Engine.Link do
     link
     |> cast(attrs, [
       :arrival_text,
-      :corners,
       :departure_text,
       :icon,
       :label,

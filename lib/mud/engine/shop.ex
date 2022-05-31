@@ -70,25 +70,6 @@ defmodule Mud.Engine.Shop do
   end
 
   @doc """
-  Lists all the shops that exist in permanently explores areas, which means all characters know them.
-
-  ## Examples
-
-      iex> list_with_products_from_permanently_explored_areas()
-      [%__MODULE__{}, ...]
-
-  """
-  def list_with_products_from_permanently_explored_areas() do
-    from(shop in __MODULE__,
-      inner_join: area_flags in Mud.Engine.Area.Flags,
-      on: shop.area_id == area_flags.area_id,
-      where: area_flags.permanently_explored == true,
-      select: shop
-    )
-    |> Repo.all()
-  end
-
-  @doc """
   Given a subquery which spits out ids for shops, return a list of shops with populated products
 
   ## Examples

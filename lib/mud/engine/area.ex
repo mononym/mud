@@ -61,6 +61,31 @@ defmodule Mud.Engine.Area do
   end
 
   @doc """
+  Returns a single Area based on area and map key
+
+  ## Examples
+
+      iex> get_by_area_and_map_keys("foo", "bar")
+      %__MODULE__{}
+
+      iex> get_by_area_and_map_keys("bar", "foo")
+      nil
+
+  """
+  @spec get_by_area_and_map_keys(String.t(), String.t()) :: [%__MODULE__{}]
+  def get_by_area_and_map_keys(area_key, map_key) do
+    query =
+      from(
+        area in __MODULE__,
+        join: map in Engine.Map,
+        on: map.id == area.map_id,
+        where: map.key == ^map_key and area.key == ^area_key
+      )
+
+    Repo.one(query)
+  end
+
+  @doc """
   Returns the list of areas.
 
   ## Examples
@@ -243,7 +268,7 @@ defmodule Mud.Engine.Area do
         on: character_area.area_id == area_flags.area_id,
         where:
           area_flags.area_id == ^new_area_id and
-            (character_area.character_id == ^character_id or area_flags.permanently_explored),
+            character_area.character_id == ^character_id,
         select: count(area_flags.id)
       )
     ) == 1
@@ -279,7 +304,7 @@ defmodule Mud.Engine.Area do
 
     from([flags: flags] in base_area_query(),
       where:
-        flags.area_id in subquery(to_area_ids_query) and flags.permanently_explored == false and
+        flags.area_id in subquery(to_area_ids_query) and
           flags.area_id not in subquery(explored_ids)
     )
     |> Repo.all()

@@ -48,7 +48,6 @@ defmodule MudWeb.LinkView do
       line_color: link.line_color,
       line_dash: link.line_dash,
       line_dashed: link.line_dashed,
-      corners: link.corners,
       line_start_horizontal_offset: link.line_start_horizontal_offset,
       line_start_vertical_offset: link.line_start_vertical_offset,
       line_end_horizontal_offset: link.line_end_horizontal_offset,

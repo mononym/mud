@@ -3,6 +3,7 @@ defmodule Mud.Engine.Command.Quit do
 
   alias Mud.Engine.Command.Context
   alias Mud.Engine.Message
+  alias Mud.Engine.Event.Client.CloseSession
 
   def build_ast(ast_nodes) do
     List.first(ast_nodes)
@@ -34,6 +35,10 @@ defmodule Mud.Engine.Command.Quit do
         "#{character.name} just left.",
         "info"
       )
+    )
+    |> Context.append_event(
+      context.character.id,
+      CloseSession.new()
     )
   end
 

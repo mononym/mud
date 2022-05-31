@@ -17,7 +17,6 @@ defmodule Mud.Engine.Area.Flags do
   schema "area_flags" do
     belongs_to(:area, Mud.Engine.Area, type: :binary_id)
     field(:bank, :boolean, default: false)
-    field(:permanently_explored, :boolean, default: false)
   end
 
   @doc false
@@ -27,7 +26,6 @@ defmodule Mud.Engine.Area.Flags do
     |> cast(attrs, [
       :area_id,
       :bank,
-      :permanently_explored
     ])
     |> foreign_key_constraint(:area_id)
   end

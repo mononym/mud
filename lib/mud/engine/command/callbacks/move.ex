@@ -298,10 +298,14 @@ defmodule Mud.Engine.Command.Move do
         Context.append_event(
           context,
           context.character.id,
-          UpdateMap.new(Engine.Map.fetch_character_data(character.id, area.map_id))
+          UpdateMap.new(Map.merge(%{map_id: area.map_id, area_id: area.id}, Engine.Map.fetch_character_data(character.id, area.map_id)))
         )
       else
-        context
+        Context.append_event(
+          context,
+          context.character.id,
+          UpdateMap.new(%{map_id: area.map_id, area_id: area.id})
+        )
       end
 
     # Grab all items and visible nested items

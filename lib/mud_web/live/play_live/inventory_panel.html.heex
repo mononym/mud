@@ -1,5 +1,5 @@
 <div class="w-full h-full flex flex-col">
-  <div class="flex flex-col p-0.5 grow">
+  <div class="flex flex-col p-0.5 grow overflow-y-auto overflow-x-hidden">
     <%# Held Items %>
     <div class={"flex #{if not @inventory_settings.show_held_items, do: "hidden"}"}>
       <div phx-click="toggle_held_items" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
@@ -231,38 +231,38 @@
     </div>
   </div>
 
-  <div class="border-neutral-800 border-t h-2 flex">
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_held_items"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+  <div class="border-neutral-700 border-t h-2 flex w-full">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_held_items"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_held_items, do: "Hide", else: "Show"} Held Items"} />
       <i class="fas fa-hands-holding fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_weapons"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_weapons"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_worn_weapons, do: "Hide", else: "Show"} Worn Weapons"} />
       <i class="fas fa-sword fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_armor"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_armor"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_worn_armor, do: "Hide", else: "Show"} Worn Armor"} />
       <i class="fas fa-shield fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_equipment"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_equipment"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_worn_equipment, do: "Hide", else: "Show"} Worn Equipment"} />
       <i class="fas fa-backpack fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_clothes"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_clothes"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_worn_clothes, do: "Hide", else: "Show"} Worn Clothes"} />
       <i class="fas fa-shirt fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_jewelry"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_jewelry"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_worn_jewelry, do: "Hide", else: "Show"} Worn Jewelry"} />
       <i class="fas fa-ring fa-lg"></i>
     </div>
 
-    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_slots"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-800">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_slots"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
       <.tooltip text={"#{if @inventory_settings.show_slots, do: "Hide", else: "Show"} Slots"} />
       <i class="fas fa-star-of-life fa-lg"></i>
     </div>

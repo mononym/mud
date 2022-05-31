@@ -8,7 +8,6 @@ defmodule Mud.Repo.Migrations.CreateLinks do
       add(:line_width, :integer, default: 2)
       add(:line_color, :string, default: "#FFFFFF")
       add(:line_dash, :integer, default: 0)
-      add(:corners, :integer, default: 5)
       add(:short_description, :citext)
       add(:long_description, :citext)
       add(:departure_text, :citext)

@@ -5,6 +5,7 @@ defmodule Mud.Engine.Character do
 
   alias Mud.Repo
   alias Mud.Engine.{Area, Character, Item, Shop}
+  alias Mud.Engine
   alias Mud.Engine.Util
 
   alias Mud.Engine.Character.{
@@ -191,7 +192,7 @@ defmodule Mud.Engine.Character do
   def create(character_params, physical_features_params) do
     Mud.Repo.transaction(fn ->
       # Just grab something random for Alpha, as long as it is permanently explored
-      area = Area.list_all() |> Enum.filter(& &1.flags.permanently_explored) |> Enum.random()
+      area = Area.get_by_area_and_map_keys("water_fountain", "torinthian_palace_exterior")
 
       # This random selection is just for prototype.
       attrs =
@@ -207,6 +208,8 @@ defmodule Mud.Engine.Character do
       case result do
         {:ok, character} ->
           Logger.info("Character `#{character.name}` created in area `#{area.id}:#{area.name}`")
+          Area.mark_as_explored(area.id, character.id)
+          Engine.Map.mark_as_explored(area.map_id, character.id)
 
           # Set up skills
           :ok = Skill.initialize(character.id)
@@ -627,14 +630,9 @@ defmodule Mud.Engine.Character do
 
   @spec list_known_shops(String.t()) :: [%__MODULE__{}]
   def list_known_shops(character_id) do
-    character_shops =
       character_id
       |> Mud.Engine.CharactersShops.known_shop_ids_from_character_id_query()
       |> Shop.list_with_products_from_query()
-
-    default_known_shops = Shop.list_with_products_from_permanently_explored_areas()
-
-    Enum.concat([default_known_shops, character_shops])
   end
 
   @doc """

@@ -1,6 +1,6 @@
-# Script for populating the database. You can run it as:
+# Script for populating the database for Valmar's Haven - First Tier. You can run it as:
 #
-#     mix run priv/repo/seeds.exs
+#     mix run priv/repo/valmar_haven_tier_1.exs
 #
 # Inside the script, you can read and write to any of your
 # repositories directly:
@@ -10,69 +10,50 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 alias Mud.Engine.{Area, Link}
-alias Mud.Engine.Map.Label
 
 # Map insertions
-{:ok, map} =
+{:ok, valmar_haven_first_tier} =
   Mud.Engine.Map.create(%{
-    name: "Torinthian Royal Palace Exterior",
-    description: "The complete grounds of the Torinthian Royal Palace",
+    name: "Valmar's Haven - First Tier",
+    description: "The first, and lowest, tier of Valmar's Haven is primarily dedicated to the business of the docks and shipyards.",
     view_size: 250,
-    grid_size: 50,
+    grid_size: 10,
     key: "torinthian_palace_exterior"
   })
 
-{:ok, map2} =
-  Mud.Engine.Map.create(%{
-    name: "Torinthian Royal Castle",
-    description: "The interior of the Royal Castle",
-    view_size: 250,
-    grid_size: 50,
-    key: "torinthian_royal_castle"
-  })
-
-{:ok, center_room2} =
+# Area insertions
+{:ok, valmars_plaza} =
   Area.create(%{
     map_x: 0,
     map_y: 0,
-    map_size: 20,
-    map_id: map2.id,
-    name: "Great Hall",
-    description: "The huge hall spans the length of the castle.",
-    key: "great_hall"
+    map_size: 10,
+    map_id: valmar_haven_first_tier.id,
+    name: "Valmar's Plaza",
+    description: "The largest plaza in the Haven boasts, at most times of day, a large amount of traffic due to its central placement as well as a number of important buildings. In the center of the space sits a massive fountain with half a dozen jets of water shooting from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais. To the immediate north stands a large armored gate which guards the entrance to the city's Naval Yard, while to the south a major causeway leads towards the large elevator which hauls people and freight between the first and second tiers of the Haven. To the east and west can be found the docks and supporting infrastructure for those who work the docks and the businesses which rely on them.",
+    key: "valmars_plaza"
   })
 
-# Map Labels
-{:ok, _} =
-  Label.create(%{
-    text: "Royal Maze",
-    x: 3,
-    y: 1,
-    map_id: map.id
-  })
-
-# Room insertions
-{:ok, center_room} =
+{:ok, valmars_causeway} =
   Area.create(%{
     map_x: 0,
-    map_y: 0,
-    map_size: 20,
-    map_id: map.id,
-    name: "Water Fountain",
+    map_y: -5,
+    map_size: 10,
+    map_id: valmar_haven_first_tier.id,
+    name: "Valmar's Causeway",
     description:
-      "Half a dozen jets of water shoot from the mouths of half-submerged merfolk which appear frozen in a dance around the central dais of the fountain, where one large jet shoots straight up for the water to cascade back upon itself in a riot of motion and sound. Low benches surround the area, tucked away under low-hanging branches to provide shelter from the sun and some measure of privacy from other visitors.",
-    key: "water_fountain"
+      "Over a century of heavily laden traffic has begun to wear furrows into the dark rock along the causeway running north and south. The primary cause of the traffic lies to the immediate south and is the elevator which hauls people and freight between the first and second tiers of the Haven. To the east and west stands mostly warehouses, bunkhouses, and various buildings dedicated to the mundane yet important commercial businesses through which Narazan derives much of its wealth. Smaller amounts of traffic to and from these districts from the elevator have worn smooth the stone but have yet to make a noticible dent. To the north rise the towers and walls of the Naval Yard, the home of Narazan's small but powerful force of priviteers and city owned warships which ply the seas to protect its trade routes.",
+    key: "valmars_causeway"
   })
 
-{:ok, east_room} =
+{:ok, elevator_platform} =
   Area.create(%{
-    map_x: 1,
-    map_y: 0,
+    map_x: 0,
+    map_y: -10,
     map_size: 20,
     map_id: map.id,
-    name: "East Garden Path",
+    name: "Elevator Platform",
     description:
-      "Red rose bushes dot the area haphazardly, the paths winding between thorny branches seemingly without direction.",
+      "The huge platform is wide enough to hold upwards of twenty large wagons, and their teams of draft animals, waiting their turn to load onto the next elevator while still leaving room for the incoming elevator to unload its passengers. Thick chains stretch taut between the large wheels, set into the smooth rock along which the elevator slides up and down the cliff face, at the bottom and the top of the rise.",
     key: "east_garden_path"
   })
 

@@ -3,9 +3,20 @@ defmodule MudWeb.ClientLive.Play do
 
   alias Mud.Engine.{Area, Character, Event, Item, Session}
   alias Mud.Engine
-  alias Mud.Engine.Event.Client.{UpdateArea, UpdateCharacter, UpdateInventory, UpdateTime}
+
+  alias Mud.Engine.Event.Client.{
+    CloseSession,
+    UpdateArea,
+    UpdateCharacter,
+    UpdateExploredArea,
+    UpdateInventory,
+    UpdateMap,
+    UpdateTime
+  }
+
   alias Mud.Engine.Message.StoryOutput
   alias Mud.Engine.Item.Closable
+  alias Mud.Engine.Map.Label
 
   import MudWeb.PlayLive.Util
 
@@ -20,6 +31,17 @@ defmodule MudWeb.ClientLive.Play do
         inventory =
           Item.list_held_or_worn_items_and_children(character.id)
           |> Enum.into(%{}, fn item -> {item.id, item} end)
+
+        # Area the player is currently in
+        character_area = Area.get!(character.area_id)
+        # Map data for the map the player is currently in
+        map_data = Engine.Map.fetch_character_data(character.id, character_area.map_id)
+        map_areas = Enum.into(map_data.areas, %{}, &{&1.id, &1})
+        map_links = Enum.into(map_data.links, %{}, &{&1.id, &1})
+        map = Engine.Map.get!(character_area.map_id)
+        map_labels = Label.get_map_labels(map.id)
+        # All known maps for player
+        maps = Enum.into(Character.load_known_maps(character.id), %{}, &{&1.id, &1})
 
         Engine.start_character_session(character.id)
         Engine.Session.subscribe(character.id)
@@ -46,6 +68,13 @@ defmodule MudWeb.ClientLive.Play do
            current_area_items: %{},
            current_area_characters: [],
            current_area_exits: [],
+           map: character_area.map_id,
+           map_current_area_id: character.area_id,
+           maps: maps,
+           map_labels: map_labels,
+           map_areas: map_areas,
+           map_links: map_links,
+           map_explored_areas: MapSet.new(map_data.explored_areas),
            inventory: inventory
          ), temporary_assigns: [story_output: []]}
       else
@@ -61,6 +90,13 @@ defmodule MudWeb.ClientLive.Play do
            current_area_items: %{},
            current_area_characters: [],
            current_area_exits: [],
+           map: "",
+           maps: %{},
+           map_labels: [],
+           map_areas: %{},
+           map_links: %{},
+           map_explored_areas: MapSet.new(),
+           map_current_area_id: "",
            inventory: %{}
          ), temporary_assigns: [story_output: []]}
       end
@@ -105,7 +141,8 @@ defmodule MudWeb.ClientLive.Play do
 
     {:noreply,
      assign(socket,
-       current_area_characters: Enum.uniq_by(event.other_characters ++ socket.assigns.current_area_characters, & &1),
+       current_area_characters:
+         Enum.uniq_by(event.other_characters ++ socket.assigns.current_area_characters, & &1),
        current_area_items: Map.merge(socket.assigns.current_area_items, all_items_map),
        current_area_exits: Enum.uniq_by(event.exits ++ socket.assigns.current_area_exits, & &1.id)
      )}
@@ -129,7 +166,8 @@ defmodule MudWeb.ClientLive.Play do
   end
 
   @impl true
-  def handle_cast(%UpdateInventory{action: action} = event, socket) when action in [:add, :update] do
+  def handle_cast(%UpdateInventory{action: action} = event, socket)
+      when action in [:add, :update] do
     Logger.debug("Received update inventory with add action: #{inspect(event)}")
     new_inventory = Enum.into(event.items, %{}, &{&1.id, &1})
     {:noreply, assign(socket, inventory: Map.merge(socket.assigns.inventory, new_inventory))}
@@ -145,7 +183,9 @@ defmodule MudWeb.ClientLive.Play do
   @impl true
   def handle_cast(%UpdateCharacter{action: :settings} = event, socket) do
     Logger.debug("Received update character: #{inspect(event)}")
-    {:noreply, assign(socket, character: Map.put(socket.assigns.character, :settings, event.settings))}
+
+    {:noreply,
+     assign(socket, character: Map.put(socket.assigns.character, :settings, event.settings))}
   end
 
   @impl true
@@ -157,13 +197,68 @@ defmodule MudWeb.ClientLive.Play do
   @impl true
   def handle_cast(%UpdateCharacter{action: "wealth"} = event, socket) do
     Logger.debug("Received update character: #{inspect(event)}")
-    {:noreply, assign(socket, character: Map.put(socket.assigns.character, :wealth, event.wealth))}
+
+    {:noreply,
+     assign(socket, character: Map.put(socket.assigns.character, :wealth, event.wealth))}
   end
 
   @impl true
   def handle_cast(%UpdateTime{time_string: time_string} = event, socket) do
     Logger.debug("Received update time: #{inspect(event)}")
     {:noreply, assign(socket, time_string: time_string)}
+  end
+
+  @impl true
+  def handle_cast(%UpdateExploredArea{} = event, socket) do
+    Logger.debug("Received UpdateExploredArea: #{inspect(event)}")
+
+    new_explored_areas =
+      Enum.reduce(event.explored, socket.assigns.map_explored_areas, fn explored, set ->
+        MapSet.put(set, explored)
+      end)
+
+    areas = Enum.into(event.areas, %{}, &{&1.id, &1})
+    links = Enum.into(event.links, %{}, &{&1.id, &1})
+
+    {:noreply,
+     assign(socket,
+       map_explored_areas: new_explored_areas,
+       map_areas: Map.merge(socket.assigns.map_areas, areas),
+       map_links: Map.merge(socket.assigns.map_links, links)
+     )}
+  end
+
+  @impl true
+  def handle_cast(%UpdateMap{action: :move} = event, socket) do
+    Logger.debug("Received update map: #{inspect(event)}")
+
+    if event.map_id != socket.assigns.map do
+      areas = Enum.into(event.areas, %{}, &{&1.id, &1})
+      links = Enum.into(event.links, %{}, &{&1.id, &1})
+      explored_areas = MapSet.new(event.explored_areas)
+      map_labels = Label.get_map_labels(event.map_id)
+
+      {:noreply,
+       assign(socket,
+         map: event.map_id,
+         map_areas: areas,
+         map_links: links,
+         map_explored_areas: explored_areas,
+         map_labels: map_labels,
+         map_current_area_id: event.area_id
+       )}
+    else
+      {:noreply,
+       assign(socket,
+         map_current_area_id: event.area_id
+       )}
+    end
+  end
+
+  @impl true
+  def handle_cast(%CloseSession{action: :quit} = event, socket) do
+    Logger.debug("Received close session: #{inspect(event)}")
+    {:noreply, push_redirect(socket, to: Routes.home_show_path(socket, :show))}
   end
 
   @impl true
@@ -176,6 +271,7 @@ defmodule MudWeb.ClientLive.Play do
   def handle_event("toggle_item_close", %{"item_id" => item_id}, socket) do
     item = socket.assigns.inventory[item_id] || socket.assigns.current_area_items[item_id]
     closable = item.closable
+
     command =
       if closable.open do
         "close"
@@ -212,7 +308,9 @@ defmodule MudWeb.ClientLive.Play do
   @impl true
   def handle_info(%UpdateCharacter{action: :settings} = event, socket) do
     Logger.debug("Received update character: #{inspect(event)}")
-    {:noreply, assign(socket, character: Map.put(socket.assigns.character, :settings, event.settings))}
+
+    {:noreply,
+     assign(socket, character: Map.put(socket.assigns.character, :settings, event.settings))}
   end
 
   #

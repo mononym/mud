@@ -100,6 +100,9 @@ const hotkeys = {
 
 Hooks.GameClient = {
   mounted() {
+    var element = document.getElementById("text_input")
+    element.focus()
+    
     window.addEventListener("beforeunload", event => {
       event.returnValue = "Leaving the page without explicitly logging out will leave your character active for a short time. Do you want to continue?";
     })
@@ -114,6 +117,25 @@ Hooks.GameClient = {
         element.focus()
       }
     })
+  }
+}
+
+Hooks.SvgMap = {
+  mounted() {
+    const self = this
+    const resize_ob = new ResizeObserver(function(entries) {
+      // since we are observing only a single element, so we access the first element in entries array
+      let rect = entries[0].contentRect;
+    
+      // current width & height
+      let width = rect.width;
+      let height = rect.height;
+
+      self.pushEventTo(self.el, "set_map_dimensions", { "width": width, "height": height})
+    });
+
+    // resize_ob.observe(this.el)
+    this.pushEventTo(this.el, "set_map_dimensions", { "width": this.el.offsetWidth, "height": this.el.offsetHeight})
   }
 }
 

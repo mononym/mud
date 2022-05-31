@@ -168,8 +168,6 @@ defmodule Mud.Engine.Character.Settings do
       # Command Input window colors
       field(:input, :string, default: "#ffffff")
       field(:input_background, :string, default: "#374151")
-      field(:input_button_background, :string, default: "#e5e7eb")
-      field(:input_button_icon, :string, default: "#ffffff")
 
       # Story window colors
       field(:story_background, :string, default: "#28282D")
@@ -280,8 +278,6 @@ defmodule Mud.Engine.Character.Settings do
       # Command Input window colors
       :input,
       :input_background,
-      :input_button_background,
-      :input_button_icon,
       # Story window colors
       :story_background,
       :story_history_icon,
