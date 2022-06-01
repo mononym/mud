@@ -6,16 +6,18 @@ defmodule MudWeb.PlayLive.InventoryPanel do
   alias Mud.Engine.Character.Settings
   alias MudWeb.PlayLive.Util
   alias Mud.Engine.Event.Client.UpdateCharacter
+  alias MudWeb.PlayLive.HeldItemsComponent
+  alias MudWeb.PlayLive.WornEquipmentComponent
+  alias MudWeb.PlayLive.WornArmorComponent
+  alias MudWeb.PlayLive.WornClothesComponent
+  alias MudWeb.PlayLive.WornJewelryComponent
+  alias MudWeb.PlayLive.WornWeaponsComponent
+  alias MudWeb.PlayLive.SlotsComponent
 
   import MudWeb.PlayLive.Util
   import MudWeb.PlayLive.Components
 
   require Logger
-
-  # held items
-  # worn containers
-  # worn items
-  # slots
 
   @impl true
   def mount(socket) do
@@ -29,33 +31,7 @@ defmodule MudWeb.PlayLive.InventoryPanel do
        worn_clothes_ids: [],
        worn_weapons_ids: [],
        worn_jewelry_ids: [],
-       held_items_collapsed: false,
-       worn_equipment_collapsed: false,
-       worn_items_collapsed: false,
-       slots_collapsed: false,
-       worn_armor_collapsed: false,
-       worn_clothes_collapsed: false,
-       worn_weapons_collapsed: false,
-       worn_jewelry_collapsed: false,
-       parent_child_ids_map: %{},
-       slot_collapsed: %{
-        "on_back" => false,
-        "around_waist" => false,
-        "on_belt" => false,
-        "on_finger" => false,
-        "over_shoulders" => false,
-        "over_shoulder" => false,
-        "on_head" => false,
-        "in_hair" => false,
-        "on_hair" => false,
-        "around_neck" => false,
-        "on_torso" => false,
-        "on_legs" => false,
-        "on_feet" => false,
-        "on_hands" => false,
-        "on_thigh" => false,
-        "on_ankle" => false
-       }
+       parent_child_ids_map: %{}
      )}
   end
 
@@ -64,78 +40,6 @@ defmodule MudWeb.PlayLive.InventoryPanel do
     socket = assign(socket, assigns)
 
     {:ok, process_inventory(socket)}
-  end
-
-  @impl true
-  def handle_event("toggle_held_items", _params, socket) do
-    {:noreply,
-     assign(socket,
-       held_items_collapsed: not socket.assigns.held_items_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_containers", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_containers_collapsed: not socket.assigns.worn_containers_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_weapons", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_weapons_collapsed: not socket.assigns.worn_weapons_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_armor", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_armor_collapsed: not socket.assigns.worn_armor_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_clothes", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_clothes_collapsed: not socket.assigns.worn_clothes_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_jewelry", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_jewelry_collapsed: not socket.assigns.worn_jewelry_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_worn_equipment", _params, socket) do
-    {:noreply,
-     assign(socket,
-     worn_equipment_collapsed: not socket.assigns.worn_equipment_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_slots", _params, socket) do
-    {:noreply,
-     assign(socket,
-     slots_collapsed: not socket.assigns.slots_collapsed
-     )}
-  end
-
-  @impl true
-  def handle_event("toggle_slot", %{"slot" => slot}, socket) do
-    {:noreply,
-     assign(socket,
-     slot_collapsed: Map.put(socket.assigns.slot_collapsed, slot, not socket.assigns.slot_collapsed[slot])
-     )}
   end
 
   @impl true

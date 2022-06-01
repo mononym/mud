@@ -1,234 +1,39 @@
 <div class="w-full h-full flex flex-col">
   <div class="flex flex-col p-0.5 grow overflow-y-auto overflow-x-hidden">
     <%# Held Items %>
-    <div class={"flex #{if not @inventory_settings.show_held_items, do: "hidden"}"}>
-      <div phx-click="toggle_held_items" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @held_items_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.held_items_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.held_items_label}"}>Held Items</p>
-    </div>
-    <div class={"pl-1.5 #{if @held_items_collapsed or not @inventory_settings.show_held_items, do: "hidden"}"}>
-      <div class="flex items-center">
-        <i class="fa-solid fa-hand mr-0.5 scale-x-flip"></i>
-        <%= if not is_nil(@held_item_left_hand_id) do %>
-          <p style={"color:#{item_to_color(@colors_settings, @inventory[@held_item_left_hand_id])}"}><%= @inventory[@held_item_left_hand_id].description.short %></p>
-        <% else %>
-          <p style={"color:#{@inventory_settings.empty_hand}"}>Left Hand Empty</p>
-        <% end %>
-      </div>
-      <div class="flex items-center">
-        <i class="fa-solid fa-hand mr-0.5"></i>
-        <%= if not is_nil(@held_item_right_hand_id) do %>
-          <p style={"color:#{item_to_color(@colors_settings, @inventory[@held_item_right_hand_id])}"}><%= @inventory[@held_item_right_hand_id].description.short %></p>
-        <% else %>
-          <p style={"color:#{@inventory_settings.empty_hand}"}>Right Hand Empty</p>
-        <% end %>
-      </div>
-    </div>
+    <%= if @inventory_settings.show_held_items do %>
+      <.live_component module={HeldItemsComponent} id="held_items" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} held_item_left_hand_id={@held_item_left_hand_id} held_item_right_hand_id={@held_item_right_hand_id} />
+    <% end %>
 
     <%# Worn Weapons %>
-    <div class={"flex #{if not @inventory_settings.show_worn_weapons, do: "hidden"}"}>
-      <div phx-click="toggle_worn_weapons" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @worn_weapons_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.worn_weapons_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.worn_weapons_label}"}>Worn Weapons</p>
-    </div>
-    <div class={"ml-1 #{if @worn_weapons_collapsed or not @inventory_settings.show_worn_weapons, do: "hidden"}"}>
-      <%= for item_id <- @worn_weapons_ids do %>
-        <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-      <% end %>
-    </div>
+    <%= if @inventory_settings.show_worn_weapons do %>
+      <.live_component module={WornWeaponsComponent} id="worn_weapons" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_weapons_ids={@worn_weapons_ids} />
+    <% end %>
 
     <%# Worn Armor %>
-    <div class={"flex #{if not @inventory_settings.show_worn_armor, do: "hidden"}"}>
-      <div phx-click="toggle_worn_armor" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @worn_armor_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.worn_armor_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.worn_armor_label}"}>Worn Armor</p>
-    </div>
-    <div class={"ml-1 #{if @worn_armor_collapsed or not @inventory_settings.show_worn_armor, do: "hidden"}"}>
-      <%= for item_id <- @worn_armor_ids do %>
-        <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-      <% end %>
-    </div>
+    <%= if @inventory_settings.show_worn_armor do %>
+      <.live_component module={WornArmorComponent} id="worn_armor" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_armor_ids={@worn_armor_ids} />
+    <% end %>
 
     <%# Worn Equipment %>
-    <div class={"flex #{if not @inventory_settings.show_worn_equipment, do: "hidden"}"}>
-      <div phx-click="toggle_worn_equipment" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @worn_equipment_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.worn_equipment_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.worn_equipment_label}"}>Worn Equipment</p>
-    </div>
-    <div class={"ml-1 #{if @worn_equipment_collapsed or not @inventory_settings.show_worn_equipment, do: "hidden"}"}>
-      <%= for item_id <- @worn_equipment_ids do %>
-        <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-      <% end %>
-    </div>
+    <%= if @inventory_settings.show_worn_equipment do %>
+      <.live_component module={WornEquipmentComponent} id="worn_equipment" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_equipment_ids={@worn_equipment_ids} />
+    <% end %>
 
     <%# Worn Clothes %>
-    <div class={"flex #{if not @inventory_settings.show_worn_clothes, do: "hidden"}"}>
-      <div phx-click="toggle_worn_clothes" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @worn_clothes_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.worn_clothes_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.worn_clothes_label}"}>Worn Clothes</p>
-    </div>
-    <div class={"ml-1 #{if @worn_clothes_collapsed or not @inventory_settings.show_worn_clothes, do: "hidden"}"}>
-      <%= for item_id <- @worn_clothes_ids do %>
-        <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-      <% end %>
-    </div>
+    <%= if @inventory_settings.show_worn_clothes do %>
+      <.live_component module={WornClothesComponent} id="worn_clothes" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_clothes_ids={@worn_clothes_ids} />
+    <% end %>
 
     <%# Worn Jewelry %>
-    <div class={"flex #{if not @inventory_settings.show_worn_jewelry, do: "hidden"}"}>
-      <div phx-click="toggle_worn_jewelry" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @worn_jewelry_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.worn_jewelry_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.worn_jewelry_label}"}>Worn Jewelry</p>
-    </div>
-    <div class={"ml-1 #{if @worn_jewelry_collapsed or not @inventory_settings.show_worn_jewelry, do: "hidden"}"}>
-      <%= for item_id <- @worn_jewelry_ids do %>
-        <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-      <% end %>
-    </div>
+    <%= if @inventory_settings.show_worn_jewelry do %>
+      <.live_component module={WornJewelryComponent} id="worn_jewelry" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_jewelry_ids={@worn_jewelry_ids} />
+    <% end %>
 
     <%# Slots %>
-    <div class={"flex #{if not @inventory_settings.show_slots, do: "hidden"}"}>
-      <div phx-click="toggle_slots" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
-        <i class={"fas fa-#{if @slots_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-      </div>
-      <p style={"color:#{@inventory_settings.slots_label}"}>Slots</p>
-    </div>
-    <div class={"ml-1 flex flex-col #{if @slots_collapsed or not @inventory_settings.show_slots, do: "hidden"}"}>
-      <%# On Hair %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="on_hair" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["on_hair"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>On Hair (<%= length(Map.get(@slots_ids, "on_hair", [])) %>/<%= @slots.on_hair %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["on_hair"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "on_hair", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# In Hair %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="in_hair" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["in_hair"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>In Hair (<%= length(Map.get(@slots_ids, "in_hair", [])) %>/<%= @slots.in_hair %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["in_hair"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "in_hair", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# On Head %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="on_head" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["on_head"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>On Head (<%= length(Map.get(@slots_ids, "on_head", [])) %>/<%= @slots.on_head %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["on_head"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "on_head", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# Around Neck %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="around_neck" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["around_neck"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>Around Neck (<%= length(Map.get(@slots_ids, "around_neck", [])) %>/<%= @slots.around_neck %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["around_neck"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "around_neck", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# Over Shoulders %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="over_shoulders" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["over_shoulders"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>Over Shoulders (<%= length(Map.get(@slots_ids, "over_shoulders", [])) %>/<%= @slots.over_shoulders %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["over_shoulders"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "over_shoulders", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# Over Shoulder %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="over_shoulder" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["over_shoulder"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>Over Shoulder (<%= length(Map.get(@slots_ids, "over_shoulder", [])) %>/<%= @slots.over_shoulder %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["over_shoulder"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "over_shoulder", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# On Torso %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="on_torso" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["on_torso"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>On Torso (<%= length(Map.get(@slots_ids, "on_torso", [])) %>/<%= @slots.on_torso %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["on_torso"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "on_torso", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# On Back %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="on_back" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["on_back"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>On Back (<%= length(Map.get(@slots_ids, "on_back", [])) %>/<%= @slots.on_back %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["on_back"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "on_back", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# Around Waist %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="around_waist" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["around_waist"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>Around Waist (<%= length(Map.get(@slots_ids, "around_waist", [])) %>/<%= @slots.around_waist %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["around_waist"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "around_waist", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-
-      <%# On Belt %>
-      <div class="flex">
-        <div phx-click="toggle_slot" phx-throttle="500" phx-target={@myself} phx-value-slot="on_belt" class="relative w-1 h-1 mr-0.5 cursor-pointer">
-          <i class={"fas fa-#{if @slot_collapsed["on_belt"], do: "plus", else: "minus"} fa-lg"} style={"color:#{@inventory_settings.slots_label}"}></i>
-        </div>
-        <p style={"color:#{@inventory_settings.slots_label}"}>On Belt (<%= length(Map.get(@slots_ids, "on_belt", [])) %>/<%= @slots.on_belt %>)</p>
-      </div>
-      <div class={"ml-1 #{if @slot_collapsed["on_belt"], do: "hidden"}"}>
-        <%= for item_id <- Map.get(@slots_ids, "on_belt", []) do %>
-          <.item item={@inventory[item_id]} colors_settings={@colors_settings} items={@inventory} parent_child_ids_map={@parent_child_ids_map} />
-        <% end %>
-      </div>
-    </div>
+    <%= if @inventory_settings.show_slots do %>
+      <.live_component module={SlotsComponent} id="slots" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} slots_ids={@slots_ids} slots={@slots} />
+    <% end %>
   </div>
 
   <div class="border-neutral-700 border-t h-2 flex w-full">
