@@ -121,7 +121,9 @@ defmodule Mud.Engine.Command.Move do
       {:ok, matches} when is_integer(which) and which > 0 and which > length(matches) ->
         Util.not_found_error(context)
 
-      {:ok, [match]} when normalized_direction != "out" or (normalized_direction == "out" and match.short_description == "out") ->
+      {:ok, [match]}
+      when normalized_direction != "out" or
+             (normalized_direction == "out" and match.short_description == "out") ->
         attempt_move_link(context, match.match)
 
       {:ok, matches} when normalized_direction != "out" ->
@@ -154,14 +156,6 @@ defmodule Mud.Engine.Command.Move do
         )
     end
   end
-
-  # defp handle_multiple_matches(context, matches) when length(matches) < 10 do
-  #   descriptions = Enum.map(matches, & &1.description.short)
-
-  #   error_msg = "{{warning}}Which exit?{{/warning}}"
-
-  #   Util.multiple_match_error(context, descriptions, matches, error_msg, __MODULE__)
-  # end
 
   defp handle_multiple_matches(context, _matches) do
     Context.append_message(
@@ -199,88 +193,6 @@ defmodule Mud.Engine.Command.Move do
     end
   end
 
-  # defp maybe_move(context, link, other_matches) do
-  #   if not link.flags.closable or (link.flags.closable and link.closable.open) do
-  #     move(context, link, other_matches)
-  #   else
-  #     upcased_desc = Mud.Engine.Util.upcase_first(link.short_description)
-
-  #     Context.append_message(
-  #       context,
-  #       Message.new_story_output(
-  #         context.character.id,
-  #         "#{upcased_desc} is closed.",
-  #         "system_alert"
-  #       )
-  #     )
-  #   end
-  # end
-
-  defp maybe_update_unexplored(context, area, old_area) do
-    # Check to see if this is a room that is being visited by the character for the first time
-    if not Area.has_been_explored?(area.id, context.character.id) do
-      unexplored_areas = Area.list_unexplored_areas_linked_to_area(area.id, context.character.id)
-
-      unexplored_area_ids = Enum.map(unexplored_areas, & &1.id)
-      unexplored_links = Link.list_links_between_areas(area.id, unexplored_area_ids)
-
-      Area.mark_as_explored(area.id, context.character.id)
-
-      context =
-        Context.append_event(
-          context,
-          context.character.id,
-          UpdateExploredArea.new(%{
-            action: :add,
-            areas: unexplored_areas,
-            links: unexplored_links,
-            explored: [area.id]
-          })
-        )
-
-      # Check to see if in a map for the first time and update that if so
-      if old_area.map_id != area.map_id and
-           not Engine.Map.has_been_explored?(area.map_id, context.character.id) do
-        Engine.Map.mark_as_explored(area.map_id, context.character.id)
-
-        new_map = Engine.Map.get!(area.map_id)
-
-        Context.append_event(
-          context,
-          context.character.id,
-          UpdateExploredMap.new(%{
-            action: :add,
-            maps: [new_map]
-          })
-        )
-      else
-        context
-      end
-      |> maybe_update_known_shops(area)
-    else
-      context
-    end
-  end
-
-  defp maybe_update_known_shops(context, area) do
-    case Shop.list_by_area_with_products(area.id) do
-      [] ->
-        context
-
-      shops ->
-        Shop.mark_as_known(shops, context.character.id)
-
-        Context.append_event(
-          context,
-          context.character.id,
-          UpdateShops.new(%{
-            action: :add,
-            shops: shops
-          })
-        )
-    end
-  end
-
   defp move(context, link, other_matches) do
     # Move the character in the database
     {:ok, character} = Character.update(context.character, %{area_id: link.to_id})
@@ -288,24 +200,90 @@ defmodule Mud.Engine.Command.Move do
     old_area = Area.get!(link.from_id)
     area = Area.get!(link.to_id)
 
-    # check if area has already been explored. If it has do nothing. If not insert a record to say there was a visit
-    # and add an event to the front end to send the updated area
-    context = maybe_update_unexplored(context, area, old_area)
+    area_has_been_explored = Area.has_been_explored?(area.id, context.character.id)
 
-    # If moving between maps, update client with new map information
     context =
-      if old_area.map_id != area.map_id do
-        Context.append_event(
-          context,
-          context.character.id,
-          UpdateMap.new(Map.merge(%{map_id: area.map_id, area_id: area.id}, Engine.Map.fetch_character_data(character.id, area.map_id)))
-        )
-      else
-        Context.append_event(
-          context,
-          context.character.id,
-          UpdateMap.new(%{map_id: area.map_id, area_id: area.id})
-        )
+      cond do
+        not area_has_been_explored and
+            old_area.map_id !=
+              area.map_id ->
+          Area.mark_as_explored(area.id, context.character.id)
+
+          new_update =
+            UpdateMap.new(
+              Map.merge(
+                %{map_id: area.map_id, area_id: area.id},
+                Engine.Map.fetch_character_data(character.id, area.map_id)
+              )
+            )
+
+          if not Engine.Map.has_been_explored?(area.map_id, context.character.id) do
+            Engine.Map.mark_as_explored(area.map_id, context.character.id)
+            new_map = Engine.Map.get!(area.map_id)
+
+            event = %{
+              new_update
+              | maps: [new_map | new_update.maps]
+            }
+
+            Context.append_event(
+              context,
+              context.character.id,
+              event
+            )
+          else
+            Context.append_event(
+              context,
+              context.character.id,
+              new_update
+            )
+          end
+
+        not area_has_been_explored and
+            old_area.map_id ==
+              area.map_id ->
+          Area.mark_as_explored(area.id, context.character.id)
+
+          unexplored_areas =
+            Area.list_unexplored_areas_linked_to_area(area.id, context.character.id)
+
+          unexplored_area_ids = Enum.map(unexplored_areas, & &1.id)
+          unexplored_links = Link.list_links_between_areas(area.id, unexplored_area_ids)
+
+          Context.append_event(
+            context,
+            context.character.id,
+            UpdateMap.new(%{
+              map_id: area.map_id,
+              area_id: area.id,
+              areas: [area | unexplored_areas],
+              links: unexplored_links,
+              explored_areas: [area.id]
+            })
+          )
+
+        area_has_been_explored and
+            old_area.map_id !=
+              area.map_id ->
+          Context.append_event(
+            context,
+            context.character.id,
+            UpdateMap.new(
+              Map.merge(
+                %{map_id: area.map_id, area_id: area.id},
+                Engine.Map.fetch_character_data(character.id, area.map_id)
+              )
+            )
+          )
+
+        area_has_been_explored and
+            old_area.map_id ==
+              area.map_id ->
+          Context.append_event(
+            context,
+            context.character.id,
+            UpdateMap.new(%{map_id: area.map_id, area_id: area.id})
+          )
       end
 
     # Grab all items and visible nested items

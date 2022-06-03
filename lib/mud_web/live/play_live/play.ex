@@ -9,6 +9,7 @@ defmodule MudWeb.ClientLive.Play do
     UpdateArea,
     UpdateCharacter,
     UpdateExploredArea,
+    UpdateExploredMap,
     UpdateInventory,
     UpdateMap,
     UpdateTime
@@ -208,25 +209,32 @@ defmodule MudWeb.ClientLive.Play do
     {:noreply, assign(socket, time_string: time_string)}
   end
 
-  @impl true
-  def handle_cast(%UpdateExploredArea{} = event, socket) do
-    Logger.debug("Received UpdateExploredArea: #{inspect(event)}")
+  # @impl true
+  # def handle_cast(%UpdateExploredMap{action: :add} = event, socket) do
+  #   Logger.debug("Received update explored maps: #{inspect(event)}")
+  #   maps = Enum.into(event.maps, %{}, &{&1.id, &1})
+  #   {:noreply, assign(socket, maps: Map.merge(maps, socket.assigns.maps))}
+  # end
 
-    new_explored_areas =
-      Enum.reduce(event.explored, socket.assigns.map_explored_areas, fn explored, set ->
-        MapSet.put(set, explored)
-      end)
+  # @impl true
+  # def handle_cast(%UpdateExploredArea{} = event, socket) do
+  #   Logger.debug("Received UpdateExploredArea: #{inspect(event)}")
 
-    areas = Enum.into(event.areas, %{}, &{&1.id, &1})
-    links = Enum.into(event.links, %{}, &{&1.id, &1})
+  #   new_explored_areas =
+  #     Enum.reduce(event.explored, socket.assigns.map_explored_areas, fn explored, set ->
+  #       MapSet.put(set, explored)
+  #     end)
 
-    {:noreply,
-     assign(socket,
-       map_explored_areas: new_explored_areas,
-       map_areas: Map.merge(socket.assigns.map_areas, areas),
-       map_links: Map.merge(socket.assigns.map_links, links)
-     )}
-  end
+  #   areas = Enum.into(event.areas, %{}, &{&1.id, &1})
+  #   links = Enum.into(event.links, %{}, &{&1.id, &1})
+
+  #   {:noreply,
+  #    assign(socket,
+  #      map_explored_areas: new_explored_areas,
+  #      map_areas: Map.merge(socket.assigns.map_areas, areas),
+  #      map_links: Map.merge(socket.assigns.map_links, links)
+  #    )}
+  # end
 
   @impl true
   def handle_cast(%UpdateMap{action: :move} = event, socket) do
@@ -237,9 +245,11 @@ defmodule MudWeb.ClientLive.Play do
       links = Enum.into(event.links, %{}, &{&1.id, &1})
       explored_areas = MapSet.new(event.explored_areas)
       map_labels = Label.get_map_labels(event.map_id)
+      maps = Enum.into(event.maps, %{}, &{&1.id, &1})
 
       {:noreply,
        assign(socket,
+         maps: Map.merge(socket.assigns.maps, maps),
          map: event.map_id,
          map_areas: areas,
          map_links: links,
@@ -248,9 +258,20 @@ defmodule MudWeb.ClientLive.Play do
          map_current_area_id: event.area_id
        )}
     else
+      areas = Enum.into(event.areas, %{}, &{&1.id, &1})
+      links = Enum.into(event.links, %{}, &{&1.id, &1})
+
+      new_explored_areas =
+        Enum.reduce(event.explored_areas, socket.assigns.map_explored_areas, fn explored, set ->
+          MapSet.put(set, explored)
+        end)
+
       {:noreply,
        assign(socket,
-         map_current_area_id: event.area_id
+         map_current_area_id: event.area_id,
+         map_areas: Map.merge(socket.assigns.map_areas, areas),
+         map_links: Map.merge(socket.assigns.map_links, links),
+         map_explored_areas: new_explored_areas,
        )}
     end
   end
