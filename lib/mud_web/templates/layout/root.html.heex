@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full w-full">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <%= live_title_tag assigns[:page_title] || "Echoes of an Empire", prefix: assigns[:page_title_prefix], suffix: " · Echoes of an Empire" %>
+    <link rel="icon" type="image/x-icon" href={Routes.static_path(@conn, "/images/square_no_text_web@0.5x.png")}>
+    <%= csrf_meta_tag() %>
+    <link phx-track-static rel="stylesheet" href={Routes.static_path(@conn, "/assets/app.css")}/>
+    <script defer phx-track-static type="text/javascript" src={Routes.static_path(@conn, "/assets/app.js")}></script>
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700" rel="stylesheet" />
+    <script defer src={Routes.static_path(@conn, "/js/fontawesome.min.js")}></script>
+    <script defer src={Routes.static_path(@conn, "/js/solid.min.js")}></script>
+    <script defer src={Routes.static_path(@conn, "/js/regular.min.js")}></script>
+    <script defer src={Routes.static_path(@conn, "/js/light.min.js")}></script>
+  </head>
+  <body class="bg-black h-screen w-screen overflow-hidden flex flex-col text-neutral-300">
+    <%= @inner_content %>
+  </body>
+</html>

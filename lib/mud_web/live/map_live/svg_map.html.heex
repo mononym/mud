@@ -1,0 +1,11 @@
+<svg class="w-full h-full" viewbox={@viewbox}>
+  <%= for path <- @paths do %>
+    <.live_component module={PathComponent} id={path.id} path={path}/>
+  <% end %>
+  <%= for square <- @area_squares do %>
+    <.live_component module={RectComponent} id={square.id} rect={square}/>
+  <% end %>
+  <%= for label <- @text_labels do %>
+    <.live_component module={TextComponent} id={label.id} label={label}/>
+  <% end %>
+</svg>

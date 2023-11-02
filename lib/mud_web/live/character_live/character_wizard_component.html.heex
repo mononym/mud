@@ -1,0 +1,151 @@
+<div class="h-full w-full flex flex-col items-center">
+  <%= case Enum.at(@wizard_pages, @wizard_page_index) do %>
+    <% :select_race -> %>
+      <image class="object-contain" src={Routes.static_path(@socket, "/images/#{Map.get(Enum.at(@races, @selected_race_index), :singular)}_small.jpg")}/>
+      <div class="flex items-center my-1 gap-1">
+        <div phx-click="previous_race" phx-throttle="500" phx-target={@myself} class="relative w-3 h-full flex justify-center items-center hover:bg-neutral-500 rounded cursor-pointer">
+          <.tooltip text="Previous" />
+          <i class="fas fa-chevron-left fa-lg"></i>
+        </div>
+        <div class="select-none text-xl font-bold w-4 text-center"><%= Map.get(Enum.at(@races, @selected_race_index), :singular) %></div>
+        <div phx-click="next_race" phx-throttle="500" phx-target={@myself} class="relative w-3 h-full flex justify-center items-center hover:bg-neutral-500 rounded cursor-pointer">
+          <.tooltip text="Next" />
+          <i class="fas fa-chevron-right fa-lg"></i>
+        </div>
+      </div>
+      <p class="max-w-5xl"><%= Map.get(Enum.at(@races, @selected_race_index), :description) %></p>
+      <button phx-click="select_race" phx-throttle="500" phx-target={@myself} class="btn-green mt-1">Next</button>
+
+    <% :configure_physical_features -> %>
+      <div class="max-w-5xl flex flex-col mb-1">
+        <p class="text-sm font-bold">Preview</p>
+        <p><%= @description_preview %></p>
+      </div>
+      <.form
+        let={f}
+        for={@physical_features_changeset}
+        id="physical_features_form"
+        phx-target={@myself}
+        phx-submit="accept_physical_features"
+        phx-change="validate_physical_features"
+        class="flex-1 flex flex-col">
+
+        <div class="mb-1">
+          <%= label f, :hair_length, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :hair_length, @hair_length_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :hair_length %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_hair_types, do: "hidden"}"}>
+          <%= label f, :hair_color, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :hair_color, @hair_color_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :hair_color %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_hair_colors, do: "hidden"}"}>
+          <%= label f, :hair_type, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :hair_type, @hair_type_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :hair_type %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_hair_styles, do: "hidden"}"}>
+          <%= label f, :hair_style, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :hair_style, @hair_style_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :hair_style %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_hair_styles, do: "hidden"}"}>
+          <%= label f, :hair_feature, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :hair_feature, @hair_feature_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :hair_feature %>
+        </div>
+
+        <div class="mb-1">
+          <%= checkbox f, :heterochromia %>
+          <%= label f, :heterochromia, "Has Heterochromia", class: "mb-0.5 ml-0.5" %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :eye_color, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :eye_color, @eye_color_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :eye_color %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_eye_side_primary, do: "hidden"}"}>
+          <%= label f, :eye_side_primary, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :eye_side_primary, ["right", "left"], class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :eye_side_primary %>
+        </div>
+
+        <div class={"mb-1 #{if not @show_eye_color_secondary, do: "hidden"}"}>
+          <%= label f, :eye_color_secondary, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :eye_color_secondary, @eye_color_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :eye_color_secondary %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :eye_feature, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :eye_feature, @eye_feature_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :eye_feature %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :skin_tone, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :skin_tone, @skin_tone_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :skin_tone %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :height, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :height, @height_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :height %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :physique, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :body_type, @body_type_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :body_type %>
+        </div>
+
+        <div class="mb-1">
+          <%= label f, :dominant_hand, class: "block text-sm font-bold mb-0.5" %>
+          <%= select f, :dominant_hand, ["right", "left"], class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          <%= error_tag f, :dominant_hand %>
+        </div>
+      
+        <div class="mt-4 flex justify-center gap-2">
+          <%= submit "Next", class: "btn-green" %>
+          <button phx-click="back_to_select_race" phx-target={@myself} class="btn-blue" type="button">Back</button>
+        </div>
+      </.form>
+
+    <% :select_name -> %>
+        <.form
+          let={f}
+          for={@character_changeset}
+          id="character_name_form"
+          phx-target={@myself}
+          phx-change="validate_character"
+          phx-submit="create_character"
+          class="flex flex-col w-full">
+
+          <div class="mb-1">
+            <%= label f, :name, class: "block text-sm font-bold mb-0.5" %>
+            <%= text_input f, :name, phx_debounce: "500", class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight", pattern: "[A-Z][a-z]*" %>
+            <div class="flex flex-col">
+              <%= error_tag f, :name %>
+            </div>
+          </div>
+
+          <div class="mb-1">
+            <%= label f, :pronoun, class: "block text-sm font-bold mb-0.5" %>
+            <%= select f, :pronoun, @pronoun_options, class: "bg-neutral-800 appearance-none border rounded w-full py-0.5 px-0.75 leading-tight" %>
+          </div>
+      
+          <div class="mt-4 flex justify-center gap-2">
+            <%= submit "Create", phx_disable_with: "Creating...", class: "btn-green" %>
+            <button phx-click="back_to_select_features" phx-target={@myself} class="btn-blue" type="button">Back</button>
+          </div>
+        </.form>
+  <% end %>
+</div>

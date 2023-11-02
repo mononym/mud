@@ -1,0 +1,75 @@
+<div class="w-full h-full flex flex-col">
+  <div class="flex flex-col p-0.5 grow overflow-y-auto overflow-x-hidden">
+    <%# Held Items %>
+    <%= if @inventory_settings.show_held_items do %>
+      <.live_component module={HeldItemsComponent} id="held_items" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} held_item_left_hand_id={@held_item_left_hand_id} held_item_right_hand_id={@held_item_right_hand_id} />
+    <% end %>
+
+    <%# Worn Weapons %>
+    <%= if @inventory_settings.show_worn_weapons do %>
+      <.live_component module={WornWeaponsComponent} id="worn_weapons" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_weapons_ids={@worn_weapons_ids} />
+    <% end %>
+
+    <%# Worn Armor %>
+    <%= if @inventory_settings.show_worn_armor do %>
+      <.live_component module={WornArmorComponent} id="worn_armor" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_armor_ids={@worn_armor_ids} />
+    <% end %>
+
+    <%# Worn Equipment %>
+    <%= if @inventory_settings.show_worn_equipment do %>
+      <.live_component module={WornEquipmentComponent} id="worn_equipment" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_equipment_ids={@worn_equipment_ids} />
+    <% end %>
+
+    <%# Worn Clothes %>
+    <%= if @inventory_settings.show_worn_clothes do %>
+      <.live_component module={WornClothesComponent} id="worn_clothes" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_clothes_ids={@worn_clothes_ids} />
+    <% end %>
+
+    <%# Worn Jewelry %>
+    <%= if @inventory_settings.show_worn_jewelry do %>
+      <.live_component module={WornJewelryComponent} id="worn_jewelry" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} worn_jewelry_ids={@worn_jewelry_ids} />
+    <% end %>
+
+    <%# Slots %>
+    <%= if @inventory_settings.show_slots do %>
+      <.live_component module={SlotsComponent} id="slots" parent_child_ids_map={@parent_child_ids_map} inventory_settings={@inventory_settings} colors_settings={@colors_settings} inventory={@inventory} slots_ids={@slots_ids} slots={@slots} />
+    <% end %>
+  </div>
+
+  <div class="border-neutral-700 border-t h-2 flex w-full">
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_held_items"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_held_items, do: "Hide", else: "Show"} Held Items"} />
+      <i class="fas fa-hands-holding fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_weapons"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_worn_weapons, do: "Hide", else: "Show"} Worn Weapons"} />
+      <i class="fas fa-sword fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_armor"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_worn_armor, do: "Hide", else: "Show"} Worn Armor"} />
+      <i class="fas fa-shield fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_equipment"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_worn_equipment, do: "Hide", else: "Show"} Worn Equipment"} />
+      <i class="fas fa-backpack fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_clothes"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_worn_clothes, do: "Hide", else: "Show"} Worn Clothes"} />
+      <i class="fas fa-shirt fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_worn_jewelry"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_worn_jewelry, do: "Hide", else: "Show"} Worn Jewelry"} />
+      <i class="fas fa-ring fa-lg"></i>
+    </div>
+
+    <div phx-click="toggle_show" phx-throttle="500" phx-target={@myself} phx-value-toggle={"show_slots"} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text={"#{if @inventory_settings.show_slots, do: "Hide", else: "Show"} Slots"} />
+      <i class="fas fa-star-of-life fa-lg"></i>
+    </div>
+  </div>
+</div>

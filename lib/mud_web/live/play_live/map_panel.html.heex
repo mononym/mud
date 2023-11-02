@@ -1,0 +1,15 @@
+<div id="client_map_wrapper" phx-hook="SvgMap" class="w-full h-full flex flex-col">
+  <div class="flex justify-center"><%= if not is_nil(@maps[@map]), do: @maps[@map].name %></div>
+  <.live_component module={SvgMap} id="client_map" text_labels={@text_labels} area_squares={@area_squares} paths={@paths} viewbox={@viewbox}/>
+  <div class="border-neutral-700 border-t h-2 flex w-full">
+    <div phx-click="zoom_out" phx-throttle="250" phx-target={@myself} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text="Zoom Out" />
+      <i class="fas fa-minus fa-lg"></i>
+    </div>
+
+    <div phx-click="zoom_in" phx-throttle="250" phx-target={@myself} class="relative h-2 cursor-pointer flex-1 flex justify-center items-center hover:bg-neutral-500 border-r border-neutral-700">
+      <.tooltip text="Zoom In" />
+      <i class="fas fa-plus fa-lg"></i>
+    </div>
+  </div>
+</div>

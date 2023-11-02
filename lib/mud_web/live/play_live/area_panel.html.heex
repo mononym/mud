@@ -1,0 +1,85 @@
+<div class="w-full h-full flex flex-col p-0.5">
+  <%# Area Name & Description %>
+  <div class="flex">
+    <div phx-click="toggle_area_description" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+      <i class={"fas fa-#{if @area_description_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.area_name}"}></i>
+    </div>
+    <p style={"color:#{@colors_settings.area_name}"}>[<%= @area.name %>]</p>
+  </div>
+  <p class={"ml-1.5 whitespace-pre-wrap #{if @area_description_collapsed, do: "hidden"}"} style={"color:#{@colors_settings.area_description}"}><%= @area.description %></p>
+
+  <%# Exits %>
+  <div class="flex mt-1">
+    <div phx-click="toggle_exits" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+      <i class={"fas fa-#{if @area_exits_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.exit_label}"}></i>
+    </div>
+    <p style={"color:#{@colors_settings.exit_label}"}>Obvious Exits (<%= length(@exits) %>)</p>
+  </div>
+  <%= if @area_settings.show_description do %>
+    <div class={"pl-1.5 #{if @area_exits_collapsed, do: "hidden"}"}>
+      <%= for ex <- @exits do %>
+        <p style={"color:#{link_to_color(@colors_settings, ex)}"}><%= ex.short_description %> <%= if ex.flags.closable, do: "(#{if ex.closable.open, do: "open", else: "closed"})" %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Things of Interest %>
+  <%= if @area_settings.show_toi do %>
+    <div class="flex mt-1">
+      <div phx-click="toggle_toi" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+        <i class={"fas fa-#{if @area_toi_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.toi_label}"}></i>
+      </div>
+      <p style={"color:#{@colors_settings.toi_label}"}>Things of Interest (<%= length(@things_of_interest_ids) %>)</p>
+    </div>
+    <div class={"pl-1.5 #{if @area_toi_collapsed, do: "hidden"}"}>
+      <%= for item_id <- @things_of_interest_ids do %>
+        <.item item={@items[item_id]} colors_settings={@colors_settings} items={@items} parent_child_ids_map={@parent_child_ids_map} />
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Items on Ground %>
+  <%= if @area_settings.show_on_ground do %>
+    <div class="flex mt-1">
+      <div phx-click="toggle_tog" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+        <i class={"fas fa-#{if @area_tog_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.on_ground_label}"}></i>
+      </div>
+      <p style={"color:#{@colors_settings.on_ground_label}"}>On Ground (<%= length(@items_on_ground_ids) %>)</p>
+    </div>
+    <div class={"pl-1.5 #{if @area_tog_collapsed, do: "hidden"}"}>
+      <%= for item_id <- @items_on_ground_ids do %>
+        <.item item={@items[item_id]} colors_settings={@colors_settings} items={@items} parent_child_ids_map={@parent_child_ids_map} />
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Other Characters %>
+  <%= if @area_settings.show_also_present do %>
+    <div class="flex mt-1">
+      <div phx-click="toggle_also_present" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+        <i class={"fas fa-#{if @also_present_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.character_label}"}></i>
+      </div>
+      <p style={"color:#{@colors_settings.character_label}"}>Also Present (<%= length(@other_characters) %>)</p>
+    </div>
+    <div class={"pl-1.5 #{if @also_present_collapsed, do: "hidden"}"}>
+      <%= for character <- @characters do %>
+        <p style={"color:#{@colors_settings.character}"}><%= character.name %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Denizens %>
+  <%= if @area_settings.show_denizens do %>
+    <div class="flex mt-1">
+      <div phx-click="toggle_denizens" phx-throttle="500" phx-target={@myself} class="relative w-1 h-1 mr-0.5 cursor-pointer">
+        <i class={"fas fa-#{if @denizens_collapsed, do: "plus", else: "minus"} fa-lg"} style={"color:#{@colors_settings.denizen_label}"}></i>
+      </div>
+      <p style={"color:#{@colors_settings.denizen_label}"}>Denizens (<%= length(@denizens) %>)</p>
+    </div>
+    <div class={"pl-1.5 #{if @denizens_collapsed, do: "hidden"}"}>
+      <%= for denizen <- @denizens do %>
+        <p style={"color:#{@colors_settings.denizen}"}><%= denizen.name %></p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

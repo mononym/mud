@@ -1,0 +1,65 @@
+<div class="h-screen w-screen flex text-lg" phx-hook="GameClient" id="GameClient">
+  <div id="left_column" class="basis-1/5 grow border-r border-neutral-700">
+    <div class="h-1/2 border-b border-neutral-700">
+      <.live_component
+          module={MudWeb.PlayLive.MapPanel}
+          id="map"
+          map_settings={@character.settings.map_window}
+          highlighted_area_ids={MapSet.new([@map_current_area_id])}
+          areas={@map_areas}
+          links={@map_links}
+          map={@map}
+          maps={@maps}
+          labels={@map_labels}
+          explored_areas={@map_explored_areas}
+          focus_area_id={@map_current_area_id}
+          allow_intra_map_area_selection={true}
+          allow_inter_map_area_selection={true} />
+    </div>
+    <div class="h-1/2 overflow-y-hidden overflow-x-hidden">
+      <.live_component
+          module={MudWeb.PlayLive.InventoryPanel}
+          id="inventory"
+          settings={@character.settings}
+          inventory_settings={@character.settings.inventory_window}
+          colors_settings={@character.settings.colors}
+          slots={@character.slots}
+          inventory={@inventory} />
+    </div>
+  </div>
+  <div id="center_column" class="basis-3/5 max-w-5xl flex flex-col border-r border-neutral-700">
+    <%# <div class={"flex-1 #{if not @show_story_history, do: "hidden"}"}>History</div> %>
+    <div id="main_story_panel" phx-hook="MainStoryWindowTrim" class="flex-1 flex flex-col justify-end border-b border-neutral-700 overflow-hidden px-1 pb-1" phx-update="append">
+      <%= for output <- @story_output do %>
+        <p id={UUID.uuid4()} class="whitespace-pre-wrap"><%= for segment <- output.segments do %><span style={"color:#{text_type_to_color(@character.settings.colors, segment.type)}"}><%= segment.text %></span><% end %></p>
+      <% end %>
+    </div>
+    <div class="flex shrink">
+      <div class="flex-1 border-neutral-700 border-r text-center"><span class="font-bold">Time:</span> <%= @time_string %></div>
+      <div class="flex-1 text-center"><span class="font-bold">Weather:</span> <%= @weather_string %></div>
+    </div>
+    <.form
+      for={:input}
+      id="story_input_form"
+      phx-submit="submit_text_input"
+      onsubmit="setTimeout(function(){document.getElementById('text_input').value = ''}, 1)">
+
+      <%= text_input :input, :text, id: "text_input", class: "bg-neutral-800 appearance-none border w-full py-0.5 px-0.75 leading-tight mb-px" %>
+    </.form>
+  </div>
+  <div id="right_column" class="flex flex-col grow basis-1/5">
+    <div class="flex-1 border-b border-neutral-700">
+      <.live_component
+          module={MudWeb.PlayLive.AreaPanel}
+          id="area"
+          character={@character}
+          area_settings={@character.settings.area_window}
+          colors_settings={@character.settings.colors}
+          area={@current_area}
+          characters={@current_area_characters}
+          exits={@current_area_exits}
+          items={@current_area_items} />
+    </div>
+    <div class="flex-1">Status</div>
+  </div>
+</div>
